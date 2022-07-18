@@ -861,9 +861,9 @@ function onUichartAction(evt) {
             xMid = Math.max(xMin, Math.min(xMax, xMid));
             xNewMax = Math.min(dataMax, xMid + xScale * (xMax - xMid));
             xNewMin = Math.max(dataMin, xMid + xScale * (xMin - xMid));
-            if (Math.abs(1 - (xNewMax - xNewMin) / (xMax - xMin)) < 0.01) {
-                return;
-            }
+            //!! if (Math.abs(1 - (xNewMax - xNewMin) / (xMax - xMin)) < 0.01) {
+                //!! return;
+            //!! }
             //!! debugInline(JSON.stringify({
                 //!! xMax,
                 //!! xMid,
@@ -871,7 +871,9 @@ function onUichartAction(evt) {
                 //!! xNewMax,
                 //!! xNewMin
             //!! }, undefined, 4));
-            xAxis.zoom(xNewMin, xNewMax);
+            //!! xAxis.zoom(xNewMin, xNewMax);
+            xAxis.userMin = xNewMin;
+            xAxis.userMax = xNewMax;
             // uichartRedraw - zoomWheel
             uichart.redraw(true);
         }());
@@ -1398,8 +1400,9 @@ SELECT
     ).textContent = options.title;
     options = {
         chart: {
-            renderTo: contentElem.querySelector(".uichartCanvas"),
-            zoomType: "x"
+            //!! panning: true,
+            renderTo: contentElem.querySelector(".uichartCanvas")
+            //!! zoomType: "x"
         },
         seriesList: options.seriesList,
         xAxis: {
