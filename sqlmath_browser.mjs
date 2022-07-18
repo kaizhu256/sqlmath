@@ -800,12 +800,12 @@ function onUichartAction(evt) {
     let uichart;
     evt.preventDefault();
     evt.stopPropagation();
-    if (!evt.modeDebounce) {
-        debounce("onUichartAction", onUichartAction, Object.assign(evt, {
-            modeDebounce: true
-        }));
-        return;
-    }
+    //!! if (!evt.modeDebounce) {
+        //!! debounce("onUichartAction", onUichartAction, Object.assign(evt, {
+            //!! modeDebounce: true
+        //!! }));
+        //!! return;
+    //!! }
     target = evt.target.closest("[data-action]");
     if (!target) {
         return;
@@ -861,17 +861,6 @@ function onUichartAction(evt) {
             xMid = Math.max(xMin, Math.min(xMax, xMid));
             xNewMax = Math.min(dataMax, xMid + xScale * (xMax - xMid));
             xNewMin = Math.max(dataMin, xMid + xScale * (xMin - xMid));
-            //!! if (Math.abs(1 - (xNewMax - xNewMin) / (xMax - xMin)) < 0.01) {
-                //!! return;
-            //!! }
-            //!! debugInline(JSON.stringify({
-                //!! xMax,
-                //!! xMid,
-                //!! xMin,
-                //!! xNewMax,
-                //!! xNewMin
-            //!! }, undefined, 4));
-            //!! xAxis.zoom(xNewMin, xNewMax);
             xAxis.userMin = xNewMin;
             xAxis.userMax = xNewMax;
             // uichartRedraw - zoomWheel
@@ -882,126 +871,6 @@ function onUichartAction(evt) {
         uichart.zoomOut();
         return;
     }
-
-    //!! let chart;
-    //!! let chartX;
-    //!! let {
-        //!! currentTarget,
-        //!! target
-    //!! } = evt;
-    //!! let series;
-    //!! let xAxis;
-    //!! let zoomDelta;
-    //!! let zoomMid;
-    //!! if (!evt.modeDebounce) {
-        //!! debounce(`uichartOnAction.${evt.type}`, function () {
-            //!! evt.modeDebounce = true;
-            //!! uichartOnAction(evt);
-        //!! });
-        //!! return;
-    //!! }
-    //!! switch (evt.type) {
-    //!! case "resize":
-        //!! DBCHART_DICT.forEach(function (chart) {
-            //!! let chartWidth = Math.round(
-                //!! -UI_CHART_LEGEND_WIDTH + chart.renderTo.clientWidth
-            //!! );
-            //!! let {
-                //!! container,
-                //!! renderer
-            //!! } = chart;
-            //!! if (chartWidth === chart.containerWidth) {
-                //!! return;
-            //!! }
-            //!! // Resize the chart to a given width and height
-            //!! chart.chartWidth = chartWidth;
-            //!! container.style.width = `${chart.chartWidth}px`;
-            //!! // Resize the box and re-align all aligned elements
-            //!! renderer.boxWrapper.animate({
-                //!! height: UI_CHART_HEIGHT,
-                //!! width: chartWidth
-            //!! });
-            //!! // update axis lengths for more correct tick intervals:
-            //!! chart.plotWidth =
-            //!! chartWidth - chart.plotLeft - chart.marginRight;
-            //!! chart.plotHeight = (
-                //!! UI_CHART_HEIGHT - chart.plotTop - chart.marginBottom
-            //!! );
-            //!! // handle axes
-            //!! chart.maxTicks = null;
-            //!! // uichartRedraw - resize
-            //!! uichartRedraw(chart);
-            //!! // move titles
-            //!! if (chart.elemTitle) {
-                //!! svgAlign({
-                    //!! box: chart.spacingBox,
-                    //!! svgWrapper: chart.elemTitle
-                //!! });
-            //!! }
-            //!! chart.containerWidth = chartWidth;
-        //!! });
-        //!! return;
-    //!! // zoom in/out on wheelup/wheeldown respectively
-    //!! case "wheel":
-    //!! }
-    //!! target = target.closest(".uichartAction");
-    //!! if (!target) {
-        //!! return;
-    //!! }
-    //!! evt.preventDefault();
-    //!! evt.stopPropagation();
-    //!! chart = DBCHART_DICT.get(target.closest(".uichartDiv").id);
-    //!! switch (target.dataset.action) {
-    //!! case "seriesHideAll":
-        //!! chart.seriesList.forEach(function (series) {
-            //!! series.visible = false;
-            //!! uichartSeriesHideOrShow({
-                //!! series
-            //!! });
-        //!! });
-        //!! chart.container.querySelectorAll(
-            //!! ".uichartLegendElem"
-        //!! ).forEach(function (elem) {
-            //!! elem.dataset.hidden = 1;
-        //!! });
-        //!! // uichartRedraw - seriesHideAll
-        //!! uichartRedraw(chart);
-        //!! return;
-    //!! case "seriesShowAll":
-        //!! chart.seriesList.forEach(function (series) {
-            //!! series.visible = true;
-            //!! uichartSeriesHideOrShow({
-                //!! series
-            //!! });
-        //!! });
-        //!! chart.container.querySelectorAll(
-            //!! ".uichartLegendElem"
-        //!! ).forEach(function (elem) {
-            //!! elem.dataset.hidden = 0;
-        //!! });
-        //!! // uichartRedraw - seriesShowAll
-        //!! uichartRedraw(chart);
-        //!! return;
-    //!! case "seriesVisibilityToggle":
-        //!! series = chart.seriesList[target.dataset.seriesIi];
-        //!! series.visible = !series.visible;
-        //!! uichartSeriesHideOrShow({
-            //!! series
-        //!! });
-        //!! target.dataset.hidden = target.dataset.hidden ^ 1;
-        //!! // uichartRedraw - seriesVisibility
-        //!! uichartRedraw(chart);
-        //!! return;
-    //!! case "zoomReset":
-        //!! chart.axisList.forEach(function (axis) {
-            //!! delete axis.userMin;
-            //!! delete axis.userMax;
-        //!! });
-        //!! // uichartRedraw - zoomReset
-        //!! uichartRedraw(chart);
-        //!! return;
-    //!! }
-    //!! throw new Error(`invalid action ${evt.type}.${target.dataset.action}`);
 }
 
 function rowListToCsv({
@@ -1358,6 +1227,7 @@ SELECT
         SELECT
             json_group_array(
                 json_object(
+                    'cropThreshold', 256,
                     'data', json(data),
                     'name', series_label
                 )
