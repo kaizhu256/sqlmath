@@ -7,6 +7,8 @@
     <link rel="modulepreload" href="sqlmath.mjs" />
     <link rel="modulepreload" href="sqlmath_wasm.js" />
     <script defer src="asset_sqlmath_external_rollup.js"></script>
+    <script defer src="jquery-v1.3.2.js"></script>
+    <script defer src="highcharts.js"></script>
     <script type="module" src="./sqlmath_browser.mjs"></script>
 <style>
 /*jslint-disable*/
@@ -14,10 +16,6 @@
 shRawLibFetch
 {
     "fetchList": [
-        {
-            "comment": true,
-            "url": "https://github.com/codemirror/CodeMirror5/blob/5.65.5/LICENSE"
-        },
         {
             "url": "https://github.com/codemirror/CodeMirror5/blob/5.65.5/lib/codemirror.css"
         }
@@ -30,34 +28,6 @@ shRawLibFetch
 /*
 repo https://github.com/codemirror/CodeMirror5/tree/5.65.5
 committed 2022-05-30T09:58:15Z
-*/
-
-
-/*
-file https://github.com/codemirror/CodeMirror5/blob/5.65.5/LICENSE
-*/
-/*
-MIT License
-
-Copyright (C) 2017 by Marijn Haverbeke <marijnh@gmail.com> and others
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 */
 
 
@@ -473,6 +443,7 @@ textarea {
 .modalContent {
     padding: 1rem;
     width: 100%;
+    white-space: normal;
 }
 .modalPanel {
     background: #fff;
@@ -494,59 +465,6 @@ textarea {
 }
 #sqliteEditor1 {
     height: 300px;
-}
-
-/*css section chart*/
-.uichart {
-    box-sizing: content-box;
-    font-size: 12px;
-    line-height: normal;
-    overflow: hidden;
-    position: relative;
-    text-align: left;
-    z-index: 0;
-}
-.uichartCanvas {
-    padding: 12px 12px 0 0;
-}
-.uichartLegend {
-    border: 1px solid #999;
-    flex: 1;
-    font-size: 11px;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.uichartLegendElem {
-    cursor: pointer;
-    display: block;
-    height: 16px;
-    line-height: 16px;
-    position: relative;
-}
-.uichartLegendElem[data-hidden="1"] {
-    opacity: 0.5;
-}
-.uichartLegendElem:hover {
-    background: #ddd;
-}
-.uichartLegendElemColor {
-    display: inline-block;
-    height: 8px;
-    line-height: 8px;
-    margin-left: 4px;
-    width: 16px;
-}
-.uichartNav {
-    display: flex;
-    flex-direction: column;
-    padding: 12px 0 12px 12px;
-    user-select: none;
-}
-.uichartNav button.uichartAction {
-    margin-bottom: 12px;
-    width: 100%
 }
 
 /*css section content*/
@@ -574,7 +492,6 @@ textarea {
     background: #bbd;
     cursor: pointer;
     height: 16px;
-    max-width: 48px;
     padding-left: 12px;
     position: sticky;
     top: 0;
@@ -811,6 +728,72 @@ textarea {
     border-bottom: 1px solid #777;
 }
 
+
+/*css section uichart*/
+.uichart {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+.uichartCanvas {
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+}
+.uichartAxis0Label,
+.uichartAxis1Label,
+.uichartTitle {
+    color: #6d869f;
+    font-weight: bold;
+    text-align: center;
+}
+.uichartAxis1Label {
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform:  translateX(-50%) translateY(-50%) rotate(-90deg);
+    white-space: nowrap;
+}
+.uichartLegend {
+    border: 1px solid #999;
+    flex: 1;
+    font-size: 11px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.uichartLegendElem {
+    cursor: pointer;
+    display: block;
+    height: 16px;
+    line-height: 16px;
+    padding-left: 2px;
+    position: relative;
+}
+.uichartLegendElem[data-hidden="1"] {
+    opacity: 0.5;
+}
+.uichartLegendElem:hover {
+    background: #ddd;
+}
+.uichartLegendElemSvg {
+    height: 16px;
+    position: absolute;
+}
+.uichartNav {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0 10px 10px;
+    user-select: none;
+}
+.uichartNav button.uichartAction {
+    margin-bottom: 10px;
+    width: 100%
+}
+.uichartTitle {
+    color: #3e576f;
+    font-size: 16px;
+}
 /* section misc */
 button:hover {
     background: #999;
@@ -1121,13 +1104,6 @@ fork on github
 <!-- loadingPanel1 start -->
 <div id="loadingPanel1"><div class="uiLoading"></div></div>
 <!-- loadingPanel1 end -->
-
-
-<!-- script start -->
-<script type="module">
-</script>
-<!-- script end -->
-
 
 </body>
 </html>

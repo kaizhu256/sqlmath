@@ -10,11 +10,11 @@ import {
     noop,
     sqlmathWebworkerInit
 } from "./sqlmath.mjs";
-
 let BLOB_SAVE;
 let {
-    Chart,
-    CodeMirror
+    CodeMirror,
+    Highcharts,
+    uichartResize
 } = globalThis;
 let DBTABLE_DICT = new Map();
 let DB_CHART;
@@ -122,6 +122,7 @@ function fileSave({
 }
 
 async function init() {
+    let modeDemo = true;
     await sqlmathWebworkerInit({});
     // init DB_XXX
     [
@@ -184,7 +185,11 @@ async function init() {
         [".modalClose", "click", onModalClose],
         ["body", "click", onContextmenu],
         ["body", "contextmenu", onContextmenu],
-        [UI_FILE_OPEN, "change", onDbAction]
+        [UI_FILE_OPEN, "change", onDbAction],
+        [document, "keyup", onKeyUp],
+        [window, "hashchange", uitableInitWithinView],
+        [window, "resize", onResize],
+        [window, "scroll", uitableInitWithinView]
     ].forEach(function ([
         selector, evt, listener
     ]) {
@@ -198,17 +203,64 @@ async function init() {
             elem.addEventListener(evt, listener);
         });
     });
-    document.addEventListener("keyup", onKeyUp);
-    window.addEventListener("hashchange", uitableInitWithinView);
-    window.addEventListener("scroll", uitableInitWithinView);
     window.scroll(0, 0);
-    // attach demo-db
-    await dbFileAttachAsync({
-        db: DB_MAIN,
-        dbData: new ArrayBuffer(0)
-    });
-    // exec demo-sql-query
-    onDbExec({});
+    // init location.search
+    await Promise.all(Array.from(
+        location.search.slice(1).split("&")
+    ).map(async function (elem) {
+        let [
+            key, val
+        ] = elem.split("=");
+        switch (key) {
+        case "jsScript":
+            modeDemo = undefined;
+            key = document.createElement("script");
+            key.src = val;
+            if (val.endsWith(".mjs")) {
+                key.type = "module";
+            }
+            document.head.appendChild(key);
+            return;
+        case "modeExpert":
+            if (val === "1") {
+                document.head.appendChild(domDivCreate(`
+<style>
+#contentPanel1 th {
+    max-width: 48px;
+}
+</style>
+                `).firstElementChild);
+            }
+            return;
+        case "sqlDb":
+            modeDemo = undefined;
+            val = await fetch(val);
+            val = await val.arrayBuffer();
+            await dbFileImportAsync({
+                db: DB_MAIN,
+                dbData: val
+            });
+            return;
+        case "sqlScript":
+            modeDemo = undefined;
+            val = await fetch(val);
+            val = await val.text();
+            UI_EDITOR.setValue(val);
+            return;
+        }
+    }));
+    // init demo
+    if (modeDemo) {
+        // attach demo-db
+        await dbFileAttachAsync({
+            db: DB_MAIN,
+            dbData: new ArrayBuffer(0)
+        });
+        // exec demo-sql-query
+        await onDbExec({});
+    } else {
+        await uiRenderDb();
+    }
 }
 
 function jsonHtmlSafe(obj) {
@@ -309,16 +361,18 @@ function onContextmenu(evt) {
 async function onDbAction(evt) {
 // this function will open db from file
     let action;
-    let baton;
+    let baton = UI_CONTEXTMENU_BATON;
     let data;
+    let series;
     let target = evt.target.closest("[data-action]") || evt.target;
     let title;
-    let uichart = target.closest(".uichart");
+    let uichart;
     action = target.dataset.action;
     if (!action) {
         return;
     }
-    baton = UI_CONTEXTMENU_BATON;
+    uichart = target.closest("#dbchartList1 .contentElem");
+    uichart = uichart && DBTABLE_DICT.get(uichart.id).uichart;
     // fast actions that do not require loading
     switch (target !== UI_FILE_OPEN && action) {
     case "dbAttach":
@@ -452,25 +506,30 @@ RENAME TO
         }
         uiFadeIn(UI_CRUD);
         return;
-    case "uichartDatasetHideAll":
-    case "uichartDatasetShowAll":
-        data = Number(action === "uichartDatasetHideAll");
-        uichart.chart.data.datasets.forEach(function (dataset) {
-            dataset.hidden = data;
+    case "uichartSeriesHideAll":
+    case "uichartSeriesShowAll":
+        data = action === "uichartSeriesShowAll";
+        // hide or show legend
+        target.parentElement.querySelectorAll(
+            ".uichartLegendElem"
+        ).forEach(function (elem) {
+            elem.dataset.hidden = Number(!data);
         });
-        uichart.querySelectorAll(".uichartLegendElem").forEach(function (elem) {
-            elem.dataset.hidden = data;
+        // hide or show series
+        uichart.seriesList.forEach(function (series) {
+            series.setVisible(data);
         });
-        uichart.chart.update();
         return;
-    case "uichartDatasetHideOrShow":
-        data = uichart.chart.data.datasets[target.dataset.ii].hidden ^ 1;
-        uichart.chart.data.datasets[target.dataset.ii].hidden = data;
-        target.dataset.hidden = data;
-        uichart.chart.update();
+    case "uichartSeriesHideOrShow":
+        series = uichart.seriesList[target.dataset.ii];
+        data = target.dataset.hidden === "1";
+        // hide or show legend
+        target.dataset.hidden = Number(!data);
+        // hide or show series
+        series.setVisible(data);
         return;
     case "uichartZoomReset":
-        uichart.chart.resetZoom();
+        uichart.zoomOut();
         return;
     }
     // slow actions that require loading
@@ -616,7 +675,8 @@ async function onDbExec({
 }) {
 // this function will
 // 1. exec sql-command in webworker
-// 2. ui-render sql-queries to html
+// 2. save query-result
+// 3. ui-render sql-queries to html
     let dbqueryList;
     if (!modeTryCatch) {
         await uiTryCatch(onDbExec, {
@@ -661,7 +721,7 @@ END TRANSACTION;
         responseType: "list",
         sql: UI_EDITOR.getValue()
     });
-    // 1a. save query-result
+    // 2. save query-result
     await Promise.all(dbqueryList.map(async function (rowList, ii) {
         let colList = rowList.shift().map(function (col, ii) {
             return `value->>${ii} AS [${col}]`;
@@ -681,7 +741,7 @@ END TRANSACTION;
             `)
         });
     }));
-    // 2. ui-render sql-queries to html
+    // 3. ui-render sql-queries to html
     await uiRenderDb();
 }
 
@@ -749,6 +809,16 @@ function onModalClose({
 }) {
 // this function will close current modal
     uiFadeOut(currentTarget.closest(".modalPanel"));
+}
+
+function onResize() {
+// this function will handle resize-event
+    document.querySelectorAll(
+        "#dbchartList1 .contentElem"
+    ).forEach(function (elem) {
+        elem.dataset.init = "0";
+    });
+    uitableInitWithinView({});
 }
 
 function rowListToCsv({
@@ -1072,173 +1142,135 @@ async function uiTryCatch(func, ...argList) {
 
 async function uichartCreate(baton) {
 // this function will create xy-line-chart from given sqlite table <baton>
-    let chart;
-    let colorList;
     let {
         contentElem,
         db,
         dbtableName,
-        elemChart
+        uichart
     } = baton;
     let options;
+    // resize uichart
+    if (uichart) {
+        uichartResize(baton);
+        return;
+    }
     options = await dbExecAsync({
         db,
         sql: (`
 SELECT
-        json_insert(options, '$.data', json(data)) AS data
-    FROM (SELECT options FROM ${dbtableName} LIMIT 1)
+        json_insert(
+            json_insert(options, '$.xxList', json(xxList)),
+            '$.seriesList',
+            json(seriesList)
+        ) AS options
+    FROM (SELECT options FROM ${dbtableName} WHERE datatype = 'options' LIMIT 1)
     JOIN (
         SELECT
-                json_group_array(data) AS data
-            FROM (
-                SELECT
-                    json_object(
-                        'label', label,
-                        'data', json_group_array(json_array(xx, yy))
-                    ) AS data
-                FROM (SELECT * FROM ${dbtableName} ORDER BY label, xx, yy)
-                WHERE
-                    label IS NOT NULL
-                GROUP BY label
-            )
+            json_group_array(xx_label) AS xxList
+        FROM ${dbtableName}
+        WHERE
+            datatype = 'xx_label'
     )
-;
+    JOIN (
+        SELECT
+            json_group_array(
+                json_object(
+                    'data', json(data),
+                    'name', series_label
+                )
+            ) AS seriesList
+        FROM (
+            SELECT
+                series_index,
+                series_label
+            FROM ${dbtableName}
+            WHERE
+                datatype = 'series_label'
+        )
+        JOIN (
+            SELECT
+                series_index,
+                json_group_array(yy) AS data
+            FROM ${dbtableName}
+            WHERE
+                datatype = 'yy_value'
+            GROUP BY
+                series_index
+            ORDER BY
+                series_index,
+                xx
+        ) USING (series_index)
+    );
         `)
     });
+    options = JSON.parse(options[0][0].options);
     contentElem.querySelector(".uitable").style.display = "none";
-    elemChart.style.display = "block";
-    options = JSON.parse(options[0][0].data || []);
-    if (options.title) {
-        contentElem.querySelector(".contentElemTitle").textContent += (
-            " - " + options.title
-        );
-    }
+    contentElem.querySelector(".uichart").style.display = "flex";
+    contentElem.querySelector(
+        ".uichartAxis0Label"
+    ).textContent = options.xAxisLabel;
+    contentElem.querySelector(
+        ".uichartAxis1Label"
+    ).textContent = options.yAxisLabel;
+    contentElem.querySelector(
+        ".uichartTitle"
+    ).textContent = options.title;
     options = {
-        data: {
-            datasets: options.data.map(function ({
-                data,
-                label
-            }, ii) {
-                return {
-                    borderWidth: 1.5,
-                    data: data.map(function ([
-                        x, y
-                    ]) {
-                        return {
-                            x,
-                            y
-                        };
-                    }),
-                    fill: false,
-                    label: `${ii + 1}. ${label}`,
-                    lineTension: 0,
-                    pointRadius: 0.5,
-                    showLine: true
-                };
-            })
+        chart: {
+            renderTo: contentElem.querySelector(".uichartCanvas"),
+            zoomType: "x"
         },
-        options: {
-            animation: {
-                duration: 0
-            },
-            legend: {
-                display: false
-            },
-            maintainAspectRatio: false,
-            plugins: {
-                zoom: {
-                    zoom: {
-                        drag: {
-                            animationDuration: 500,
-                            backgroundColor: "rgba(127,127,127,0.5)"
-                        },
-                        enabled: true,
-                        mode: "xy"
-                    }
-                }
-            },
-            scales: JSON.parse(JSON.stringify({
-                xAxes: [
-                    {
-                        scaleLabel: {
-                            display: true,
-                            labelString: options.xLabel
-                        },
-                        type: options.xAxesType || undefined
-                    }
-                ],
-                yAxes: [
-                    {
-                        scaleLabel: {
-                            display: true,
-                            labelString: options.yLabel
-                        },
-                        type: options.yAxesType || undefined
-                    }
-                ]
-            })),
-            tooltips: {
-                intersect: false,
-                mode: "nearest"
-            }
+        legend: {
+            align: "left",
+            layout: "vertical",
+            verticalAlign: "middle"
         },
-        type: "scatter"
+        seriesList: options.seriesList,
+        xAxis: {
+            alternateGridColor: "#eee",
+            categories: options.xxList
+            //!! tickInterval: 16,
+        },
+        yAxis: {
+        }
     };
-    // init colorList - brewer.Paired12
-    colorList = [
-        "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c",
-        "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00",
-        "#cab2d6", "#6a3d9a", "#d2b48c", "#b15928"
-    ].map(function (color, ii) {
-        let whiteness = (
-            ii % 2 === 0
-            ? 0.875
-            : 1
-        );
-        return (
-            "rgb("
-            + Math.round(whiteness * parseInt(color.slice(1, 3), 16)) + ","
-            + Math.round(whiteness * parseInt(color.slice(3, 5), 16)) + ","
-            + Math.round(whiteness * parseInt(color.slice(5, 7), 16))
-            + ")"
-        );
-    });
-    options.data.datasets.forEach(function (dataset, ii) {
-        let color = colorList[ii % colorList.length];
-        let colorWithAlpha = color.replace("rgb", "rgba").replace(")", ",0.5)");
-        dataset.backgroundColor = colorWithAlpha;
-        dataset.borderColor = color;
-        dataset.pointBackgroundColor = colorWithAlpha;
-        dataset.pointBorderColor = color;
-    });
-    chart = new Chart(elemChart.querySelector("canvas"), options);
-    elemChart.chart = chart;
-    // init zoom-reset
-    chart.resetZoom();
+    uichart = new Highcharts.Chart(options);
+    baton.uichart = uichart;
+    contentElem.querySelector(".uichart").chart = uichart;
     // init .uichartLegend
-    elemChart.querySelector(
+    contentElem.querySelector(
         ".uichartLegend"
-    ).innerHTML = chart.data.datasets.map(function ({
-        label,
-        pointBorderColor
-    }, ii) {
+    ).innerHTML = uichart.seriesList.map(function (series, ii) {
         return (`
 <a
     class="uichartAction uichartLegendElem"
-    data-action="uichartDatasetHideOrShow"
+    data-action="uichartSeriesHideOrShow"
     data-hidden="0"
     data-ii="${ii}"
-    title="${stringHtmlSafe(label)}"
+    title="${stringHtmlSafe(series.name)}"
 >
-<span
-    class="uichartLegendElemColor"
-    style="background: ${pointBorderColor};"
->&nbsp;</span>
-<span>${label}</span>
+<svg class="uichartLegendElemSvg" xmlns="http://www.w3.org/2000/svg">
+<g>
+<path
+    d="M 0 8 L 16 8"
+    fill="none"
+    stroke-width="2"
+    style="stroke: ${series.color};"
+>
+</path>
+<path
+    d="${uichart.renderer.symbols[series.symbol](4, 4, 8, 8).join(" ")}"
+    fill="none"
+    style="stroke: ${series.color}; fill: ${series.color};"
+>
+</path>
+</g>
+</svg>
+<span style="margin-left: 24px; position: absolute;">${series.name}</span>
 </a>
         `);
     }).join("");
-    elemChart.querySelector(".uichartNav").onclick = onDbAction;
+    contentElem.querySelector(".uichartNav").onclick = onDbAction;
 }
 
 async function uitableAjax(baton, {
@@ -1414,15 +1446,12 @@ function uitableCreate(baton) {
     style="
     display: none;
     height: ${UI_CHART_HEIGHT}px;
-    padding-left: ${UI_CHART_LEGEND_WIDTH}px;
     "
 >
     <div
         class="uichartNav"
         style="
         height: ${UI_CHART_HEIGHT}px;
-        margin-left: -${UI_CHART_LEGEND_WIDTH}px;
-        position: absolute;
         width: ${UI_CHART_LEGEND_WIDTH}px;
         "
     >
@@ -1432,18 +1461,27 @@ function uitableCreate(baton) {
         >reset zoom</button>
         <button
             class="uichartAction"
-            data-action="uichartDatasetHideAll"
+            data-action="uichartSeriesHideAll"
         >hide all</button>
         <button
             class="uichartAction"
-            data-action="uichartDatasetShowAll"
+            data-action="uichartSeriesShowAll"
         >show all</button>
         <div
             class="uichartLegend"
             style="height: ${UI_CHART_HEIGHT - 64}px;"
         ></div>
     </div>
-    <canvas class="uichartCanvas"></canvas>
+    <div style="position: relative; margin-left: 8px; width: 1rem;">
+        <div class="uichartAxis1Label"></div>
+    </div>
+    <div
+        style="display: flex; flex: 1; flex-direction: column; padding: 8px 0"
+    >
+        <div class="uichartTitle"></div>
+        <div class="uichartCanvas" style="flex: 1;"></div>
+        <div class="uichartAxis0Label"></div>
+    </div>
 </div>
 <div class="uitable">
     <div class="uitableInfo">showing 0 to 0 of 0 entries</div>
@@ -1500,7 +1538,6 @@ function uitableCreate(baton) {
     });
     Object.assign(baton, {
         contentElem,
-        elemChart: contentElem.querySelector(".uichart"),
         elemInfo: contentElem.querySelector(".uitableInfo"),
         elemLoading: contentElem.querySelector(".uitableLoading"),
         elemScroller: contentElem.querySelector(".uitableScroller"),
@@ -1569,4 +1606,26 @@ function uitableSort(baton, {
 }
 
 // init
-await init();
+window.addEventListener("load", init);
+
+export {
+    DB_MAIN,
+    UI_EDITOR,
+    assertOrThrow,
+    dbCloseAsync,
+    dbExecAsync,
+    dbFileAttachAsync,
+    dbFileExportAsync,
+    dbFileImportAsync,
+    dbOpenAsync,
+    debugInline,
+    domDivCreate,
+    jsonHtmlSafe,
+    noop,
+    onDbExec,
+    sqlmathWebworkerInit,
+    stringHtmlSafe,
+    uiFadeIn,
+    uiFadeOut,
+    uiRenderDb
+};
