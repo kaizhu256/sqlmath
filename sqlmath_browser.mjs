@@ -1220,15 +1220,13 @@ SELECT
             renderTo: contentElem.querySelector(".uichartCanvas"),
             zoomType: "x"
         },
-        legend: {
-            align: "left",
-            layout: "vertical",
-            verticalAlign: "middle"
-        },
         seriesList: options.seriesList,
         xAxis: {
             alternateGridColor: "#f0f0ff",
-            categories: options.xxList
+            categories: options.xxList,
+            labels: {
+                rotation: -15
+            }
             //!! tickInterval: 16,
         },
         yAxis: {

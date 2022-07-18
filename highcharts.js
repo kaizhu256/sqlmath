@@ -1201,7 +1201,6 @@ defaultOptions = {
         //events: { load, selection },
         //margin: [null],
         //marginTop: null,
-        //marginBottom: null,
         //marginLeft: null,
         borderColor: '#4572A7',
         //borderWidth: 0,
@@ -3308,7 +3307,6 @@ Axis.prototype = {
      */
     defaultOptions: {
         // allowDecimals: null,
-        // alternateGridColor: null,
         // categories: [],
         dateTimeLabelFormats: {
             millisecond: '%H:%M:%S.%L',
@@ -3386,20 +3384,7 @@ Axis.prototype = {
         maxPadding: 0.05,
         minPadding: 0.05,
         startOnTick: true,
-        tickWidth: 0,
-        stackLabels: {
-            enabled: false,
-            //align: dynamic,
-            //y: dynamic,
-            //x: dynamic,
-            //verticalAlign: dynamic,
-            //textAlign: dynamic,
-            //rotation: 0,
-            formatter: function () {
-                return this.total;
-            },
-            style: defaultLabelOptions.style
-        }
+        tickWidth: 0
     },
     /**
      * These options extend the defaultOptions for left axes
@@ -3518,8 +3503,6 @@ Axis.prototype = {
         axis.minRange = axis.userMinRange = options.minRange || options.maxZoom;
         axis.range = options.range;
         axis.offset = options.offset || 0;
-        // Dictionary for stacks
-        axis.stacks = {};
         // Min and max in the data
         //axis.dataMin = UNDEFINED,
         //axis.dataMax = UNDEFINED,
@@ -3609,9 +3592,6 @@ Axis.prototype = {
     getSeriesExtremes: function () {
         let axis = this,
             chart = axis.chart,
-            stacks = axis.stacks,
-            posStack = [],
-            negStack = [],
             i;
         axis.hasVisibleSeries = false;
         // reset dataMin and dataMax in case we're redrawing
@@ -3620,10 +3600,6 @@ Axis.prototype = {
         each(axis.seriesList, function (series) {
             if (series.visible || !chart.options.chart.ignoreHiddenSeries) {
                 let seriesOptions = series.options,
-                    posPointStack,
-                    negPointStack,
-                    stackKey,
-                    stackOption,
                     negKey,
                     xData,
                     yData,
@@ -3648,7 +3624,6 @@ Axis.prototype = {
                 // Get dataMin and dataMax for Y axes, as well as handle stacking and processed data
                 } else {
                     let isNegative,
-                        pointStack,
                         key,
                         cropped = series.cropped,
                         xExtremes = series.xAxis.getExtremes(),
@@ -4268,7 +4243,6 @@ Axis.prototype = {
      */
     setScale: function () {
         let axis = this,
-            stacks = axis.stacks,
             type,
             i,
             isDirtyData,
@@ -4300,14 +4274,6 @@ Axis.prototype = {
             // Mark as dirty if it is not already set to dirty and extremes have changed. #595.
             if (!axis.isDirty) {
                 axis.isDirty = isDirtyAxisLength || axis.min !== axis.oldMin || axis.max !== axis.oldMax;
-            }
-        }
-        // reset stacks
-        if (!axis.isXAxis) {
-            for (type in stacks) {
-                for (i in stacks[type]) {
-                    stacks[type][i].cum = stacks[type][i].total;
-                }
             }
         }
         // Set the maximum tick amount
@@ -4475,7 +4441,7 @@ Axis.prototype = {
         }
         // handle automatic or user set offset
         axis.offset = directionFactor * pick(options.offset, axisOffset[side]);
-        //!! important!!
+        // !!important!!
         axisOffset[side] = mathMax(
             axisOffset[side],
             pick(
@@ -4522,12 +4488,9 @@ Axis.prototype = {
             options = axis.options,
             isLog = axis.isLog,
             tickPositions = axis.tickPositions,
-            stacks = axis.stacks,
             ticks = axis.ticks,
             minorTicks = axis.minorTicks,
             alternateBands = axis.alternateBands,
-            stackLabelOptions = options.stackLabels,
-            alternateGridColor = options.alternateGridColor,
             tickmarkOffset = axis.tickmarkOffset,
             lineWidth = options.lineWidth,
             linePath,
@@ -4574,7 +4537,7 @@ Axis.prototype = {
                 });
             }
             // alternate grid color
-            if (alternateGridColor) {
+            if (axis.isXAxis) {
                 each(tickPositions, function (pos, i) {
                     if (i % 2 === 0 && pos < axis.max) {
                         if (!alternateBands[pos]) {
@@ -4585,7 +4548,7 @@ Axis.prototype = {
                         alternateBands[pos].options = {
                             from: isLog ? lin2log(from) : from,
                             to: isLog ? lin2log(to) : to,
-                            color: alternateGridColor
+                            color: "#f0f0ff"
                         };
                         alternateBands[pos].render();
                         alternateBands[pos].isActive = true;
@@ -4693,22 +4656,15 @@ Axis.prototype = {
      * Destroys an Axis instance.
      */
     destroy: function () {
-        let axis = this,
-            stacks = axis.stacks,
-            stackKey;
+        let axis = this;
         // Remove the events
         removeEvent(axis);
-        // Destroy each stack total
-        for (stackKey in stacks) {
-            destroyObjectProperties(stacks[stackKey]);
-            stacks[stackKey] = null;
-        }
         // Destroy collections
         each([axis.ticks, axis.minorTicks, axis.alternateBands, axis.plotLinesAndBands], function (coll) {
             destroyObjectProperties(coll);
         });
         // Destroy local variables
-        each(['stackTotalGroup', 'axisLine', 'axisGroup', 'gridGroup', 'labelGroup'], function (prop) {
+        each(['axisLine', 'axisGroup', 'gridGroup', 'labelGroup'], function (prop) {
             if (axis[prop]) {
                 axis[prop] = axis[prop].destroy();
             }
@@ -4998,7 +4954,7 @@ Tooltip.prototype = {
                 axis = point.seriesList[i ? 'yAxis' : 'xAxis'];
                 if (crosshairsOptions[i] && axis) {
                     path = axis.getPlotLinePath(
-                        i ? pick(point.stackY, point.y) : point.x, // #814
+                        i ? point.y : point.x, // #814
                         1
                     );
                     if (tooltip.crosshairs[i]) {
@@ -5520,7 +5476,6 @@ Chart.prototype = {
                 optionsMargin :
                 [optionsMargin, optionsMargin, optionsMargin, optionsMargin];
         this.optionsMarginTop = pick(optionsChart.marginTop, margin[0]);
-        this.optionsMarginBottom = pick(optionsChart.marginBottom, margin[2]);
         this.optionsMarginLeft = pick(optionsChart.marginLeft, margin[3]);
         this.callback = callback;
         this.isResizing = 0;
@@ -5534,7 +5489,6 @@ Chart.prototype = {
         //this.container = UNDEFINED;
         //this.chartWidth = UNDEFINED;
         //this.chartHeight = UNDEFINED;
-        //this.marginBottom = UNDEFINED;
         //this.containerWidth = UNDEFINED;
         //this.containerHeight = UNDEFINED;
         //this.oldChartWidth = UNDEFINED;
@@ -5861,14 +5815,9 @@ Chart.prototype = {
             spacingLeft = optionsChart.spacingLeft,
             axisOffset,
             optionsMarginTop = chart.optionsMarginTop,
-            optionsMarginLeft = chart.optionsMarginLeft,
-            optionsMarginBottom = chart.optionsMarginBottom;
+            optionsMarginLeft = chart.optionsMarginLeft;
         chart.resetMargins();
         axisOffset = chart.axisOffset;
-        // adjust for scroller
-        if (chart.extraBottomMargin) {
-            chart.marginBottom += chart.extraBottomMargin;
-        }
         // pre-render axes to get labels offset width
         if (chart.hasCartesianSeries) {
             each(chart.axisList, function (axis) {
@@ -5877,9 +5826,6 @@ Chart.prototype = {
         }
         if (!defined(optionsMarginLeft)) {
             chart.plotLeft += axisOffset[3];
-        }
-        if (!defined(optionsMarginBottom)) {
-            chart.marginBottom += axisOffset[2];
         }
         chart.setChartSize();
     },
@@ -5902,7 +5848,7 @@ Chart.prototype = {
             plotBorderWidth;
         chart.plotLeft = plotLeft = mathRound(chart.plotLeft);
         chart.plotWidth = plotWidth = mathMax(0, mathRound(chartWidth - plotLeft - UI_CHART_MARGIN_RIGHT));
-        chart.plotHeight = plotHeight = mathMax(0, mathRound(chartHeight - UI_CHART_PLOT_TOP - chart.marginBottom));
+        chart.plotHeight = plotHeight = mathMax(0, mathRound(chartHeight - UI_CHART_PLOT_TOP - UI_CHART_MARGIN_BOTTOM));
         chart.plotSizeX = plotWidth;
         chart.plotSizeY = plotHeight;
         chart.plotBorderWidth = plotBorderWidth = optionsChart.plotBorderWidth || 0;
@@ -5940,7 +5886,6 @@ Chart.prototype = {
             spacingRight = optionsChart.spacingRight,
             spacingBottom = optionsChart.spacingBottom,
             spacingLeft = optionsChart.spacingLeft;
-        chart.marginBottom = pick(chart.optionsMarginBottom, spacingBottom);
         chart.plotLeft = pick(chart.optionsMarginLeft, spacingLeft);
         chart.axisOffset = [0, 0, 0, 0]; // top, right, bottom, left
     },
@@ -6297,7 +6242,7 @@ Point.prototype = {
             seriesList: point.seriesList,
             point: point,
             percentage: point.percentage,
-            total: point.total || point.stackTotal
+            total: point.total
         };
     },
     onMouseOver: function () {
@@ -6948,28 +6893,14 @@ Series.prototype = {
             dataLength = points.length,
             hasModifyValue = !!series.modifyValue,
             isBottomSeries,
-            allStackSeries = yAxis.seriesList,
-            i = allStackSeries.length,
             placeBetween = options.pointPlacement === 'between';
             //nextSeriesDown;
-        // Is it the last visible series?
-        while (i--) {
-            if (allStackSeries[i].visible) {
-                if (allStackSeries[i] === series) { // #809
-                    isBottomSeries = true;
-                }
-                break;
-            }
-        }
         // Translate each point
-        for (i = 0; i < dataLength; i++) {
+        for (let i = 0; i < dataLength; i++) {
             let point = points[i],
                 xValue = point.x,
                 yValue = point.y,
-                yBottom = point.low,
-                stack = yAxis.stacks[(yValue < options.threshold ? '-' : '') + series.stackKey],
-                pointStack,
-                pointStackTotal;
+                yBottom = point.low;
             // get the plotX translation
             //point.plotX = mathRound(xAxis.translate(xValue, 0, 0, 0, 1) * 10) / 10; // Math.round fixes #591
             point.plotX = xAxis.translate(xValue, 0, 0, 0, 1, placeBetween); // Math.round fixes #591
@@ -7821,7 +7752,11 @@ function uichartResize({
     uichart.renderer.setSize(chartWidth, chartHeight, true);
     // update axis lengths for more correct tick intervals:
     uichart.plotWidth = chartWidth - uichart.plotLeft - UI_CHART_MARGIN_RIGHT;
-    uichart.plotHeight = chartHeight - UI_CHART_PLOT_TOP - uichart.marginBottom;
+    uichart.plotHeight = (
+        chartHeight
+        - UI_CHART_PLOT_TOP
+        - UI_CHART_MARGIN_BOTTOM
+    );
     // handle axes
     uichart.maxTicks = null;
     uichart.axisList.forEach(function (axis) {
