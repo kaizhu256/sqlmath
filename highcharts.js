@@ -6339,10 +6339,6 @@ Point.prototype = {
         let point = this,
             series = this.seriesList,
             seriesOptions = series.options;
-        // load event handlers on demand to save time on mouseover/out
-        if (seriesOptions.point.events[eventType] || (point.options && point.options.events && point.options.events[eventType])) {
-            this.importEvents();
-        }
         // add default handler if in selection mode
         if (eventType === 'click' && seriesOptions.allowPointSelect) {
             defaultFunction = function (event) {
@@ -6351,23 +6347,6 @@ Point.prototype = {
             };
         }
         fireEvent(this, eventType, eventArgs, defaultFunction);
-    },
-    /**
-     * Import events from the series' and point's options. Only do it on
-     * demand, to save processing time on hovering.
-     */
-    importEvents: function () {
-        if (!this.hasImportedEvents) {
-            let point = this,
-                options = merge(point.seriesList.options.point, point.options),
-                events = options.events,
-                eventType;
-            point.events = events;
-            for (eventType in events) {
-                addEvent(point, eventType, events[eventType]);
-            }
-            this.hasImportedEvents = true;
-        }
     },
     /**
      * Set the point's state
@@ -6489,18 +6468,6 @@ Series.prototype = {
             visible: options.visible !== false, // true by default
             selected: options.selected === true // false by default
         });
-        // register event listeners
-        events = options.events;
-        for (eventType in events) {
-            addEvent(series, eventType, events[eventType]);
-        }
-        if (
-            (events && events.click) ||
-            (options.point && options.point.events && options.point.events.click) ||
-            options.allowPointSelect
-        ) {
-            chart.runTrackerClick = true;
-        }
         series.getColor();
         series.getSymbol();
         // set the data

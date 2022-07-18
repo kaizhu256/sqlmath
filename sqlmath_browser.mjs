@@ -1222,7 +1222,6 @@ SELECT
         },
         seriesList: options.seriesList,
         xAxis: {
-            alternateGridColor: "#f0f0ff",
             categories: options.xxList,
             labels: {
                 rotation: -15
