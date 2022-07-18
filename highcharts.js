@@ -7739,7 +7739,31 @@ function uichartResize({
     uichart.redraw(true);
     uichart.oldChartHeight = null;
 }
+function uichartXY(uichart, {
+    pageX,
+    pageY
+}) {
+// this function will get mouse position chartX, chartY relative to svg-chart
+    let rect = uichart.container.getBoundingClientRect();
+    return [
+        Math.round(
+            pageX
+            - rect.left
+            - window.scrollX
+            + document.documentElement.clientLeft
+            - uichart.plotLeft
+        ),
+        Math.round(
+            pageY
+            - rect.top
+            - window.scrollY
+            + document.documentElement.clientTop
+            - UI_CHART_PLOT_TOP
+        )
+    ];
+}
 window.uichartResize = uichartResize;
+window.uichartXY = uichartXY;
 /*jslint-disable*/
 }());
 /*jslint-enable*/

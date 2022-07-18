@@ -14,7 +14,8 @@ let BLOB_SAVE;
 let {
     CodeMirror,
     Highcharts,
-    uichartResize
+    uichartResize,
+    uichartXY
 } = globalThis;
 let DBTABLE_DICT = new Map();
 let DB_CHART;
@@ -77,11 +78,11 @@ function debounce(key, func, ...argList) {
         timerTimeout: setTimeout(function () {
             delete DEBOUNCE_DICT[key];
             val.func(...argList);
-        }, 500)
+        }, 250)
     };
     DEBOUNCE_DICT[key] = val;
     // if first-time, then immediately call <func>
-    func();
+    func(...argList);
 }
 
 function domDivCreate(innerHTML) {
@@ -360,11 +361,13 @@ function onContextmenu(evt) {
 
 async function onDbAction(evt) {
 // this function will open db from file
-    let action = target.dataset.action;
+    let action;
     let baton = UI_CONTEXTMENU_BATON;
     let data;
-    let target = evt.target.closest("[data-action]") || evt.target;
+    let target;
     let title;
+    target = evt.target.closest("[data-action]") || evt.target;
+    action = target.dataset.action;
     if (!action) {
         return;
     }
@@ -803,7 +806,10 @@ function onUichartAction(evt) {
         }));
         return;
     }
-    target = evt.target.closest("[data-action]") || evt.target;
+    target = evt.target.closest("[data-action]");
+    if (!target) {
+        return;
+    }
     action = target.dataset.action;
     uichart = DBTABLE_DICT.get(
         target.closest("#dbchartList1 .contentElem").id
@@ -830,6 +836,45 @@ function onUichartAction(evt) {
         target.dataset.hidden = Number(!data);
         // hide or show series
         series.setVisible(data);
+        return;
+    case "uichartZoom":
+        (function () {
+            let {
+                dataMax,
+                dataMin,
+                max: xMax,
+                min: xMin
+            } = uichart.axisList[0];
+            let xAxis = uichart.axisList[0];
+            let xMid = (
+                xAxis.min
+                + (uichartXY(uichart, evt)[0] / uichart.plotWidth)
+                * (xMax - xMin)
+            );
+            let xNewMax;
+            let xNewMin;
+            let xScale = (
+                evt.deltaY < 0
+                ? 0.6667
+                : 1.75
+            );
+            xMid = Math.max(xMin, Math.min(xMax, xMid));
+            xNewMax = Math.min(dataMax, xMid + xScale * (xMax - xMid));
+            xNewMin = Math.max(dataMin, xMid + xScale * (xMin - xMid));
+            if (Math.abs(1 - (xNewMax - xNewMin) / (xMax - xMin)) < 0.01) {
+                return;
+            }
+            //!! debugInline(JSON.stringify({
+                //!! xMax,
+                //!! xMid,
+                //!! xMin,
+                //!! xNewMax,
+                //!! xNewMin
+            //!! }, undefined, 4));
+            xAxis.zoom(xNewMin, xNewMax);
+            // uichartRedraw - zoomWheel
+            uichart.redraw(true);
+        }());
         return;
     case "uichartZoomReset":
         uichart.zoomOut();
@@ -896,26 +941,6 @@ function onUichartAction(evt) {
         //!! return;
     //!! // zoom in/out on wheelup/wheeldown respectively
     //!! case "wheel":
-        //!! if (!currentTarget) {
-            //!! return;
-        //!! }
-        //!! chart = DBCHART_DICT.get(currentTarget.closest(".uichartDiv").id);
-        //!! chartX = uichartXY(chart, evt)[0];
-        //!! xAxis = chart.axisList[0];
-        //!! zoomDelta = (
-            //!! evt.deltaY < 0
-            //!! ? 0.75
-            //!! : 1.25
-        //!! ) * 0.5 * (xAxis.dataMax - xAxis.dataMin);
-        //!! zoomMid = (
-            //!! xAxis.dataMin
-            //!! + (chartX / chart.plotWidth) * (xAxis.dataMax - xAxis.dataMin)
-        //!! );
-        //!! xAxis.userMin = zoomMid - zoomDelta;
-        //!! xAxis.userMax = zoomMid + zoomDelta;
-        //!! // uichartRedraw - zoomWheel
-        //!! uichartRedraw(chart);
-        //!! return;
     //!! }
     //!! target = target.closest(".uichartAction");
     //!! if (!target) {
@@ -1626,14 +1651,18 @@ function uitableCreate(baton) {
             style="height: ${UI_CHART_HEIGHT - 64}px;"
         ></div>
     </div>
-    <div style="position: relative; margin-left: 8px; width: 1rem;">
+    <div style="position: relative; margin-left: 5px; width: 1rem;">
         <div class="uichartAxis1Label"></div>
     </div>
     <div
-        style="display: flex; flex: 1; flex-direction: column; padding: 8px 0"
+        style="display: flex; flex: 1; flex-direction: column; padding: 5px 0"
     >
         <div class="uichartTitle"></div>
-        <div class="uichartCanvas" style="flex: 1;"></div>
+        <div
+            class="uichartCanvas"
+            data-action="uichartZoom"
+            style="flex: 1;"
+        ></div>
         <div class="uichartAxis0Label"></div>
     </div>
 </div>

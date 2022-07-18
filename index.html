@@ -475,7 +475,7 @@ textarea {
 }
 #contentPanel1 {
     overflow: hidden;
-    padding: 0 2rem 2rem 18rem;
+    padding: 0 48px 2rem 304px;
     width: 100%;
 }
 #contentPanel1 tbody {
@@ -735,6 +735,9 @@ textarea {
     font-size: 12px;
 }
 .uichartCanvas {
+    border-radius: 5px;
+    border: 1px solid transparent;
+    margin: 0 10px 2px 2px;
     overflow: hidden;
     position: relative;
     z-index: 0;
@@ -773,9 +776,6 @@ textarea {
 .uichartLegendElem[data-hidden="1"] {
     opacity: 0.5;
 }
-.uichartLegendElem:hover {
-    background: #ddd;
-}
 .uichartLegendElemSvg {
     height: 16px;
     position: absolute;
@@ -794,6 +794,7 @@ textarea {
     color: #3e576f;
     font-size: 16px;
 }
+
 /* section misc */
 button:hover {
     background: #999;
@@ -823,6 +824,12 @@ button:hover {
     opacity: 0;
     transition: visibility 0.5s, opacity 0.5s;
     visibility: hidden;
+}
+.uichartCanvas:hover {
+    border-color: #bbb;
+}
+.uichartLegendElem:hover {
+    background: #ddd;
 }
 #contentPanel1 .contentElem,
 #tocPanel1 {
