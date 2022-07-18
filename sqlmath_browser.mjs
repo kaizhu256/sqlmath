@@ -65,7 +65,7 @@ async function dbFileAttachAsync({
     DB_DICT.set(dbName, dbAttached);
 }
 
-function debounce(key, func) {
+function debounce(key, func, ...argList) {
 // this function will debounce <func> with given <key>
     let val = DEBOUNCE_DICT[key];
     if (val) {
@@ -76,7 +76,7 @@ function debounce(key, func) {
         func: noop,
         timerTimeout: setTimeout(function () {
             delete DEBOUNCE_DICT[key];
-            val.func();
+            val.func(...argList);
         }, 500)
     };
     DEBOUNCE_DICT[key] = val;
@@ -360,19 +360,14 @@ function onContextmenu(evt) {
 
 async function onDbAction(evt) {
 // this function will open db from file
-    let action;
+    let action = target.dataset.action;
     let baton = UI_CONTEXTMENU_BATON;
     let data;
-    let series;
     let target = evt.target.closest("[data-action]") || evt.target;
     let title;
-    let uichart;
-    action = target.dataset.action;
     if (!action) {
         return;
     }
-    uichart = target.closest("#dbchartList1 .contentElem");
-    uichart = uichart && DBTABLE_DICT.get(uichart.id).uichart;
     // fast actions that do not require loading
     switch (target !== UI_FILE_OPEN && action) {
     case "dbAttach":
@@ -505,31 +500,6 @@ RENAME TO
             break;
         }
         uiFadeIn(UI_CRUD);
-        return;
-    case "uichartSeriesHideAll":
-    case "uichartSeriesShowAll":
-        data = action === "uichartSeriesShowAll";
-        // hide or show legend
-        target.parentElement.querySelectorAll(
-            ".uichartLegendElem"
-        ).forEach(function (elem) {
-            elem.dataset.hidden = Number(!data);
-        });
-        // hide or show series
-        uichart.seriesList.forEach(function (series) {
-            series.setVisible(data);
-        });
-        return;
-    case "uichartSeriesHideOrShow":
-        series = uichart.seriesList[target.dataset.ii];
-        data = target.dataset.hidden === "1";
-        // hide or show legend
-        target.dataset.hidden = Number(!data);
-        // hide or show series
-        series.setVisible(data);
-        return;
-    case "uichartZoomReset":
-        uichart.zoomOut();
         return;
     }
     // slow actions that require loading
@@ -781,12 +751,9 @@ async function onDbcrudExec({
 function onKeyUp(evt) {
 // this function will handle event keyup
     if (!evt.modeDebounce) {
-        debounce(
-            "onKeyUp",
-            onKeyUp.bind(undefined, Object.assign(evt, {
-                modeDebounce: true
-            }))
-        );
+        debounce("onKeyUp", onKeyUp, Object.assign(evt, {
+            modeDebounce: true
+        }));
         return;
     }
     switch (evt.key) {
@@ -819,6 +786,195 @@ function onResize() {
         elem.dataset.init = "0";
     });
     uitableInitWithinView({});
+}
+
+function onUichartAction(evt) {
+// this function will handle uichart event <evt>
+    let action;
+    let data;
+    let series;
+    let target;
+    let uichart;
+    evt.preventDefault();
+    evt.stopPropagation();
+    if (!evt.modeDebounce) {
+        debounce("onUichartAction", onUichartAction, Object.assign(evt, {
+            modeDebounce: true
+        }));
+        return;
+    }
+    target = evt.target.closest("[data-action]") || evt.target;
+    action = target.dataset.action;
+    uichart = DBTABLE_DICT.get(
+        target.closest("#dbchartList1 .contentElem").id
+    ).uichart;
+    switch (action) {
+    case "uichartSeriesHideAll":
+    case "uichartSeriesShowAll":
+        data = action === "uichartSeriesShowAll";
+        // hide or show legend
+        target.parentElement.querySelectorAll(
+            ".uichartLegendElem"
+        ).forEach(function (elem) {
+            elem.dataset.hidden = Number(!data);
+        });
+        // hide or show series
+        uichart.seriesList.forEach(function (series) {
+            series.setVisible(data);
+        });
+        return;
+    case "uichartSeriesHideOrShow":
+        series = uichart.seriesList[target.dataset.ii];
+        data = target.dataset.hidden === "1";
+        // hide or show legend
+        target.dataset.hidden = Number(!data);
+        // hide or show series
+        series.setVisible(data);
+        return;
+    case "uichartZoomReset":
+        uichart.zoomOut();
+        return;
+    }
+
+    //!! let chart;
+    //!! let chartX;
+    //!! let {
+        //!! currentTarget,
+        //!! target
+    //!! } = evt;
+    //!! let series;
+    //!! let xAxis;
+    //!! let zoomDelta;
+    //!! let zoomMid;
+    //!! if (!evt.modeDebounce) {
+        //!! debounce(`uichartOnAction.${evt.type}`, function () {
+            //!! evt.modeDebounce = true;
+            //!! uichartOnAction(evt);
+        //!! });
+        //!! return;
+    //!! }
+    //!! switch (evt.type) {
+    //!! case "resize":
+        //!! DBCHART_DICT.forEach(function (chart) {
+            //!! let chartWidth = Math.round(
+                //!! -UI_CHART_LEGEND_WIDTH + chart.renderTo.clientWidth
+            //!! );
+            //!! let {
+                //!! container,
+                //!! renderer
+            //!! } = chart;
+            //!! if (chartWidth === chart.containerWidth) {
+                //!! return;
+            //!! }
+            //!! // Resize the chart to a given width and height
+            //!! chart.chartWidth = chartWidth;
+            //!! container.style.width = `${chart.chartWidth}px`;
+            //!! // Resize the box and re-align all aligned elements
+            //!! renderer.boxWrapper.animate({
+                //!! height: UI_CHART_HEIGHT,
+                //!! width: chartWidth
+            //!! });
+            //!! // update axis lengths for more correct tick intervals:
+            //!! chart.plotWidth =
+            //!! chartWidth - chart.plotLeft - chart.marginRight;
+            //!! chart.plotHeight = (
+                //!! UI_CHART_HEIGHT - chart.plotTop - chart.marginBottom
+            //!! );
+            //!! // handle axes
+            //!! chart.maxTicks = null;
+            //!! // uichartRedraw - resize
+            //!! uichartRedraw(chart);
+            //!! // move titles
+            //!! if (chart.elemTitle) {
+                //!! svgAlign({
+                    //!! box: chart.spacingBox,
+                    //!! svgWrapper: chart.elemTitle
+                //!! });
+            //!! }
+            //!! chart.containerWidth = chartWidth;
+        //!! });
+        //!! return;
+    //!! // zoom in/out on wheelup/wheeldown respectively
+    //!! case "wheel":
+        //!! if (!currentTarget) {
+            //!! return;
+        //!! }
+        //!! chart = DBCHART_DICT.get(currentTarget.closest(".uichartDiv").id);
+        //!! chartX = uichartXY(chart, evt)[0];
+        //!! xAxis = chart.axisList[0];
+        //!! zoomDelta = (
+            //!! evt.deltaY < 0
+            //!! ? 0.75
+            //!! : 1.25
+        //!! ) * 0.5 * (xAxis.dataMax - xAxis.dataMin);
+        //!! zoomMid = (
+            //!! xAxis.dataMin
+            //!! + (chartX / chart.plotWidth) * (xAxis.dataMax - xAxis.dataMin)
+        //!! );
+        //!! xAxis.userMin = zoomMid - zoomDelta;
+        //!! xAxis.userMax = zoomMid + zoomDelta;
+        //!! // uichartRedraw - zoomWheel
+        //!! uichartRedraw(chart);
+        //!! return;
+    //!! }
+    //!! target = target.closest(".uichartAction");
+    //!! if (!target) {
+        //!! return;
+    //!! }
+    //!! evt.preventDefault();
+    //!! evt.stopPropagation();
+    //!! chart = DBCHART_DICT.get(target.closest(".uichartDiv").id);
+    //!! switch (target.dataset.action) {
+    //!! case "seriesHideAll":
+        //!! chart.seriesList.forEach(function (series) {
+            //!! series.visible = false;
+            //!! uichartSeriesHideOrShow({
+                //!! series
+            //!! });
+        //!! });
+        //!! chart.container.querySelectorAll(
+            //!! ".uichartLegendElem"
+        //!! ).forEach(function (elem) {
+            //!! elem.dataset.hidden = 1;
+        //!! });
+        //!! // uichartRedraw - seriesHideAll
+        //!! uichartRedraw(chart);
+        //!! return;
+    //!! case "seriesShowAll":
+        //!! chart.seriesList.forEach(function (series) {
+            //!! series.visible = true;
+            //!! uichartSeriesHideOrShow({
+                //!! series
+            //!! });
+        //!! });
+        //!! chart.container.querySelectorAll(
+            //!! ".uichartLegendElem"
+        //!! ).forEach(function (elem) {
+            //!! elem.dataset.hidden = 0;
+        //!! });
+        //!! // uichartRedraw - seriesShowAll
+        //!! uichartRedraw(chart);
+        //!! return;
+    //!! case "seriesVisibilityToggle":
+        //!! series = chart.seriesList[target.dataset.seriesIi];
+        //!! series.visible = !series.visible;
+        //!! uichartSeriesHideOrShow({
+            //!! series
+        //!! });
+        //!! target.dataset.hidden = target.dataset.hidden ^ 1;
+        //!! // uichartRedraw - seriesVisibility
+        //!! uichartRedraw(chart);
+        //!! return;
+    //!! case "zoomReset":
+        //!! chart.axisList.forEach(function (axis) {
+            //!! delete axis.userMin;
+            //!! delete axis.userMax;
+        //!! });
+        //!! // uichartRedraw - zoomReset
+        //!! uichartRedraw(chart);
+        //!! return;
+    //!! }
+    //!! throw new Error(`invalid action ${evt.type}.${target.dataset.action}`);
 }
 
 function rowListToCsv({
@@ -1226,7 +1382,6 @@ SELECT
             labels: {
                 rotation: -15
             }
-            //!! tickInterval: 16,
         },
         yAxis: {
         }
@@ -1267,7 +1422,9 @@ SELECT
 </a>
         `);
     }).join("");
-    contentElem.querySelector(".uichartNav").onclick = onDbAction;
+    // init event-handling
+    contentElem.querySelector(".uichartNav").onclick = onUichartAction;
+    contentElem.querySelector(".uichartCanvas").onwheel = onUichartAction;
 }
 
 async function uitableAjax(baton, {
@@ -1550,12 +1707,9 @@ function uitableInitWithinView({
 }) {
 // this function will defer-init uitables when visible in viewport
     if (!modeDebounce) {
-        debounce(
-            "uitableInitWithinView",
-            uitableInitWithinView.bind(undefined, {
-                modeDebounce: true
-            })
-        );
+        debounce("uitableInitWithinView", uitableInitWithinView, {
+            modeDebounce: true
+        });
         return;
     }
     document.querySelectorAll(
