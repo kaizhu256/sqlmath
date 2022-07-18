@@ -814,8 +814,10 @@ shSyncSqlmath() {(set -e
         for FILE in \
             .ci.sh \
             asset_sqlmath_external_rollup.js \
-            index.html \
+            highcharts.00.js \
+            highcharts.js \
             indent.exe \
+            index.html \
             jslint_ci.sh \
             sqlite3.c \
             sqlite3_ext.c \
@@ -824,7 +826,8 @@ shSyncSqlmath() {(set -e
             sqlmath_base.c \
             sqlmath_browser.mjs \
             sqlmath_jenks.c \
-            sqlmath_wrapper_wasm.js
+            sqlmath_wrapper_wasm.js \
+            tradebot_public.mjs
         do
             ln -f "$HOME/Documents/sqlmath/$FILE"
         done

@@ -1227,7 +1227,7 @@ SELECT
         },
         seriesList: options.seriesList,
         xAxis: {
-            alternateGridColor: "#eee",
+            alternateGridColor: "#f0f0ff",
             categories: options.xxList
             //!! tickInterval: 16,
         },

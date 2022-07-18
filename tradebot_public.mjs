@@ -47,8 +47,6 @@ INSERT INTO chart.tradebot_1_holding (datatype, xx, xx_label)
         FROM tradebot_position
         WHERE
             perc_holding > 0
-        ORDER
-            BY perc_holding DESC
     );
 INSERT INTO chart.tradebot_1_holding (datatype, series_index, series_label)
     SELECT
@@ -57,11 +55,9 @@ INSERT INTO chart.tradebot_1_holding (datatype, series_index, series_label)
         sym AS series_label
     FROM (
         SELECT
-            ROW_NUMBER() OVER (ORDER BY sym) AS rownum,
+            ROW_NUMBER() OVER (ORDER BY perc_holding DESC) AS rownum,
             sym
-        FROM (SELECT DISTINCT sym FROM tradebot_position ORDER BY sym)
-        WHERE
-            sym IS NOT NULL
+        FROM tradebot_position
     );
 INSERT INTO chart.tradebot_1_holding (datatype, series_index, xx, yy)
     SELECT
@@ -88,10 +84,21 @@ INSERT INTO chart.tradebot_1_holding (datatype, series_index, xx, yy)
                 datatype = 'xx_label'
         )
     )
-    LEFT JOIN tradebot_position
-    ON
+    LEFT JOIN tradebot_position ON
         sym = series_label
         AND sym = xx_label;
+UPDATE chart.tradebot_1_holding
+    SET
+        series_label = printf(
+            '%.2f%% %s - %s',
+            perc_holding,
+            series_label,
+            company_name
+        )
+    FROM (SELECT 1)
+    JOIN tradebot_position ON sym = series_label
+    WHERE
+        datatype = 'series_label';
         `).trim()
         + [
             "7 day",
@@ -135,11 +142,9 @@ INSERT INTO chart.${tableName} (datatype, xx, xx_label)
         SELECT
             ROW_NUMBER() OVER (ORDER BY ydate) AS rownum,
             ydate
-        FROM (SELECT DISTINCT ydate FROM tradebot_historical ORDER BY ydate)
+        FROM (SELECT DISTINCT ydate FROM tradebot_historical)
         WHERE
             ydate >= DATE('NOW', '-${dateInterval}')
-        ORDER BY
-            ydate
     );
 INSERT INTO chart.${tableName} (datatype, series_index, series_label)
     SELECT
@@ -150,7 +155,7 @@ INSERT INTO chart.${tableName} (datatype, series_index, series_label)
         SELECT
             ROW_NUMBER() OVER (ORDER BY sym) AS rownum,
             sym
-        FROM (SELECT DISTINCT sym FROM tradebot_historical ORDER BY sym)
+        FROM (SELECT DISTINCT sym FROM tradebot_historical)
         WHERE
             sym IS NOT NULL
     );
@@ -206,6 +211,18 @@ UPDATE chart.${tableName}
         WHERE
             rownum = 1
     ) USING (series_index);
+UPDATE chart.${tableName}
+    SET
+        series_label = printf(
+            '%d. %s - %s',
+            series_index,
+            series_label,
+            company_name
+        )
+    FROM (SELECT 1)
+    LEFT JOIN tradebot_stock_basket ON sym = series_label
+    WHERE
+        datatype = 'series_label';
             `).trim();
         }).join("\n\n")
     );
