@@ -14,10 +14,10 @@ await (async function init() {
         db: DB_MAIN,
         dbData: val
     });
-    UI_EDITOR.setValue(
-        String(`
-DROP TABLE IF EXISTS chart.tradebot_1_holding;
-CREATE TABLE chart.tradebot_1_holding (
+    UI_EDITOR.setValue([
+        (`
+DROP TABLE IF EXISTS chart._{{ii}}_tradebot_performance_today;
+CREATE TABLE chart._{{ii}}_tradebot_performance_today (
     datatype TEXT NOT NULL,
     series_index REAL,
     xx REAL,
@@ -26,16 +26,103 @@ CREATE TABLE chart.tradebot_1_holding (
     xx_label TEXT,
     options TEXT
 );
-INSERT INTO chart.tradebot_1_holding (datatype, options)
+INSERT INTO chart._{{ii}}_tradebot_performance_today (datatype, options)
+    SELECT
+        'options' AS datatype,
+        '{
+            "title": "tradebot performance vs market today",
+            "xAxisLabel": "comparisons",
+            "yAxisLabel": "percent change"
+        }' AS options;
+INSERT INTO chart._{{ii}}_tradebot_performance_today (datatype, xx, xx_label)
+    SELECT
+        'xx_label' AS datatype,
+        rownum AS xx,
+        acc_name AS xx_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY acc_name ASC) AS rownum,
+            acc_name
+        FROM tradebot_account
+    );
+INSERT INTO chart._{{ii}}_tradebot_performance_today (
+    datatype,
+    series_index,
+    series_label
+)
+    SELECT
+        'series_label' AS datatype,
+        xx AS series_index,
+        xx_label AS series_label
+    FROM chart._{{ii}}_tradebot_performance_today
+    WHERE
+        datatype = 'xx_label';
+--!! INSERT INTO chart._{{ii}}_tradebot_performance_today (
+    --!! datatype,
+    --!! series_index,
+    --!! xx,
+    --!! yy
+--!! )
+    --!! SELECT
+        --!! 'yy_value' AS datatype,
+        --!! series_index,
+        --!! xx,
+        --!! perc_change AS yy
+    --!! FROM (
+        --!! SELECT
+            --!! *
+        --!! FROM (
+            --!! SELECT
+                --!! series_index,
+                --!! series_label
+            --!! FROM chart._{{ii}}_tradebot_performance_today
+            --!! WHERE datatype = 'series_label'
+        --!! )
+        --!! JOIN (
+            --!! SELECT
+                --!! xx,
+                --!! xx_label
+            --!! FROM chart._{{ii}}_tradebot_performance_today
+            --!! WHERE
+                --!! datatype = 'xx_label'
+        --!! )
+    --!! )
+    --!! LEFT JOIN tradebot_position ON
+        --!! sym = series_label
+        --!! AND sym = xx_label;
+--!! UPDATE chart._{{ii}}_tradebot_performance_today
+    --!! SET
+        --!! series_label = printf(
+            --!! '%.2f%% %s - %s',
+            --!! perc_change,
+            --!! series_label,
+            --!! company_name
+        --!! )
+    --!! FROM (SELECT 1)
+    --!! JOIN tradebot_position ON sym = series_label
+    --!! WHERE
+        --!! datatype = 'series_label';
+        `),
+        (`
+DROP TABLE IF EXISTS chart._{{ii}}_tradebot_holding;
+CREATE TABLE chart._{{ii}}_tradebot_holding (
+    datatype TEXT NOT NULL,
+    series_index REAL,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+INSERT INTO chart._{{ii}}_tradebot_holding (datatype, options)
     SELECT
         'options' AS datatype,
         '{
             "title": "tradebot holdings",
-            "xAxesType": "time",
             "xAxisLabel": "asset",
             "yAxisLabel": "percent holding"
         }' AS options;
-INSERT INTO chart.tradebot_1_holding (datatype, xx, xx_label)
+INSERT INTO chart._{{ii}}_tradebot_holding (datatype, xx, xx_label)
     SELECT
         'xx_label' AS datatype,
         rownum AS xx,
@@ -48,18 +135,19 @@ INSERT INTO chart.tradebot_1_holding (datatype, xx, xx_label)
         WHERE
             perc_holding > 0
     );
-INSERT INTO chart.tradebot_1_holding (datatype, series_index, series_label)
+INSERT INTO chart._{{ii}}_tradebot_holding (
+    datatype,
+    series_index,
+    series_label
+)
     SELECT
         'series_label' AS datatype,
-        rownum AS series_index,
-        sym AS series_label
-    FROM (
-        SELECT
-            ROW_NUMBER() OVER (ORDER BY perc_holding DESC) AS rownum,
-            sym
-        FROM tradebot_position
-    );
-INSERT INTO chart.tradebot_1_holding (datatype, series_index, xx, yy)
+        xx AS series_index,
+        xx_label AS series_label
+    FROM chart._{{ii}}_tradebot_holding
+    WHERE
+        datatype = 'xx_label';
+INSERT INTO chart._{{ii}}_tradebot_holding (datatype, series_index, xx, yy)
     SELECT
         'yy_value' AS datatype,
         series_index,
@@ -72,14 +160,14 @@ INSERT INTO chart.tradebot_1_holding (datatype, series_index, xx, yy)
             SELECT
                 series_index,
                 series_label
-            FROM chart.tradebot_1_holding
+            FROM chart._{{ii}}_tradebot_holding
             WHERE datatype = 'series_label'
         )
         JOIN (
             SELECT
                 xx,
                 xx_label
-            FROM chart.tradebot_1_holding
+            FROM chart._{{ii}}_tradebot_holding
             WHERE
                 datatype = 'xx_label'
         )
@@ -87,7 +175,7 @@ INSERT INTO chart.tradebot_1_holding (datatype, series_index, xx, yy)
     LEFT JOIN tradebot_position ON
         sym = series_label
         AND sym = xx_label;
-UPDATE chart.tradebot_1_holding
+UPDATE chart._{{ii}}_tradebot_holding
     SET
         series_label = printf(
             '%.2f%% %s - %s',
@@ -99,20 +187,20 @@ UPDATE chart.tradebot_1_holding
     JOIN tradebot_position ON sym = series_label
     WHERE
         datatype = 'series_label';
-        `).trim()
-        + [
+        `),
+        [
             "7 day",
             "1 month",
             "3 month",
             "6 month",
             "1 year",
             "2 year"
-        ].map(function (dateInterval, ii) {
+        ].map(function (dateInterval) {
             let tableName = (
-                `tradebot_historical_2_`
-                + `${ii + 1}_${dateInterval.replace(" ", "_")}`
+                `_{{ii}}_tradebot_historical_`
+                + dateInterval.replace(" ", "_")
             );
-            return String(`
+            return (`
 DROP TABLE IF EXISTS chart.${tableName};
 CREATE TABLE chart.${tableName} (
     datatype TEXT NOT NULL,
@@ -128,8 +216,7 @@ INSERT INTO chart.${tableName} (datatype, options)
         'options' AS datatype,
         '{
             "title":
-                "tradebot historical ${dateInterval} performance vs market",
-            "xAxesType": "time",
+                "tradebot historical performance vs market - ${dateInterval}",
             "xAxisLabel": "date",
             "yAxisLabel": "percent change"
         }' AS options;
@@ -164,7 +251,7 @@ INSERT INTO chart.${tableName} (datatype, series_index, xx, yy)
         'yy_value' AS datatype,
         series_index,
         xx,
-        val AS yy
+        price AS yy
     FROM (
         SELECT
             *
@@ -223,8 +310,12 @@ UPDATE chart.${tableName}
     LEFT JOIN tradebot_stock_basket ON sym = series_label
     WHERE
         datatype = 'series_label';
-            `).trim();
-        }).join("\n\n")
-    );
+            `);
+        })
+    ].flat().map(function (sql, ii) {
+        return sql.trim().replace((
+            /\{\{ii\}\}/g
+        ), String(ii + 1).padStart(2, "0"));
+    }).join("\n\n\n\n") + "\n");
     await onDbExec({});
 }());

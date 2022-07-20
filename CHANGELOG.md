@@ -6,6 +6,7 @@
 - none
 
 # v2022.7.1-beta
+- chart - switch from chart.js to highcharts for better usability
 - remove unused files
     assets.bootstrap-v3.4.1.datatables-v1.10.21.chartjs-v2.9.4.codemirror-5.58.3.rollup.css
     assets.bootstrap-v3.4.1.datatables-v1.10.21.chartjs-v2.9.4.codemirror-5.58.3.rollup.js
