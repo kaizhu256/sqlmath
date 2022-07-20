@@ -14,6 +14,7 @@ let BLOB_SAVE;
 let {
     CodeMirror,
     Highcharts,
+    uichartRedraw,
     uichartResize,
     uichartXY
 } = globalThis;
@@ -24,8 +25,8 @@ let DB_II = 0;
 let DB_MAIN;
 let DB_QUERY;
 let DEBOUNCE_DICT = Object.create(null);
-let UI_CHART_HEIGHT = 256;
-let UI_CHART_LEGEND_WIDTH = 128;
+let UI_CHART_HEIGHT = 384;
+let UI_CHART_LEGEND_WIDTH = 160;
 let UI_CONTEXTMENU = document.getElementById("contextmenu1");
 let UI_CONTEXTMENU_BATON;
 let UI_CRUD = document.getElementById("crudPanel1");
@@ -36,7 +37,7 @@ let UI_LOADING = document.getElementById("loadingPanel1");
 let UI_LOADING_COUNTER = 0;
 let UI_PAGE_SIZE = 256;
 let UI_ROW_HEIGHT = 16;
-let UI_VIEW_SIZE = 10;
+let UI_VIEW_SIZE = 20;
 
 noop(
     UI_EDITOR,
@@ -83,6 +84,457 @@ function debounce(key, func, ...argList) {
     DEBOUNCE_DICT[key] = val;
     // if first-time, then immediately call <func>
     func(...argList);
+}
+
+async function demoDefault() {
+// this function will run demo-default
+    // attach demo-db
+    await dbFileAttachAsync({
+        db: DB_MAIN,
+        dbData: new ArrayBuffer(0)
+    });
+    UI_EDITOR.setValue(String(`
+DROP TABLE IF EXISTS __stock_historical;
+CREATE TABLE __stock_historical(sym TEXT, date TEXT, price FLOAT);
+INSERT INTO __stock_historical (sym, date, price) VALUES
+    ('aapl', '2020-01-01', 77.37),  ('aapl', '2020-02-01', 68.33),
+    ('aapl', '2020-03-01', 63.57),  ('aapl', '2020-04-01', 73.44),
+    ('aapl', '2020-05-01', 79.48),  ('aapl', '2020-06-01', 91.19),
+    ('aapl', '2020-07-01', 106.26),  ('aapl', '2020-08-01', 129.03),
+    ('aapl', '2020-09-01', 115.80),  ('aapl', '2020-10-01', 108.86),
+    ('aapl', '2020-11-01', 119.05),  ('aapl', '2020-12-01', 132.69),
+    ('goog', '2020-01-01', 1434.23),  ('goog', '2020-02-01', 1339.33),
+    ('goog', '2020-03-01', 1162.81),  ('goog', '2020-04-01', 1348.66),
+    ('goog', '2020-05-01', 1428.92),  ('goog', '2020-06-01', 1413.61),
+    ('goog', '2020-07-01', 1482.96),  ('goog', '2020-08-01', 1634.18),
+    ('goog', '2020-09-01', 1469.60),  ('goog', '2020-10-01', 1621.01),
+    ('goog', '2020-11-01', 1760.74),  ('goog', '2020-12-01', 1751.88);
+
+DROP TABLE IF EXISTS __test1;
+CREATE TABLE __test1(
+    col1,
+    col2,
+    column_long_name_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+);
+
+DROP TABLE IF EXISTS __test2;
+CREATE TABLE __test2 AS
+    SELECT * FROM __test1
+    UNION ALL SELECT 1, 2, 3
+    UNION ALL SELECT 4, 5, 6;
+
+DROP TABLE IF EXISTS attached_01.__test3;
+CREATE TABLE attached_01.__test3 AS SELECT * FROM __test2;
+
+SELECT
+        *,
+        random() AS c1,
+        random() AS c2,
+        random() AS c3,
+        random() AS c4,
+        random(),
+        random(),
+        random(),
+        random(),
+        1 AS sentinel
+    FROM __stock_historical
+    LEFT JOIN __test1 ON __test1.col1 = __stock_historical.sym
+    CROSS JOIN (SELECT random() FROM __stock_historical);
+
+DROP TABLE IF EXISTS chart.__stock_chart;
+CREATE TABLE chart.__stock_chart (
+    datatype TEXT NOT NULL,
+    series_index REAL,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+INSERT INTO chart.__stock_chart (datatype, options)
+    SELECT
+        'options' AS datatype,
+        '{
+            "title":"price vs. date comparison of multiple stocks",
+            "xAxisTitle": "date",
+            "yAxisTitle": "percent change",
+            "yValueSuffix": " %"
+        }' AS options;
+INSERT INTO chart.__stock_chart (datatype, series_index, series_label)
+    SELECT
+        'series_label' AS datatype,
+        rownum AS series_index,
+        sym AS series_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY sym) AS rownum,
+            sym
+        FROM (SELECT DISTINCT sym FROM __stock_historical)
+        WHERE
+            sym IS NOT NULL
+    );
+INSERT INTO chart.__stock_chart (datatype, xx, xx_label)
+    SELECT
+        'xx_label' AS datatype,
+        rownum AS xx,
+        date AS xx_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY date) AS rownum,
+            date
+        FROM (SELECT DISTINCT date FROM __stock_historical)
+    );
+INSERT INTO chart.__stock_chart (datatype, series_index, xx, yy)
+    SELECT
+        'yy_value' AS datatype,
+        series_index,
+        xx,
+        price AS yy
+    FROM (
+        SELECT
+            *
+        FROM (
+            SELECT
+                series_index,
+                series_label
+            FROM chart.__stock_chart
+            WHERE datatype = 'series_label'
+        )
+        JOIN (
+            SELECT
+                xx,
+                xx_label
+            FROM chart.__stock_chart
+            WHERE
+                datatype = 'xx_label'
+        )
+    )
+    LEFT JOIN __stock_historical
+    ON
+        sym = series_label
+        AND date = xx_label;
+UPDATE chart.__stock_chart
+    SET
+        yy = yy * inv - 1
+    FROM (SELECT 1)
+    JOIN (
+        SELECT
+            1.0 / yy AS inv,
+            series_index
+        FROM (
+            SELECT
+                ROW_NUMBER() OVER (
+                    PARTITION BY series_index ORDER BY xx
+                ) AS rownum,
+                yy,
+                series_index
+            FROM chart.__stock_chart
+            WHERE
+                datatype = 'yy_value'
+                AND yy > 0
+        )
+        WHERE
+            rownum = 1
+    ) USING (series_index);
+    `).trim() + "\n");
+    // exec demo-sql-query
+    await onDbExec({});
+    return true;
+}
+
+async function demoTradebot() {
+// this function will run demo-tradebot
+    let val;
+    try {
+        val = await fetch(".tradebot_public.sqlite");
+    } catch (ignore) {
+        return;
+    }
+    val = await val.arrayBuffer();
+    await dbFileImportAsync({
+        db: DB_MAIN,
+        dbData: val
+    });
+    UI_EDITOR.setValue([
+        (`
+DROP TABLE IF EXISTS chart._{{ii}}_tradebot_performance_today;
+CREATE TABLE chart._{{ii}}_tradebot_performance_today (
+    datatype TEXT NOT NULL,
+    series_index REAL,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+INSERT INTO chart._{{ii}}_tradebot_performance_today (datatype, options)
+    SELECT
+        'options' AS datatype,
+        '{
+            "chartType": "column",
+            "title": "tradebot performance vs market today",
+            "xAxisTitle": "comparisons",
+            "yAxisTitle": "percent change",
+            "yValueSuffix": " %"
+        }' AS options;
+INSERT INTO chart._{{ii}}_tradebot_performance_today (
+    datatype,
+    series_index,
+    series_label
+)
+    SELECT
+        'series_label' AS datatype,
+        rownum AS series_index,
+        acc_name AS series_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (
+                ORDER BY
+                    acc_name = '__tradebot1' DESC,
+                    perc_change DESC
+            ) AS rownum,
+            acc_name
+        FROM tradebot_account
+    );
+INSERT INTO chart._{{ii}}_tradebot_performance_today (datatype, xx, xx_label)
+    SELECT
+        'xx_label' AS datatype,
+        1 AS xx,
+        'stock' AS xx_label;
+INSERT INTO chart._{{ii}}_tradebot_performance_today (
+    datatype,
+    series_index,
+    xx,
+    yy
+)
+    SELECT
+        'yy_value' AS datatype,
+        series_index,
+        1 AS xx,
+        perc_change AS yy
+    FROM (
+        SELECT
+            series_index,
+            series_label
+        FROM chart._{{ii}}_tradebot_performance_today
+        WHERE datatype = 'series_label'
+    )
+    LEFT JOIN tradebot_account ON acc_name = series_label;
+UPDATE chart._{{ii}}_tradebot_performance_today
+    SET
+        series_label = printf(
+            '%+.2f%% - %s - %s',
+            tradebot_account.perc_change,
+            series_label,
+            company_name
+        )
+    FROM (SELECT 1)
+    LEFT JOIN tradebot_account ON acc_name = series_label
+    LEFT JOIN tradebot_stock_basket ON sym = series_label;
+        `),
+        (`
+DROP TABLE IF EXISTS chart._{{ii}}_tradebot_position;
+CREATE TABLE chart._{{ii}}_tradebot_position (
+    datatype TEXT NOT NULL,
+    series_index REAL,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+INSERT INTO chart._{{ii}}_tradebot_position (datatype, options)
+    SELECT
+        'options' AS datatype,
+        '{
+            "chartType": "column",
+            "title": "tradebot positions",
+            "xAxisTitle": "asset",
+            "yAxisTitle": "percent gain / percent holding",
+            "yValueSuffix": " %"
+        }' AS options;
+INSERT INTO chart._{{ii}}_tradebot_position (
+    datatype,
+    series_index,
+    series_label
+)
+    SELECT
+        'series_label' AS datatype,
+        1 AS series_index,
+        'percent gain today' AS series_label
+    --
+    UNION ALL
+    --
+    SELECT
+        'series_label' AS datatype,
+        2 AS series_index,
+        'percent holding' AS series_label;
+INSERT INTO chart._{{ii}}_tradebot_position (datatype, xx, xx_label)
+    SELECT
+        'xx_label' AS datatype,
+        rownum AS xx,
+        sym AS xx_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY perc_gain_today DESC) AS rownum,
+            sym
+        FROM tradebot_position
+    );
+INSERT INTO chart._{{ii}}_tradebot_position (
+    datatype,
+    series_index,
+    xx,
+    yy
+)
+    SELECT
+        'yy_value' AS datatype,
+        series_index,
+        rownum AS xx,
+        IIF(series_index = 1, perc_gain_today, perc_holding) AS yy
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY perc_gain_today DESC) AS rownum,
+            *
+        FROM tradebot_position
+    )
+    JOIN (
+        SELECT 1 AS series_index
+        UNION ALL
+        SELECT 2 AS series_index
+    );
+        `),
+        [
+            "7 day",
+            "1 month",
+            "3 month",
+            "6 month",
+            "1 year",
+            "2 year"
+        ].map(function (dateInterval) {
+            let tableName = (
+                `_{{ii}}_tradebot_historical_`
+                + dateInterval.replace(" ", "_")
+            );
+            return (`
+DROP TABLE IF EXISTS chart.${tableName};
+CREATE TABLE chart.${tableName} (
+    datatype TEXT NOT NULL,
+    series_index REAL,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+INSERT INTO chart.${tableName} (datatype, options)
+    SELECT
+        'options' AS datatype,
+        '{
+            "title":
+                "tradebot historical performance vs market - ${dateInterval}",
+            "xAxisTitle": "date",
+            "yAxisTitle": "percent change",
+            "yValueSuffix": " %"
+        }' AS options;
+INSERT INTO chart.${tableName} (datatype, series_index, series_label)
+    SELECT
+        'series_label' AS datatype,
+        rownum AS series_index,
+        sym AS series_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY sym) AS rownum,
+            sym
+        FROM (SELECT DISTINCT sym FROM tradebot_historical)
+        WHERE
+            sym IS NOT NULL
+    );
+INSERT INTO chart.${tableName} (datatype, xx, xx_label)
+    SELECT
+        'xx_label' AS datatype,
+        rownum AS xx,
+        ydate AS xx_label
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY ydate) AS rownum,
+            ydate
+        FROM (SELECT DISTINCT ydate FROM tradebot_historical)
+        WHERE
+            ydate >= DATE('NOW', '-${dateInterval}')
+    );
+INSERT INTO chart.${tableName} (datatype, series_index, xx, yy)
+    SELECT
+        'yy_value' AS datatype,
+        series_index,
+        xx,
+        price AS yy
+    FROM (
+        SELECT
+            *
+        FROM (
+            SELECT
+                series_index,
+                series_label
+            FROM chart.${tableName}
+            WHERE datatype = 'series_label'
+        )
+        JOIN (
+            SELECT
+                xx,
+                xx_label
+            FROM chart.${tableName}
+            WHERE
+                datatype = 'xx_label'
+        )
+    )
+    LEFT JOIN tradebot_historical
+    ON
+        sym = series_label
+        AND ydate = xx_label;
+UPDATE chart.${tableName}
+    SET
+        yy = yy * inv - 1
+    FROM (SELECT 1)
+    JOIN (
+        SELECT
+            1.0 / yy AS inv,
+            series_index
+        FROM (
+            SELECT
+                ROW_NUMBER() OVER (
+                    PARTITION BY series_index ORDER BY xx
+                ) AS rownum,
+                yy,
+                series_index
+            FROM chart.${tableName}
+            WHERE
+                datatype = 'yy_value'
+                AND yy > 0
+        )
+        WHERE
+            rownum = 1
+    ) USING (series_index);
+UPDATE chart.${tableName}
+    SET
+        series_label = printf(
+            '%d. %s - %s',
+            series_index,
+            series_label,
+            company_name
+        )
+    FROM (SELECT 1)
+    LEFT JOIN tradebot_stock_basket ON sym = series_label
+    WHERE
+        datatype = 'series_label';
+            `);
+        })
+    ].flat().map(function (sql, ii) {
+        return sql.trim().replace((
+            /\{\{ii\}\}/g
+        ), String(ii + 1).padStart(2, "0"));
+    }).join("\n\n\n\n") + "\n");
+    await onDbExec({});
+    return true;
 }
 
 function domDivCreate(innerHTML) {
@@ -213,6 +665,18 @@ async function init() {
             key, val
         ] = elem.split("=");
         switch (key) {
+        case "demo":
+            switch (val) {
+            case "demoDefault":
+                modeDemo = undefined;
+                await demoDefault();
+                return;
+            case "demoTradebot":
+                modeDemo = undefined;
+                await demoTradebot();
+                return;
+            }
+            return;
         case "jsScript":
             modeDemo = undefined;
             key = document.createElement("script");
@@ -250,18 +714,17 @@ async function init() {
             return;
         }
     }));
-    // init demo
-    if (modeDemo) {
-        // attach demo-db
-        await dbFileAttachAsync({
-            db: DB_MAIN,
-            dbData: new ArrayBuffer(0)
-        });
-        // exec demo-sql-query
-        await onDbExec({});
-    } else {
+    if (!modeDemo) {
         await uiRenderDb();
+        return;
     }
+    // init demo
+    if (
+        await demoTradebot()
+    ) {
+        return;
+    }
+    await demoDefault();
 }
 
 function jsonHtmlSafe(obj) {
@@ -575,6 +1038,16 @@ RENAME TO
             filename: `sqlite_database_${baton.dbName}.sqlite`
         });
         return;
+    case "dbExportMain":
+        data = await dbFileExportAsync({
+            db: DB_MAIN
+        });
+        data = data[6];
+        fileSave({
+            buf: data,
+            filename: `sqlite_database_${DB_MAIN.dbName}.sqlite`
+        });
+        return;
     case "dbRefresh":
         await uiRenderDb();
         return;
@@ -791,32 +1264,38 @@ function onResize() {
     uitableInitWithinView({});
 }
 
-function onUichartAction(evt) {
+async function onUichartAction(evt) {
 // this function will handle uichart event <evt>
     let action;
+    let baton;
     let data;
     let series;
     let target;
     let uichart;
+    let xAxis;
     evt.preventDefault();
     evt.stopPropagation();
-    //!! if (!evt.modeDebounce) {
-        //!! debounce("onUichartAction", onUichartAction, Object.assign(evt, {
-            //!! modeDebounce: true
-        //!! }));
-        //!! return;
-    //!! }
+    if (!evt.modeDebounce) {
+        debounce("onUichartAction", onUichartAction, Object.assign(evt, {
+            modeDebounce: true
+        }));
+        return;
+    }
     target = evt.target.closest("[data-action]");
     if (!target) {
         return;
     }
     action = target.dataset.action;
-    uichart = DBTABLE_DICT.get(
+    baton = DBTABLE_DICT.get(
         target.closest("#dbchartList1 .contentElem").id
-    ).uichart;
+    );
+    uichart = baton.uichart;
+    xAxis = uichart.axisList[0];
     switch (action) {
     case "uichartSeriesHideAll":
     case "uichartSeriesShowAll":
+        uiFadeIn(baton.elemLoading);
+        await waitAsync(50);
         data = action === "uichartSeriesShowAll";
         // hide or show legend
         target.parentElement.querySelectorAll(
@@ -828,6 +1307,8 @@ function onUichartAction(evt) {
         uichart.seriesList.forEach(function (series) {
             series.setVisible(data);
         });
+        await waitAsync(200);
+        uiFadeOut(baton.elemLoading);
         return;
     case "uichartSeriesHideOrShow":
         series = uichart.seriesList[target.dataset.ii];
@@ -845,7 +1326,6 @@ function onUichartAction(evt) {
                 max: xMax,
                 min: xMin
             } = uichart.axisList[0];
-            let xAxis = uichart.axisList[0];
             let xMid = (
                 xAxis.min
                 + (uichartXY(uichart, evt)[0] / uichart.plotWidth)
@@ -863,12 +1343,19 @@ function onUichartAction(evt) {
             xNewMin = Math.max(dataMin, xMid + xScale * (xMin - xMid));
             xAxis.userMin = xNewMin;
             xAxis.userMax = xNewMax;
-            // uichartRedraw - zoomWheel
-            uichart.redraw(true);
+            // uichartRedraw - uichartZoom
+            uichartRedraw(uichart);
         }());
         return;
     case "uichartZoomReset":
-        uichart.zoomOut();
+        uiFadeIn(baton.elemLoading);
+        await waitAsync(50);
+        delete xAxis.userMin;
+        delete xAxis.userMax;
+        // uichartRedraw - uichartZoomReset
+        uichartRedraw(uichart);
+        await waitAsync(200);
+        uiFadeOut(baton.elemLoading);
         return;
     }
 }
@@ -1180,15 +1667,14 @@ async function uiTryCatch(func, ...argList) {
             "#errorPanel1"
         ));
     } finally {
-        setTimeout(function () {
-            UI_LOADING_COUNTER -= 1;
-            if (
-                UI_LOADING_COUNTER === 0
-                && UI_LOADING.style.visibility === "visible"
-            ) {
-                uiFadeOut(UI_LOADING);
-            }
-        }, 500);
+        await waitAsync(500);
+        UI_LOADING_COUNTER -= 1;
+        if (
+            UI_LOADING_COUNTER === 0
+            && UI_LOADING.style.visibility === "visible"
+        ) {
+            uiFadeOut(UI_LOADING);
+        }
     }
 }
 
@@ -1203,7 +1689,7 @@ async function uichartCreate(baton) {
     let options;
     // resize uichart
     if (uichart) {
-        uichartResize(baton);
+        uichartResize(uichart);
         return;
     }
     options = await dbExecAsync({
@@ -1227,7 +1713,6 @@ SELECT
         SELECT
             json_group_array(
                 json_object(
-                    'cropThreshold', 256,
                     'data', json(data),
                     'name', series_label
                 )
@@ -1261,18 +1746,17 @@ SELECT
     contentElem.querySelector(".uichart").style.display = "flex";
     contentElem.querySelector(
         ".uichartAxis0Label"
-    ).textContent = options.xAxisLabel;
+    ).textContent = options.xAxisTitle;
     contentElem.querySelector(
         ".uichartAxis1Label"
-    ).textContent = options.yAxisLabel;
+    ).textContent = options.yAxisTitle;
     contentElem.querySelector(
         ".uichartTitle"
     ).textContent = options.title;
     options = {
         chart: {
-            //!! panning: true,
-            renderTo: contentElem.querySelector(".uichartCanvas")
-            //!! zoomType: "x"
+            renderTo: contentElem.querySelector(".uichartCanvas"),
+            type: options.chartType || "line"
         },
         seriesList: options.seriesList,
         xAxis: {
@@ -1281,8 +1765,8 @@ SELECT
                 rotation: -15
             }
         },
-        yAxis: {
-        }
+        yAxis: {},
+        yValueSuffix: options.yValueSuffix
     };
     uichart = new Highcharts.Chart(options);
     baton.uichart = uichart;
@@ -1309,7 +1793,13 @@ SELECT
 >
 </path>
 <path
-    d="${uichart.renderer.symbols[series.symbol](4, 4, 8, 8).join(" ")}"
+    d="
+        ${
+            uichart.renderer.symbols[
+                series.symbol || "square"
+            ](4, 4, 8, 8).join(" ")
+        }
+    "
     fill="none"
     style="stroke: ${series.color}; fill: ${series.color};"
 >
@@ -1359,9 +1849,7 @@ async function uitableAjax(baton, {
         if (type === "uitableInit" && isDbchart) {
             uiFadeIn(elemLoading);
             await uiTryCatch(uichartCreate, baton);
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 500);
-            });
+            await waitAsync(500);
             uiFadeOut(elemLoading);
             return;
         }
@@ -1454,9 +1942,7 @@ SELECT
     });
     elemTable.children[1].innerHTML = html;
     // debounce - throttle
-    await new Promise(function (resolve) {
-        setTimeout(resolve, 500);
-    });
+    await waitAsync(500);
     // debounce - next
     if (baton.modeAjax === 2) {
         baton.modeAjax = 0;
@@ -1524,7 +2010,7 @@ function uitableCreate(baton) {
             style="height: ${UI_CHART_HEIGHT - 64}px;"
         ></div>
     </div>
-    <div style="position: relative; margin-left: 5px; width: 1rem;">
+    <div style="position: relative; margin-left: 16px; width: 16px;">
         <div class="uichartAxis1Label"></div>
     </div>
     <div
@@ -1656,6 +2142,13 @@ function uitableSort(baton, {
     baton.elemScroller.scrollTop = 0;
     baton.rowOffset = 0;
     uitableAjax(baton, {});
+}
+
+function waitAsync(timeout) {
+// this function will wait <timeout> milliseconds
+    return new Promise(function (resolve) {
+        setTimeout(resolve, timeout);
+    });
 }
 
 // init
