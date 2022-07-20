@@ -247,7 +247,7 @@ async function demoTradebot() {
     let val;
     try {
         val = await fetch(".tradebot_public.sqlite");
-        if (val.statusCode !== 200) {
+        if (val.status !== 200) {
             return;
         }
     } catch (ignore) {
