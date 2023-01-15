@@ -2,7 +2,7 @@
 
 # sh one-liner
 # sh jslint_ci.sh shCiBuildWasm
-# sh jslint_ci.sh shSyncSqlmath
+# sh jslint_ci.sh shSqlmathUpdate
 
 # sqlite autoconf-3380500 version-3.38.5
 # curl -L https://www.sqlite.org/2022/sqlite-autoconf-3380500.tar.gz | tar -xz
@@ -790,12 +790,12 @@ require("assert")(require("./package.json").name !== "sqlmath");
     shRunWithCoverage $COVERAGE_EXCLUDE node test.mjs
 )}
 
-shSyncSqlmath() {(set -e
-# this function will sync files with ~/Documents/sqlmath/
+shSqlmathUpdate() {(set -e
+# this function will update files with ~/Documents/sqlmath/
     local FILE
-    if [ -f "$HOME/devenv/devenv.sh" ]
+    if [ -f "$HOME/myci2/myci2.sh" ]
     then
-        sh "$HOME/devenv/devenv.sh" shDevenvSync
+        sh "$HOME/myci2/myci2.sh" shMyciUpdate
     fi
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then

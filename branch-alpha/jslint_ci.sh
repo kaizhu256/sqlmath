@@ -1267,7 +1267,7 @@ shGithubTokenExport() {
 shGithubWorkflowDispatch() {(set -e
 # this function will trigger-workflow to ci-repo $1 for owner.repo.branch $2
 # example use:
-# shGithubWorkflowDispatch octocat/my_ci octocat/my_project/master
+# shGithubWorkflowDispatch octocat/my-ci octocat/my-project/master
     shGithubTokenExport
     curl "https://api.github.com/repos/$1"\
 "/actions/workflows/ci.yml/dispatches" \
