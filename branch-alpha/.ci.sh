@@ -793,10 +793,7 @@ require("assert")(require("./package.json").name !== "sqlmath");
 shSqlmathUpdate() {(set -e
 # this function will update files with ~/Documents/sqlmath/
     local FILE
-    if [ -f "$HOME/myci2/myci2.sh" ]
-    then
-        sh "$HOME/myci2/myci2.sh" shMyciUpdate
-    fi
+    sh myci2.sh shMyciUpdate
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
         shRawLibFetch asset_sqlmath_external_rollup.js

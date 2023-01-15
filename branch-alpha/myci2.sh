@@ -337,7 +337,8 @@ shMyciUpdate() {(set -e
         .vimrc \
         jslint.mjs \
         jslint_ci.sh \
-        jslint_wrapper_vim.vim
+        jslint_wrapper_vim.vim \
+        myci2.sh
     do
         FILE_MYCI="$HOME/myci2/$FILE"
         FILE_HOME="$HOME/$FILE"
