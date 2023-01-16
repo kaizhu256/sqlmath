@@ -276,7 +276,9 @@ shCiArtifactUpload() {(set -e
 #     return
 # )}
     local FILE
-    if (! shCiIsMainJob)
+    if !(shCiIsMainJob \
+        && [ -f package.json ] \
+        && grep -q '^    "ciArtifactUpload": 1,$' package.json)
     then
         return
     fi
@@ -334,7 +336,7 @@ import moduleChildProcess from "child_process";
     });
 }());
 ' "$@" # '
-    if [ "$(command -v shCiArtifactUploadCustom)" = shCiArtifactUploadCustom]
+    if [ "$(command -v shCiArtifactUploadCustom)" = shCiArtifactUploadCustom ]
     then
         shCiArtifactUploadCustom
     fi
@@ -527,7 +529,7 @@ import moduleFs from "fs";
     await moduleFs.promises.writeFile("README.md", data);
 }());
 ' "$@" # '
-    if [ "$(command -v shCiBaseCustom)" = shCiBaseCustom]
+    if [ "$(command -v shCiBaseCustom)" = shCiBaseCustom ]
     then
         shCiBaseCustom
     fi
@@ -574,7 +576,7 @@ shCiNpmPublish() {(set -e
             "s|^    \"name\":.*|    \"name\": \"@$GITHUB_REPOSITORY\",|" \
             package.json
     fi
-    if [ "$(command -v shCiNpmPublishCustom)" = shCiNpmPublishCustom]
+    if [ "$(command -v shCiNpmPublishCustom)" = shCiNpmPublishCustom ]
     then
         shCiNpmPublishCustom
     fi
@@ -591,7 +593,7 @@ shCiPre() {(set -e
         . ./myci2.sh :
         shMyciInit
     fi
-    if [ "$(command -v shCiPreCustom)" = shCiPreCustom]
+    if [ "$(command -v shCiPreCustom)" = shCiPreCustom ]
     then
         shCiPreCustom
     fi
@@ -886,6 +888,49 @@ shGitSquashPop() {(set -e
     git add .
     # commit HEAD immediately after previous $COMMIT
     git commit -am "$MESSAGE" || true
+)}
+
+shGithubCheckoutRemote() {(set -e
+# this function will run like actions/checkout, except checkout remote-branch
+    # GITHUB_REF_NAME="owner/repo/branch"
+    GITHUB_REF_NAME="$1"
+    if (printf "$GITHUB_REF_NAME" | grep -q ".*/.*/.*")
+    then
+        # branch - */*/*
+        git fetch origin alpha
+        # assert latest ci
+        if [ "$(git rev-parse "$GITHUB_REF_NAME")" \
+            != "$(git rev-parse origin/alpha)" ]
+        then
+            git push -f origin "origin/alpha:$GITHUB_REF_NAME"
+            shGithubWorkflowDispatch "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME"
+            return 1
+        fi
+    else
+        # branch - alpha, beta, master
+        GITHUB_REF_NAME="$GITHUB_REPOSITORY/$GITHUB_REF_NAME"
+    fi
+    GITHUB_REPOSITORY="$(printf "$GITHUB_REF_NAME" | cut -d'/' -f1,2)"
+    GITHUB_REF_NAME="$(printf "$GITHUB_REF_NAME" | cut -d'/' -f3)"
+    # replace current git-checkout with $GITHUB_REF_NAME
+    rm -rf * ..?* .[!.]*
+    shGitCmdWithGithubToken clone "https://github.com/$GITHUB_REPOSITORY" tmp \
+        --branch="$GITHUB_REF_NAME" \
+        --depth=1 \
+        --single-branch
+    mv tmp/.git .
+    cp tmp/.gitconfig .git/config
+    rm -rf tmp
+    git reset "origin/$GITHUB_REF_NAME" --hard
+    # fetch jslint_ci.sh from trusted source
+    shGitCmdWithGithubToken fetch origin alpha --depth=1
+    for FILE in .ci.sh .ci2.sh jslint_ci.sh myci2.sh
+    do
+        if [ -f "$FILE" ]
+        then
+            git checkout origin/alpha "$FILE"
+        fi
+    done
 )}
 
 shGithubFileDownload() {(set -e
@@ -3192,8 +3237,7 @@ v8CoverageReportCreate({
 shRunWithScreenshotTxt() {(set -e
 # this function will run cmd $@ and screenshot text-output
 # https://www.cnx-software.com/2011/09/22/how-to-convert-a-command-line-result-into-an-image-in-linux/
-    local EXIT_CODE
-    EXIT_CODE=0
+    local EXIT_CODE=0
     local SCREENSHOT_SVG="$1"
     shift
     printf "0\n" > "$SCREENSHOT_SVG.exit_code"
@@ -3311,6 +3355,10 @@ shCiMain() {(set -e
     if [ -f ./.ci.sh ]
     then
         . ./.ci.sh :
+    fi
+    if [ -f ./.ci2.sh ]
+    then
+        . ./.ci2.sh :
     fi
     "$@"
 )}
