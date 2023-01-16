@@ -11,6 +11,7 @@
 # https://www.sqlite.org/2022/sqlite-tools-win32-x86-3380500.zip
 
 shCiArtifactUploadCustom() {(set -e
+# this function will run custom-code to upload build-artifacts
     git fetch origin artifact
     git checkout origin/artifact "branch-$GITHUB_BRANCH0"
     mv "branch-$GITHUB_BRANCH0"/* .
@@ -100,7 +101,7 @@ process.exit(Number(
 )}
 
 shCiBaseCustom() {(set -e
-# this function will run custom-ci
+# this function will run custom-code for base-ci
     shCiEmsdkExport
     # .github_cache - restore
     if [ "$GITHUB_ACTION" ] && [ -d .github_cache ]
