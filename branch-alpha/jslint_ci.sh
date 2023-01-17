@@ -276,7 +276,7 @@ shCiArtifactUpload() {(set -e
 #     return
 # )}
     local FILE
-    if ! (shCiIsMainJob \
+    if ! (shCiIsMatrixMain \
         && [ -f package.json ] \
         && grep -q '^    "shCiArtifactUpload": 1,$' package.json)
     then
@@ -552,14 +552,10 @@ shCiBranchPromote() {(set -e
     git push "$REMOTE" "$REMOTE/$BRANCH1:$BRANCH2" "$@"
 )}
 
-shCiIsMainJob() {(set -e
+shCiIsMatrixMain() {(set -e
 # this function will return 0 if current ci-job is main job
-    node --input-type=module --eval '
-process.exit(Number(
-    `node.${process.version.split(".")[0]}.${process.arch}.${process.platform}`
-    !== process.env.CI_MAIN_JOB
-));
-' "$@" # '
+    CI_MATRIX_NAME="$(printf "$CI_MATRIX_NAME" | xargs)"
+    [ "$CI_MATRIX_NAME" ] && [ "$CI_MATRIX_NAME" = "$CI_MATRIX_MAIN" ]
 )}
 
 shCiNpmPublish() {(set -e
