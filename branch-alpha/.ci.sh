@@ -70,6 +70,7 @@ process.exit(Number(
     git config --local user.name "github-actions"
     # git clone origin/artifact
     rm -rf ".tmp/$BRANCH_ARTIFACT"
+    cat .git/config
     shGitCmdWithGithubToken clone origin ".tmp/$BRANCH_ARTIFACT" \
         --branch="$BRANCH_ARTIFACT" \
         --single-branch
