@@ -819,7 +819,6 @@ shSqlmathUpdate() {(set -e
             asset_sqlmath_external_rollup.js \
             indent.exe \
             index.html \
-            jslint_ci.sh \
             sqlite3.c \
             sqlite3_ext.c \
             sqlite3_shell.c \
