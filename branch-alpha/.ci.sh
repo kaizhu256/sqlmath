@@ -70,7 +70,6 @@ process.exit(Number(
     git config --local user.name "github-actions"
     # git clone origin/artifact
     rm -rf ".tmp/$BRANCH_ARTIFACT"
-    cat .git/config
     shGitCmdWithGithubToken clone origin ".tmp/$BRANCH_ARTIFACT" \
         --branch="$BRANCH_ARTIFACT" \
         --single-branch
@@ -127,6 +126,7 @@ shCiBaseCustom() {(set -e
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
+        local EXIT_CODE=0
         export GITHUB_UPLOAD_RETRY=-1
         while true
         do
@@ -135,7 +135,8 @@ shCiBaseCustom() {(set -e
             then
                 return 1
             fi
-            if (shCiArtifactUpload2)
+            shCiArtifactUpload2 || EXIT_CODE="$?"
+            if [ "$EXIT_CODE" = 0 ]
             then
                 break
             fi
