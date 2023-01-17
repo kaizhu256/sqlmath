@@ -32,13 +32,14 @@ jobs:
           #!! - windows-latest
 # base - .github/workflows/ci.yml - beg
     env:
-      CI_MATRIX_MAIN: "node v18 x64 ubuntu-latest"
       CI_MATRIX_NAME: >
         node
         v${{ matrix.node_version }}
         ${{ matrix.architecture }}
         ${{ matrix.os }}
-      GITHUB_ARTIFACT_UPLOAD_NODE_VERSION: v18
+      CI_MATRIX_NAME_MAIN: "node v18 x64 ubuntu-latest"
+      CI_MATRIX_NODE_VERSION: v${{ matrix.node_version }}
+      CI_MATRIX_NODE_VERSION_MAIN: v18
     name: >
       node
       v${{ matrix.node_version }}
