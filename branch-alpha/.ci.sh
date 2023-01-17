@@ -73,7 +73,7 @@ process.exit(Number(
     shGitCmdWithGithubToken clone origin ".tmp/$BRANCH_ARTIFACT" \
         --branch="$BRANCH_ARTIFACT" \
         --single-branch
-    (set -e
+    (
     cd ".tmp/$BRANCH_ARTIFACT"
     cp ../../.git/config .git/config
     # update dir branch-$GITHUB_BRANCH0
