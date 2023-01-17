@@ -59,6 +59,7 @@ shCiArtifactUpload2() {(set -e
 " - $(printf "$GITHUB_SHA" | cut -c-8)"\
 " - $(uname)"\
 ""
+    printf "$COMMIT_MESSAGE\n"
     node --input-type=module --eval '
 process.exit(Number(
     `${process.version.split(".")[0]}`
