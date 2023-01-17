@@ -754,6 +754,7 @@ shGitCmdWithGithubToken() {(set -e
     if (printf "$URL" | grep -qv "^https://")
     then
         URL="$(git config "remote.$URL.url")"
+        echo aa $URL bb
     fi
     URL="$(
         printf "$URL" \
