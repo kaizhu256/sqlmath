@@ -83,7 +83,6 @@ shCiBaseCustom() {(set -e
             then
                 return 1
             fi
-            #!! if (shCiBaseCustomArtifactUpload)
             if (node --input-type=module --eval '
 import moduleChildProcess from "child_process";
 (function () {
@@ -110,7 +109,7 @@ shCiBaseCustomArtifactUpload() {(set -e
 " - $(printf "$GITHUB_SHA" | cut -c-8)"\
 " - $(uname)"\
 ""
-    printf "$COMMIT_MESSAGE\n"
+    printf "\n\n$COMMIT_MESSAGE\n"
     # init .git/config
     git config --local user.email "github-actions@users.noreply.github.com"
     git config --local user.name "github-actions"
