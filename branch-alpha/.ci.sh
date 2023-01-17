@@ -126,7 +126,6 @@ shCiBaseCustom() {(set -e
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
-        local EXIT_CODE=0
         export GITHUB_UPLOAD_RETRY=-1
         while true
         do
@@ -135,8 +134,7 @@ shCiBaseCustom() {(set -e
             then
                 return 1
             fi
-            shCiArtifactUpload2 || EXIT_CODE="$?"
-            if [ "$EXIT_CODE" = 0 ]
+            if (shCiArtifactUpload2)
             then
                 break
             fi

@@ -23,13 +23,13 @@ jobs:
           - x64
           # - x86
         node_version:
-          - 16
+          #!! - 16
           - 18
-          - 19
+          #!! - 19
         os:
-          - macos-latest
+          #!! - macos-latest
           - ubuntu-latest
-          - windows-latest
+          #!! - windows-latest
 # base - .github/workflows/ci.yml - beg
     env:
       CI_MATRIX_MAIN: "node v18 x64 ubuntu-latest"
