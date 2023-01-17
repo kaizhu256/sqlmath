@@ -109,7 +109,7 @@ shCiBaseCustom() {(set -e
         cp -a .github_cache/* . || true # js-hack - */
     fi
     shCiBuildNodejs
-    if (shCiIsMainJob)
+    if (shCiIsMatrixMain)
     then
         shCiBuildWasm
         # .github_cache - save
