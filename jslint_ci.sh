@@ -1749,6 +1749,7 @@ function replaceListReplace(replaceList, data) {
     return data;
 }
 (async function () {
+    let option;
     let fetchList;
     let matchObj;
     let repoDict;
@@ -2013,6 +2014,29 @@ function replaceListReplace(replaceList, data) {
         // write to file
         moduleFs.writeFileSync(process.argv[1], result); //jslint-ignore-line
     });
+    option = matchObj[1].option;
+    if (option.modeGnuIndent && process.platform === "win32") {
+        moduleChildProcess.spawnSync( //jslint-ignore-line
+            "sh",
+            ["-c", (`
+(set -e
+    ./indent.exe \
+        --blank-lines-after-commas \
+        --braces-on-func-def-line \
+        --break-function-decl-args \
+        --break-function-decl-args-end \
+        --dont-line-up-parentheses \
+        --k-and-r-style \
+        --line-length78 \
+        --no-tabs \
+        -bfde \
+    sqlmath_base.c
+    sed -i "s|\r||g" sqlmath_base.c
+)
+            `)],
+            {stdio: ["ignore", 1, 2]}
+        );
+    }
 }());
 ' "$@" # '
     git diff
