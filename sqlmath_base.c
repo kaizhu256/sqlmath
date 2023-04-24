@@ -440,8 +440,18 @@ shRawLibFetch
 +// #include <zlib.h>
 +#ifdef EMSCRIPTEN
 +#define Z_OK 0
-+int compress(unsigned char *, unsigned long *, const unsigned char *, unsigned long); // NOLINT
-+int uncompress(unsigned char *, unsigned long *, const unsigned char *, unsigned long); // NOLINT
++int compress(
++    unsigned char *,
++    unsigned long *, // NOLINT
++    const unsigned char *,
++    unsigned long // NOLINT
++);
++int uncompress(
++    unsigned char *,
++    unsigned long *, // NOLINT
++    const unsigned char *,
++    unsigned long // NOLINT
++);
 +#else // EMSCRIPTEN
 +#include <zlib.h>
 +#endif // EMSCRIPTEN
@@ -493,16 +503,16 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/compress.c
 #define Z_OK 0
 int compress(
     unsigned char *,
-    unsigned long *,
+    unsigned long *,            // NOLINT
     const unsigned char *,
-    unsigned long
-);                              // NOLINT
+    unsigned long               // NOLINT
+);
 int uncompress(
     unsigned char *,
-    unsigned long *,
+    unsigned long *,            // NOLINT
     const unsigned char *,
-    unsigned long
-);                              // NOLINT
+    unsigned long               // NOLINT
+);
 #else                           // EMSCRIPTEN
 #include <zlib.h>
 #endif                          // EMSCRIPTEN
