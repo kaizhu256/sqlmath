@@ -387,12 +387,6 @@ shRawLibFetch
     ],
     "replaceList": [
         {
-            "aa": "$",
-            "bb": " // NOLINT",
-            "flags": "gm",
-            "substr": ""
-        },
-        {
             "aa": "^(?:#include .*?|SQLITE_EXTENSION_INIT1)$",
             "bb": "//$&",
             "flags": "gm",
