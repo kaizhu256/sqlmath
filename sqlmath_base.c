@@ -456,6 +456,10 @@ shRawLibFetch
 +// hack-sqlite - fix warning
 +  int nIn;
 
+-# define ROL64(a,x) ((a<<x)|(a>>(64-x)))
++// hack-sqlite - fix warning
++# define ROL64(a, x) ((a << x)|(a >> (64-x)))
+
 -//#include <zlib.h>
 +// hack-sqlite - inline zlib.h
 +// #include <zlib.h>
@@ -2313,7 +2317,8 @@ static void KeccakF1600Step(
 # define a42 (p->u.s[22])
 # define a43 (p->u.s[23])
 # define a44 (p->u.s[24])
-# define ROL64(a,x) ((a<<x)|(a>>(64-x)))
+// hack-sqlite - fix warning
+# define ROL64(a, x) ((a << x)|(a >> (64-x)))
 
     for (i = 0; i < 24; i += 4) {
         c0 = a00 ^ a10 ^ a20 ^ a30 ^ a40;
