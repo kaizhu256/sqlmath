@@ -392,12 +392,12 @@ shRawLibFetch
         }
     ],
     "option": {
-        "indent": true
+        "modeGnuIndent": true
     },
     "replaceList": [
         {
-            "aa": "\\bunsigned long(?: int)?\\b",
-            "bb": "uint32_t",
+            "aa": "\\bunsigned long\\b.*",
+            "bb": "$& //NOLINT",
             "flags": "g",
             "substr": ""
         },
@@ -442,15 +442,15 @@ shRawLibFetch
 +#define Z_OK 0
 +int compress(
 +    unsigned char *,
-+    unsigned long *, // NOLINT
++    uint32_t *,
 +    const unsigned char *,
-+    unsigned long // NOLINT
++    uint32_t
 +);
 +int uncompress(
 +    unsigned char *,
-+    unsigned long *, // NOLINT
++    uint32_t *,
 +    const unsigned char *,
-+    unsigned long // NOLINT
++    uint32_t
 +);
 +#else // EMSCRIPTEN
 +#include <zlib.h>
@@ -503,15 +503,15 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/compress.c
 #define Z_OK 0
 int compress(
     unsigned char *,
-    unsigned long *,            // NOLINT
+    uint32_t *,
     const unsigned char *,
-    unsigned long               // NOLINT
+    uint32_t
 );
 int uncompress(
     unsigned char *,
-    unsigned long *,            // NOLINT
+    uint32_t *,
     const unsigned char *,
-    unsigned long               // NOLINT
+    uint32_t
 );
 #else                           // EMSCRIPTEN
 #include <zlib.h>
@@ -552,7 +552,7 @@ static void compressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    uint32_t nOut;
+    unsigned long int nOut;     //NOLINT
     unsigned char x[8];
     int rc;
     int i,
@@ -597,7 +597,7 @@ static void uncompressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    uint32_t nOut;
+    unsigned long int nOut;     //NOLINT
     int rc;
     int i;
 
