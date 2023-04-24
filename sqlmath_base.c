@@ -435,7 +435,7 @@ shRawLibFetch
 +// hack-sqlite - fix warning
 +  int nIn;
 
--#include <zlib.h>
+-//#include <zlib.h>
 +// hack-sqlite - inline zlib.h
 +// #include <zlib.h>
 +#ifdef EMSCRIPTEN
@@ -493,16 +493,16 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/compress.c
 #define Z_OK 0
 int compress(
     unsigned char *,
-    uint32_t *,
+    unsigned long *,
     const unsigned char *,
-    uint32_t
-);
+    unsigned long
+);                              // NOLINT
 int uncompress(
     unsigned char *,
-    uint32_t *,
+    unsigned long *,
     const unsigned char *,
-    uint32_t
-);
+    unsigned long
+);                              // NOLINT
 #else                           // EMSCRIPTEN
 #include <zlib.h>
 #endif                          // EMSCRIPTEN
