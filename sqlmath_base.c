@@ -822,7 +822,7 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/regexp.c
 #define RE_OP_BOUNDARY   17     /* Boundary between word and non-word */
 
 /* Each opcode is a "state" in the NFA */
-typedef unsigned short ReStateNumber;
+typedef unsigned short ReStateNumber;   //NOLINT
 
 /* Because this is an NFA and not a DFA, multiple states can be active at
 ** once.  An instance of the following object records all active states in
