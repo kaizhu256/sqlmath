@@ -1771,6 +1771,7 @@ function replaceListReplace(replaceList, data) {
     // JSON.parse match1 with comment
     matchObj[1] = Object.assign({
         fetchList: [],
+        option: {},
         replaceList: []
     }, JSON.parse(matchObj[1]));
     fetchList = JSON.parse(JSON.stringify(matchObj[1].fetchList));

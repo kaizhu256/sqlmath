@@ -391,6 +391,9 @@ shRawLibFetch
             "url": "https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/series.c"
         }
     ],
+    "option": {
+        "indent": true
+    },
     "replaceList": [
         {
             "aa": "\\bunsigned long(?: int)?\\b",
@@ -432,13 +435,13 @@ shRawLibFetch
 +// hack-sqlite - fix warning
 +  int nIn;
 
--//#include <zlib.h>
+-#include <zlib.h>
 +// hack-sqlite - inline zlib.h
 +// #include <zlib.h>
 +#ifdef EMSCRIPTEN
 +#define Z_OK 0
-+int compress(unsigned char *, uint32_t *, const unsigned char *, uint32_t);
-+int uncompress(unsigned char *, uint32_t *, const unsigned char *, uint32_t);
++int compress(unsigned char *, unsigned long *, const unsigned char *, unsigned long); // NOLINT
++int uncompress(unsigned char *, unsigned long *, const unsigned char *, unsigned long); // NOLINT
 +#else // EMSCRIPTEN
 +#include <zlib.h>
 +#endif // EMSCRIPTEN
