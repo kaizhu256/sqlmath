@@ -2031,7 +2031,7 @@ function replaceListReplace(replaceList, data) {
         --no-tabs \
         -bfde \
     sqlmath_base.c
-    sed -i "s|\r||g" sqlmath_base.c
+    sed -i "s|\\r||g" sqlmath_base.c
 )
             `)],
             {stdio: ["ignore", 1, 2]}
