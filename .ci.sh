@@ -795,6 +795,7 @@ shSqlmathUpdate() {(set -e
         shRawLibFetch index.html
         shRawLibFetch sqlite3.c
         shRawLibFetch sqlite3_shell.c
+        shRawLibFetch sqlmath_base.c
         git grep '3\.39\.[^4]' \
             ":(exclude)CHANGELOG.md" \
             ":(exclude)sqlite3.c" \
