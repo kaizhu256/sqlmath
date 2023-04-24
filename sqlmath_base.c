@@ -399,9 +399,15 @@ shRawLibFetch
     ],
     "replaceList": [
         {
-            "aa": "(\\bcase .*?:|\\bdefault:) *?{$",
-            "bb": "$1 /\\\\* *\\\\/ {",
+            "aa": "(\\n *?(?:case .*?|default):) *?{\\n",
+            "bb": "$1 /\\\\* *\\\\/ {\n",
             "flags": "gm",
+            "substr": ""
+        },
+        {
+            "aa": "SHA3_BYTEORDER==",
+            "bb": "SHA3_BYTEORDER == ",
+            "flags": "g",
             "substr": ""
         },
         {
@@ -2595,9 +2601,9 @@ static void SHA3Init(
     } else {
         p->nRate = (1600 - 2 * 256) / 8;
     }
-#if SHA3_BYTEORDER==1234
+#if SHA3_BYTEORDER == 1234
     /* Known to be little-endian at compile-time. No-op */
-#elif SHA3_BYTEORDER==4321
+#elif SHA3_BYTEORDER == 4321
     p->ixMask = 7;              /* Big-endian */
 #else
     {
@@ -2625,7 +2631,7 @@ static void SHA3Update(
     unsigned int i = 0;
     if (aData == 0)
         return;
-#if SHA3_BYTEORDER==1234
+#if SHA3_BYTEORDER == 1234
     if ((p->nLoaded % 8) == 0
         && ((aData - (const unsigned char *) 0) & 7) == 0) {
         for (; i + 7 < nData; i += 8) {
@@ -2639,9 +2645,9 @@ static void SHA3Update(
     }
 #endif
     for (; i < nData; i++) {
-#if SHA3_BYTEORDER==1234
+#if SHA3_BYTEORDER == 1234
         p->u.x[p->nLoaded] ^= aData[i];
-#elif SHA3_BYTEORDER==4321
+#elif SHA3_BYTEORDER == 4321
         p->u.x[p->nLoaded ^ 0x07] ^= aData[i];
 #else
         p->u.x[p->nLoaded ^ p->ixMask] ^= aData[i];
