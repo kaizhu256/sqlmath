@@ -396,7 +396,7 @@ shRawLibFetch
     ],
     "replaceList": [
         {
-            "aa": "(\\bcase .*?:) *?{$",
+            "aa": "(\\bcase .*?:|\\bdefault:) *?{$",
             "bb": "$1 /\\\\*aa*\\\\/ {",
             "flags": "gm",
             "substr": ""
@@ -404,6 +404,12 @@ shRawLibFetch
         {
             "aa": "\\b(?:unsigned long|unsigned short)\\b.*",
             "bb": "$& //NOLINT",
+            "flags": "g",
+            "substr": ""
+        },
+        {
+            "aa": "\\n(?:typedef )?struct .*?\\{\\n[\\S\\s]+?\\n\\};\\n",
+            "bb": "\n// *INDENT-OFF*$&// *INDENT-ON*\n",
             "flags": "g",
             "substr": ""
         },
@@ -835,39 +841,39 @@ typedef unsigned short ReStateNumber;   //NOLINT
 ** the NFA.  The implementation is optimized for the common case where the
 ** number of actives states is small.
 */
+// *INDENT-OFF*
 typedef struct ReStateSet {
-    unsigned nState;            /* Number of current states */
-    ReStateNumber *aState;      /* Current states */
+  unsigned nState;            /* Number of current states */
+  ReStateNumber *aState;      /* Current states */
 } ReStateSet;
 
 /* An input string read one character at a time.
 */
 typedef struct ReInput ReInput;
 struct ReInput {
-    const unsigned char *z;     /* All text */
-    int i;                      /* Next byte to read */
-    int mx;                     /* EOF when i>=mx */
+  const unsigned char *z;  /* All text */
+  int i;                   /* Next byte to read */
+  int mx;                  /* EOF when i>=mx */
 };
+// *INDENT-ON*
 
 /* A compiled NFA (or an NFA that is in the process of being compiled) is
 ** an instance of the following object.
 */
 typedef struct ReCompiled ReCompiled;
+// *INDENT-OFF*
 struct ReCompiled {
-    ReInput sIn;                /* Regular expression text */
-    const char *zErr;           /* Error message to return */
-    char *aOp;                  /* Operators for the virtual machine */
-    int *aArg;                  /* Arguments to each operator */
-    unsigned (
-        *xNextChar
-    ) (
-        ReInput *
-    );                          /* Next character function */
-    unsigned char zInit[12];    /* Initial text to match */
-    int nInit;                  /* Number of characters in zInit */
-    unsigned nState;            /* Number of entries in aOp[] and aArg[] */
-    unsigned nAlloc;            /* Slots allocated for aOp[] and aArg[] */
+  ReInput sIn;                /* Regular expression text */
+  const char *zErr;           /* Error message to return */
+  char *aOp;                  /* Operators for the virtual machine */
+  int *aArg;                  /* Arguments to each operator */
+  unsigned (*xNextChar)(ReInput*);  /* Next character function */
+  unsigned char zInit[12];    /* Initial text to match */
+  int nInit;                  /* Number of characters in zInit */
+  unsigned nState;            /* Number of entries in aOp[] and aArg[] */
+  unsigned nAlloc;            /* Slots allocated for aOp[] and aArg[] */
 };
+// *INDENT-ON*
 
 /* Add a state to the given state set if it is not already there */
 static void re_add_state(
@@ -1738,15 +1744,17 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/series.c
 ** over rows of the result
 */
 typedef struct series_cursor series_cursor;
+// *INDENT-OFF*
 struct series_cursor {
-    sqlite3_vtab_cursor base;   /* Base class - must be first */
-    int isDesc;                 /* True to count down rather than up */
-    sqlite3_int64 iRowid;       /* The rowid */
-    sqlite3_int64 iValue;       /* Current value ("value") */
-    sqlite3_int64 mnValue;      /* Mimimum value ("start") */
-    sqlite3_int64 mxValue;      /* Maximum value ("stop") */
-    sqlite3_int64 iStep;        /* Increment ("step") */
+  sqlite3_vtab_cursor base;  /* Base class - must be first */
+  int isDesc;                /* True to count down rather than up */
+  sqlite3_int64 iRowid;      /* The rowid */
+  sqlite3_int64 iValue;      /* Current value ("value") */
+  sqlite3_int64 mnValue;     /* Mimimum value ("start") */
+  sqlite3_int64 mxValue;     /* Maximum value ("stop") */
+  sqlite3_int64 iStep;       /* Increment ("step") */
 };
+// *INDENT-ON*
 
 /*
 ** The seriesConnect() method is invoked to create a new
