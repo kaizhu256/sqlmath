@@ -356,7 +356,7 @@ SQLMATH_API const char *sqlmathSnprintfTrace(
 
 // *INDENT-OFF*
 #if defined(__cplusplus)
-}
+} // extern "C"
 #endif
 // *INDENT-ON*
 /*
