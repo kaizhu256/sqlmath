@@ -2030,7 +2030,7 @@ function replaceListReplace(replaceList, data) {
         --line-length78 \
         --no-tabs \
         -bfde \
-    sqlmath_base.c
+        sqlmath_base.c
     sed -i "s|\\r||g" sqlmath_base.c
 )
             `)],
