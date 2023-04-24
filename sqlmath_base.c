@@ -2863,6 +2863,10 @@ int sqlite3_sqlmath_ext_base_init(
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
     SQLITE3_CREATE_FUNCTION3(avg_ema, 2);
     //
+    errcode = sqlite3_compress_init(db, pzErrMsg, pApi);
+    if (errcode != SQLITE_OK) {
+        return errcode;
+    }
     errcode = sqlite3_noop_init(db, pzErrMsg, pApi);
     if (errcode != SQLITE_OK) {
         return errcode;
