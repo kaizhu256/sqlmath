@@ -473,6 +473,16 @@ int sqlite3_noop_init(
     int rc = SQLITE_OK;
     SQLITE_EXTENSION_INIT2(pApi);
     (void) pzErrMsg;            /* Unused parameter */
+    //
+    rc = sqlite3_noop_init(db, pzErrMsg, pApi);
+    if (rc != SQLITE_OK) {
+        return rc;
+    }
+    rc = sqlite3_series_init(db, pzErrMsg, pApi);
+    if (rc != SQLITE_OK) {
+        return rc;
+    }
+    //
     rc = sqlite3_create_function(db, "noop", 1,
         SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, noopfunc, 0, 0);
     if (rc)
