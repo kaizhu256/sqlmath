@@ -382,6 +382,9 @@ shRawLibFetch
             "url": "https://github.com/sqlite/sqlite/blob/version-3.39.4/LICENSE.md"
         },
         {
+            "url": "https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/compress.c"
+        },
+        {
             "url": "https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/noop.c"
         },
         {
@@ -397,6 +400,38 @@ shRawLibFetch
         }
     ]
 }
+
+-  unsigned int nIn;
++// hack-sqlite - fix warning
++  int nIn;
+-  unsigned int nIn;
++// hack-sqlite - fix warning
++  int nIn;
+
+-#include <zlib.h>
++// hack-sqlite - inline zlib.h
++// #include <zlib.h>
++#ifdef EMSCRIPTEN
++#define Z_OK 0
++int compress(unsigned char *, unsigned long *, const unsigned char *, unsigned long);
++int uncompress(unsigned char *, unsigned long *, const unsigned char *, unsigned long);
++#else // EMSCRIPTEN
++#include <zlib.h>
++#endif // EMSCRIPTEN
+
+-  pIn = sqlite3_value_blob(argv[0]);
+-  nIn = sqlite3_value_bytes(argv[0]);
++  pIn = sqlite3_value_blob(argv[0]);
++// hack-sqlite - handle null-case compress
++  if (pIn == NULL) { sqlite3_result_error(context, "Cannot compress() NULL blob", -1); return; }
++  nIn = sqlite3_value_bytes(argv[0]);
+
+-  pIn = sqlite3_value_blob(argv[0]);
+-  nIn = sqlite3_value_bytes(argv[0]);
++  pIn = sqlite3_value_blob(argv[0]);
++// hack-sqlite - handle null-case uncompress
++  if (pIn == NULL) { sqlite3_result_error(context, "Cannot uncompress() NULL blob", -1); return; }
++  nIn = sqlite3_value_bytes(argv[0]);
 */
 
 
