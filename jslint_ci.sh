@@ -2014,7 +2014,7 @@ function replaceListReplace(replaceList, data) {
     });
 }());
 ' "$@" # '
-    FILE = "$1"
+    FILE="$1"
     while [ "$1" ]
     do
         case "$1" in
@@ -2035,8 +2035,8 @@ function replaceListReplace(replaceList, data) {
                     --line-length78 \
                     --no-tabs \
                     -bfde \
-                    sqlmath_base.c
-                sed -i "s|\r||g" sqlmath_base.c
+                    "$FILE"
+                sed -i "s|\r||g" "$FILE"
                 ;;
             esac
             ;;

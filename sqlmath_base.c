@@ -396,6 +396,12 @@ shRawLibFetch
     ],
     "replaceList": [
         {
+            "aa": "(\\bcase .*?:) *?{$",
+            "bb": "$1 /\\\\*aa*\\\\/ {",
+            "flags": "gm",
+            "substr": ""
+        },
+        {
             "aa": "\\b(?:unsigned long|unsigned short)\\b.*",
             "bb": "$& //NOLINT",
             "flags": "g",
@@ -1009,76 +1015,76 @@ static int re_match(
         for (i = 0; i < pThis->nState; i++) {
             int x = pThis->aState[i];
             switch (pRe->aOp[x]) {
-            case RE_OP_MATCH:{
+            case RE_OP_MATCH:  /*aa */  {
                     if (pRe->aArg[x] == c)
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_ANY:{
+            case RE_OP_ANY:    /*aa */  {
                     if (c != 0)
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_WORD:{
+            case RE_OP_WORD:   /*aa */  {
                     if (re_word_char(c))
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_NOTWORD:{
+            case RE_OP_NOTWORD:        /*aa */  {
                     if (!re_word_char(c) && c != 0)
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_DIGIT:{
+            case RE_OP_DIGIT:  /*aa */  {
                     if (re_digit_char(c))
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_NOTDIGIT:{
+            case RE_OP_NOTDIGIT:       /*aa */  {
                     if (!re_digit_char(c) && c != 0)
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_SPACE:{
+            case RE_OP_SPACE:  /*aa */  {
                     if (re_space_char(c))
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_NOTSPACE:{
+            case RE_OP_NOTSPACE:       /*aa */  {
                     if (!re_space_char(c) && c != 0)
                         re_add_state(pNext, x + 1);
                     break;
                 }
-            case RE_OP_BOUNDARY:{
+            case RE_OP_BOUNDARY:       /*aa */  {
                     if (re_word_char(c) != re_word_char(cPrev))
                         re_add_state(pThis, x + 1);
                     break;
                 }
-            case RE_OP_ANYSTAR:{
+            case RE_OP_ANYSTAR:        /*aa */  {
                     re_add_state(pNext, x);
                     re_add_state(pThis, x + 1);
                     break;
                 }
-            case RE_OP_FORK:{
+            case RE_OP_FORK:   /*aa */  {
                     re_add_state(pThis, x + pRe->aArg[x]);
                     re_add_state(pThis, x + 1);
                     break;
                 }
-            case RE_OP_GOTO:{
+            case RE_OP_GOTO:   /*aa */  {
                     re_add_state(pThis, x + pRe->aArg[x]);
                     break;
                 }
-            case RE_OP_ACCEPT:{
+            case RE_OP_ACCEPT: /*aa */  {
                     rc = 1;
                     goto re_match_end;
                 }
-            case RE_OP_CC_EXC:{
+            case RE_OP_CC_EXC: /*aa */  {
                     if (c == 0)
                         break;
                     /* fall-through */ goto re_op_cc_inc;
                 }
             case RE_OP_CC_INC:
-              re_op_cc_inc:{
+              re_op_cc_inc:    /*aa */  {
                     int j = 1;
                     int n = pRe->aArg[x];
                     int hit = 0;
@@ -1308,11 +1314,11 @@ static const char *re_subcompile_string(
         switch (c) {
         case '|':
         case '$':
-        case ')':{
+        case ')':              /*aa */  {
                 p->sIn.i--;
                 return 0;
             }
-        case '(':{
+        case '(':              /*aa */  {
                 zErr = re_subcompile_re(p);
                 if (zErr)
                     return zErr;
@@ -1321,7 +1327,7 @@ static const char *re_subcompile_string(
                 p->sIn.i++;
                 break;
             }
-        case '.':{
+        case '.':              /*aa */  {
                 if (rePeek(p) == '*') {
                     re_append(p, RE_OP_ANYSTAR, 0);
                     p->sIn.i++;
@@ -1330,26 +1336,26 @@ static const char *re_subcompile_string(
                 }
                 break;
             }
-        case '*':{
+        case '*':              /*aa */  {
                 if (iPrev < 0)
                     return "'*' without operand";
                 re_insert(p, iPrev, RE_OP_GOTO, p->nState - iPrev + 1);
                 re_append(p, RE_OP_FORK, iPrev - p->nState + 1);
                 break;
             }
-        case '+':{
+        case '+':              /*aa */  {
                 if (iPrev < 0)
                     return "'+' without operand";
                 re_append(p, RE_OP_FORK, iPrev - p->nState);
                 break;
             }
-        case '?':{
+        case '?':              /*aa */  {
                 if (iPrev < 0)
                     return "'?' without operand";
                 re_insert(p, iPrev, RE_OP_FORK, p->nState - iPrev + 1);
                 break;
             }
-        case '{':{
+        case '{':              /*aa */  {
                 int m = 0,
                     n = 0;
                 int sz,
@@ -1393,7 +1399,7 @@ static const char *re_subcompile_string(
                 }
                 break;
             }
-        case '[':{
+        case '[':              /*aa */  {
                 int iFirst = p->nState;
                 if (rePeek(p) == '^') {
                     re_append(p, RE_OP_CC_EXC, 0);
@@ -1427,7 +1433,7 @@ static const char *re_subcompile_string(
                 p->aArg[iFirst] = p->nState - iFirst;
                 break;
             }
-        case '\\':{
+        case '\\':             /*aa */  {
                 int specialOp = 0;
                 switch (rePeek(p)) {
                 case 'b':
