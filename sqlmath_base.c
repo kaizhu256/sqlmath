@@ -388,7 +388,7 @@ shRawLibFetch
     "replaceList": [
         {
             "aa": "^(?:#include .*?|SQLITE_EXTENSION_INIT1)$",
-            "bb": "//$1",
+            "bb": "//$&",
             "flags": "gm",
             "substr": ""
         }
@@ -440,10 +440,11 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/noop.c
 **    noop_do(X)        Deterministic and direct-only.
 **    noop_nd(X)        Non-deterministic.
 */
-#include "sqlite3ext.h"
-SQLITE_EXTENSION_INIT1
-//!! #include <assert.h>
-//!! #include <string.h>
+//#include "sqlite3ext.h"
+//SQLITE_EXTENSION_INIT1
+//#include <assert.h>
+//#include <string.h>
+
 /*
 ** Implementation of the noop() function.
 **

@@ -4,6 +4,7 @@
 - none
 
 # v2023.5.1-beta
+- sqlmath - migrate custom-extensions from file sqlite3.c to sqlmath_base.c
 - sqlmath - add sql-function avg_ema()
 - sqlmath - add sql-function fill_forward()
 
