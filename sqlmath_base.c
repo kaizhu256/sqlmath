@@ -412,7 +412,7 @@ shRawLibFetch
         },
         {
             "aa": "\\b(?:unsigned long|unsigned short)\\b.*",
-            "bb": "$& //NOLINT",
+            "bb": "$& // NOLINT",
             "flags": "g",
             "substr": ""
         },
@@ -467,15 +467,15 @@ shRawLibFetch
 +#define Z_OK 0
 +int compress(
 +    unsigned char *,
-+    uint32_t *,
++    unsigned long *, // NOLINT
 +    const unsigned char *,
-+    uint32_t
++    unsigned long // NOLINT
 +);
 +int uncompress(
 +    unsigned char *,
-+    uint32_t *,
++    unsigned long *, // NOLINT
 +    const unsigned char *,
-+    uint32_t
++    unsigned long // NOLINT
 +);
 +#else // EMSCRIPTEN
 +#include <zlib.h>
@@ -528,15 +528,15 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/compress.c
 #define Z_OK 0
 int compress(
     unsigned char *,
-    uint32_t *,
+    unsigned long *,            // NOLINT
     const unsigned char *,
-    uint32_t
+    unsigned long               // NOLINT
 );
 int uncompress(
     unsigned char *,
-    uint32_t *,
+    unsigned long *,            // NOLINT
     const unsigned char *,
-    uint32_t
+    unsigned long               // NOLINT
 );
 #else                           // EMSCRIPTEN
 #include <zlib.h>
@@ -577,7 +577,7 @@ static void compressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    unsigned long int nOut;     //NOLINT
+    unsigned long int nOut;     // NOLINT
     unsigned char x[8];
     int rc;
     int i,
@@ -622,7 +622,7 @@ static void uncompressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    unsigned long int nOut;     //NOLINT
+    unsigned long int nOut;     // NOLINT
     int rc;
     int i;
 
@@ -847,7 +847,7 @@ file https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/regexp.c
 #define RE_OP_BOUNDARY   17     /* Boundary between word and non-word */
 
 /* Each opcode is a "state" in the NFA */
-typedef unsigned short ReStateNumber;   //NOLINT
+typedef unsigned short ReStateNumber;   // NOLINT
 
 /* Because this is an NFA and not a DFA, multiple states can be active at
 ** once.  An instance of the following object records all active states in
