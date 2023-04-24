@@ -391,9 +391,6 @@ shRawLibFetch
             "url": "https://github.com/sqlite/sqlite/blob/version-3.39.4/ext/misc/series.c"
         }
     ],
-    "option": {
-        "modeGnuIndent": true
-    },
     "replaceList": [
         {
             "aa": "\\bunsigned long\\b.*",

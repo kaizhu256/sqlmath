@@ -801,7 +801,7 @@ shSqlmathUpdate() {(set -e
         Linux*)
             ;;
         *)
-            shRawLibFetch sqlmath_base.c
+            shRawLibFetch sqlmath_base.c --gnu-indent
             ;;
         esac
         git grep '3\.39\.[^4]' \
