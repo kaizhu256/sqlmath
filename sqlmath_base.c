@@ -473,16 +473,6 @@ int sqlite3_noop_init(
     int rc = SQLITE_OK;
     SQLITE_EXTENSION_INIT2(pApi);
     (void) pzErrMsg;            /* Unused parameter */
-    //
-    rc = sqlite3_noop_init(db, pzErrMsg, pApi);
-    if (rc != SQLITE_OK) {
-        return rc;
-    }
-    rc = sqlite3_series_init(db, pzErrMsg, pApi);
-    if (rc != SQLITE_OK) {
-        return rc;
-    }
-    //
     rc = sqlite3_create_function(db, "noop", 1,
         SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, noopfunc, 0, 0);
     if (rc)
@@ -2655,6 +2645,16 @@ int sqlite3_sqlmath_ext_base_init(
     SQLITE3_CREATE_FUNCTION2(matrix2d_concat, -1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
     SQLITE3_CREATE_FUNCTION3(avg_ema, 2);
+    //
+    errcode = sqlite3_noop_init(db, pzErrMsg, pApi);
+    if (errcode != SQLITE_OK) {
+        return errcode;
+    }
+    errcode = sqlite3_series_init(db, pzErrMsg, pApi);
+    if (errcode != SQLITE_OK) {
+        return errcode;
+    }
+    //
     errcode =
         sqlite3_create_function(db, "random1", 0,
         SQLITE_DIRECTONLY | SQLITE_UTF8, NULL, sql_random1_func, NULL, NULL);
