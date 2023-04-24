@@ -801,7 +801,8 @@ shSqlmathUpdate() {(set -e
         Linux*)
             ;;
         *)
-            shRawLibFetch sqlmath_base.c && ./indent.exe \
+            shRawLibFetch sqlmath_base.c && \
+                ./indent.exe \
                 --blank-lines-after-commas \
                 --braces-on-func-def-line \
                 --break-function-decl-args \
@@ -811,7 +812,8 @@ shSqlmathUpdate() {(set -e
                 --line-length78 \
                 --no-tabs \
                 -bfde \
-                sqlmath_base.c
+                sqlmath_base.c && \
+                sed -i "s|\r||g" sqlmath_base.c
             ;;
         esac
         git grep '3\.39\.[^4]' \
