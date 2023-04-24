@@ -406,9 +406,9 @@ shRawLibFetch
         }
     ]
 }
--    int nArg = 0;               /\\* Number of arguments that seriesFilter() expects *\\/
+-  int nArg = 0;          /\\* Number of arguments that seriesFilter() expects *\\/
++  int nArg = 0;
 +// hack-sqlite - fix warning
-+    int nArg = 0;
 +/\\* Number of arguments that seriesFilter() expects *\\/
 
 -  pIn = sqlite3_value_blob(argv[0]);
@@ -539,7 +539,7 @@ static void compressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    unsigned long int nOut;
+    uint32_t nOut;
     unsigned char x[8];
     int rc;
     int i,
@@ -584,7 +584,7 @@ static void uncompressFunc(
     unsigned char *pOut;
 // hack-sqlite - fix warning
     int nIn;
-    unsigned long int nOut;
+    uint32_t nOut;
     int rc;
     int i;
 
@@ -1073,7 +1073,9 @@ static int seriesBestIndex(
     int idxNum = 0;             /* The query plan bitmask */
     int bStartSeen = 0;         /* EQ constraint seen on the START column */
     int unusableMask = 0;       /* Mask of unusable constraints */
-    int nArg = 0;               /* Number of arguments that seriesFilter() expects */
+    int nArg = 0;
+// hack-sqlite - fix warning
+/* Number of arguments that seriesFilter() expects */
     int aIdx[3];                /* Constraints on start, stop, and step */
     const struct sqlite3_index_constraint *pConstraint;
 
