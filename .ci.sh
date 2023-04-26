@@ -890,10 +890,10 @@ shCiEmsdkInstall() {(set -e
     echo "## Done"
     #
     # download ports
-    touch "$EMSDK/.null.c"
-    emcc \
-        -s USE_ZLIB \
-        "$EMSDK/.null.c" -o "$EMSDK/.null_wasm.js"
+    # touch "$EMSDK/.null.c"
+    # emcc \
+    #     -s USE_ZLIB \
+    #     "$EMSDK/.null.c" -o "$EMSDK/.null_wasm.js"
 )}
 
 shCiNpmPublishCustom() {(set -e
