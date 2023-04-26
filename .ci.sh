@@ -719,7 +719,8 @@ shCiBuildWasm() {(set -e
     # OPTION1="$OPTION1 -fsanitize=address"
     for FILE in \
         sqlite3_rollup.c \
-        sqlmath_custom.c
+        sqlmath_custom.c \
+        zlib_rollup.c
     do
         FILE2=".tmp/$(basename "$FILE").wasm.o"
         # optimization - skip rebuild of sqlite3_rollup.c if possible
@@ -753,7 +754,7 @@ shCiBuildWasm() {(set -e
         #
         # extra feature
         #
-        OPTION2="$OPTION2 -DEMSCRIPTEN"
+        OPTION2="$OPTION2 -DHAVE_UNISTD_H"
         OPTION2="$OPTION2 -DSQLITE_DISABLE_LFS"
         OPTION2="$OPTION2 -DSQLITE_ENABLE_DBSTAT_VTAB=1"
         OPTION2="$OPTION2 -DSQLITE_ENABLE_FTS3"
@@ -761,6 +762,7 @@ shCiBuildWasm() {(set -e
         OPTION2="$OPTION2 -DSQLITE_ENABLE_MATH_FUNCTIONS"
         OPTION2="$OPTION2 -DSQLITE_ENABLE_NORMALIZE"
         OPTION2="$OPTION2 -DSQLITE_HAVE_ZLIB"
+        OPTION2="$OPTION2 -DZLIB_C2"
         # file
         OPTION2="$OPTION2 -c $FILE -o $FILE2"
         case "$FILE" in
@@ -810,11 +812,11 @@ shCiBuildWasm() {(set -e
         -s NODEJS_CATCH_REJECTION=0 \
         -s RESERVED_FUNCTION_POINTERS=64 \
         -s SINGLE_FILE=0 \
-        -s USE_ZLIB \
         -s WASM=1 \
         -s WASM_BIGINT \
         .tmp/sqlite3_rollup.c.wasm.o \
         .tmp/sqlmath_custom.c.wasm.o \
+        .tmp/zlib_rollup.c.wasm.o \
         #
     printf '' > sqlmath_wasm.js
     printf "/*jslint-disable*/
