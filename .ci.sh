@@ -575,8 +575,7 @@ import modulePath from "path";
         "targets": [
             targetWarningLevel(1, {
                 "defines": [
-                    "SQLITE3_C2",
-                    "ZLIB_C2"
+                    "SQLITE3_C2"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
@@ -586,8 +585,7 @@ import modulePath from "path";
                     }
                 },
                 "sources": [
-                    "../sqlite3_rollup.c",
-                    "../zlib_rollup.c"
+                    "../sqlite3_rollup.c"
                 ],
                 "target_name": "sqlite3_c",
                 "type": "static_library"
@@ -719,8 +717,7 @@ shCiBuildWasm() {(set -e
     # OPTION1="$OPTION1 -fsanitize=address"
     for FILE in \
         sqlite3_rollup.c \
-        sqlmath_custom.c \
-        zlib_rollup.c
+        sqlmath_custom.c
     do
         FILE2=".tmp/$(basename "$FILE").wasm.o"
         # optimization - skip rebuild of sqlite3_rollup.c if possible
@@ -762,7 +759,6 @@ shCiBuildWasm() {(set -e
         OPTION2="$OPTION2 -DSQLITE_ENABLE_MATH_FUNCTIONS"
         OPTION2="$OPTION2 -DSQLITE_ENABLE_NORMALIZE"
         OPTION2="$OPTION2 -DSQLITE_HAVE_ZLIB"
-        OPTION2="$OPTION2 -DZLIB_C2"
         # file
         OPTION2="$OPTION2 -c $FILE -o $FILE2"
         case "$FILE" in
@@ -816,7 +812,6 @@ shCiBuildWasm() {(set -e
         -s WASM_BIGINT \
         .tmp/sqlite3_rollup.c.wasm.o \
         .tmp/sqlmath_custom.c.wasm.o \
-        .tmp/zlib_rollup.c.wasm.o \
         #
     printf '' > sqlmath_wasm.js
     printf "/*jslint-disable*/
@@ -996,11 +991,11 @@ shSqlmathUpdate() {(set -e
     . "$HOME/myci2.sh" : && shMyciUpdate
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
+        shRawLibFetch zlib_rollup.c
         shRawLibFetch asset_sqlmath_external_rollup.js
         shRawLibFetch index.html
         shRawLibFetch sqlite3_rollup.c
         shRawLibFetch sqlite3_shell.c
-        shRawLibFetch zlib_rollup.c
         git grep '3\.39\.[^4]' \
             ":(exclude)CHANGELOG.md" \
             ":(exclude)sqlite3_rollup.c" \
