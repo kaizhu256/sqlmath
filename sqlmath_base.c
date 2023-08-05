@@ -1431,7 +1431,7 @@ SQLMATH_FUNC static void sql1_doublearray_extract_func(
         ((double *) sqlite3_value_blob(argv[0]))[ii]);
 }
 
-SQLMATH_FUNC static void sql1_jsonfromdoublearray_func(
+SQLMATH_FUNC static void sql1_doublearray_jsonfrom_func(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -1442,7 +1442,7 @@ SQLMATH_FUNC static void sql1_jsonfromdoublearray_func(
         sqlite3_value_bytes(argv[0]) / sizeof(double));
 }
 
-SQLMATH_FUNC static void sql1_jsontodoublearray_func(
+SQLMATH_FUNC static void sql1_doublearray_jsonto_func(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -1803,61 +1803,6 @@ static void sql2_stdev_step(
 }
 
 // SQLMATH_FUNC sql2_stdev_func - end
-
-// SQLMATH_FUNC sql2_vec_concat_func - start
-SQLMATH_FUNC static void sql2_vec_concat_final(
-    sqlite3_context * context
-) {
-// This function will concat rows of nCol doubles to a 2d-matrix.
-    // vec99 - init
-    VECTOR99_AGGREGATE_CONTEXT(0);
-    // vec99 - null-case
-    if (vec99->nbody == 0) {
-        sqlite3_result_null(context);
-        goto catch_error;
-    }
-    // debug
-    // fprintf(stderr, "\n");
-    // for (int ii = 0; ii < (int) vec99->nbody; ii += 1) {
-    //     fprintf(stderr, "vec_concat ii=%d xx=%f\n", ii, vec99_body[ii]);
-    // }
-    // vec99 - fill-forward
-    const int nn = (int) vec99->nbody;
-    for (int ii = 1; ii < nn; ii += 1) {
-        if (isnan(vec99_body[ii])) {
-            vec99_body[ii] = vec99_body[ii - 1];
-        }
-    }
-    // vec99 - fill-backward
-    for (int ii = nn - 2; ii >= 0; ii -= 1) {
-        if (isnan(vec99_body[ii])) {
-            vec99_body[ii] = vec99_body[ii + 1];
-        }
-    }
-    // vec99 - result
-    vector99_result_blob(vec99, context);
-    return;
-  catch_error:
-    vector99_agg_free(vec99_agg);
-}
-
-SQLMATH_FUNC static void sql2_vec_concat_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will concat argv[0] to carray of double
-    UNUSED_PARAMETER(argc);
-    // vec99 - init
-    VECTOR99_AGGREGATE_CONTEXT(0);
-    // vec99 - append double
-    VECTOR99_AGGREGATE_PUSH(sqlite3_value_double_or_nan(argv[0]));
-    return;
-  catch_error:
-    vector99_agg_free(vec99_agg);
-}
-
-// SQLMATH_FUNC sql2_vec_concat_func - end
 
 // SQLMATH_FUNC sql3_win_ema1_func - start
 SQLMATH_FUNC static void sql3_win_ema1_value(
@@ -2428,8 +2373,8 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(coth, 1);
     SQLITE3_CREATE_FUNCTION1(doublearray_array, -1);
     SQLITE3_CREATE_FUNCTION1(doublearray_extract, 2);
-    SQLITE3_CREATE_FUNCTION1(jsonfromdoublearray, 1);
-    SQLITE3_CREATE_FUNCTION1(jsontodoublearray, 1);
+    SQLITE3_CREATE_FUNCTION1(doublearray_jsonfrom, 1);
+    SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(roundorzero, 2);
     SQLITE3_CREATE_FUNCTION1(sign, 1);
@@ -2439,7 +2384,6 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION2(median, 1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
     SQLITE3_CREATE_FUNCTION2(stdev, 1);
-    SQLITE3_CREATE_FUNCTION2(vec_concat, 1);
     SQLITE3_CREATE_FUNCTION3(win_ema1, 2);
     SQLITE3_CREATE_FUNCTION3(win_ema2, -1);
     SQLITE3_CREATE_FUNCTION3(win_quantile1, 2);
