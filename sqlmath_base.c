@@ -206,7 +206,7 @@ file sqlmath_h - start
     UNUSED_PARAMETER(vec99_head);
 
 #define VECTOR99_AGGREGATE_PUSH(xx) \
-    errcode = vector99_push(vec99_agg, xx); \
+    errcode = vector99_agg_push(vec99_agg, xx); \
     if (errcode) { \
         sqlite3_result_error_code(context, errcode); \
         goto catch_error; \
@@ -310,6 +310,10 @@ typedef struct Vector99 {
 SQLMATH_API void vector99_agg_free(
     Vector99 ** vec99_agg
 );
+SQLMATH_API int vector99_agg_push(
+    Vector99 ** vec99_agg,
+    double xx
+);
 SQLMATH_API double *vector99_body(
     const Vector99 * vec99
 );
@@ -322,10 +326,6 @@ SQLMATH_API double *vector99_head(
 );
 SQLMATH_API Vector99 *vector99_malloc(
     const int nhead
-);
-SQLMATH_API int vector99_push(
-    Vector99 ** vec99_agg,
-    double xx
 );
 SQLMATH_API void vector99_result_blob(
     Vector99 * vec99,
@@ -998,6 +998,48 @@ SQLMATH_API void vector99_agg_free(
     }
 }
 
+SQLMATH_API int vector99_agg_push(
+    Vector99 ** vec99_agg,
+    double xx
+) {
+    if (vec99_agg == NULL || *vec99_agg == NULL) {
+        return SQLITE_NOMEM;
+    }
+    Vector99 *vec99 = *vec99_agg;
+    // rotate wnn
+    if (vec99->wnn) {
+        vector99_body(vec99)[(int) vec99->wii] = xx;
+        vec99->wii += 1;
+        if (vec99->wii >= vec99->wnn) {
+            vec99->wii -= vec99->wnn;
+        }
+        return SQLITE_OK;
+    }
+    const int nn =
+        (sizeof(Vector99) / sizeof(double) + vec99->nbody + vec99->nhead);
+    uint32_t alloc = vec99->alloc;
+    if (nn * sizeof(double) >= alloc) {
+        // error - toobig
+        if (alloc >= SQLITE_MAX_LENGTH2) {
+            goto catch_error;
+        }
+        alloc = MIN(SQLITE_MAX_LENGTH2, alloc * 2);
+        vec99 = sqlite3_realloc(vec99, alloc);
+        // error - nomem
+        if (vec99 == NULL) {
+            goto catch_error;
+        }
+        vec99->alloc = alloc;
+        *vec99_agg = vec99;
+    }
+    ((double *) vec99)[nn] = xx;
+    vec99->nbody += 1;
+    return SQLITE_OK;
+  catch_error:
+    vector99_agg_free(vec99_agg);
+    return SQLITE_NOMEM;
+}
+
 SQLMATH_API double *vector99_body(
     const Vector99 * vec99
 ) {
@@ -1048,7 +1090,7 @@ SQLMATH_API Vector99 *vector99_from_json(
             switch (json[ii]) {
             case ',':
             case ']':
-                vector99_push(vec99_agg, atof(json + jj));
+                vector99_agg_push(vec99_agg, atof(json + jj));
                 jj = ii + 1;
                 break;
             }
@@ -1093,48 +1135,6 @@ SQLMATH_API Vector99 *vector99_malloc(
     vec99->alloc = alloc;
     vec99->nhead = MAX(0, nhead);
     return vec99;
-}
-
-SQLMATH_API int vector99_push(
-    Vector99 ** vec99_agg,
-    double xx
-) {
-    if (vec99_agg == NULL || *vec99_agg == NULL) {
-        return SQLITE_NOMEM;
-    }
-    Vector99 *vec99 = *vec99_agg;
-    // rotate wnn
-    if (vec99->wnn) {
-        vector99_body(vec99)[(int) vec99->wii] = xx;
-        vec99->wii += 1;
-        if (vec99->wii >= vec99->wnn) {
-            vec99->wii -= vec99->wnn;
-        }
-        return SQLITE_OK;
-    }
-    const int nn =
-        (sizeof(Vector99) / sizeof(double) + vec99->nbody + vec99->nhead);
-    uint32_t alloc = vec99->alloc;
-    if (nn * sizeof(double) >= alloc) {
-        // error - toobig
-        if (alloc >= SQLITE_MAX_LENGTH2) {
-            goto catch_error;
-        }
-        alloc = MIN(SQLITE_MAX_LENGTH2, alloc * 2);
-        vec99 = sqlite3_realloc(vec99, alloc);
-        // error - nomem
-        if (vec99 == NULL) {
-            goto catch_error;
-        }
-        vec99->alloc = alloc;
-        *vec99_agg = vec99;
-    }
-    ((double *) vec99)[nn] = xx;
-    vec99->nbody += 1;
-    return SQLITE_OK;
-  catch_error:
-    vector99_agg_free(vec99_agg);
-    return SQLITE_NOMEM;
 }
 
 SQLMATH_API void vector99_result_blob(
@@ -1365,6 +1365,17 @@ SQLMATH_FUNC static void sql1_cot_func(
 }
 
 SQLMATH_FUNC static void sql1_coth_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will return coth(argv[0]).
+    UNUSED_PARAMETER(argc);
+    sqlite3_result_double(context,
+        1.0 / tanh(sqlite3_value_double_or_nan(argv[0])));
+}
+
+SQLMATH_FUNC static void sql1_double_array_func(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -2370,6 +2381,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(copyblob, 1);
     SQLITE3_CREATE_FUNCTION1(cot, 1);
     SQLITE3_CREATE_FUNCTION1(coth, 1);
+    SQLITE3_CREATE_FUNCTION1(double_array, -1);
     SQLITE3_CREATE_FUNCTION1(jsonfromdoublearray, 1);
     SQLITE3_CREATE_FUNCTION1(jsontodoublearray, 1);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
