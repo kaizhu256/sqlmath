@@ -1842,8 +1842,9 @@ typedef struct WinCosfit {
     double vxx;                 // y-variance.p
     double vxy;                 // xy-covariance.p
     double vyy;                 // y-variance.p
-    double xx0;                 // trailing-window-xx
-    double yy0;                 // trailine-window-yy
+    double rr0;                 // trailing-window-r
+    double xx0;                 // trailing-window-x
+    double yy0;                 // trailing-window-y
 } WinCosfit;
 static const int WinCosfitN = sizeof(WinCosfit) / sizeof(double);
 
@@ -2006,17 +2007,17 @@ static void winCosfitLnr(
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
     //!! if (modeWelford) {
-        //!! // calculate running csr - welford
-        //!! // welford - increment vrr
-        //!! const double dd = rr - mrr;
-        //!! mrr += dd * wcf->inv0;
-        //!! vrr += dd * (rr - mrr);
+    //!! // calculate running csr - welford
+    //!! // welford - increment vrr
+    //!! const double dd = rr - mrr;
+    //!! mrr += dd * wcf->inv0;
+    //!! vrr += dd * (rr - mrr);
     //!! } else {
-        //!! // calculate running csr - window
-        //!! const double dr = rr - rr0;
-        //!! const double inv0 = wcf->inv0;
-        //!! vrr += (rr * rr - rr0 * rr0) - inv0 * dr * dr - 2 * dr * mrr;
-        //!! mrr += dr * inv0;
+    //!! // calculate running csr - window
+    //!! const double dr = rr - rr0;
+    //!! const double inv0 = wcf->inv0;
+    //!! vrr += (rr * rr - rr0 * rr0) - inv0 * dr * dr - 2 * dr * mrr;
+    //!! mrr += dr * inv0;
     //!! }
     // save wcf
     wcf->laa = laa;
@@ -2106,8 +2107,12 @@ static void sql3_win_cosfit2_step(
         WinCosfit *wcf = (WinCosfit *) vec99_head + ii;
         wcf->xx0 = vec99_body[wii0 + ii * 3 + 0];
         wcf->yy0 = vec99_body[wii0 + ii * 3 + 1];
+        wcf->rr0 = vec99_body[wii0 + ii * 3 + 2];
         sqlite3_value_double_or_prev(argv[0], &wcf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wcf->yy1);
+        // vec99 - calculate lnr
+        winCosfitLnr(wcf, vec99->wnn == 0);
+        // vec99 - push xx, yy, rr
         VECTOR99_AGGREGATE_PUSH(wcf->xx1);
         VECTOR99_AGGREGATE_PUSH(wcf->yy1);
         VECTOR99_AGGREGATE_PUSH(0);
@@ -2116,8 +2121,6 @@ static void sql3_win_cosfit2_step(
     // vec99 - calculate lnr, csr
     WinCosfit *wcf = (WinCosfit *) vec99_head;
     for (int ii = 0; ii < ncol; ii += 1) {
-        // vec99 - calculate lnr
-        winCosfitLnr(wcf, vec99->wnn == 0);
         // vec99 - calculate csr
         if (!modeNocsr) {
             winCosfitCsr(wcf, vec99->nbody, vec99->ncol, ii);
