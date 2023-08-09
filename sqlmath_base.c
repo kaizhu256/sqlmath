@@ -1859,25 +1859,8 @@ static void winCosfitCsr(
     // calculate csr - caa
     const double laa = wcf->laa;        // linest y-intercept
     const double lbb = wcf->lbb;        // linest slope
-    double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
-    //
     const double nnn = wcf->nnn;
-    //!! double nnn = 0;             // number of elements
-    double myy = 0;             // y-average
-    double vyy = 0;             // yy-variance.p
-    /*
-       for (int ii = 0; ii < nbody; ii += ncol * 3) {
-       //!! const double yy = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
-       //!! ttyy[ii + 2] = yy;
-       const double yy = ttyy[ii + 2];
-       nnn += 1;
-       // welford - increment vyy
-       const double dd = yy - myy;
-       myy += dd / nnn;
-       vyy += dd * (yy - myy);
-       }
-       const double caa = sqrt(vyy / nnn);
-     */
+    double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
     const double caa = wcf->caa;
     const double inva = 1 / caa;
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
@@ -1941,8 +1924,8 @@ static void winCosfitCsr(
         wcf->ctp += 1;
     }
     // calculate csr - cyy
-    myy = 0;
-    vyy = 0;
+    double myy = 0;             // y-average
+    double vyy = 0;             // yy-variance.p
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
         const double cyy =
@@ -2032,8 +2015,6 @@ static void winCosfitLnr(
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
     const double rr = isfinite(lyy) ? yy - lyy : mrr;
-    //!! const double rr = (wcf->nnn > 5
-    //!! && isfinite(laa)) ? yy - laa + lbb * xx : mrr;
     if (modeWelford) {
         // calculate running csr - welford
         // welford - increment vrr
