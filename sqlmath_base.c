@@ -2110,6 +2110,35 @@ static void sql3_win_cosfit2_step(
     vector99_agg_free(vec99_agg);
 }
 
+SQLMATH_FUNC static void sql1_win_cosfit2_predict_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will predict next slr
+    UNUSED_PARAMETER(argc);
+    // validate argv
+    const int bytes = sqlite3_value_bytes(argv[0]);
+    if (bytes <= 0) {
+        goto catch_error;
+    }
+    const int icol = sqlite3_value_int(argv[1]);
+    if (icol < 0 || bytes < (icol + 1) * WinCosfitN * sizeof(double)) {
+        goto catch_error;
+    }
+    const WinCosfit *wcf = (WinCosfit *) sqlite3_value_blob(argv[0]) + icol;
+    const double xx = sqlite3_value_double(argv[2]);
+    const double yy =
+        wcf->laa + wcf->lbb * xx + wcf->caa * cos(fmod(wcf->cww * xx,
+            2 * MATH_PI) + wcf->cpp);
+    if (!isfinite(yy)) {
+        goto catch_error;
+    }
+    sqlite3_result_double(context, yy);
+  catch_error:
+    sqlite3_result_null(context);
+}
+
 SQLMATH_FUNC static void sql1_win_cosfit2_step_func(
     sqlite3_context * context,
     int argc,
@@ -2122,17 +2151,11 @@ SQLMATH_FUNC static void sql1_win_cosfit2_step_func(
         goto catch_error;
     }
     const int bytes = sqlite3_value_bytes(argv[0]);
-    if (ncol <= 0 || bytes < ncol * WinCosfitN * sizeof(double)) {
+    if (ncol <= 0 || bytes != ncol * WinCosfitN * sizeof(double)) {
         goto catch_error;
     }
     // init wcf0
     const WinCosfit *blob0 = sqlite3_value_blob(argv[0]);
-    // const int nbody = blob0->nnn * ncol * 3;
-    // if (nbody <= 0
-    // || bytes != (ncol * WinCosfitN + nbody) * sizeof(double)) {
-    if (bytes != ncol * WinCosfitN * sizeof(double)) {
-        goto catch_error;
-    }
     WinCosfit *wcf0 = sqlite3_malloc(bytes);
     if (wcf0 == NULL) {
         sqlite3_result_error_nomem(context);
@@ -2493,6 +2516,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(sign, 1);
     SQLITE3_CREATE_FUNCTION1(squared, 1);
     SQLITE3_CREATE_FUNCTION1(throwerror, 1);
+    SQLITE3_CREATE_FUNCTION1(win_cosfit2_predict, 3);
     SQLITE3_CREATE_FUNCTION1(win_cosfit2_step, -1);
     SQLITE3_CREATE_FUNCTION2(median, 1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
