@@ -2023,6 +2023,7 @@ static void winCosfitLnr(
     }
     const double caa = sqrt(vrr * inv0);
     // save wcf
+    wcf->caa = caa;
     wcf->inv0 = inv0;
     wcf->laa = laa;
     wcf->lbb = lbb;
