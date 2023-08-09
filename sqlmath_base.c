@@ -2008,8 +2008,8 @@ static void winCosfitLnr(
     wcf->xx0 = xx;
     wcf->yy0 = yy;
     // calculate csr - caa
-    const double rr = isfinite(lyy) ? yy - lyy : wcf->rr0;
     const double rr0 = wcf->rr0;
+    const double rr = isfinite(lyy) ? yy - lyy : rr0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
     if (modeWelford) {
@@ -2107,8 +2107,8 @@ static void sql3_win_cosfit2_step(
         // vec99 - calculate lnr
         winCosfitLnr(wcf, vec99->wnn == 0);
         // vec99 - push xx, yy, rr
-        VECTOR99_AGGREGATE_PUSH(wcf->xx1);
-        VECTOR99_AGGREGATE_PUSH(wcf->yy1);
+        VECTOR99_AGGREGATE_PUSH(wcf->xx0);
+        VECTOR99_AGGREGATE_PUSH(wcf->yy0);
         VECTOR99_AGGREGATE_PUSH(wcf->rr0);
         argv += 2;
     }
