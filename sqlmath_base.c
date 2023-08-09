@@ -2175,7 +2175,7 @@ SQLMATH_FUNC static void sql1_win_cosfit2_step_func(
         goto catch_error;
     }
     const int bytes = sqlite3_value_bytes(argv[0]);
-    if (ncol <= 0 || bytes != ncol * WinCosfitN * sizeof(double)) {
+    if (ncol <= 0 || (size_t) bytes != ncol * WinCosfitN * sizeof(double)) {
         goto catch_error;
     }
     // init wcf0
