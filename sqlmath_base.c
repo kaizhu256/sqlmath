@@ -1926,8 +1926,7 @@ static void winCosfitCsr(
     const double lbb = wcf->lbb;
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
-        const double yy = ttyy[ii + 1];
-        const double cyy =      //
+        const double cyy =
             laa + lbb * tt + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
         if (tt == xx1) {
             wcf->cyy = cyy;
