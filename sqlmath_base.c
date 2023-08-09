@@ -2135,6 +2135,7 @@ SQLMATH_FUNC static void sql1_win_cosfit2_predict_func(
         goto catch_error;
     }
     sqlite3_result_double(context, yy);
+    return;
   catch_error:
     sqlite3_result_null(context);
 }
