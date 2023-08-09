@@ -2010,11 +2010,10 @@ static void winCosfitLnr(
     wcf->xx0 = xx;
     wcf->yy0 = yy;
     // calculate csr - caa
-    //!! const double rr = yy - laa - lbb * xx;
+    const double rr = isfinite(lyy) ? yy - lyy : mrr;
     const double rr0 = wcf->rr0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
-    const double rr = isfinite(lyy) ? yy - lyy : mrr;
     if (modeWelford) {
         // calculate running csr - welford
         // welford - increment vrr
