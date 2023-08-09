@@ -2140,7 +2140,7 @@ SQLMATH_FUNC static void sql1_win_cosfit2_predict_func(
         goto catch_error;
     }
     const int icol = sqlite3_value_int(argv[1]);
-    if (icol < 0 || bytes < (icol + 1) * WinCosfitN * sizeof(double)) {
+    if (icol < 0 || (size_t) bytes < (icol + 1) * WinCosfitN * sizeof(double)) {
         goto catch_error;
     }
     const WinCosfit *wcf = (WinCosfit *) sqlite3_value_blob(argv[0]) + icol;
