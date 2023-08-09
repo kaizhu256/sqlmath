@@ -1962,13 +1962,18 @@ static void winCosfitLnr(
 ) {
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
+    const double rr0 = wcf->rr0;
     const double xx = wcf->xx1;
     const double xx0 = wcf->xx0;
     const double yy = wcf->yy1;
     const double yy0 = wcf->yy0;
+    double dx = 0;
+    double dy = 0;
     double inv0 = wcf->inv0;
+    double mrr = wcf->mrr;
     double mxx = wcf->mxx;
     double myy = wcf->myy;
+    double vrr = wcf->vrr;
     double vxx = wcf->vxx;
     double vxy = wcf->vxy;
     double vyy = wcf->vyy;
@@ -1978,21 +1983,20 @@ static void winCosfitLnr(
         inv0 = 1.0 / (wcf->nnn - 0);
         wcf->inv1 = 1.0 / (wcf->nnn - 1);
         wcf->inv2 = 1.0 / (wcf->nnn - 2);
-        double dd;
         // welford - increment vxx
-        dd = xx - mxx;
-        mxx += dd * inv0;
-        vxx += dd * (xx - mxx);
+        dx = xx - mxx;
+        mxx += dx * inv0;
+        vxx += dx * (xx - mxx);
         // welford - increment vyy
-        dd = yy - myy;
-        myy += dd * inv0;
-        vyy += dd * (yy - myy);
+        dy = yy - myy;
+        myy += dy * inv0;
+        vyy += dy * (yy - myy);
         // welford - increment vxy
-        vxy += dd * (xx - mxx);
+        vxy += dy * (xx - mxx);
     } else {
         // calculate running lnr - window
-        const double dx = xx - xx0;
-        const double dy = yy - yy0;
+        dx = xx - xx0;
+        dy = yy - yy0;
         vxx += (xx * xx - xx0 * xx0) - inv0 * dx * dx - 2 * dx * mxx;
         vxy += (xx * yy - xx0 * yy0) - inv0 * dx * dy - mxx * dy - dx * myy;
         vyy += (yy * yy - yy0 * yy0) - inv0 * dy * dy - 2 * dy * myy;
@@ -2005,20 +2009,17 @@ static void winCosfitLnr(
     const double laa = myy - lbb * mxx;
     // calculate csr - caa
     const double rr = yy - laa + lbb * xx;
-    const double rr0 = wcf->rr0;
-    double mrr = wcf->mrr;
-    double vrr = wcf->vrr;
     if (modeWelford) {
         // calculate running csr - welford
         // welford - increment vrr
-        const double dd = rr - mrr;
-        mrr += dd * inv0;
-        vrr += dd * (rr - mrr);
+        dy = rr - mrr;
+        mrr += dy * inv0;
+        vrr += dy * (rr - mrr);
     } else {
         // calculate running csr - window
-        const double dd = rr - rr0;
-        vrr += (rr * rr - rr0 * rr0) - inv0 * dd * dd - 2 * dd * mrr;
-        mrr += dd * inv0;
+        dy = rr - rr0;
+        vrr += (rr * rr - rr0 * rr0) - inv0 * dy * dy - 2 * dy * mrr;
+        mrr += dy * inv0;
     }
     const double caa = sqrt(vrr * inv0);
     // save wcf
