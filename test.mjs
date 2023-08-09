@@ -2013,7 +2013,6 @@ SELECT
                     + valActual.slice(ttCosfit).map(function (elem) {
                         Object.entries(elem).forEach(function ([key, val]) {
                             switch (key) {
-                            //!! case "caa":
                             case "date":
                                 break;
                             default:
@@ -2025,6 +2024,7 @@ SELECT
                             elem.laa,
                             elem.lbb,
                             elem.caa,
+                            elem.mxe,
                             //!! elem.cww,
                             //!! elem.cpp,
                             //!! elem.ctt,
