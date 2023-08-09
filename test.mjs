@@ -1989,10 +1989,13 @@ SELECT
         ROUND(${sqlCosfitExtract("__wcf", 0, "cee")} * 100.0 / yy, 4) AS cee,
         --
         ROUND(${sqlCosfitExtract("__wcf", 0, "caa")}, 4) AS caa,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "cww")}, 4) AS cww,
         ROUND(${sqlCosfitExtract("__wcf", 0, "cpp")}, 4) AS cpp,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 4) AS ctt,
         ROUND(${sqlCosfitExtract("__wcf", 0, "ctp")}, 4) AS ctp,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 4) AS ctt,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "cww")}, 4) AS cww,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "laa")}, 4) AS laa,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "lbb")}, 4) AS lbb,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "lee")}, 4) AS lee,
         --
         date,
         ROUND(0.01 * yy, 4) AS yy
@@ -2014,16 +2017,19 @@ SELECT
                     + valActual.slice(ttCosfit).map(function (elem) {
                         return [
                             elem.date,
-                            elem.caa,
-                            elem.cww,
-                            elem.cpp,
-                            elem.ctt,
-                            elem.ctp,
-                            elem.yy,
-                            elem.lyy,
-                            elem.cyy,
-                            elem.lee,
-                            elem.cee
+                            elem.laa,
+                            elem.lbb,
+                            elem.lee
+                            //!! elem.caa,
+                            //!! elem.cww,
+                            //!! elem.cpp,
+                            //!! elem.ctt,
+                            //!! elem.ctp,
+                            //!! elem.yy,
+                            //!! elem.lyy,
+                            //!! elem.cyy,
+                            //!! elem.lee,
+                            //!! elem.cee
                         ].join(" ");
                     }).join("\n")
                 );
