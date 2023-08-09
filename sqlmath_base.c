@@ -1838,11 +1838,11 @@ typedef struct WinCosfit {
     double inv1;                // 1.0 / (nnn - 1)
     double inv2;                // 1.0 / (nnn - 2)
     double mrr;                 // r-average
+    double rr0;                 // trailing-window-r
     double vrr;                 // r-variance.p
     double vxx;                 // y-variance.p
     double vxy;                 // xy-covariance.p
     double vyy;                 // y-variance.p
-    double rr0;                 // trailing-window-r
     double xx0;                 // trailing-window-x
     double yy0;                 // trailing-window-y
 } WinCosfit;
@@ -1873,6 +1873,7 @@ static void winCosfitCsr(
         vyy += dd * (yy - myy);
     }
     const double caa = sqrt(vyy / nnn);
+    //!! const double caa = wcf->caa;
     const double inva = 1 / caa;
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
         return;
@@ -1965,6 +1966,7 @@ static void winCosfitLnr(
     const double xx0 = wcf->xx0;
     const double yy = wcf->yy1;
     const double yy0 = wcf->yy0;
+    double inv0 = wcf->inv0;
     double mxx = wcf->mxx;
     double myy = wcf->myy;
     double vxx = wcf->vxx;
@@ -1973,17 +1975,17 @@ static void winCosfitLnr(
     if (modeWelford) {
         // calculate running lnr - welford
         wcf->nnn += 1;
-        wcf->inv0 = 1.0 / (wcf->nnn - 0);
+        inv0 = 1.0 / (wcf->nnn - 0);
         wcf->inv1 = 1.0 / (wcf->nnn - 1);
         wcf->inv2 = 1.0 / (wcf->nnn - 2);
         double dd;
         // welford - increment vxx
         dd = xx - mxx;
-        mxx += dd * wcf->inv0;
+        mxx += dd * inv0;
         vxx += dd * (xx - mxx);
         // welford - increment vyy
         dd = yy - myy;
-        myy += dd * wcf->inv0;
+        myy += dd * inv0;
         vyy += dd * (yy - myy);
         // welford - increment vxy
         vxy += dd * (xx - mxx);
@@ -1991,7 +1993,6 @@ static void winCosfitLnr(
         // calculate running lnr - window
         const double dx = xx - xx0;
         const double dy = yy - yy0;
-        const double inv0 = wcf->inv0;
         vxx += (xx * xx - xx0 * xx0) - inv0 * dx * dx - 2 * dx * mxx;
         vxy += (xx * yy - xx0 * yy0) - inv0 * dx * dy - mxx * dy - dx * myy;
         vyy += (yy * yy - yy0 * yy0) - inv0 * dy * dy - 2 * dy * myy;
@@ -2004,31 +2005,35 @@ static void winCosfitLnr(
     const double laa = myy - lbb * mxx;
     // calculate csr - caa
     const double rr = yy - laa + lbb * xx;
+    const double rr0 = wcf->rr0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
-    //!! if (modeWelford) {
-    //!! // calculate running csr - welford
-    //!! // welford - increment vrr
-    //!! const double dd = rr - mrr;
-    //!! mrr += dd * wcf->inv0;
-    //!! vrr += dd * (rr - mrr);
-    //!! } else {
-    //!! // calculate running csr - window
-    //!! const double dr = rr - rr0;
-    //!! const double inv0 = wcf->inv0;
-    //!! vrr += (rr * rr - rr0 * rr0) - inv0 * dr * dr - 2 * dr * mrr;
-    //!! mrr += dr * inv0;
-    //!! }
+    if (modeWelford) {
+        // calculate running csr - welford
+        // welford - increment vrr
+        const double dd = rr - mrr;
+        mrr += dd * inv0;
+        vrr += dd * (rr - mrr);
+    } else {
+        // calculate running csr - window
+        const double dd = rr - rr0;
+        vrr += (rr * rr - rr0 * rr0) - inv0 * dd * dd - 2 * dd * mrr;
+        mrr += dd * inv0;
+    }
+    const double caa = sqrt(vrr * inv0);
     // save wcf
+    wcf->inv0 = inv0;
     wcf->laa = laa;
     wcf->lbb = lbb;
     wcf->lee = sqrt(vyy * (1 - lxy * lxy) * wcf->inv2);
     wcf->lxy = lxy;
     wcf->lyy = laa + lbb * xx;
     wcf->mee = sqrt(vyy * wcf->inv1);
+    wcf->mrr = mrr;
     wcf->mxe = sqrt(vxx * wcf->inv1);
     wcf->mxx = mxx;
     wcf->myy = myy;
+    wcf->vrr = vrr;
     wcf->vxx = vxx;
     wcf->vxy = vxy;
     wcf->vyy = vyy;
