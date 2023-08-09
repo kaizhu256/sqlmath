@@ -1983,22 +1983,18 @@ date close
                         db,
                         sql: (`
 SELECT
-        ROUND(0.01 * ${sqlCosfitExtract("__wcf", 0, "lyy")}, 4) AS lyy,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "lee")} * 100.0 / yy, 4) AS lee,
-        ROUND(0.01 * ${sqlCosfitExtract("__wcf", 0, "cyy")}, 4) AS cyy,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "cee")} * 100.0 / yy, 4) AS cee,
+        ${sqlCosfitExtractLnr("__wcf", 0, "")},
         --
-        ROUND(${sqlCosfitExtract("__wcf", 0, "caa")}, 4) AS caa,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "cpp")}, 4) AS cpp,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "ctp")}, 4) AS ctp,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 4) AS ctt,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "cww")}, 4) AS cww,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "laa")}, 4) AS laa,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "lbb")}, 4) AS lbb,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "lee")}, 4) AS lee,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "caa")}, 8) AS caa,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "cee")}, 8) AS cee,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "cpp")}, 8) AS cpp,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "ctp")}, 8) AS ctp,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 8) AS ctt,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "cww")}, 8) AS cww,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "cyy")}, 8) AS cyy,
         --
         date,
-        ROUND(0.01 * yy, 4) AS yy
+        ROUND(0.01 * yy, 8) AS yy
     FROM (
         SELECT
             win_cosfit2(0, value->>'ii', value->>'priceClose') OVER (
@@ -2015,12 +2011,21 @@ SELECT
                 valActual = (
                     "date caa cww cpp ctt ctp yy lyy cyy lee cee\n"
                     + valActual.slice(ttCosfit).map(function (elem) {
+                        Object.entries(elem).forEach(function ([key, val]) {
+                            switch (key) {
+                            //!! case "caa":
+                            case "date":
+                                break;
+                            default:
+                                elem[key] = Number(val).toFixed(8);
+                            }
+                        });
                         return [
                             elem.date,
                             elem.laa,
                             elem.lbb,
                             elem.caa,
-                            elem.cww,
+                            //!! elem.cww,
                             //!! elem.cpp,
                             //!! elem.ctt,
                             //!! elem.ctp,
@@ -2033,11 +2038,6 @@ SELECT
                         ].join(" ");
                     }).join("\n")
                 );
-                valActual = valActual.replace((
-                    / -?\d[\d.]*/g
-                ), function (num) {
-                    return ` ${Number(num).toFixed(4)}`;
-                });
                 valActual = valActual.replace((/  /g), " null ");
                 valActual = valActual.replace((/ \n/g), "\n");
                 valActual = valActual.replace((/ /g), "\t");
