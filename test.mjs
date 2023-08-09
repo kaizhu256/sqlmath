@@ -1994,9 +1994,6 @@ SELECT
         ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 4) AS ctt,
         ROUND(${sqlCosfitExtract("__wcf", 0, "ctp")}, 4) AS ctp,
         --
-        ROUND(${sqlCosfitExtract("__wcf", 0, "mrr")}, 4) AS mrr,
-        ROUND(${sqlCosfitExtract("__wcf", 0, "vrr")}, 4) AS vrr,
-        --
         date,
         ROUND(0.01 * yy, 4) AS yy
     FROM (
@@ -2027,8 +2024,6 @@ SELECT
                             elem.cyy,
                             elem.lee,
                             elem.cee
-                            //!! elem.mrr,
-                            //!! elem.vrr
                         ].join(" ");
                     }).join("\n")
                 );
