@@ -1920,10 +1920,10 @@ static void winCosfitCsr(
         wcf->ctp += 1;
     }
     // calculate csr - cyy
-    double mrr = 0;             // r-average
-    double vrr = 0;             // r-variance.p
     const double laa = wcf->laa;
     const double lbb = wcf->lbb;
+    double mrr = 0;             // r-average
+    double vrr = 0;             // r-variance.p
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
         const double cyy =
