@@ -2019,9 +2019,8 @@ SELECT
                             elem.date,
                             elem.laa,
                             elem.lbb,
-                            elem.caa
-                            //!! elem.caa,
-                            //!! elem.cww,
+                            elem.caa,
+                            elem.cww,
                             //!! elem.cpp,
                             //!! elem.ctt,
                             //!! elem.ctp,
@@ -2030,6 +2029,7 @@ SELECT
                             //!! elem.cyy,
                             //!! elem.lee,
                             //!! elem.cee
+                            0
                         ].join(" ");
                     }).join("\n")
                 );
