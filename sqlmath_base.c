@@ -1837,9 +1837,11 @@ typedef struct WinCosfit {
     double inv0;                // 1.0 / (nnn - 0)
     double inv1;                // 1.0 / (nnn - 1)
     double inv2;                // 1.0 / (nnn - 2)
-    double vxx;                 // yy-variance.p
+    double mrr;                 // r-average
+    double vrr;                 // r-variance.p
+    double vxx;                 // y-variance.p
     double vxy;                 // xy-covariance.p
-    double vyy;                 // yy-variance.p
+    double vyy;                 // y-variance.p
     double xx0;                 // trailing-window-xx
     double yy0;                 // trailine-window-yy
 } WinCosfit;
@@ -1999,6 +2001,24 @@ static void winCosfitLnr(
     const double lxy = vxy / sqrt(vxx * vyy);
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
+    // calculate csr - caa
+    const double rr = yy - laa + lbb * xx;
+    double mrr = wcf->mrr;
+    double vrr = wcf->vrr;
+    //!! if (modeWelford) {
+        //!! // calculate running csr - welford
+        //!! // welford - increment vrr
+        //!! const double dd = rr - mrr;
+        //!! mrr += dd * wcf->inv0;
+        //!! vrr += dd * (rr - mrr);
+    //!! } else {
+        //!! // calculate running csr - window
+        //!! const double dr = rr - rr0;
+        //!! const double inv0 = wcf->inv0;
+        //!! vrr += (rr * rr - rr0 * rr0) - inv0 * dr * dr - 2 * dr * mrr;
+        //!! mrr += dr * inv0;
+    //!! }
+    // save wcf
     wcf->laa = laa;
     wcf->lbb = lbb;
     wcf->lee = sqrt(vyy * (1 - lxy * lxy) * wcf->inv2);
