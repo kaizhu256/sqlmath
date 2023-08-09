@@ -1922,10 +1922,14 @@ static void winCosfitCsr(
     // calculate csr - cyy
     double mrr = 0;             // r-average
     double vrr = 0;             // r-variance.p
+    const double laa = wcf->laa;
+    const double lbb = wcf->lbb;
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
         const double yy = ttyy[ii + 1];
-        const double cyy = yy - ttyy[ii + 2]    //
+        const double cyy = 0    //
+            + laa + lbb * tt    //
+            //!! yy - ttyy[ii + 2]   //
             + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
         if (tt == xx1) {
             wcf->cyy = cyy;
@@ -2007,7 +2011,7 @@ static void winCosfitLnr(
     wcf->xx0 = xx;
     wcf->yy0 = yy;
     // calculate csr - caa
-    const double rr = isfinite(lyy) ? yy - lyy : 0;
+    const double rr = isfinite(lyy) ? yy - lyy : wcf->rr0;
     const double rr0 = wcf->rr0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
