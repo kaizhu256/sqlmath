@@ -1884,11 +1884,13 @@ static void winCosfitCsr(
     double hpp = 0;             // hessian ddr/dpdp
     double hpw = 0;             // hessian ddr/dpdw
     double hww = 0;             // hessian ddr/dwdw
+    const double laa = wcf->laa;
+    const double lbb = wcf->lbb;
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
         const double cost = cos(cpp + fmod(cww * tt, 2 * MATH_PI));
         const double sint = sin(cpp + fmod(cww * tt, 2 * MATH_PI));
-        const double gg0 = sint * (cost - ttyy[ii + 2] * inva);
+        const double gg0 = sint * (cost - (laa + lbb * tt) * inva);
         const double hh0 = sint * sint;
         gpp += gg0;
         gww += gg0 * tt;
@@ -1920,8 +1922,6 @@ static void winCosfitCsr(
         wcf->ctp += 1;
     }
     // calculate csr - cyy
-    const double laa = wcf->laa;
-    const double lbb = wcf->lbb;
     double mrr = 0;             // r-average
     double vrr = 0;             // r-variance.p
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
