@@ -1992,18 +1992,25 @@ SELECT
         ROUND(${sqlCosfitExtract("__wcf", 0, "ctt")}, 8) AS ctt,
         ROUND(${sqlCosfitExtract("__wcf", 0, "cww")}, 8) AS cww,
         ROUND(${sqlCosfitExtract("__wcf", 0, "cyy")}, 8) AS cyy,
+        ROUND(${sqlCosfitExtract("__wcf", 0, "vxx")}, 8) AS vxx,
         --
         date,
         ROUND(0.01 * yy, 8) AS yy
     FROM (
         SELECT
-            win_cosfit2(0, value->>'ii', value->>'priceClose') OVER (
-                ORDER BY NULL ASC
+            win_cosfit2(0, ii, yy) OVER (
+                ORDER BY date ASC
                 ROWS BETWEEN ${ttCosfit - 1} PRECEDING AND 0 FOLLOWING
             ) AS __wcf,
-            value->>'date' AS date,
-            value->>'priceClose' AS yy
-        FROM JSON_EAcH($testDataSpx)
+            date,
+            yy
+        FROM (
+            SELECT
+                value->>'ii' AS ii,
+                value->>'date' AS date,
+                value->>'priceClose' AS yy
+            FROM JSON_EAcH($testDataSpx)
+        )
     );
                         `)
                     })
@@ -2021,11 +2028,8 @@ SELECT
                         });
                         return [
                             elem.date,
-                            elem.laa,
-                            elem.lbb,
                             elem.caa,
-                            elem.mxe,
-                            //!! elem.cww,
+                            elem.cww,
                             //!! elem.cpp,
                             //!! elem.ctt,
                             //!! elem.ctp,
