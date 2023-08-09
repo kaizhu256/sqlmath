@@ -1857,8 +1857,6 @@ static void winCosfitCsr(
 // This function will calculate running cosine-regression as:
 //     yy = caa*cos(cww*xx + cpp)
     // calculate csr - caa
-    const double laa = wcf->laa;        // linest y-intercept
-    const double lbb = wcf->lbb;        // linest slope
     const double nnn = wcf->nnn;
     double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
     const double caa = wcf->caa;
@@ -1923,24 +1921,25 @@ static void winCosfitCsr(
         wcf->ctp += 1;
     }
     // calculate csr - cyy
-    double myy = 0;             // y-average
-    double vyy = 0;             // yy-variance.p
+    double mrr = 0;             // r-average
+    double vrr = 0;             // r-variance.p
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
-        const double cyy =
-            laa + lbb * tt + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
+        const double yy = ttyy[ii + 1];
+        const double cyy = yy - ttyy[ii + 2]    //
+            + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
         if (tt == xx1) {
             wcf->cyy = cyy;
         }
-        const double yy = ttyy[ii + 1] - cyy;
-        // welford - increment vyy
-        const double dd = yy - myy;
-        myy += dd / nnn;
-        vyy += dd * (yy - myy);
+        const double rr = yy - cyy;
+        // welford - increment vrr
+        const double dd = rr - mrr;
+        mrr += dd / nnn;
+        vrr += dd * (rr - mrr);
     }
     // calculate csr - cee
     // degrees-of-freedom = 5
-    wcf->cee = sqrt(vyy / (nnn - 5));
+    wcf->cee = sqrt(vrr / (nnn - 5));
 }
 
 static void winCosfitLnr(
