@@ -1927,14 +1927,12 @@ static void winCosfitCsr(
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
         const double tt = ttyy[ii + 0];
         const double yy = ttyy[ii + 1];
-        const double cyy = 0    //
-            + laa + lbb * tt    //
-            //!! yy - ttyy[ii + 2]   //
-            + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
+        const double cyy =      //
+            laa + lbb * tt + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
         if (tt == xx1) {
             wcf->cyy = cyy;
         }
-        const double rr = yy - cyy;
+        const double rr = ttyy[ii + 1] - cyy;
         // welford - increment vrr
         const double dd = rr - mrr;
         mrr += dd / nnn;
