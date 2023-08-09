@@ -1857,9 +1857,10 @@ static void winCosfitCsr(
 // This function will calculate running cosine-regression as:
 //     yy = caa*cos(cww*xx + cpp)
     // calculate csr - caa
+    const double laa = wcf->laa;        // linest y-intercept
+    const double lbb = wcf->lbb;        // linest slope
+    //!! const double nnn = wcf->nnn;
     double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
-    double laa = wcf->laa;      // linest y-intercept
-    double lbb = wcf->lbb;      // linest slope
     double myy = 0;             // y-average
     double nnn = 0;             // number of elements
     double vyy = 0;             // yy-variance.p
@@ -2008,22 +2009,28 @@ static void winCosfitLnr(
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
     // calculate csr - caa
-    const double rr = yy - laa + lbb * xx;
-    if (modeWelford) {
-        // calculate running csr - welford
-        // welford - increment vrr
-        dy = rr - mrr;
-        mrr += dy * inv0;
-        vrr += dy * (rr - mrr);
-    } else {
-        // calculate running csr - window
-        dy = rr - rr0;
-        vrr += (rr * rr - rr0 * rr0) - inv0 * dy * dy - 2 * dy * mrr;
-        mrr += dy * inv0;
-    }
-    const double caa = sqrt(vrr * inv0);
+    //!! const double rr = 0; // wcf->nnn >= 5 ? yy - laa + lbb * xx : mrr;
+    //!! const double rr = isfinite(laa) ? yy - laa + lbb * xx : mrr;
+    const double rr = (wcf->nnn > 5
+        && isfinite(laa)) ? yy - laa + lbb * xx : mrr;
+    /*
+       if (modeWelford) {
+       // calculate running csr - welford
+       // welford - increment vrr
+       dy = rr - mrr;
+       mrr += dy * inv0;
+       vrr += dy * (rr - mrr);
+       } else {
+       // calculate running csr - window
+       dy = rr - rr0;
+       vrr += (rr * rr - rr0 * rr0) - inv0 * dy * dy - 2 * dy * mrr;
+       mrr += dy * inv0;
+       }
+       const double caa = sqrt(vrr * inv0);
+       wcf->caa = caa;
+     */
+    wcf->rr0 = rr;
     // save wcf
-    wcf->caa = caa;
     wcf->inv0 = inv0;
     wcf->laa = laa;
     wcf->lbb = lbb;
@@ -2122,7 +2129,7 @@ static void sql3_win_cosfit2_step(
         // vec99 - push xx, yy, rr
         VECTOR99_AGGREGATE_PUSH(wcf->xx1);
         VECTOR99_AGGREGATE_PUSH(wcf->yy1);
-        VECTOR99_AGGREGATE_PUSH(0);
+        VECTOR99_AGGREGATE_PUSH(wcf->rr0);
         argv += 2;
     }
     // vec99 - calculate lnr, csr
