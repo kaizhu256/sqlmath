@@ -1859,14 +1859,17 @@ static void winCosfitCsr(
     // calculate csr - caa
     const double laa = wcf->laa;        // linest y-intercept
     const double lbb = wcf->lbb;        // linest slope
-    //!! const double nnn = wcf->nnn;
     double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
+    //
+    const double nnn = wcf->nnn;
+    //!! double nnn = 0;             // number of elements
     double myy = 0;             // y-average
-    double nnn = 0;             // number of elements
     double vyy = 0;             // yy-variance.p
+    /*
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
-        const double yy = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
-        ttyy[ii + 2] = yy;
+        //!! const double yy = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
+        //!! ttyy[ii + 2] = yy;
+        const double yy = ttyy[ii + 2];
         nnn += 1;
         // welford - increment vyy
         const double dd = yy - myy;
@@ -1874,7 +1877,8 @@ static void winCosfitCsr(
         vyy += dd * (yy - myy);
     }
     const double caa = sqrt(vyy / nnn);
-    //!! const double caa = wcf->caa;
+    */
+    const double caa = wcf->caa;
     const double inva = 1 / caa;
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
         return;
@@ -1963,7 +1967,6 @@ static void winCosfitLnr(
 ) {
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
-    const double rr0 = wcf->rr0;
     const double xx = wcf->xx1;
     const double xx0 = wcf->xx0;
     const double yy = wcf->yy1;
@@ -1971,10 +1974,8 @@ static void winCosfitLnr(
     double dx = 0;
     double dy = 0;
     double inv0 = wcf->inv0;
-    double mrr = wcf->mrr;
     double mxx = wcf->mxx;
     double myy = wcf->myy;
-    double vrr = wcf->vrr;
     double vxx = wcf->vxx;
     double vxy = wcf->vxy;
     double vyy = wcf->vyy;
@@ -2008,28 +2009,6 @@ static void winCosfitLnr(
     const double lxy = vxy / sqrt(vxx * vyy);
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
-    // calculate csr - caa
-    //!! const double rr = 0; // wcf->nnn >= 5 ? yy - laa + lbb * xx : mrr;
-    //!! const double rr = isfinite(laa) ? yy - laa + lbb * xx : mrr;
-    const double rr = (wcf->nnn > 5
-        && isfinite(laa)) ? yy - laa + lbb * xx : mrr;
-    /*
-       if (modeWelford) {
-       // calculate running csr - welford
-       // welford - increment vrr
-       dy = rr - mrr;
-       mrr += dy * inv0;
-       vrr += dy * (rr - mrr);
-       } else {
-       // calculate running csr - window
-       dy = rr - rr0;
-       vrr += (rr * rr - rr0 * rr0) - inv0 * dy * dy - 2 * dy * mrr;
-       mrr += dy * inv0;
-       }
-       const double caa = sqrt(vrr * inv0);
-       wcf->caa = caa;
-     */
-    wcf->rr0 = rr;
     // save wcf
     wcf->inv0 = inv0;
     wcf->laa = laa;
@@ -2038,16 +2017,38 @@ static void winCosfitLnr(
     wcf->lxy = lxy;
     wcf->lyy = laa + lbb * xx;
     wcf->mee = sqrt(vyy * wcf->inv1);
-    wcf->mrr = mrr;
     wcf->mxe = sqrt(vxx * wcf->inv1);
     wcf->mxx = mxx;
     wcf->myy = myy;
-    wcf->vrr = vrr;
     wcf->vxx = vxx;
     wcf->vxy = vxy;
     wcf->vyy = vyy;
     wcf->xx0 = xx;
     wcf->yy0 = yy;
+    // calculate csr - caa
+    //!! const double rr = yy - laa - lbb * xx;
+    const double rr0 = wcf->rr0;
+    double mrr = wcf->mrr;
+    double vrr = wcf->vrr;
+    const double rr = isfinite(laa) ? yy - (laa + lbb * xx) : mrr;
+    //!! const double rr = (wcf->nnn > 5
+    //!! && isfinite(laa)) ? yy - laa + lbb * xx : mrr;
+    if (modeWelford) {
+        // calculate running csr - welford
+        // welford - increment vrr
+        dy = rr - mrr;
+        mrr += dy * inv0;
+        vrr += dy * (rr - mrr);
+    } else {
+        // calculate running csr - window
+        dy = rr - rr0;
+        vrr += (rr * rr - rr0 * rr0) - inv0 * dy * dy - 2 * dy * mrr;
+        mrr += dy * inv0;
+    }
+    wcf->caa = sqrt(vrr * inv0);
+    wcf->mrr = mrr;
+    wcf->rr0 = rr;
+    wcf->vrr = vrr;
 }
 
 SQLMATH_FUNC static void sql3_win_cosfit2_value(
