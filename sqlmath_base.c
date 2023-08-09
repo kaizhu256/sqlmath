@@ -1859,7 +1859,7 @@ static void winCosfitCsr(
     const double caa = wcf->caa;
     const double inva = 1 / caa;
     const double nnn = nbody / (ncol * 3);
-    double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
+    const double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
         return;
     }
