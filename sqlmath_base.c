@@ -2128,9 +2128,15 @@ SQLMATH_FUNC static void sql1_win_cosfit2_predict_func(
     }
     const WinCosfit *wcf = (WinCosfit *) sqlite3_value_blob(argv[0]) + icol;
     const double xx = sqlite3_value_double(argv[2]);
-    const double yy =
-        wcf->laa + wcf->lbb * xx + wcf->caa * cos(fmod(wcf->cww * xx,
-            2 * MATH_PI) + wcf->cpp);
+    const int mode = sqlite3_value_int(argv[3]);
+    const double yy =           //
+        mode == 1               //
+        ? wcf->laa + wcf->lbb * xx      //
+        : mode == 2             //
+        ? wcf->caa * cos(fmod(wcf->cww * xx, 2 * MATH_PI) + wcf->cpp)
+        : 0                     //
+        + wcf->laa + wcf->lbb * xx      //
+        + wcf->caa * cos(fmod(wcf->cww * xx, 2 * MATH_PI) + wcf->cpp);
     if (!isfinite(yy)) {
         goto catch_error;
     }
@@ -2517,7 +2523,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(sign, 1);
     SQLITE3_CREATE_FUNCTION1(squared, 1);
     SQLITE3_CREATE_FUNCTION1(throwerror, 1);
-    SQLITE3_CREATE_FUNCTION1(win_cosfit2_predict, 3);
+    SQLITE3_CREATE_FUNCTION1(win_cosfit2_predict, 4);
     SQLITE3_CREATE_FUNCTION1(win_cosfit2_step, -1);
     SQLITE3_CREATE_FUNCTION2(median, 1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
