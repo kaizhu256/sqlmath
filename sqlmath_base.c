@@ -1866,18 +1866,18 @@ static void winCosfitCsr(
     double myy = 0;             // y-average
     double vyy = 0;             // yy-variance.p
     /*
-    for (int ii = 0; ii < nbody; ii += ncol * 3) {
-        //!! const double yy = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
-        //!! ttyy[ii + 2] = yy;
-        const double yy = ttyy[ii + 2];
-        nnn += 1;
-        // welford - increment vyy
-        const double dd = yy - myy;
-        myy += dd / nnn;
-        vyy += dd * (yy - myy);
-    }
-    const double caa = sqrt(vyy / nnn);
-    */
+       for (int ii = 0; ii < nbody; ii += ncol * 3) {
+       //!! const double yy = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
+       //!! ttyy[ii + 2] = yy;
+       const double yy = ttyy[ii + 2];
+       nnn += 1;
+       // welford - increment vyy
+       const double dd = yy - myy;
+       myy += dd / nnn;
+       vyy += dd * (yy - myy);
+       }
+       const double caa = sqrt(vyy / nnn);
+     */
     const double caa = wcf->caa;
     const double inva = 1 / caa;
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
@@ -2005,17 +2005,18 @@ static void winCosfitLnr(
         mxx += dx * inv0;
         myy += dy * inv0;
     }
-    // calculate lnr - lxy, lbb, laa
+    // calculate lnr - lxy, lbb, laa, lyy
     const double lxy = vxy / sqrt(vxx * vyy);
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
+    const double lyy = laa + lbb * xx;
     // save wcf
     wcf->inv0 = inv0;
     wcf->laa = laa;
     wcf->lbb = lbb;
     wcf->lee = sqrt(vyy * (1 - lxy * lxy) * wcf->inv2);
     wcf->lxy = lxy;
-    wcf->lyy = laa + lbb * xx;
+    wcf->lyy = lyy;
     wcf->mee = sqrt(vyy * wcf->inv1);
     wcf->mxe = sqrt(vxx * wcf->inv1);
     wcf->mxx = mxx;
@@ -2030,7 +2031,7 @@ static void winCosfitLnr(
     const double rr0 = wcf->rr0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
-    const double rr = isfinite(laa) ? yy - (laa + lbb * xx) : mrr;
+    const double rr = isfinite(lyy) ? yy - lyy : mrr;
     //!! const double rr = (wcf->nnn > 5
     //!! && isfinite(laa)) ? yy - laa + lbb * xx : mrr;
     if (modeWelford) {
