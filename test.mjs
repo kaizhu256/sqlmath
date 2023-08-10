@@ -1995,7 +1995,7 @@ SELECT
         ROUND(${sqlCosfitExtract("__wcf", 0, "vxx")}, 8) AS vxx,
         --
         date,
-        ROUND(0.01 * yy, 8) AS yy
+        ROUND(yy, 8) AS yy
     FROM (
         SELECT
             win_cosfit2(0, ii, yy) OVER (
@@ -2018,28 +2018,25 @@ SELECT
                 valActual = (
                     "date caa cww cpp ctt ctp yy lyy cyy lee cee\n"
                     + valActual.slice(ttCosfit).map(function (elem) {
-                        Object.entries(elem).forEach(function ([key, val]) {
-                            switch (key) {
-                            case "date":
-                                break;
-                            default:
-                                elem[key] = Number(val).toFixed(8);
-                            }
-                        });
                         return [
                             elem.date,
                             elem.caa,
                             elem.cww,
-                            //!! elem.cpp,
-                            //!! elem.ctt,
-                            //!! elem.ctp,
-                            //!! elem.yy,
-                            //!! elem.lyy,
-                            //!! elem.cyy,
-                            //!! elem.lee,
-                            //!! elem.cee
-                            0
-                        ].join(" ");
+                            elem.cpp,
+                            elem.ctt,
+                            elem.ctp,
+                            elem.yy * 0.01,
+                            elem.lyy * 0.01,
+                            elem.cyy * 0.01,
+                            elem.lee * 100 / elem.yy,
+                            elem.cee * 100 / elem.yy
+                        ].map(function (num) {
+                            return (
+                                typeof num === "number"
+                                ? num.toFixed(4)
+                                : num
+                            );
+                        }).join(" ");
                     }).join("\n")
                 );
                 valActual = valActual.replace((/  /g), " null ");

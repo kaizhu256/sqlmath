@@ -338,6 +338,20 @@ SQLMATH_API int vector99_valid(
 
 
 // file sqlmath_h - SQLMATH_API
+SQLMATH_API double doubleAbs(
+    const double aa
+);
+
+SQLMATH_API double doubleMax(
+    const double aa,
+    const double bb
+);
+
+SQLMATH_API double doubleMin(
+    const double aa,
+    const double bb
+);
+
 SQLMATH_API int doubleSign(
     const double aa
 );
@@ -1139,7 +1153,7 @@ SQLMATH_API Vector99 *vector99_malloc(
     // zero vec99
     memset(vec99, 0, alloc);
     vec99->alloc = alloc;
-    vec99->nhead = MAX(0, nhead);
+    vec99->nhead = doubleMax(0, nhead);
     return vec99;
 }
 
@@ -1170,6 +1184,29 @@ SQLMATH_API int vector99_valid(
 }
 
 // SQLMATH_API vector99 - end
+
+SQLMATH_API double doubleAbs(
+    const double aa
+) {
+// This function will return abs of <aa>.
+    return aa < 0 ? -aa : aa;
+}
+
+SQLMATH_API double doubleMax(
+    const double aa,
+    const double bb
+) {
+// This function will return max of <aa>, <bb>.
+    return aa > bb ? aa : bb;
+}
+
+SQLMATH_API double doubleMin(
+    const double aa,
+    const double bb
+) {
+// This function will return min of <aa>, <bb>.
+    return aa < bb ? aa : bb;
+}
 
 SQLMATH_API int doubleSign(
     const double aa
@@ -1837,14 +1874,15 @@ typedef struct WinCosfit {
     double inv0;                // 1.0 / (nnn - 0)
     double inv1;                // 1.0 / (nnn - 1)
     double inv2;                // 1.0 / (nnn - 2)
-    double mrr;                 // r-average
-    double rr0;                 // trailing-window-r
-    double vrr;                 // r-variance.p
     double vxx;                 // y-variance.p
     double vxy;                 // xy-covariance.p
     double vyy;                 // y-variance.p
     double xx0;                 // trailing-window-x
     double yy0;                 // trailing-window-y
+    //
+    double mrr;                 // r-average
+    double rr0;                 // trailing-window-r
+    double vrr;                 // r-variance.p
 } WinCosfit;
 static const int WinCosfitN = sizeof(WinCosfit) / sizeof(double);
 
@@ -1856,90 +1894,129 @@ static void winCosfitCsr(
 ) {
 // This function will calculate running cosine-regression as:
 //     yy = caa*cos(cww*xx + cpp)
+    // declare var
+    const double laa = wcf->laa;        // linest y-intercept
+    const double lbb = wcf->lbb;        // linest slope
+    double dr = 0;
+    double mrr = 0;             // r-average
+    //!! double nnn = 0;             // number of elements
+    double rr = 0;              // r-residual
+    double tt = 0;
+    double vrr = 0;             // r-variance.p
+    static const int dof = 5;
+    //!! // calculate csr - caa
+    //!! double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
+    //!! for (int ii = 0; ii < nbody; ii += ncol * 3) {
+    //!! rr = ttyy[ii + 1] - (laa + lbb * ttyy[ii + 0]);
+    //!! ttyy[ii + 2] = rr;
+    //!! nnn += 1;
+    //!! // welford - increment vrr
+    //!! dr = rr - mrr;
+    //!! mrr += dr / nnn;
+    //!! vrr += dr * (rr - mrr);
+    //!! }
+    //!! const double caa = sqrt(vrr / nnn);
     const double caa = wcf->caa;
     const double inva = 1 / caa;
+    //
     const double nnn = nbody / (ncol * 3);
     const double *ttyy = ((double *) (wcf + ncol - icol)) + icol * 3;
+    //
     if (!isfinite(inva) || !isfinite(1 / wcf->mxe)) {
         return;
     }
+    wcf->caa = caa;
     // calculate csr - cpp, cww - using gauss-newton-method
-    //
-    // yy = caa*cos(cww*tt + cpp)
-    //
-    // hpp=sin*sin    hpw=sin*sin*tt    | dp = gpp=sin*(cos-yy/caa)
-    // hpw=sin*sin*tt hww=sin*sin*tt*tt | dw = gww=sin*(cos-yy/caa)*tt
-    //
-    // det = hpp*hww - hpw*hpw
-    // dp = +hww -hpw | gpp/det
-    // dw = -hpw  hpp | gww/det
-    //
-    // cpp = cpp + dp
-    // cww = cww + dw
-    double cww =                // angular-frequency
-        wcf->cww == 0 ? 2 * MATH_PI / wcf->mxe : wcf->cww;
+    // yy   ~ caa*cos(cww*tt + cpp)
+    // cost = cos(cww*tt + cpp)
+    // sint = sin(cww*tt + cpp)
+    // rr   = yy - cos
+    // gp   =     d/dp[y-cos(w*t+p)]^2 = 2*(rr*sint            )
+    // gw   =     d/dw[y-cos(w*t+p)]^2 = 2*(rr*sint            )*tt
+    // hpp  = d^2/dpdp[y-cos(w*t+p)]^2 = 2*(rr*cost + sint*sint)
+    // hpw  = d^2/dpdw[y-cos(w*t+p)]^2 = 2*(rr*cost + sint*sint)*tt
+    // hww  = d^2/dwdw[y-cos(w*t+p)]^2 = 2*(rr*cost + sint*sint)*tt*tt
+    // [hpp hpw][dp] = [gp]
+    // [hpw hww][dw] = [gw]
+    // [dp] = 1 /    [ hww -hpw][gp]
+    // [dw] =  / det [-hpw  hpp][gw]
+    // det  = hpp*hww - hpw*hpw
+    // dp   = 1/det*( hww*gp - hpw*gw)
+    // dw   = 1/det*(-hpw*gp + hpp*gw)
+    // cpp  = cpp - dp
+    // cww  = cww - dw
+    const double ctt0 = 2 * wcf->mxe;
+    const double cww0 = 2 * MATH_PI / ctt0;
+    const double cww_max = 0.2500 * cww0 * sqrt(nnn);
     double cpp = wcf->cpp;      // angular-phase
-    double gpp = 0;             // gradient-phase
-    double gww = 0;             // gradient-frequency
-    double hpp = 0;             // hessian ddr/dpdp
-    double hpw = 0;             // hessian ddr/dpdw
-    double hww = 0;             // hessian ddr/dwdw
-    const double laa = wcf->laa;
-    const double lbb = wcf->lbb;
-    for (int ii = 0; ii < nbody; ii += ncol * 3) {
-        const double tt = ttyy[ii + 0];
-        const double cost = cos(cpp + fmod(cww * tt, 2 * MATH_PI));
-        const double sint = sin(cpp + fmod(cww * tt, 2 * MATH_PI));
-        const double gg0 = sint * (cost - (laa + lbb * tt) * inva);
-        const double hh0 = sint * sint;
-        gpp += gg0;
-        gww += gg0 * tt;
-        hpp += hh0;
-        hpw += hh0 * tt;
-        hww += hh0 * tt * tt;
+    double cww = wcf->cww == 0 ? cww0 : wcf->cww;       // angular-frequency
+    for (int jj = 0; jj < 1; jj += 1) {
+        double dw = 0;
+        double dw_sign = 0;
+        double gp = 0;          // gradient-phase
+        double gw = 0;          // gradient-frequency
+        double hpp = 0;         // hessian ddr/dpdp
+        double hpw = 0;         // hessian ddr/dpdw
+        double hww = 0;         // hessian ddr/dwdw
+        for (int ii = 0; ii < nbody; ii += ncol * 3) {
+            tt = ttyy[ii + 0];
+            // tt = fmod(ttyy[ii + 0], 2 * MATH_PI / cww);
+            // const double cost = cos(cpp + cww * tt);
+            // const double sint = sin(cpp + cww * tt);
+            const double cost = cos(cpp + fmod(cww * tt, 2 * MATH_PI));
+            const double sint = sin(cpp + fmod(cww * tt, 2 * MATH_PI));
+            //!! rr = sint * (ttyy[ii + 2] * inva - cost);
+            rr = sint * ((ttyy[ii + 1] - (laa + lbb * tt)) * inva - cost);
+            gp += rr;
+            gw += rr * tt;
+            rr = sint * sint;
+            // rr = sint * sint + cost * (ttyy[ii + 2] * inva - cost);
+            hpp += rr;
+            hpw += rr * tt;
+            hww += rr * tt * tt;
+        }
+        const double invd = 1 / (hpp * hww - hpw * hpw);
+        if (!isfinite(invd)) {
+            return;
+        }
+        // increment cpp
+        cpp = fmod(cpp - invd * (+hww * gp - hpw * gw), 2 * MATH_PI);
+        // increment cww
+        dw = invd * (-hpw * gp + hpp * gw);
+        dw_sign = doubleSign(dw);
+        dw = doubleAbs(dw);
+        dw = doubleMin(dw, 0.2500 * cww_max);
+        cww -= dw_sign * dw;
+        cww = doubleMax(cww, MATH_PI / (2 * wcf->mxe));
+        cww = doubleMin(cww, cww_max);
     }
-    const double invd = 1 / (hpp * hww - hpw * hpw);
-    if (!isfinite(invd)) {
-        return;
-    }
-    cpp += (+hww * gpp - hpw * gww) * invd;
-    cww += (-hpw * gpp + hpp * gww) * invd;
-    cpp = fmod(cpp, 2 * MATH_PI);
     if (cpp < 0) {
         cpp += 2 * MATH_PI;
     }
-    cww = MAX(cww, MATH_PI / (2 * wcf->mxe));
-    cww = MIN(cww, MATH_PI / (4 * wcf->mxe) * sqrt(nnn));
     wcf->cpp = cpp;
     wcf->cww = cww;
-    // calculate csr - ctt, ctp
-    const int xx1 = wcf->xx1;
+    // calculate csr - cyy, ctt, ctp
+    const int xx = wcf->xx1;
+    wcf->cyy = wcf->lyy + caa * cos(fmod(cww * xx, 2 * MATH_PI) + cpp);
     wcf->ctt = 2 * MATH_PI / cww;
-    wcf->ctp = fmod(            //
-        (fmod(cww * xx1, 2 * MATH_PI) + cpp) / (cww * wcf->ctt),        //
-        1);
+    wcf->ctp = fmod((fmod(cww * xx, 2 * MATH_PI) + cpp) / (2 * MATH_PI), 1);
     if (wcf->ctp < 0) {
         wcf->ctp += 1;
     }
-    // calculate csr - cyy
-    double mrr = 0;             // r-average
-    double vrr = 0;             // r-variance.p
+    // calculate csr - cee
+    mrr = 0;                    // r-average
+    vrr = 0;                    // r-variance.p
     for (int ii = 0; ii < nbody; ii += ncol * 3) {
-        const double tt = ttyy[ii + 0];
+        tt = ttyy[ii + 0];
         const double cyy =
             laa + lbb * tt + caa * cos(fmod(cww * tt, 2 * MATH_PI) + cpp);
-        if (tt == xx1) {
-            wcf->cyy = cyy;
-        }
-        const double rr = ttyy[ii + 1] - cyy;
+        rr = ttyy[ii + 1] - cyy;
         // welford - increment vrr
-        const double dd = rr - mrr;
-        mrr += dd / nnn;
-        vrr += dd * (rr - mrr);
+        dr = rr - mrr;
+        mrr += dr / nnn;
+        vrr += dr * (rr - mrr);
     }
-    // calculate csr - cee
-    // degrees-of-freedom = 5
-    wcf->cee = sqrt(vrr / (nnn - 5));
+    wcf->cee = sqrt(vrr / (nnn - dof));
 }
 
 static void winCosfitLnr(
@@ -1986,7 +2063,7 @@ static void winCosfitLnr(
         mxx += dx * inv0;
         myy += dy * inv0;
     }
-    // calculate lnr - lxy, lbb, laa, lyy
+    // calculate lnr - lxy, lbb, laa
     const double lxy = vxy / sqrt(vxx * vyy);
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
@@ -2009,7 +2086,7 @@ static void winCosfitLnr(
     wcf->yy0 = yy;
     // calculate csr - caa
     const double rr0 = wcf->rr0;
-    const double rr = isfinite(lyy) ? yy - lyy : rr0;
+    const double rr = isfinite(lyy) ? yy - lyy : 0;
     double mrr = wcf->mrr;
     double vrr = wcf->vrr;
     if (modeWelford) {
@@ -2101,20 +2178,19 @@ static void sql3_win_cosfit2_step(
         WinCosfit *wcf = (WinCosfit *) vec99_head + ii;
         wcf->xx0 = vec99_body[wii0 + ii * 3 + 0];
         wcf->yy0 = vec99_body[wii0 + ii * 3 + 1];
-        wcf->rr0 = vec99_body[wii0 + ii * 3 + 2];
         sqlite3_value_double_or_prev(argv[0], &wcf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wcf->yy1);
-        // vec99 - calculate lnr
-        winCosfitLnr(wcf, vec99->wnn == 0);
         // vec99 - push xx, yy, rr
-        VECTOR99_AGGREGATE_PUSH(wcf->xx0);
-        VECTOR99_AGGREGATE_PUSH(wcf->yy0);
+        VECTOR99_AGGREGATE_PUSH(wcf->xx1);
+        VECTOR99_AGGREGATE_PUSH(wcf->yy1);
         VECTOR99_AGGREGATE_PUSH(wcf->rr0);
         argv += 2;
     }
     // vec99 - calculate lnr, csr
     WinCosfit *wcf = (WinCosfit *) vec99_head;
     for (int ii = 0; ii < ncol; ii += 1) {
+        // vec99 - calculate lnr
+        winCosfitLnr(wcf, vec99->wnn == 0);
         // vec99 - calculate csr
         if (!modeNocsr) {
             winCosfitCsr(wcf, vec99->nbody, vec99->ncol, ii);
@@ -2132,7 +2208,7 @@ SQLMATH_FUNC static void sql1_win_cosfit2_predict_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will predict next slr
+// This function will predict next cosfit
     UNUSED_PARAMETER(argc);
     // validate argv
     const int bytes = sqlite3_value_bytes(argv[0]);
