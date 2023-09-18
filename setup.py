@@ -6,7 +6,7 @@ python -m build
 """
 
 import asyncio
-import distutils.core
+import distutils.dist
 import json
 import os
 import pathlib
@@ -15,11 +15,14 @@ import subprocess
 import sys
 import sysconfig
 
-import _distutils_hack.override  # noqa: F401
 import setuptools
 import setuptools.command.build_ext
 import setuptools.command.install_lib
 import setuptools.logging
+
+DEBUG = True
+_setup_stop_after = None
+_setup_distribution = None
 
 
 class SetupError(Exception):
@@ -32,44 +35,20 @@ def assert_or_throw(condition, message=None):
         raise SetupError(message)
 
 
-def backend_build_sdist(sdist_directory, config_settings=None):
-    """`build_sdist`: build an sdist in the folder and return the basename."""
-    return backend_build_with_temp_dir(
-        ["sdist", "--formats", "gztar"],
-        ".tar.gz",
-        sdist_directory,
-        config_settings,
-    )
-
-
-def backend_build_wheel(
-    wheel_directory,
-    config_settings=None,
-    metadata_directory=None, # noqa: ARG001
-):
-    """`build_wheel`: build a wheel in the folder and return the basename."""
-    return backend_build_with_temp_dir(
-        ["bdist_wheel"],
-        ".whl",
-        wheel_directory,
-        config_settings,
-    )
-
-
-def backend_build_with_temp_dir(
+def backend_build_in_tmp(
     setup_command,
-    result_extension,
-    result_directory,
-    config_settings,
+    result_extension=None,
+    result_directory=None,
+    config_settings=None,
 ):
     """This function will run setup.py in <tmp_dist_dir>."""
     assert_or_throw(config_settings is None or config_settings == {})
-    result_directory = pathlib.Path(result_directory).resolve().as_posix()
+    result_directory = pathlib.Path(result_directory).resolve()
     # Build in a temporary directory, then copy to the target.
     pathlib.Path(result_directory).mkdir(exist_ok=True)
     import tempfile
     with tempfile.TemporaryDirectory(
-        dir=result_directory,
+        dir=result_directory.as_posix(),
         prefix=".tmp-",
     ) as tmp_dist_dir:
         sys.argv = [
@@ -79,11 +58,35 @@ def backend_build_with_temp_dir(
             tmp_dist_dir,
         ]
         backend_exec_setup_py()
-        for pp in pathlib.Path(tmp_dist_dir).iterdir():
-            if pp.name.endswith(result_extension):
-                pp.replace(pathlib.Path(f"{result_directory}/{pp.name}"))
-                return pp.name
+        for result_file in pathlib.Path(tmp_dist_dir).iterdir():
+            if result_file.name.endswith(result_extension):
+                result_file.replace(result_directory / result_file.name)
+                return result_file.name
         return None
+
+
+def backend_build_sdist(sdist_directory, config_settings=None):
+    """`build_sdist`: build an sdist in the folder and return the basename."""
+    return backend_build_in_tmp(
+        ["sdist", "--formats", "gztar"],
+        result_extension=".tar.gz",
+        result_directory=sdist_directory,
+        config_settings=config_settings,
+    )
+
+
+def backend_build_wheel(
+    wheel_directory,
+    config_settings=None,
+    metadata_directory=None, # noqa: ARG001
+):
+    """`build_wheel`: build a wheel in the folder and return the basename."""
+    return backend_build_in_tmp(
+        ["bdist_wheel"],
+        result_extension=".whl",
+        result_directory=wheel_directory,
+        config_settings=config_settings,
+    )
 
 
 def backend_exec_setup_py():
@@ -92,8 +95,8 @@ def backend_exec_setup_py():
     # Correctness comes first, then optimization later
     __file__ = pathlib.Path("setup.py").resolve(strict=True).as_posix()
     __name__ = "__main__" # noqa: A001
-    with pathlib.Path(__file__).open() as fp:
-        exec(fp.read(), locals()) # noqa: S102
+    with pathlib.Path(__file__).open() as file1:
+        exec(file1.read(), locals()) # noqa: S102
 
 
 def backend_get_requires_for_build_wheel(config_settings=None):
@@ -116,7 +119,6 @@ def build_ext():
     """This function will build c-extension."""
     build_ext_init()
     subprocess.run(["python", "setup.py", "build_ext_async"], check=True)
-    setup(ext_modules=[setuptools.Extension("_sqlmath", [])])
 
 
 async def build_ext_async(): # noqa: C901
@@ -225,6 +227,7 @@ async def build_ext_async(): # noqa: C901
         version = package_json["version"].split("-")[0]
     for filename in [
         "README.md",
+        "pyproject.toml",
         "sqlmath/__init__.py",
     ]:
         with pathlib.Path(filename).open("r+", newline="\n") as file1:
@@ -236,18 +239,19 @@ async def build_ext_async(): # noqa: C901
                 f"\\g<1>{version}",
                 data1,
             )
+            # update version - pyproject.toml
+            data1 = re.sub("\nversion = .*", f'\nversion = "{version}"', data1)
             # update version - sqlmath/__init__.py
             data1 = re.sub(
-                "__version__ = .*",
-                f'__version__ = "{version}"',
+                "\n__version__ = .*",
+                f'\n__version__ = "{version}"',
                 data1,
             )
             data1 = re.sub(
-                "__version_info__ = .*",
+                "\n__version_info__ = .*",
                 (
-                    '__version_info__ = ("'
-                    + '", "'.join(version.split("."))
-                    + '")'
+                    "\n__version_info__ = "
+                    + str(tuple(version.split("."))).replace("'", '"')
                 ),
                 data1,
             )
@@ -459,28 +463,63 @@ def build_ext_init():
     """], check=True)
 
 
-def setup(**attrs):
-    """This function will run setup."""
-    # Make sure we have any requirements needed to interpret 'attrs'.
-    setuptools.logging.configure()
-    return distutils.core.setup(**attrs)
+def debuginline(*argv):
+    """This function will print <argv> to stderr and then return <argv>[0]."""
+    print("\n\ndebuginline")
+    print(*argv)
+    print("\n")
+    return argv[0]
 
 
-# monkey-patch setuptools to accept c-extension compiled in nodejs
-setuptools.command.build_ext.build_ext.run = lambda self: self
-setuptools.command.install_lib.install_lib.install = lambda self: self
+def setup(): # noqa: PLR0911
+    """
+    The gateway to the Distutils: do everything your setup script needs.
 
-if __name__ == "__main__":
+    to do, in a highly flexible and user-driven way.  Briefly: create a
+    Distribution instance; find and parse config files; parse the command
+    line; run each Distutils command found there, customized by the options
+    supplied to 'setup()' (as keyword arguments), in config files, and on
+    the command line.
+
+    The Distribution instance might be an instance of a class supplied via
+    the 'distclass' keyword argument to 'setup'; if no such class is
+    supplied, then the Distribution class (in dist.py) is instantiated.
+    All other arguments to 'setup' (except for 'cmdclass') are used to set
+    attributes of the Distribution instance.
+
+    The 'cmdclass' argument, if supplied, is a dictionary mapping command
+    names to command classes.  Each command encountered on the command line
+    will be turned into a command class, which is in turn instantiated; any
+    class found in 'cmdclass' is used in place of the default, which is
+    (for command 'foo_bar') class 'foo_bar' in module
+    'distutils.command.foo_bar'.  The command class must provide a
+    'user_options' attribute which is a list of option specifiers for
+    'distutils.fancy_getopt'.  Any command-line options between the current
+    and the next command are used to set attributes of the current command
+    object.
+
+    When the entire command-line has been successfully parsed, calls the
+    'run()' method on each command object in turn.  This method will be
+    driven entirely by the Distribution object (which each command object
+    has a reference to, thanks to its constructor), and the
+    command-specific options that became attributes of each command
+    object.
+    """
+    ext_modules = None
     match sys.argv[1]:
         case "build_ext":
             build_ext()
+            return None
         case "build_ext_async":
             asyncio.set_event_loop(asyncio.new_event_loop())
             asyncio.get_event_loop().run_until_complete(build_ext_async())
+            return None
         case "build_ext_init":
             build_ext_init()
+            return None
         case "bdist_wheel":
             build_ext()
+            ext_modules = [setuptools.Extension("_sqlmath", [])]
         case "test":
             # ugly-hack - Disable test certain github-actions env.
             if (
@@ -495,10 +534,75 @@ if __name__ == "__main__":
             else:
                 import sqlmath
                 sqlmath.test_python_run()
+            return None
+        case "egg_info":
+            pass
+        case "sdist":
+            pass
         case _:
-            setup()
+            raise SetupError(sys.argv[1])
+    global _setup_stop_after, _setup_distribution # noqa: PLW0602, PLW0603
+    setuptools.logging.configure()
+    # Create the Distribution instance, using the remaining arguments
+    # (ie. everything except distclass) to initialize it
+    dist = distutils.dist.Distribution({
+        "ext_modules": ext_modules,
+        "script_args": sys.argv[1:],
+        "script_name": pathlib.Path(sys.argv[0]).name,
+    })
+    _setup_distribution = dist
+    if _setup_stop_after == "init":
+        return dist
+    # Find and parse the config file(s): they will override options from
+    # the setup script, but be overridden by the command line.
+    dist.parse_config_files()
+    if DEBUG:
+        print("options (after parsing config files):")
+        dist.dump_option_dicts()
+    if _setup_stop_after == "config":
+        return dist
+    # Parse the command line and override config files; any
+    # command-line errors are the end user's fault, so turn them into
+    # SystemExit to suppress tracebacks.
+    ok = dist.parse_command_line()
+    if DEBUG:
+        print("options (after parsing command line):")
+        dist.dump_option_dicts()
+    if _setup_stop_after == "commandline":
+        return dist
+    # And finally, run all the commands found on the command line,
+    for command in dist.commands:
+        """Do whatever it takes to run a command (including nothing at all,
+        if the command has already been run).  Specifically: if we have
+        already created and run the command named by 'command', return
+        silently without doing anything.  If the command named by 'command'
+        doesn't even have a command object yet, create one.  Then invoke
+        'run()' on that command object (or an existing one).
+        """
+        if not ok or dist.have_run.get(command):
+            continue
+        print(f"\nsetup.py - run - {command}\n")
+        cmd_obj = dist.get_command_obj(command)
+        cmd_obj.ensure_finalized()
+        cmd_obj.run()
+        dist.have_run[command] = 1
+    return dist
+
+
+# monkey-patch setuptools to accept c-extension compiled in nodejs
+setuptools.command.build_ext.build_ext.run = lambda self: self
+setuptools.command.install_lib.install_lib.install = lambda self: self
+
+if __name__ == "__main__":
+    setup()
 else:
+    build_sdist = backend_build_sdist
+    build_wheel = backend_build_wheel
     get_requires_for_build_sdist = backend_get_requires_for_build_sdist
     get_requires_for_build_wheel = backend_get_requires_for_build_wheel
-    build_wheel = backend_build_wheel
-    build_sdist = backend_build_sdist
+    __all__ = [
+        "build_sdist",
+        "build_wheel",
+        "get_requires_for_build_sdist",
+        "get_requires_for_build_wheel",
+    ]

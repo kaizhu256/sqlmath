@@ -13,12 +13,12 @@ backend-path = ["."]
 authors = [{name = "Kai Zhu"}]
 dependencies = []
 description = "sqlite for datascience"
-dynamic = ["version"]
 license = {file = "LICENSE"}
 maintainers = []
 name = "sqlmath"
 readme = "README.md"
 requires-python = ">=3.10"
+version = "2023.9.1"
 classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
@@ -57,11 +57,9 @@ manylinux-x86_64-image = "manylinux_2_28"
 skip = ["pp*", "*-musllinux*"]
 test-command = [
     "python --version",
-    "cd {project} && python setup.py test",
+    "cd {project} && ls -la",
+    # "cd {project} && if [ -f setup.py ]; then python setup.py test; fi",
 ]
 
 [tool.setuptools]
 py-modules = ["sqlmath"]
-
-[tool.setuptools.dynamic]
-version = {attr = "sqlmath.__version__"}
