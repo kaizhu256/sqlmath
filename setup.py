@@ -6,6 +6,7 @@ python -m build
 """
 
 import asyncio
+import distutils.core
 import json
 import os
 import pathlib
@@ -14,16 +15,108 @@ import subprocess
 import sys
 import sysconfig
 
+import _distutils_hack.override  # noqa: F401
 import setuptools
 import setuptools.command.build_ext
 import setuptools.command.install_lib
+import setuptools.logging
+
+
+class SetupError(Exception):
+    """Setup error."""
+
+
+def assert_or_throw(condition, message=None):
+    """This function will throw <message> if <condition> is falsy."""
+    if not condition:
+        raise SetupError(message)
+
+
+def backend_build_sdist(sdist_directory, config_settings=None):
+    """`build_sdist`: build an sdist in the folder and return the basename."""
+    return backend_build_with_temp_dir(
+        ["sdist", "--formats", "gztar"],
+        ".tar.gz",
+        sdist_directory,
+        config_settings,
+    )
+
+
+def backend_build_wheel(
+    wheel_directory,
+    config_settings=None,
+    metadata_directory=None, # noqa: ARG001
+):
+    """`build_wheel`: build a wheel in the folder and return the basename."""
+    return backend_build_with_temp_dir(
+        ["bdist_wheel"],
+        ".whl",
+        wheel_directory,
+        config_settings,
+    )
+
+
+def backend_build_with_temp_dir(
+    setup_command,
+    result_extension,
+    result_directory,
+    config_settings,
+):
+    """This function will run setup.py in <tmp_dist_dir>."""
+    assert_or_throw(config_settings is None or config_settings == {})
+    result_directory = pathlib.Path(result_directory).resolve().as_posix()
+    # Build in a temporary directory, then copy to the target.
+    pathlib.Path(result_directory).mkdir(exist_ok=True)
+    import tempfile
+    with tempfile.TemporaryDirectory(
+        dir=result_directory,
+        prefix=".tmp-",
+    ) as tmp_dist_dir:
+        sys.argv = [
+            *sys.argv[:1],
+            *setup_command,
+            "--dist-dir",
+            tmp_dist_dir,
+        ]
+        backend_exec_setup_py()
+        for pp in pathlib.Path(tmp_dist_dir).iterdir():
+            if pp.name.endswith(result_extension):
+                pp.replace(pathlib.Path(f"{result_directory}/{pp.name}"))
+                return pp.name
+        return None
+
+
+def backend_exec_setup_py():
+    """This function will exec setup.py with locals __file__, __name__."""
+    # Note that we can reuse our build directory between calls
+    # Correctness comes first, then optimization later
+    __file__ = pathlib.Path("setup.py").resolve(strict=True).as_posix()
+    __name__ = "__main__" # noqa: A001
+    with pathlib.Path(__file__).open() as fp:
+        exec(fp.read(), locals()) # noqa: S102
+
+
+def backend_get_requires_for_build_wheel(config_settings=None):
+    """`get_requires_for_build_wheel`: get the `setup_requires` to build."""
+    assert_or_throw(config_settings is None or config_settings == {})
+    sys.argv = [*sys.argv[:1], "egg_info"]
+    backend_exec_setup_py()
+    return ["wheel"]
+
+
+def backend_get_requires_for_build_sdist(config_settings=None):
+    """`get_requires_for_build_sdist`: get the `setup_requires` to build."""
+    assert_or_throw(config_settings is None or config_settings == {})
+    sys.argv = [*sys.argv[:1], "egg_info"]
+    backend_exec_setup_py()
+    return []
 
 
 def build_ext():
     """This function will build c-extension."""
     build_ext_init()
     subprocess.run(["python", "setup.py", "build_ext_async"], check=True)
-    setuptools.setup(ext_modules=[setuptools.Extension("_sqlmath", [])])
+    setup(ext_modules=[setuptools.Extension("_sqlmath", [])])
 
 
 async def build_ext_async(): # noqa: C901
@@ -366,6 +459,13 @@ def build_ext_init():
     """], check=True)
 
 
+def setup(**attrs):
+    """This function will run setup."""
+    # Make sure we have any requirements needed to interpret 'attrs'.
+    setuptools.logging.configure()
+    return distutils.core.setup(**attrs)
+
+
 # monkey-patch setuptools to accept c-extension compiled in nodejs
 setuptools.command.build_ext.build_ext.run = lambda self: self
 setuptools.command.install_lib.install_lib.install = lambda self: self
@@ -396,4 +496,9 @@ if __name__ == "__main__":
                 import sqlmath
                 sqlmath.test_python_run()
         case _:
-            setuptools.setup()
+            setup()
+else:
+    get_requires_for_build_sdist = backend_get_requires_for_build_sdist
+    get_requires_for_build_wheel = backend_get_requires_for_build_wheel
+    build_wheel = backend_build_wheel
+    build_sdist = backend_build_sdist

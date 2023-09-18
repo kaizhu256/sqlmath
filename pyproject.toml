@@ -5,7 +5,8 @@ requires = [
     "ruff >= 0.0.290",
     "setuptools >= 68.2.2",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "setup"
+backend-path = ["."]
 
 # https://peps.python.org/pep-0621/#example
 [project]
