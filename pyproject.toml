@@ -54,11 +54,14 @@ before-test = ["pip install setuptools"]
 build = ["cp*-*"]
 build-verbosity = "1"
 manylinux-x86_64-image = "manylinux_2_28"
-skip = ["pp*", "*-musllinux*"]
+skip = [
+    "*-musllinux*",
+    "cp312-*",
+    "pp*",
+]
 test-command = [
     "python --version",
-    "cd {project} && ls -la",
-    # "cd {project} && if [ -f setup.py ]; then python setup.py test; fi",
+    "python -c \"import sqlmath; sqlmath.test_python_run()\"",
 ]
 
 [tool.setuptools]

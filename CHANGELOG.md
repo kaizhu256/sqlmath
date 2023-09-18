@@ -1,7 +1,7 @@
 # Changelog
 
 # Todo
-- python - Revamp python-c-extension to support cp311, cp312.
+- python - Revamp python-c-extension to support cp312.
 - sqlmath - Optimize cosfit-calculation of amplitude-prm WinCosfit.caa to one-step instead of nnn-steps.
 - none
 

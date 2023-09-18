@@ -53,18 +53,21 @@ shCiBaseCustom() {(set -e
     fi
     # cleanup
     rm -rf *.egg-info _sqlmath* build/ sqlmath/_sqlmath* && mkdir -p build/
-    # cibuildwheel
+    # python -m build --sdist
+    # python -m cibuildwheel
     if (shCiMatrixIsmainNodeversion) && ( \
         [ "$GITHUB_BRANCH0" = alpha ] \
         || [ "$GITHUB_BRANCH0" = beta ] \
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
-        find build/ -name "*.so" | xargs rm -f
-        rm -f sqlmath/*.so
-        pip install build==1.0.3 cibuildwheel==2.15.0
-        python -m build --sdist
-        python -m cibuildwheel
+        pip install build==1.0.3 cibuildwheel==2.16.0
+        python -m cibuildwheel --output-dir=dist/
+        # build sdist in darwin, because its the fastest machine
+        if (uname | grep -q "Darwin")
+        then
+            python -m build --sdist
+        fi
     fi
     # run nodejs-ci
     shCiTestNodejs
@@ -86,7 +89,7 @@ shCiBaseCustom() {(set -e
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
-        export GITHUB_UPLOAD_RETRY=-1
+        export GITHUB_UPLOAD_RETRY=0
         while true
         do
             GITHUB_UPLOAD_RETRY="$((GITHUB_UPLOAD_RETRY + 1))"
@@ -140,7 +143,7 @@ shCiBaseCustomArtifactUpload() {(set -e
     Linux*)
         rm -f "branch-$GITHUB_BRANCH0/"*linux*
         ;;
-    MSYS*)
+    *)
         rm -f "branch-$GITHUB_BRANCH0/"*win32*
         rm -f "branch-$GITHUB_BRANCH0/"*win_*
         ;;
@@ -155,9 +158,12 @@ shCiBaseCustomArtifactUpload() {(set -e
     then
         cp ../../.artifact/asset_image_logo_* "branch-$GITHUB_BRANCH0"
     fi
-    # cibuildwheel
-    cp ../../dist/sqlmath-*.tar.gz "branch-$GITHUB_BRANCH0"
-    cp ../../wheelhouse/sqlmath-*.whl "branch-$GITHUB_BRANCH0"
+    # save cibuildwheel
+    if (uname | grep -q "Darwin")
+    then
+        cp ../../dist/sqlmath-*.tar.gz "branch-$GITHUB_BRANCH0"
+    fi
+    cp ../../dist/sqlmath-*.whl "branch-$GITHUB_BRANCH0"
     # git commit
     git add .
     git add -f "branch-$GITHUB_BRANCH0"/_sqlmath*

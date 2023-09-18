@@ -521,19 +521,8 @@ def setup(): # noqa: PLR0911
             build_ext()
             ext_modules = [setuptools.Extension("_sqlmath", [])]
         case "test":
-            # ugly-hack - Disable test certain github-actions env.
-            if (
-                sys.version_info >= (3, 12)
-                or (
-                    os.getenv("GITHUB_ACTION")
-                    and os.getenv("CIBUILDWHEEL")
-                    and sys.platform == "win32"
-                )
-            ):
-                pass
-            else:
-                import sqlmath
-                sqlmath.test_python_run()
+            import sqlmath
+            sqlmath.test_python_run()
             return None
         case "egg_info":
             pass
