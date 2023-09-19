@@ -61,13 +61,9 @@ shCiBaseCustom() {(set -e
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
+        python setup.py sdist
         pip install build==1.0.3 cibuildwheel==2.16.0
         python -m cibuildwheel --output-dir=dist/
-        # build sdist in darwin, because its the fastest machine
-        if (uname | grep -q "Darwin")
-        then
-            python -m build --sdist
-        fi
     fi
     # run nodejs-ci
     shCiTestNodejs
@@ -411,6 +407,8 @@ shCiTestNodejs() {(set -e
         then
             git ls-tree -r --name-only HEAD | sed "s|^|include |" > MANIFEST.in
         fi
+        # create PKG-INFO
+        python setup.py build_pkg_info
         # init build/xxx.c
         python setup.py build_ext_init
         # build nodejs c-addon
