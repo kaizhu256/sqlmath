@@ -226,6 +226,8 @@ async function cCallAsync(baton, cFuncName, ...argList) {
             return val;
         }
     });
+    //!! // encode cFuncName into baton
+    baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
@@ -518,7 +520,12 @@ async function dbCloseAsync(db) {
     await Promise.all(__db.connPool.map(async function (ptr) {
         let val = ptr[0];
         ptr[0] = 0n;
-        await cCallAsync(jsbatonCreate("_dbClose"), "_dbClose", val, __db.filename);
+        await cCallAsync(
+            jsbatonCreate("_dbClose"),
+            "_dbClose",
+            val,
+            __db.filename
+        );
     }));
     dbDict.delete(db);
 }
