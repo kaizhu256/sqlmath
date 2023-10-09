@@ -180,7 +180,6 @@ async function cCallAsync(baton, cFuncName, ...argList) {
         argList.length <= JSBATON_ARGC,
         `cCallAsync - argList.length must be less than than ${JSBATON_ARGC}`
     );
-    baton = baton || jsbatonCreate();
     // pad argList to length JSBATON_ARGC
     while (argList.length < JSBATON_ARGC) {
         argList.push(0n);
@@ -530,7 +529,7 @@ async function dbCloseAsync(db) {
     await Promise.all(__db.connPool.map(async function (ptr) {
         let val = ptr[0];
         ptr[0] = 0n;
-        await cCallAsync(undefined, "_dbClose", val, __db.filename);
+        await cCallAsync(jsbatonCreate(), "_dbClose", val, __db.filename);
     }));
     dbDict.delete(db);
 }
@@ -706,7 +705,7 @@ async function dbNoopAsync(...argList) {
 
 // This function will do nothing except return <argList>.
 
-    return await cCallAsync(undefined, "_dbNoop", ...argList);
+    return await cCallAsync(jsbatonCreate(), "_dbNoop", ...argList);
 }
 
 async function dbOpenAsync({
@@ -736,7 +735,7 @@ async function dbOpenAsync({
         threadCount
     ), async function () {
         let ptr = await cCallAsync(
-            undefined,
+            jsbatonCreate(),
             "_dbOpen",
             // 0. const char *filename,   Database filename (UTF-8)
             filename,
@@ -1187,7 +1186,7 @@ async function sqlmathInit() {
 // This function will auto-close any open sqlite3-db-pointer,
 // after its js-wrapper has been garbage-collected.
 
-        cCallAsync(undefined, "_dbClose", ptr[0]);
+        cCallAsync(jsbatonCreate(), "_dbClose", ptr[0]);
         if (afterFinalization) {
             afterFinalization();
         }
@@ -1292,7 +1291,7 @@ function sqlmathWebworkerInit({
             });
         };
         // test cCallAsync handling-behavior
-        cCallAsync(undefined, "testTimeElapsed", true);
+        cCallAsync(jsbatonCreate(), "testTimeElapsed", true);
         // test dbFileExportAsync handling-behavior
         dbFileExportAsync({
             db,
