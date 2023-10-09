@@ -73,7 +73,7 @@ file sqlmath_h - start
 #define JS_MAX_SAFE_INTEGER     0x1fffffffffffff
 #define JS_MIN_SAFE_INTEGER     -0x1fffffffffffff
 #define SIZEOF_BLOB_MAX         1000000000
-#define SIZEOF_CFUNCNAME        16
+#define SIZEOF_CFUNCNAME        24
 #define SIZEOF_MESSAGE          256
 #define SQLITE_DATATYPE_BLOB            0x04
 #define SQLITE_DATATYPE_FLOAT           0x02

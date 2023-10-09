@@ -37,7 +37,7 @@ let JSBATON_OFFSET_CFUNCNAME = 552;
 let JS_MAX_SAFE_INTEGER = 0x1fffffffffffff;
 let JS_MIN_SAFE_INTEGER = -0x1fffffffffffff;
 let SIZEOF_BLOB_MAX = 1000000000;
-let SIZEOF_CFUNCNAME = 16;
+let SIZEOF_CFUNCNAME = 24;
 let SIZEOF_MESSAGE = 256;
 let SQLITE_DATATYPE_BLOB = 0x04;
 let SQLITE_DATATYPE_FLOAT = 0x02;
@@ -228,12 +228,12 @@ async function cCallAsync(baton, cFuncName, ...argList) {
     });
     //!! // encode cFuncName into baton
     baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
-    //!! // copy cFuncName into baton
-    //!! new Uint8Array(
-        //!! baton.buffer,
-        //!! baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
-        //!! SIZEOF_CFUNCNAME - 1
-    //!! ).set(new TextEncoder().encode(cFuncName));
+    // copy cFuncName into baton
+    new Uint8Array(
+        baton.buffer,
+        baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
+        SIZEOF_CFUNCNAME - 1
+    ).set(new TextEncoder().encode(cFuncName));
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
