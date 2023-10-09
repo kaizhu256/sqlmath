@@ -1006,6 +1006,7 @@ function jsbatonValuePush(baton, argi, val, externalbufferList) {
         );
         // push vsize
         baton.setInt32(nused + 1, vsize, true);
+        // copy val into baton
         new Uint8Array(baton.buffer, nused + 1 + 4, vsize).set(
             new Uint8Array(val.buffer, val.byteOffset, vsize),
             0
@@ -1041,7 +1042,7 @@ function jsbatonValueString(baton, argi) {
     let offset = baton.getInt32(JSBATON_OFFSET_ARGV + argi * 8, true);
     return new TextDecoder().decode(new Uint8Array(
         baton.buffer,
-        offset + 1 + 4,
+        baton.byteOffset + offset + 1 + 4,
         // remove null-terminator from string
         baton.getInt32(offset + 1, true) - 1
     ));
