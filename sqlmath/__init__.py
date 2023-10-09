@@ -188,6 +188,8 @@ def db_call(baton, cfuncname, *arglist):
     # pad argList to length JSBATON_ARGC
     while len(arglist) < JSBATON_ARGC:
         arglist.append(0)
+    #!! encode cfuncname into baton
+    baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
     # prepend baton, cfuncname to arglist
     arglist = [baton, cfuncname, *arglist]
     _pydbCall(baton, cfuncname, arglist)
