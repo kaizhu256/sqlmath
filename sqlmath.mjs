@@ -675,7 +675,7 @@ async function dbFileExportAsync({
         `invalid filename ${filename}`
     );
     return await dbCallAsync(
-        undefined,
+        jsbatonCreate(),
         "_dbFileImportOrExport",
         db,                     // 0. sqlite3 * pInMemory,
         String(filename),       // 1. char *zFilename,
