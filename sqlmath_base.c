@@ -486,7 +486,7 @@ SQLMATH_API void dbCall(
     Jsbaton * baton
 ) {
 // This function will call dbXxx() with given <cFuncName>.
-    const char *cFuncName = jsbatonValueStringArgi(baton, 2 * JSBATON_ARGC);
+    char *cFuncName = baton->cfuncname;
     if (strcmp(cFuncName, "_dbClose") == 0) {
         dbClose(baton);
     } else if (strcmp(cFuncName, "_dbExec") == 0) {
