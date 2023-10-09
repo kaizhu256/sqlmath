@@ -182,7 +182,7 @@ async function cCallAsync(baton, cFuncName, ...argList) {
     );
     baton = baton || jsbatonCreate();
     // pad argList to length JSBATON_ARGC
-    while (argList.length < 2 * JSBATON_ARGC) {
+    while (argList.length < JSBATON_ARGC) {
         argList.push(0n);
     }
     // serialize js-value to c-value
@@ -523,7 +523,7 @@ async function dbCloseAsync(db) {
     let __db = dbDeref(db);
     // prevent segfault - do not close db if actions are pending
     assertOrThrow(
-        !__db.busy,
+        __db.busy === 0,
         `dbCloseAsync - cannot close with ${__db.busy} actions pending`
     );
     // cleanup connPool

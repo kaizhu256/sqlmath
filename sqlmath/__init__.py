@@ -77,8 +77,15 @@ SQLITE_OPEN_URI = 0x00000040           # Ok for sqlite3_open_v2()
 SQLITE_OPEN_WAL = 0x00080000           # VFS only
 
 
+class SqlmathDb:
+    """Sqlmath database class."""
+    busy = 0
+    filename = ""
+    ptr = 0
+
+
 class SqlmathError(Exception):
-    """Custom error."""
+    """Sqlmath error."""
 
 
 def asserterrorthrown(func, regexp=None):
@@ -180,8 +187,8 @@ def db_call(baton, cfuncname, *arglist):
     # serialize js-value to c-value
     arglist = [arg_serialize(argi, val) for argi, val in enumerate(arglist)]
     # pad argList to length JSBATON_ARGC
-    while len(arglist) < 2 * JSBATON_ARGC:
-        arglist.append(0)
+    while len(arglist) < JSBATON_ARGC:
+        arglist.append(None)
     # encode cfuncname into baton
     baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
     # prepend baton, cfuncname to arglist
@@ -199,12 +206,12 @@ def db_close(db):
     """This function will close sqlite-database-connection <db>."""
     # prevent segfault - do not close db if actions are pending
     assertorthrow(
-        db["busy"] == 0,
-        f'db_close - cannot close with {db["busy"]} actions pending',
+        db.busy == 0,
+        f'db_close - cannot close with {db.busy} actions pending',
     )
-    val = db["ptr"]
-    db["ptr"] = 0
-    db_call(None, "_dbClose", val, db["filename"])
+    val = db.ptr
+    db.ptr = 0
+    db_call(None, "_dbClose", val, db.filename)
 
 
 def db_open(filename, flags=None):
@@ -234,11 +241,9 @@ def db_open(filename, flags=None):
         None,
     )[0]
     ptr = struct.unpack_from("q", ptr, JSBATON_OFFSET_ARGV + 0)[0]
-    db = {
-        "busy": 0,
-        "filename": filename,
-        "ptr": ptr,
-    }
+    db = SqlmathDb()
+    db.filename = filename
+    db.ptr = ptr
     weakref.finalize(db, db_close, db)
     return db
 
