@@ -1127,19 +1127,9 @@ async function sqlMessagePost(baton, cFuncName, ...argList) {
     id = sqlMessageId;
     // postMessage to web-worker
     sqlWorker.postMessage(
-        {
-            argList,
-            baton,
-            cFuncName,
-            id
-        },
+        {argList, baton, cFuncName, id},
         // transfer arraybuffer without copying
-        [
-            baton.buffer,
-            ...argList.filter(function (elem) {
-                return elem?.constructor === ArrayBuffer;
-            })
-        ]
+        [baton.buffer, ...argList.filter(noop)]
     );
     // preserve stack-trace
     errStack = new Error().stack.replace((
@@ -1155,16 +1145,13 @@ async function sqlMessagePost(baton, cFuncName, ...argList) {
     timeElapsed = Date.now() - timeElapsed;
     if (timeElapsed > 500 || cFuncName === "testTimeElapsed") {
         consoleError(
-            "sqlMessagePost - " + JSON.stringify({
-                cFuncName,
-                timeElapsed
-            }) + errStack
+            "sqlMessagePost - "
+            + JSON.stringify({cFuncName, timeElapsed})
+            + errStack
         );
     }
     assertOrThrow(!result.errmsg, result.errmsg);
-    return [
-        result.baton, result.cFuncName, ...result.argList
-    ];
+    return [result.baton, result.cFuncName, ...result.argList];
 }
 
 async function sqlmathInit() {
