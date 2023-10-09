@@ -89,7 +89,7 @@ class SqlmathError(Exception):
     """Sqlmath error."""
 
 
-def asserterrorthrown(func, regexp):
+def asserterrorthrown(func, regexp=None):
     """This function will assert calling <func> throws an error."""
     err = None
     try:
