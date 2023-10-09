@@ -3335,7 +3335,7 @@ static void Pysqlbuf_dealloc(
 ) {
 // Called when there are no more references to the object.
     fprintf(stderr, "\nPysqlbuf_dealloc()\n");
-    sqlite3_free((Pysqlbuf *) self->buf);
+    sqlite3_free(((Pysqlbuf *) self)->buf);
 }
 
 static PyBufferProcs Pysqlbuf_as_buffer = {
