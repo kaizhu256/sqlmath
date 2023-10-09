@@ -69,9 +69,11 @@ file sqlmath_h - start
 #define JSBATON_OFFSET_ARG0     2
 #define JSBATON_OFFSET_ARGV     8
 #define JSBATON_OFFSET_BUFV     136
+#define JSBATON_OFFSET_CFUNCNAME        552
 #define JS_MAX_SAFE_INTEGER     0x1fffffffffffff
 #define JS_MIN_SAFE_INTEGER     -0x1fffffffffffff
 #define SIZEOF_BLOB_MAX         1000000000
+#define SIZEOF_CFUNCNAME        16
 #define SIZEOF_MESSAGE          256
 #define SQLITE_DATATYPE_BLOB            0x04
 #define SQLITE_DATATYPE_FLOAT           0x02
@@ -212,11 +214,12 @@ typedef struct Jsbaton {
     int32_t nused;              // offset - 4-8
     int64_t argv[JSBATON_ARGC]; // offset - 8-136
     int64_t bufv[JSBATON_ARGC]; // offset - 136-264
-    int64_t cfuncname;          // offset - 264-272
+    int64_t cfuncname_ptr;      // offset - 264-272
     char errmsg[SIZEOF_MESSAGE];        // offset 272-528
     void *napi_argv;            // offset 528-536
     void *napi_work;            // offset 536-544
     void *napi_deferred;        // offset 544-552
+    char cfuncname[SIZEOF_CFUNCNAME];    // offset 552-568
 } Jsbaton;
 SQLMATH_API int __dbFileImportOrExport(
     sqlite3 * pInMemory,
