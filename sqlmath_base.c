@@ -221,7 +221,7 @@ typedef struct Jsbaton {
     void *napi_deferred;        // offset 544-552
     char cfuncname[SIZEOF_CFUNCNAME];    // offset 552-568
 } Jsbaton;
-SQLMATH_API int __dbFileLoadSave(
+SQLMATH_API int __dbFileImportOrExport(
     sqlite3 * pInMemory,
     char *zFilename,
     const int isSave
@@ -235,7 +235,7 @@ SQLMATH_API void dbClose(
 SQLMATH_API void dbExec(
     Jsbaton * baton
 );
-SQLMATH_API void dbFileLoadSave(
+SQLMATH_API void dbFileImportOrExport(
     Jsbaton * baton
 );
 SQLMATH_API void dbNoop(
@@ -416,12 +416,12 @@ static int dbCount = 0;
 // file sqlmath_base - SQLMATH_API
 
 // SQLMATH_API db - start
-SQLMATH_API int __dbFileLoadSave(
+SQLMATH_API int __dbFileImportOrExport(
     sqlite3 * pInMemory,
     char *zFilename,
     const int isSave
 ) {
-    // fprintf(stderr, "\nsqlmath.dbFileLoadSave(pp=%p ff=%s ss=%d)\n",
+    // fprintf(stderr, "\nsqlmath.dbFileImportOrExport(pp=%p ff=%s ss=%d)\n",
     //     pInMemory, zFilename, isSave);
 /*
 ** https://www.sqlite.org/backup.html
@@ -491,8 +491,8 @@ SQLMATH_API void dbCall(
         dbClose(baton);
     } else if (strcmp(cFuncName, "_dbExec") == 0) {
         dbExec(baton);
-    } else if (strcmp(cFuncName, "_dbFileLoadSave") == 0) {
-        dbFileLoadSave(baton);
+    } else if (strcmp(cFuncName, "_dbFileImportOrExport") == 0) {
+        dbFileImportOrExport(baton);
     } else if (strcmp(cFuncName, "_dbNoop") == 0) {
         dbNoop(baton);
     } else if (strcmp(cFuncName, "_dbOpen") == 0) {
@@ -860,15 +860,15 @@ SQLMATH_API void dbExec(
 
 // SQLMATH_API dbExec - end
 
-SQLMATH_API void dbFileLoadSave(
+SQLMATH_API void dbFileImportOrExport(
     Jsbaton * baton
 ) {
 // This function will load/save <zFilename> to/from <db>.
     // declare var
     int errcode = 0;
     sqlite3 *db = (sqlite3 *) baton->argv[0];
-    // call __dbFileLoadSave()
-    errcode = __dbFileLoadSave( //
+    // call __dbFileImportOrExport()
+    errcode = __dbFileImportOrExport(   //
         db,                     //
         (char *) jsbatonValueStringArgi(baton, 1),      //
         (const int) baton->argv[2]);

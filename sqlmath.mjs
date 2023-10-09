@@ -228,12 +228,12 @@ async function cCallAsync(baton, cFuncName, ...argList) {
     });
     //!! // encode cFuncName into baton
     baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
-    // copy cFuncName into baton
-    new Uint8Array(
-        baton.buffer,
-        baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
-        SIZEOF_CFUNCNAME - 1
-    ).set(new TextEncoder().encode(cFuncName));
+    //!! // copy cFuncName into baton
+    //!! new Uint8Array(
+        //!! baton.buffer,
+        //!! baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
+        //!! SIZEOF_CFUNCNAME - 1
+    //!! ).set(new TextEncoder().encode(cFuncName));
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
@@ -673,7 +673,7 @@ async function dbFileExportAsync({
     );
     return await dbCallAsync(
         jsbatonCreate(),
-        "_dbFileLoadSave",
+        "_dbFileImportOrExport",
         db,                     // 0. sqlite3 * pInMemory,
         String(filename),       // 1. char *zFilename,
         modeExport,             // 2. const int isSave
