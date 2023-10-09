@@ -180,7 +180,7 @@ def db_call(baton, cfuncname, *arglist):
     # serialize js-value to c-value
     arglist = [arg_serialize(argi, val) for argi, val in enumerate(arglist)]
     # pad argList to length JSBATON_ARGC
-    while len(arglist) < 2 * JSBATON_ARGC:
+    while len(arglist) < JSBATON_ARGC:
         arglist.append(0)
     # encode cfuncname into baton
     baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
