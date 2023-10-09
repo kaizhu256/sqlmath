@@ -226,12 +226,6 @@ async function cCallAsync(baton, cFuncName, ...argList) {
             return val;
         }
     });
-    // copy cFuncName into baton
-    new Uint8Array(
-        baton.buffer,
-        baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
-        SIZEOF_CFUNCNAME - 1
-    ).set(new TextEncoder().encode(cFuncName));
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
@@ -524,7 +518,7 @@ async function dbCloseAsync(db) {
     await Promise.all(__db.connPool.map(async function (ptr) {
         let val = ptr[0];
         ptr[0] = 0n;
-        await cCallAsync(jsbatonCreate(), "_dbClose", val, __db.filename);
+        await cCallAsync(jsbatonCreate("_dbClose"), "_dbClose", val, __db.filename);
     }));
     dbDict.delete(db);
 }
@@ -596,7 +590,7 @@ async function dbExecAsync({
             });
         }
     }
-    baton = jsbatonCreate();
+    baton = jsbatonCreate("_dbExec");
     bindByKey = !Array.isArray(bindList);
     bindListLength = (
         Array.isArray(bindList)
@@ -670,7 +664,7 @@ async function dbFileExportAsync({
         `invalid filename ${filename}`
     );
     return await dbCallAsync(
-        jsbatonCreate(),
+        jsbatonCreate("_dbFileImportOrExport"),
         "_dbFileImportOrExport",
         db,                     // 0. sqlite3 * pInMemory,
         String(filename),       // 1. char *zFilename,
@@ -700,7 +694,7 @@ async function dbNoopAsync(...argList) {
 
 // This function will do nothing except return <argList>.
 
-    return await cCallAsync(jsbatonCreate(), "_dbNoop", ...argList);
+    return await cCallAsync(jsbatonCreate("_dbNoop"), "_dbNoop", ...argList);
 }
 
 async function dbOpenAsync({
@@ -730,7 +724,7 @@ async function dbOpenAsync({
         threadCount
     ), async function () {
         let ptr = await cCallAsync(
-            jsbatonCreate(),
+            jsbatonCreate("_dbOpen"),
             "_dbOpen",
             // 0. const char *filename,   Database filename (UTF-8)
             filename,
@@ -817,13 +811,19 @@ function isExternalBuffer(buf) {
     );
 }
 
-function jsbatonCreate() {
+function jsbatonCreate(cFuncName) {
 
 // This function will create buffer <baton>.
 
     let baton = new DataView(new ArrayBuffer(1024));
     // init nallc, nused
     baton.setInt32(4, JSBATON_OFFSET_ALL, true);
+    // copy cFuncName into baton
+    new Uint8Array(
+        baton.buffer,
+        baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
+        SIZEOF_CFUNCNAME - 1
+    ).set(new TextEncoder().encode(cFuncName));
     return baton;
 }
 
@@ -1168,7 +1168,7 @@ async function sqlmathInit() {
 // This function will auto-close any open sqlite3-db-pointer,
 // after its js-wrapper has been garbage-collected.
 
-        cCallAsync(jsbatonCreate(), "_dbClose", ptr[0]);
+        cCallAsync(jsbatonCreate("_dbClose"), "_dbClose", ptr[0]);
         if (afterFinalization) {
             afterFinalization();
         }
@@ -1271,7 +1271,7 @@ function sqlmathWebworkerInit({
             });
         };
         // test cCallAsync handling-behavior
-        cCallAsync(jsbatonCreate(), "testTimeElapsed", true);
+        cCallAsync(jsbatonCreate("testTimeElapsed"), "testTimeElapsed", true);
         // test dbFileExportAsync handling-behavior
         dbFileExportAsync({
             db,
