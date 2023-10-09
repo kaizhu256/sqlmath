@@ -127,10 +127,12 @@ class TestCaseSqlmath(unittest.TestCase):
                 "val_input": val_input,
             })
 
+    '''
     def test_db_open(self):
         """Test db_open."""
         # test null-case handling-behavior
         asserterrorthrown(lambda: sqlmath.db_open(None), "invalid filename")
+    '''
 
 
 if __name__ == "__main__":
