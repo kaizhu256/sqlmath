@@ -66,7 +66,7 @@ function noop(val) {
 (async function () {
     let FILENAME_DBTMP = "/tmp/__dbtmp1";
     let JSBATON_ARGC = 16;
-    let __dbFileImportOrExport;
+    let __dbFileLoadSave;
     let jsbatonValueErrmsg;
     let jsbatonValueStringArgi;
     let onModulePostRun;
@@ -87,7 +87,7 @@ function noop(val) {
         switch (cFuncName) {
         case "_dbClose":
         case "_dbExec":
-        case "_dbFileImportOrExport":
+        case "_dbFileLoadSave":
         case "_dbNoop":
         case "_dbOpen":
             // copy baton to wasm
@@ -99,7 +99,7 @@ function noop(val) {
                 filename = jsbatonValueStringArgi(batonPtr, 1);
                 console.error(`_dbClose("${filename}")`);
                 break;
-            case "_dbFileImportOrExport":
+            case "_dbFileLoadSave":
                 // import dbData
                 if (!modeExport) {
                     FS.writeFile(FILENAME_DBTMP, new Uint8Array(dbData));
@@ -152,7 +152,7 @@ function noop(val) {
                 }
             });
             switch (!errmsg && cFuncName) {
-            case "_dbFileImportOrExport":
+            case "_dbFileLoadSave":
                 // export dbData
                 if (modeExport) {
                     dbData = FS.readFile(FILENAME_DBTMP);
@@ -164,7 +164,7 @@ function noop(val) {
                 if (dbData) {
                     FS.writeFile(FILENAME_DBTMP, new Uint8Array(dbData));
                     dbPtr = Number(argList[0]);
-                    errcode = __dbFileImportOrExport(dbPtr, FILENAME_DBTMP, 0);
+                    errcode = __dbFileLoadSave(dbPtr, FILENAME_DBTMP, 0);
                     if (errcode) {
                         errmsg = sqlite3_errmsg(dbPtr);
                     }
@@ -202,7 +202,7 @@ function noop(val) {
             _sqlite3_free(data["batonPtr"]);
             // cleanup FILENAME_DBTMP
             switch (cFuncName) {
-            case "_dbFileImportOrExport":
+            case "_dbFileLoadSave":
             case "_dbOpen":
                 try {
                     FS.unlink(FILENAME_DBTMP);
@@ -230,8 +230,8 @@ function noop(val) {
         Module["postRun"] = resolve;
     });
     await onModulePostRun;
-    __dbFileImportOrExport = cwrap(
-        "__dbFileImportOrExport",
+    __dbFileLoadSave = cwrap(
+        "__dbFileLoadSave",
         "number",
         [
             "number", "string", "number"

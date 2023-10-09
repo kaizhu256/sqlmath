@@ -230,7 +230,7 @@ shCiBuildWasm() {(set -e
     OPTION2=""
     #
     OPTION2="$OPTION2 -s EXPORTED_FUNCTIONS=_sqlite3_initialize"
-    OPTION2="$OPTION2,___dbFileImportOrExport"
+    OPTION2="$OPTION2,___dbFileLoadSave"
     OPTION2="$OPTION2,_dbCall"
     OPTION2="$OPTION2,_jsbatonValueErrmsg"
     OPTION2="$OPTION2,_jsbatonValueStringArgi"

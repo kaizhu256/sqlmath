@@ -228,12 +228,12 @@ async function cCallAsync(baton, cFuncName, ...argList) {
     });
     //!! // encode cFuncName into baton
     baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
-    //!! // copy cFuncName into baton
-    //!! new Uint8Array(
-        //!! baton.buffer,
-        //!! baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
-        //!! SIZEOF_CFUNCNAME - 1
-    //!! ).set(new TextEncoder().encode(cFuncName));
+    // copy cFuncName into baton
+    new Uint8Array(
+        baton.buffer,
+        baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
+        SIZEOF_CFUNCNAME - 1
+    ).set(new TextEncoder().encode(cFuncName));
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
@@ -673,7 +673,7 @@ async function dbFileExportAsync({
     );
     return await dbCallAsync(
         jsbatonCreate(),
-        "_dbFileImportOrExport",
+        "_dbFileLoadSave",
         db,                     // 0. sqlite3 * pInMemory,
         String(filename),       // 1. char *zFilename,
         modeExport,             // 2. const int isSave
@@ -1007,10 +1007,11 @@ function jsbatonValuePush(baton, argi, val, externalbufferList) {
         // push vsize
         baton.setInt32(nused + 1, vsize, true);
         // copy val into baton
-        new Uint8Array(baton.buffer, nused + 1 + 4, vsize).set(
-            new Uint8Array(val.buffer, val.byteOffset, vsize),
-            0
-        );
+        new Uint8Array(
+            baton.buffer,
+            baton.byteOffset + nused + 1 + 4,
+            vsize
+        ).set(new Uint8Array(val.buffer, val.byteOffset, vsize));
         break;
     case SQLITE_DATATYPE_FLOAT:
         baton.setFloat64(nused + 1, val, true);
