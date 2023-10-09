@@ -3333,6 +3333,7 @@ static void Pysqlbuf_dealloc(
 // Called when there are no more references to the object.
     Pysqlbuf * self
 ) {
+    fprintf(stderr, "\nPysqlbuf_dealloc()\n");
     sqlite3_free(self->buf);
 }
 

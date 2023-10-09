@@ -195,6 +195,18 @@ def db_noop(*arglist):
     return db_call(None, "_dbNoop", *arglist)
 
 
+def db_close(db):
+    """This function will close sqlite-database-connection <db>."""
+    # prevent segfault - do not close db if actions are pending
+    assertorthrow(
+        db["busy"] == 0,
+        f'db_close - cannot close with {db["busy"]} actions pending',
+    )
+    val = db["ptr"]
+    db["ptr"] = 0
+    db_call(None, "_dbClose", val, db["filename"])
+
+
 def db_open(filename, flags=None):
     """
     This function will open and return sqlite-database-connection <db>.
@@ -227,7 +239,7 @@ def db_open(filename, flags=None):
         "filename": filename,
         "ptr": ptr,
     }
-    weakref.finalize(db, noop, db)
+    weakref.finalize(db, db_close, db)
     return db
 
 

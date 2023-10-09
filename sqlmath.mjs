@@ -516,17 +516,15 @@ function dbCallAsync(baton, cFuncName, db, ...argList) {
     });
 }
 
-async function dbCloseAsync({
-    db
-}) {
+async function dbCloseAsync(db) {
 
 // This function will close sqlite-database-connection <db>.
 
     let __db = dbDeref(db);
     // prevent segfault - do not close db if actions are pending
     assertOrThrow(
-        __db.busy === 0,
-        "db cannot close with " + __db.busy + " actions pending"
+        !__db.busy,
+        `dbCloseAsync - cannot close with ${__db.busy} actions pending`
     );
     // cleanup connPool
     await Promise.all(__db.connPool.map(async function (ptr) {
