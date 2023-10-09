@@ -1136,12 +1136,8 @@ async function sqlMessagePost(baton, cFuncName, ...argList) {
         // transfer arraybuffer without copying
         [
             baton.buffer,
-            ...argList.map(function (elem) {
-                return (
-                    elem?.constructor === ArrayBuffer
-                    ? elem
-                    : undefined
-                );
+            ...argList.filter(function (elem) {
+                return elem?.constructor === ArrayBuffer;
             })
         ]
     );
