@@ -219,7 +219,7 @@ typedef struct Jsbaton {
     void *napi_argv;            // offset 528-536
     void *napi_work;            // offset 536-544
     void *napi_deferred;        // offset 544-552
-    char cfuncname[SIZEOF_CFUNCNAME];    // offset 552-568
+    char cfuncname[SIZEOF_CFUNCNAME];    // offset 552-576
 } Jsbaton;
 SQLMATH_API int __dbFileImportOrExport(
     sqlite3 * pInMemory,

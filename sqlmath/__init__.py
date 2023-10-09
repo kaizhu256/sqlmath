@@ -38,9 +38,11 @@ JSBATON_OFFSET_ALL = 768
 JSBATON_OFFSET_ARG0 = 2
 JSBATON_OFFSET_ARGV = 8
 JSBATON_OFFSET_BUFV = 136
+JSBATON_OFFSET_CFUNCNAME = 552
 JS_MAX_SAFE_INTEGER = 0x1fffffffffffff
 JS_MIN_SAFE_INTEGER = -0x1fffffffffffff
 SIZEOF_BLOB_MAX = 1000000000
+SIZEOF_CFUNCNAME = 24
 SIZEOF_MESSAGE = 256
 SQLITE_DATATYPE_BLOB = 0x04
 SQLITE_DATATYPE_FLOAT = 0x02
@@ -192,6 +194,11 @@ def db_call(baton, cfuncname, *arglist):
         arglist.append(0)
     # encode cfuncname into baton
     baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
+    # copy cFuncName into baton
+    baton[
+        JSBATON_OFFSET_CFUNCNAME:
+        JSBATON_OFFSET_CFUNCNAME + len(bytes(cfuncname, "utf-8"))
+    ] = bytes(cfuncname, "utf-8")
     # prepend baton, cfuncname to arglist
     arglist = [baton, cfuncname, *arglist]
     _pydbCall(baton, cfuncname, arglist)
@@ -455,7 +462,7 @@ def jsbaton_value_push(baton, argi, val, externalbufferlist=None):
         )
         # update nallc
         struct.pack_into("i", baton, 0, len(baton))
-        # copy tmp to baton
+        # copy old-baton into new-baton
         baton[:len(tmp)] = tmp
     # push vtype
     struct.pack_into("b", baton, nused, vtype)
@@ -476,6 +483,7 @@ def jsbaton_value_push(baton, argi, val, externalbufferlist=None):
         )
         # push vsize
         struct.pack_into("i", baton, nused + 1, vsize)
+        # copy val into baton
         baton[nused + 1 + 4:nused + 1 + 4 + vsize] = val
         return baton
     if vtype == SQLITE_DATATYPE_FLOAT:
