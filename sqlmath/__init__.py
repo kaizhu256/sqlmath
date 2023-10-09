@@ -79,6 +79,7 @@ SQLITE_OPEN_WAL = 0x00080000           # VFS only
 
 class SqlmathDb:
     """Sqlmath database class."""
+
     closed = False
     filename = ""
     ptr = 0
@@ -197,17 +198,72 @@ def db_call(baton, cfuncname, *arglist):
     return arglist
 
 
-def db_noop(*arglist):
-    """This function will do nothing except return <arglist>."""
-    return db_call(None, "_dbNoop", *arglist)
-
-
 def db_close(db):
     """This function will close sqlite-database-connection <db>."""
     # prevent segfault - do not close db if actions are pending
     if not db.closed:
         db.closed = True
         db_call(None, "_dbClose", db.ptr, db.filename)
+
+
+# !! def db_exec(db, sql, bindList = []):
+    # !! """This function will exec <sql> in <db> and return <result>."""
+    # !! baton = jsbatonCreate()
+    # !! bindByKey = !Array.isArray(bindList)
+    # !! bindListLength = (
+        # !! Array.isArray(bindList)
+        # !! ? bindList.length
+        # !! : Object.keys(bindList).length
+    # !! )
+    # !! externalbufferList = []
+    # !! Object.entries(bindList).forEach(function ([key, val]) {
+        # !! if (bindByKey) {
+            # !! baton = jsbatonValuePush(baton, undefined, `:${key}\u0000`)
+        # !! }
+        # !! baton = jsbatonValuePush(baton, undefined, val,
+        # !! externalbufferList)
+    # !! })
+    # !! result = await dbCallAsync(
+        # !! baton,
+        # !! "_dbExec",
+        # !! db,                     // 0
+        # !! String(sql) + "\n\nPRAGMA noop",   // 1
+        # !! bindListLength,         // 2
+        # !! bindByKey,              // 3
+        # !! (                       // 4
+            # !! responseType === "lastBlob"
+            # !! ? SQLITE_RESPONSETYPE_LASTBLOB
+            # !! : 0
+        # !! ),
+        # !! undefined, // 5
+        # !! undefined, // 6
+        # !! undefined, // 7 - response
+        # !! ...externalbufferList        // 8
+    # !! )
+    # !! result = result[JSBATON_OFFSET_ARG0 + 0]
+    # !! switch (responseType) {
+    # !! case "arraybuffer":
+    # !! case "lastBlob":
+        # !! return result
+    # !! case "list":
+        # !! return JSON.parse(new TextDecoder().decode(result))
+    # !! default:
+        # !! result = JSON.parse(new TextDecoder().decode(result))
+        # !! return result.map(function (rowList) {
+            # !! colList = rowList.shift()
+            # !! return rowList.map(function (row) {
+                # !! dict = {}
+                # !! colList.forEach(function (key, ii) {
+                    # !! dict[key] = row[ii]
+                # !! })
+                # !! return dict
+            # !! })
+        # !! })
+
+
+def db_noop(*arglist):
+    """This function will do nothing except return <arglist>."""
+    return db_call(None, "_dbNoop", *arglist)
 
 
 def db_open(filename, flags=None):

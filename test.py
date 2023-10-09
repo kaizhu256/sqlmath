@@ -47,6 +47,7 @@ class TestCaseSqlmath(unittest.TestCase):
     """Custom TestCase."""
 
     def test_db_close(self):
+        """Test db_close."""
         db = sqlmath.db_open(":memory:")
         # test null-case handling-behavior
         asserterrorthrown(lambda: sqlmath.db_close(None), "")
@@ -127,6 +128,7 @@ class TestCaseSqlmath(unittest.TestCase):
             })
 
     def test_db_open(self):
+        """Test db_open."""
         # test null-case handling-behavior
         asserterrorthrown(lambda: sqlmath.db_open(None), "invalid filename")
 
