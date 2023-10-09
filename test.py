@@ -104,6 +104,7 @@ class TestCaseSqlmath(unittest.TestCase):
                         val_input,
                         None,
                     ),
+                    "",
                 )
                 continue
             baton = sqlmath.db_noop(None, val_input, None)[0]
