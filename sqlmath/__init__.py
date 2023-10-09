@@ -192,8 +192,6 @@ def db_call(baton, cfuncname, *arglist):
     # pad argList to length JSBATON_ARGC
     while len(arglist) < JSBATON_ARGC:
         arglist.append(0)
-    # encode cfuncname into baton
-    baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
     # copy cFuncName into baton
     baton[
         JSBATON_OFFSET_CFUNCNAME:

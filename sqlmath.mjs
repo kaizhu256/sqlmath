@@ -226,8 +226,6 @@ async function cCallAsync(baton, cFuncName, ...argList) {
             return val;
         }
     });
-    //!! // encode cFuncName into baton
-    baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
     // copy cFuncName into baton
     new Uint8Array(
         baton.buffer,
