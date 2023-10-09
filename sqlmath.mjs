@@ -189,29 +189,22 @@ async function cCallAsync(baton, cFuncName, ...argList) {
         switch (typeof val) {
         case "bigint":
         case "boolean":
-            assertInt64(val);
-            baton.setBigInt64(
-                JSBATON_OFFSET_ARGV + argi * 8,
-                BigInt(val),
-                true
-            );
-            return val;
         case "number":
             // check for min/max safe-integer
             assertOrThrow(
-                JS_MIN_SAFE_INTEGER <= val && val <= JS_MAX_SAFE_INTEGER,
+                (
+                    (JS_MIN_SAFE_INTEGER <= val && val <= JS_MAX_SAFE_INTEGER)
+                    || typeof val !== "number"
+                ),
                 (
                     "non-bigint integer must be within inclusive-range"
                     + ` ${JS_MIN_SAFE_INTEGER} to ${JS_MAX_SAFE_INTEGER}`
                 )
             );
+            val = BigInt(val);
             assertInt64(val);
-            baton.setBigInt64(
-                JSBATON_OFFSET_ARGV + argi * 8,
-                BigInt(val),
-                true
-            );
-            return val;
+            baton.setBigInt64(JSBATON_OFFSET_ARGV + argi * 8, val, true);
+            return;
         // case "object":
         //     break;
         case "string":
