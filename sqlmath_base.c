@@ -3310,6 +3310,7 @@ static int Pysqlbuf_getbuf(
     Py_buffer * view,
     int flags
 ) {
+    UNUSED_PARAMETER(flags);
     static Py_ssize_t strides[1] = { 1 };
     view->buf = self->buf;
     view->obj = (PyObject *) self;
@@ -3330,11 +3331,11 @@ static int Pysqlbuf_getbuf(
 }
 
 static void Pysqlbuf_dealloc(
-// Called when there are no more references to the object.
-    Pysqlbuf * self
+    PyObject * self
 ) {
+// Called when there are no more references to the object.
     fprintf(stderr, "\nPysqlbuf_dealloc()\n");
-    sqlite3_free(self->buf);
+    sqlite3_free((Pysqlbuf *) self->buf);
 }
 
 static PyBufferProcs Pysqlbuf_as_buffer = {
@@ -3400,7 +3401,7 @@ static PyObject *pydbCall(
         // init argList[ii] = bufv[ii]
         Pysqlbuf *buf =
             (Pysqlbuf *) (&Pysqlbuf_Type)->tp_alloc(&Pysqlbuf_Type, 0);
-        buf->buf = baton->bufv[ii];
+        buf->buf = (void *) baton->bufv[ii];
         buf->shape[0] = baton->argv[ii];
         val = PyMemoryView_FromObject((PyObject *) buf);
     }
