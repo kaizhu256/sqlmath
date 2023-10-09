@@ -33,9 +33,11 @@ let JSBATON_OFFSET_ALL = 768;
 let JSBATON_OFFSET_ARG0 = 2;
 let JSBATON_OFFSET_ARGV = 8;
 let JSBATON_OFFSET_BUFV = 136;
+let JSBATON_OFFSET_CFUNCNAME = 552;
 let JS_MAX_SAFE_INTEGER = 0x1fffffffffffff;
 let JS_MIN_SAFE_INTEGER = -0x1fffffffffffff;
 let SIZEOF_BLOB_MAX = 1000000000;
+let SIZEOF_CFUNCNAME = 16;
 let SIZEOF_MESSAGE = 256;
 let SQLITE_DATATYPE_BLOB = 0x04;
 let SQLITE_DATATYPE_FLOAT = 0x02;
@@ -218,18 +220,20 @@ async function cCallAsync(baton, cFuncName, ...argList) {
         }
         // normalize buffer to zero-byte-offset
         if (ArrayBuffer.isView(val)) {
-            return new DataView(
-                val.buffer,
-                val.byteOffset,
-                val.byteLength
-            );
+            return new DataView(val.buffer, val.byteOffset, val.byteLength);
         }
         if (isExternalBuffer(val)) {
             return val;
         }
     });
-    // encode cFuncName into baton
+    //!! // encode cFuncName into baton
     baton = jsbatonValuePush(baton, 2 * JSBATON_ARGC, `${cFuncName}\u0000`);
+    //!! // copy cFuncName into baton
+    //!! new Uint8Array(
+        //!! baton.buffer,
+        //!! baton.byteOffset + JSBATON_OFFSET_CFUNCNAME,
+        //!! SIZEOF_CFUNCNAME - 1
+    //!! ).set(new TextEncoder().encode(cFuncName));
     // prepend baton, cFuncName to argList
     argList = [baton, cFuncName, ...argList];
     // preserve stack-trace
@@ -975,12 +979,10 @@ function jsbatonValuePush(baton, argi, val, externalbufferList) {
         ));
         // update nallc
         baton.setInt32(0, baton.byteLength, true);
-        // copy tmp to baton
-        new Uint8Array(
-            baton.buffer,
-            baton.byteOffset,
-            nused
-        ).set(new Uint8Array(tmp.buffer, tmp.byteOffset, nused), 0);
+        // copy old-baton into new-baton
+        new Uint8Array(baton.buffer, baton.byteOffset, nused).set(
+            new Uint8Array(tmp.buffer, tmp.byteOffset, nused)
+        );
     }
     // push vtype
     baton.setUint8(nused, vtype);
@@ -1175,10 +1177,8 @@ async function sqlmathInit() {
 // Feature-detect nodejs.
 
     if (
-        !(
-            typeof process === "object"
-            && typeof process?.versions?.node === "string"
-        )
+        typeof process !== "object"
+        || typeof process?.versions?.node !== "string"
         || cModule
     ) {
         return;
@@ -1293,9 +1293,11 @@ export {
     JSBATON_OFFSET_ARG0,
     JSBATON_OFFSET_ARGV,
     JSBATON_OFFSET_BUFV,
+    JSBATON_OFFSET_CFUNCNAME,
     JS_MAX_SAFE_INTEGER,
     JS_MIN_SAFE_INTEGER,
     SIZEOF_BLOB_MAX,
+    SIZEOF_CFUNCNAME,
     SIZEOF_MESSAGE,
     SQLITE_DATATYPE_BLOB,
     SQLITE_DATATYPE_FLOAT,
