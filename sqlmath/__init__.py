@@ -183,13 +183,20 @@ def db_call(baton, cfuncname, *arglist):
         len(arglist) <= JSBATON_ARGC,
         f"db_call - len(arglist) must be less than than {JSBATON_ARGC}",
     )
+    # init baton
+    baton = memoryview(bytearray(1024))
+    # init nalloc, nused
+    struct.pack_into("i", baton, 4, JSBATON_OFFSET_ALL)
     # serialize js-value to c-value
     arglist = [arg_serialize(argi, val) for argi, val in enumerate(arglist)]
     # pad argList to length JSBATON_ARGC
     while len(arglist) < JSBATON_ARGC:
         arglist.append(0)
-    #!! encode cfuncname into baton
-    baton = jsbaton_value_push(baton, 2 * JSBATON_ARGC, f"{cfuncname}\u0000")
+    # copy cFuncName into baton
+    baton[
+        JSBATON_OFFSET_CFUNCNAME:
+        JSBATON_OFFSET_CFUNCNAME + len(bytes(cfuncname, "utf-8"))
+    ] = bytes(cfuncname, "utf-8")
     # prepend baton, cfuncname to arglist
     arglist = [baton, cfuncname, *arglist]
     _pydbCall(baton, cfuncname, arglist)
@@ -201,7 +208,7 @@ def db_close(db):
     # prevent segfault - do not close db if actions are pending
     if not db.closed:
         db.closed = True
-        db_call("_dbClose", "_dbClose", db.ptr, db.filename)
+        db_call(None, "_dbClose", db.ptr, db.filename)
 
 
 # !! def db_exec(db, sql, bindList = []):
@@ -261,7 +268,7 @@ def db_close(db):
 
 def db_noop(*arglist):
     """This function will do nothing except return <arglist>."""
-    return db_call("_dbNoop", "_dbNoop", *arglist)
+    return db_call(None, "_dbNoop", *arglist)
 
 
 def db_open(filename, flags=None):
@@ -277,7 +284,7 @@ def db_open(filename, flags=None):
     """
     assertorthrow(isinstance(filename, str), f"invalid filename {filename}")
     ptr = db_call(
-        jsbaton_create("_dbOpen"),
+        None,
         "_dbOpen",
         # 0. const char *filename,   Database filename (UTF-8)
         str(filename),
@@ -305,19 +312,6 @@ def debuginline(*argv):
     print(*argv, file=sys.stderr)
     print("\n")
     return arg0
-
-
-def jsbaton_create(cfuncname):
-    """This function will create buffer <baton>."""
-    baton = memoryview(bytearray(1024))
-    # init nalloc, nused
-    struct.pack_into("i", baton, 4, JSBATON_OFFSET_ALL)
-    # copy cFuncName into baton
-    baton[
-        JSBATON_OFFSET_CFUNCNAME:
-        JSBATON_OFFSET_CFUNCNAME + len(bytes(cfuncname, "utf-8"))
-    ] = bytes(cfuncname, "utf-8")
-    return baton
 
 
 def jsbaton_value_push(baton, argi, val, externalbufferlist=None):
