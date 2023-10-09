@@ -49,7 +49,7 @@ class TestCaseSqlmath(unittest.TestCase):
     def test_db_close(self):
         db = sqlmath.db_open(":memory:")
         # test null-case handling-behavior
-        asserterrorthrown(lambda: sqlmath.db_close(None))
+        asserterrorthrown(lambda: sqlmath.db_close(None), "")
         # test close handling-behavior
         sqlmath.db_close(db)
 
@@ -111,6 +111,7 @@ class TestCaseSqlmath(unittest.TestCase):
                         val_input,
                         None,
                     ),
+                    "",
                 )
                 continue
             baton = sqlmath.db_noop(None, val_input, None)[0]
@@ -124,6 +125,10 @@ class TestCaseSqlmath(unittest.TestCase):
                 "val_expected": val_expected,
                 "val_input": val_input,
             })
+
+    def test_db_open(self):
+        # test null-case handling-behavior
+        asserterrorthrown(lambda: sqlmath.db_open(None), "invalid filename")
 
 
 if __name__ == "__main__":

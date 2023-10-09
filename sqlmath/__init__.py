@@ -79,7 +79,7 @@ SQLITE_OPEN_WAL = 0x00080000           # VFS only
 
 class SqlmathDb:
     """Sqlmath database class."""
-    busy = 0
+    closed = False
     filename = ""
     ptr = 0
 
@@ -88,7 +88,7 @@ class SqlmathError(Exception):
     """Sqlmath error."""
 
 
-def asserterrorthrown(func, regexp=None):
+def asserterrorthrown(func, regexp):
     """This function will assert calling <func> throws an error."""
     err = None
     try:
@@ -205,13 +205,9 @@ def db_noop(*arglist):
 def db_close(db):
     """This function will close sqlite-database-connection <db>."""
     # prevent segfault - do not close db if actions are pending
-    assertorthrow(
-        db.busy == 0,
-        f'db_close - cannot close with {db.busy} actions pending',
-    )
-    val = db.ptr
-    db.ptr = 0
-    db_call(None, "_dbClose", val, db.filename)
+    if not db.closed:
+        db.closed = True
+        db_call(None, "_dbClose", db.ptr, db.filename)
 
 
 def db_open(filename, flags=None):
