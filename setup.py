@@ -533,6 +533,55 @@ def debuginline(*argv):
     return argv[0]
 
 
+async def env_vcvars():
+    """This function will print vcvars <env>."""
+    platform_vcvarsall = {
+        "win-amd64": "x86_amd64",
+        "win-arm32": "x86_arm",
+        "win-arm64": "x86_arm64",
+        "win32": "x86",
+    }.get(sysconfig.get_platform())
+    env = await asyncio.create_subprocess_exec(
+        (
+            (
+                os.getenv("PROGRAMFILES(X86)")
+                or os.getenv("PROGRAMFILES")
+            )
+            + "\\Microsoft Visual Studio"
+            + "\\Installer"
+            + "\\vswhere.exe"
+        ),
+        "-latest", "-prerelease",
+        "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "-property", "installationPath",
+        "-products", "*",
+        stdout=asyncio.subprocess.PIPE,
+    )
+    env = (
+        await env.stdout.readline()
+    ).decode("mbcs").strip()
+    env = await asyncio.create_subprocess_exec(
+        "cmd.exe",
+        "/u",
+        "/c",
+        f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+        platform_vcvarsall,
+        "&&",
+        "set",
+        stdout=asyncio.subprocess.PIPE,
+    )
+    env = (
+        await env.stdout.read()
+    ).decode("utf-16le")
+    env = {
+        key.lower(): val
+        for key, _, val in
+        (line.partition("=") for line in env.splitlines())
+        if key and val
+    }
+    print(env)
+
+
 def noop(*args, **kwargs): # noqa: ARG001
     """This function will do nothing."""
     return
@@ -560,6 +609,9 @@ if __name__ == "__main__":
             build_ext_init()
         case "build_pkg_info":
             build_pkg_info()
+        case "env_vcvars":
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            asyncio.get_event_loop().run_until_complete(env_vcvars())
         case "sdist":
             build_sdist("dist")
         case "test":
