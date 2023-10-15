@@ -1,7 +1,7 @@
 # Changelog
 
 # Todo
-- sqlmath - Optimize cosfit-calculation of amplitude-prm WinCosfit.caa to one-step instead of nnn-steps.
+- sqlmath - Add bindings to lightgbm.
 - none
 
 # v2023.10.1-beta
