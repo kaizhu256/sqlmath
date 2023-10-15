@@ -207,55 +207,12 @@ async def build_ext_async(): # noqa: C901
         f"{sysconfig.get_config_var('prefix')}{os.sep}libs",
         sysconfig.get_config_var("prefix"),
     ]
-    platform_vcvarsall = {
-        "win-amd64": "x86_amd64",
-        "win-arm32": "x86_arm",
-        "win-arm64": "x86_arm64",
-        "win32": "x86",
-    }.get(sysconfig.get_platform())
     npm_config_mode_debug = os.getenv("npm_config_mode_debug") # noqa: SIM112
     #
     # build_ext - init env
     env = os.environ
     if is_win32:
-        env = await asyncio.create_subprocess_exec(
-            (
-                (
-                    os.getenv("PROGRAMFILES(X86)")
-                    or os.getenv("PROGRAMFILES")
-                )
-                + "\\Microsoft Visual Studio"
-                + "\\Installer"
-                + "\\vswhere.exe"
-            ),
-            "-latest", "-prerelease",
-            "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-            "-property", "installationPath",
-            "-products", "*",
-            stdout=asyncio.subprocess.PIPE,
-        )
-        env = (
-            await env.stdout.readline()
-        ).decode("mbcs").strip()
-        env = await asyncio.create_subprocess_exec(
-            "cmd.exe",
-            "/u",
-            "/c",
-            f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-            platform_vcvarsall,
-            "&&",
-            "set",
-            stdout=asyncio.subprocess.PIPE,
-        )
-        env = (
-            await env.stdout.read()
-        ).decode("utf-16le")
-        env = {
-            key.lower(): val
-            for key, _, val in
-            (line.partition("=") for line in env.splitlines())
-            if key and val
-        }
+        env = env_vcvars()
         await_list = []
         for exe in ["cl.exe", "link.exe"]:
             await_list.append( # noqa: PERF401
@@ -533,53 +490,44 @@ def debuginline(*argv):
     return argv[0]
 
 
-async def env_vcvars():
+def env_vcvars():
     """This function will print vcvars <env>."""
-    platform_vcvarsall = {
-        "win-amd64": "x86_amd64",
-        "win-arm32": "x86_arm",
-        "win-arm64": "x86_arm64",
-        "win32": "x86",
-    }.get(sysconfig.get_platform())
-    env = await asyncio.create_subprocess_exec(
-        (
+    env = subprocess.check_output(
+        [
             (
-                os.getenv("PROGRAMFILES(X86)")
-                or os.getenv("PROGRAMFILES")
-            )
-            + "\\Microsoft Visual Studio"
-            + "\\Installer"
-            + "\\vswhere.exe"
+                (
+                    os.getenv("PROGRAMFILES(X86)")
+                    or os.getenv("PROGRAMFILES")
+                )
+                + "\\Microsoft Visual Studio"
+                + "\\Installer"
+                + "\\vswhere.exe"
+            ),
+            "-latest", "-prerelease",
+            "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            "-property", "installationPath",
+            "-products", "*",
+        ],
+    ).decode(encoding="mbcs", errors="strict").strip()
+    env = subprocess.check_output(
+        'cmd /u /c "{}" {} && set'.format(
+            f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+            {
+                "win-amd64": "x86_amd64",
+                "win-arm32": "x86_arm",
+                "win-arm64": "x86_arm64",
+                "win32": "x86",
+            }.get(sysconfig.get_platform()),
         ),
-        "-latest", "-prerelease",
-        "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-        "-property", "installationPath",
-        "-products", "*",
-        stdout=asyncio.subprocess.PIPE,
-    )
-    env = (
-        await env.stdout.readline()
-    ).decode("mbcs").strip()
-    env = await asyncio.create_subprocess_exec(
-        "cmd.exe",
-        "/u",
-        "/c",
-        f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-        platform_vcvarsall,
-        "&&",
-        "set",
-        stdout=asyncio.subprocess.PIPE,
-    )
-    env = (
-        await env.stdout.read()
-    ).decode("utf-16le")
+        stderr=subprocess.STDOUT,
+    ).decode("utf-16le", errors="replace")
     env = {
         key.lower(): val
         for key, _, val in
         (line.partition("=") for line in env.splitlines())
         if key and val
     }
-    print(env)
+    return env
 
 
 def noop(*args, **kwargs): # noqa: ARG001
@@ -610,8 +558,7 @@ if __name__ == "__main__":
         case "build_pkg_info":
             build_pkg_info()
         case "env_vcvars":
-            asyncio.set_event_loop(asyncio.new_event_loop())
-            asyncio.get_event_loop().run_until_complete(env_vcvars())
+            print(env_vcvars())
         case "sdist":
             build_sdist("dist")
         case "test":
