@@ -2,6 +2,7 @@ win:
 	rm -f build/_lgb*
 	gcc \
 		-Isqlite-autoconf-3420000/ \
+		-Llib_lightgbm.dll \
 		-o build/_lgb.dll \
 		-shared \
 		sqlmath_wrapper_lightgbm.c

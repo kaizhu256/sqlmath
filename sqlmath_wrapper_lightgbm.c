@@ -33,8 +33,12 @@ gcc -Isqlite-autoconf-3420000/ -shared sqlmath_wrapper_lightgbm.c -o build/_lgb.
 
 #include <sqlite3ext.h>
 #include <string.h>
+#include "./lgb_c_api.h"
 SQLITE_EXTENSION_INIT1;
 
+int LGBM_DatasetFree(
+    DatasetHandle handle
+);
 
 #define SQLMATH_FUNC
 #define SQLITE3_CREATE_FUNCTION1(func, argc) \
@@ -51,6 +55,7 @@ SQLMATH_FUNC extern void sql1_lgb_hello_func(
 // This function will print "hello lightgbm!".
     UNUSED_PARAMETER(argc);
     sqlite3_result_text(context, "hello lightgbm!", -1, SQLITE_STATIC);
+    LGBM_DatasetFree(NULL);
 }
 
 
