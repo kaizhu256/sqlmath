@@ -7,8 +7,8 @@
 # sqlean-0.21.8 - 0.21.8
 # curl -L https://github.com/nalgeon/sqlean/archive/refs/tags/0.21.8.tar.gz | tar -xz
 
-# zlib-1.2.13 - v1.2.13
-# curl -L https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz | tar -xz
+# zlib-1.3 - v1.3
+# curl -L https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz | tar -xz
 
 # sqlite-autoconf-3420000 - version-3.42.0
 # curl -L https://www.sqlite.org/2023/sqlite-autoconf-3420000.tar.gz | tar -xz
