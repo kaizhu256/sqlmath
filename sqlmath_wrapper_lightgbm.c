@@ -31,9 +31,11 @@ gcc -Isqlite-autoconf-3420000/ -g -fPIC -shared sqlmath_wrapper_lightgbm.c -o .a
 gcc -Isqlite-autoconf-3420000/ -shared sqlmath_wrapper_lightgbm.c -o build/_lgb.dll
  */
 
-#include <sqlite3ext.h>
-#include <string.h>
-//!! #include "./lgb_c_api.h"
+#define SRC_LIGHTGBM_H2
+#define SRC_SQLITE3EXT_H2
+#   include "sqlite_rollup.c"
+#undef SRC_LIGHTGBM_H2
+#undef SRC_SQLITE3EXT_H2
 SQLITE_EXTENSION_INIT1;
 
 //!! int LGBM_DatasetFree(
