@@ -8,6 +8,7 @@ include .npmignore
 include CHANGELOG.md
 include LICENSE
 include MANIFEST.in
+include Makefile
 include PKG-INFO
 include README.md
 include asset_image_folder_open_solid.svg
