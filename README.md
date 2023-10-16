@@ -104,6 +104,7 @@ PORT=8080 sh jslint_ci.sh shHttpFileServer
 
 <br><br>
 # License
+- zlib is under [zlib License](https://opensource.org/license/zlib/).
 - SQLite is under [public domain](https://www.sqlite.org/copyright.html).
 - JSLint is under [Unlicense License](https://github.com/jslint-org/jslint/blob/master/LICENSE).
 - [cpplint.py](cpplint.py) is under [BSD 3-clause license](https://github.com/cpplint/cpplint/blob/develop/LICENSE).
