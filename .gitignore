@@ -37,6 +37,7 @@ wheelhouse/
 
 binding.gyp
 lib_lightgbm.*
-sqlean-*
-sqlite-autoconf-*
+sqlean-*/
+sqlite-autoconf-*/
 sqlmath_wasm.*
+zlib-*/
