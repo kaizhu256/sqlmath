@@ -242,6 +242,8 @@ async def build_ext_async(): # noqa: C901
         build_ext_obj(cdefine)
         for cdefine in [
             "SRC_ZLIB_BASE",
+            "SRC_ZLIB_TEST_EXAMPLE",
+            "SRC_ZLIB_TEST_MINIGZIP",
             #
             "SRC_SQLITE_BASE",
             #
@@ -313,6 +315,8 @@ def build_ext_init():
     mkdir -p build/
     for C_DEFINE in \\
         SRC_ZLIB_BASE \\
+        SRC_ZLIB_TEST_EXAMPLE \\
+        SRC_ZLIB_TEST_MINIGZIP \\
         \\
         SRC_SQLITE_BASE \\
         SRC_SQLITE_SHELL
