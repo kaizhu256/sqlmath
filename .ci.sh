@@ -4,7 +4,10 @@
 # sh jslint_ci.sh shCiBuildWasm
 # sh jslint_ci.sh shSqlmathUpdate
 
-# sqlite autoconf-3420000 version-3.42.0
+# zlib-1.2.13 v1.2.13
+# curl -L https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz | tar -xz
+
+# sqlite-autoconf-3420000 version-3.42.0
 # curl -L https://www.sqlite.org/2022/sqlite-autoconf-3420000.tar.gz | tar -xz
 # https://www.sqlite.org/2022/sqlite-tools-linux-x86-3420000.zip
 # https://www.sqlite.org/2022/sqlite-tools-osx-x86-3420000.zip
