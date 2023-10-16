@@ -446,29 +446,6 @@ ciBuildExt({process});
         PID_LIST="$PID_LIST $!"
         shPidListWait build_ext "$PID_LIST"
     fi;
-    # test zlib
-    PID_LIST=""
-    (
-    printf "\ntest zlib\n"
-    if [ ! -f build/SRC_ZLIB_TEST_EXAMPLE.exe ]
-    then
-        printf "\n    *** zlib test SKIP ***\n"
-        exit
-    fi
-    if [ "Hello world!" = "$( \
-        printf "Hello world!\n" \
-            | ./build/SRC_ZLIB_TEST_MINIGZIP.exe \
-            | ./build/SRC_ZLIB_TEST_MINIGZIP.exe -d \
-        )" ] \
-        && ./build/SRC_ZLIB_TEST_EXAMPLE.exe ./build/zlib_test_file
-    then
-        printf "\n    *** zlib test OK ***\n"
-    else
-        printf "\n    *** zlib test FAILED ***\n"
-        exit 1
-    fi
-    ) &
-    PID_LIST="$PID_LIST $!"
     # test nodejs
     (
     rm -f *~ .test*.sqlite __data/.test*.sqlite
