@@ -212,7 +212,7 @@ async def build_ext_async(): # noqa: C901
     # build_ext - init env
     env = os.environ
     if is_win32:
-        env = env_vcvars()
+        env = env_vcvarsall()
         await_list = []
         for exe in ["cl.exe", "link.exe"]:
             await_list.append( # noqa: PERF401
@@ -490,8 +490,8 @@ def debuginline(*argv):
     return argv[0]
 
 
-def env_vcvars():
-    """This function will print vcvars <env>."""
+def env_vcvarsall():
+    """This function will return vcvarsall <env>."""
     env = subprocess.check_output(
         [
             (
@@ -508,6 +508,7 @@ def env_vcvars():
             "-property", "installationPath",
             "-products", "*",
         ],
+        stderr=subprocess.STDOUT,
     ).decode(encoding="mbcs", errors="strict").strip()
     env = subprocess.check_output(
         'cmd /u /c "{}" {} && set'.format(
@@ -525,8 +526,16 @@ def env_vcvars():
         key.lower(): val
         for key, _, val in
         (line.partition("=") for line in env.splitlines())
-        if key and val
+        if (
+            key and val
+            and not re.search("\\W", key)
+            and not re.search("[\"'\n\r]", val)
+        )
     }
+    with pathlib.Path("build/vcvarsall.sh").open("w") as file1:
+        file1.write(
+            "".join(f"export {key}='{val}'\n" for key, val in env.items()),
+        )
     return env
 
 
@@ -557,8 +566,10 @@ if __name__ == "__main__":
             build_ext_init()
         case "build_pkg_info":
             build_pkg_info()
-        case "env_vcvars":
-            print(env_vcvars())
+        case "env_vcvarsall":
+            env_vcvarsall()
+            with pathlib.Path("build/vcvarsall.sh").open() as file1:
+                print(file1.read())
         case "sdist":
             build_sdist("dist")
         case "test":

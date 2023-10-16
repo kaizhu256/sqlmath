@@ -25,21 +25,12 @@
 
 
 /*
-VCVARSALL="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat"
-ARCH_ARG=x86_amd64
+(. build/vcvarsall.sh && cl -Isqlite-autoconf-3420000 sqlmath_wrapper_lightgbm.c -link -dll -out:.a00.dll)
+(cl -Isqlite-autoconf-3420000 sqlmath_wrapper_lightgbm.c -link -dll -out:.a00.dll
 
-_dosvs10varsall=`cmd //c echo $VCVARSALL`
-_dosbash=`cmd //c echo \`which bash\``
-echo "@echo off" > localdevenvtmp.bat
-echo "$_dosbash -c \"export -p\" > localdevenvtmp.export0" >> localdevenvtmp.bat
-echo "call $_dosvs10varsall $ARCH_ARG" >> localdevenvtmp.bat
-echo "$_dosbash -c \"export -p\" > localdevenvtmp.export1" >> localdevenvtmp.bat
-
-cl -Isqlite-autoconf-3420000 sqlmath_wrapper_lightgbm.c -link -dll -out:a00.dll
-
-gcc -Isqlite-autoconf-3420000 -g -fPIC -dynamiclib sqlmath_wrapper_lightgbm.c -o .a00.dylib
-gcc -Isqlite-autoconf-3420000 -g -fPIC -shared sqlmath_wrapper_lightgbm.c -o .a00.so
-gcc -Isqlite-autoconf-3420000 -g -shared sqlmath_wrapper_lightgbm.c -o .a00.dll
+gcc -Isqlite-autoconf-3420000 -g -fPIC -dynamiclib sqlmath_wrapper_lightgbm.c -o ..a00.dylib
+gcc -Isqlite-autoconf-3420000 -g -fPIC -shared sqlmath_wrapper_lightgbm.c -o ..a00.so
+gcc -Isqlite-autoconf-3420000 -g -shared sqlmath_wrapper_lightgbm.c -o ..a00.dll
  */
 
 #include <sqlite3ext.h>
