@@ -43,16 +43,10 @@ gcc -Isqlite-autoconf-3420000 -g -shared sqlmath_wrapper_lightgbm.c -o ..a00.dll
  */
 
 #include <sqlite3ext.h>
-#include <stdio.h>
+#include <string.h>
 SQLITE_EXTENSION_INIT1;
-// *INDENT-OFF*
-#ifdef _WIN32
-__declspec(dllexport)
-#endif
-// *INDENT-ON*
 
 
-//
 #define SQLMATH_FUNC
 #define SQLITE3_CREATE_FUNCTION1(func, argc) \
     errcode = sqlite3_create_function(db, #func, argc, \
@@ -67,17 +61,19 @@ SQLMATH_FUNC extern void sql1_lgb_hello_func(
 ) {
 // This function will print "hello lightgbm!".
     UNUSED_PARAMETER(argc);
-    sqlite3_result_text(context, "hello lightgbm!", 0, SQLITE_STATIC);
+    sqlite3_result_text(context, "hello lightgbm!", -1, SQLITE_STATIC);
 }
 
-// file sqlmath_lgb - init
-int sqlite3_sqlmath_lgb_init(
+
+int sqlite3_lgb_init(
     sqlite3 * db,
-    char **pzErrMsg,
-    const sqlite3_api_routines * pApi
+    char **errmsg_ptr,
+    const sqlite3_api_routines * api
 ) {
+    (void) errmsg_ptr;
+    SQLITE_EXTENSION_INIT2(api);
+    static const int flags =
+        SQLITE_UTF8 | SQLITE_INNOCUOUS | SQLITE_DETERMINISTIC;
     int errcode = SQLITE_OK;
-    SQLITE_EXTENSION_INIT2(pApi);
     SQLITE3_CREATE_FUNCTION1(lgb_hello, 0);
-    return errcode;
 }
