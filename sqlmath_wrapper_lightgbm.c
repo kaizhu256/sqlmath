@@ -36,7 +36,11 @@ gcc -Isqlite-autoconf-3420000/ -shared sqlmath_wrapper_lightgbm.c -o build/_lgb.
 #include "./lgb_c_api.h"
 SQLITE_EXTENSION_INIT1;
 
-int LGBM_DatasetFree(
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+
+extern int LGBM_DatasetFree(
     DatasetHandle handle
 );
 
