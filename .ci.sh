@@ -446,6 +446,7 @@ ciBuildExt({process});
         PID_LIST="$PID_LIST $!"
         shPidListWait build_ext "$PID_LIST"
     fi;
+    PID_LIST=""
     # test nodejs
     (
     rm -f *~ .test*.sqlite __data/.test*.sqlite
