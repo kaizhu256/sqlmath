@@ -26,20 +26,9 @@
 
 /*
 
-gcc \
-    -DSQLEAN_VERSION=3420000 \
-    -Isqlite-autoconf-3420000/ \
-    -O1 \
-    -o build/lgb2.dll \
-    -shared \
-    sqlmath_wrapper_lightgbm.c
-
-(. build/vcvarsall.sh && cl -Isqlite-autoconf-3420000 sqlmath_wrapper_lightgbm.c //Ox //MT //LD -link -dll -out:build/lgb.dll)
-(cl -Isqlite-autoconf-3420000 sqlmath_wrapper_lightgbm.c //Ox //MT //LD -link -dll -out:.a00.dll
-
-gcc -Isqlite-autoconf-3420000 -g -fPIC -dynamiclib sqlmath_wrapper_lightgbm.c -o ..a00.dylib
-gcc -Isqlite-autoconf-3420000 -g -fPIC -shared sqlmath_wrapper_lightgbm.c -o ..a00.so
-gcc -Isqlite-autoconf-3420000 -g -shared sqlmath_wrapper_lightgbm.c -o ..a00.dll
+gcc -Isqlite-autoconf-3420000/ -g -fPIC -dynamiclib sqlmath_wrapper_lightgbm.c -o .a00.dylib
+gcc -Isqlite-autoconf-3420000/ -g -fPIC -shared sqlmath_wrapper_lightgbm.c -o .a00.so
+gcc -Isqlite-autoconf-3420000/ -shared sqlmath_wrapper_lightgbm.c -o build/_lgb.dll
  */
 
 #include <sqlite3ext.h>
