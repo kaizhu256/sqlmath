@@ -241,6 +241,7 @@ async def build_ext_async(): # noqa: C901
     await asyncio.gather(*[
         build_ext_obj(cdefine)
         for cdefine in [
+            "SRC_PCRE2_BASE",
             "SRC_ZLIB_BASE",
             #
             "SRC_SQLITE_BASE",
@@ -254,6 +255,7 @@ async def build_ext_async(): # noqa: C901
 # https://github.com/kaizhu256/sqlmath/actions/runs/4886979281/jobs/8723014944
     arg_list = []
     arg_list += [ # must be ordered first
+        "build/SRC_PCRE2_BASE.obj",
         "build/SRC_ZLIB_BASE.obj",
         #
         "build/SRC_SQLITE_BASE.obj",
@@ -312,6 +314,7 @@ def build_ext_init():
 (set -e
     mkdir -p build/
     for C_DEFINE in \\
+        SRC_PCRE2_BASE \\
         SRC_ZLIB_BASE \\
         \\
         SRC_SQLITE_BASE \\

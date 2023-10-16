@@ -209,6 +209,7 @@ shCiBuildWasm() {(set -e
     # OPTION2="$OPTION2 -Oz"
     # OPTION1="$OPTION1 -fsanitize=address"
     for FILE in \
+        pcre2_base.c \
         zlib_base.c \
         sqlite_rollup.c \
         sqlmath_base.c \
@@ -217,6 +218,10 @@ shCiBuildWasm() {(set -e
         OPTION2=""
         FILE2="build/$(basename "$FILE").wasm.o"
         case "$FILE" in
+        pcre2_base.c)
+            FILE=sqlite_rollup.c
+            OPTION2="$OPTION2 -DSRC_PCRE2_BASE_C2="
+            ;;
         zlib_base.c)
             FILE=sqlite_rollup.c
             OPTION2="$OPTION2 -DSRC_ZLIB_BASE_C2="
