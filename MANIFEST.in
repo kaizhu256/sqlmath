@@ -24,8 +24,6 @@ include jslint.mjs
 include jslint_ci.sh
 include lib_lightgbm.dll
 include lib_lightgbm.so
-include libiconv2.dll
-include libintl3.dll
 include package.json
 include pyproject.toml
 include setup.py
@@ -41,3 +39,6 @@ include sqlmath_wrapper_wasm.js
 include test.mjs
 include test.py
 include test_data_sinefit.csv
+include test_lgb.py
+include test_lgb_binary.test
+include test_lgb_binary.train
