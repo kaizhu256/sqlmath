@@ -19,8 +19,8 @@ dtype_float64 = 1
 dtype_int32 = 2
 dtype_int64 = 3
 
-FILE_BINARY_TEST = "test_lgb_binary.test"
-FILE_BINARY_TRAIN = "test_lgb_binary.train"
+FILE_BINARY_TEST = "test_lgbm_binary.test"
+FILE_BINARY_TRAIN = "test_lgbm_binary.train"
 
 def c_str(string):
     return ctypes.c_char_p(string.encode('utf-8'))
@@ -164,9 +164,9 @@ def test_dataset():
     free_dataset(test)
     test = load_from_csc(FILE_BINARY_TEST, train)
     free_dataset(test)
-    save_to_binary(train, '.tmp/test_lgb_train.binary.bin')
+    save_to_binary(train, '.tmp/test_lgbm_train.binary.bin')
     free_dataset(train)
-    train = load_from_file('.tmp/test_lgb_train.binary.bin', None)
+    train = load_from_file('.tmp/test_lgbm_train.binary.bin', None)
     free_dataset(train)
 
 
@@ -196,14 +196,14 @@ def test_booster():
         ctypes.c_int(0),
         ctypes.c_int(-1),
         ctypes.c_int(0),
-        c_str('.tmp/test_lgb_model.txt'))
+        c_str('.tmp/test_lgbm_model.txt'))
     LIB.LGBM_BoosterFree(booster)
     free_dataset(train)
     free_dataset(test)
     booster2 = ctypes.c_void_p()
     num_total_model = ctypes.c_int(0)
     LIB.LGBM_BoosterCreateFromModelfile(
-        c_str('.tmp/test_lgb_model.txt'),
+        c_str('.tmp/test_lgbm_model.txt'),
         ctypes.byref(num_total_model),
         ctypes.byref(booster2))
     data = np.loadtxt(FILE_BINARY_TEST, dtype=np.float64)
@@ -232,7 +232,7 @@ def test_booster():
         ctypes.c_int(0),
         ctypes.c_int(25),
         c_str(''),
-        c_str('.tmp/test_lgb_preb.txt'))
+        c_str('.tmp/test_lgbm_preb.txt'))
     LIB.LGBM_BoosterPredictForFile(
         booster2,
         c_str(FILE_BINARY_TEST),
@@ -241,11 +241,11 @@ def test_booster():
         ctypes.c_int(10),
         ctypes.c_int(25),
         c_str(''),
-        c_str('.tmp/test_lgb_preb.txt'))
+        c_str('.tmp/test_lgbm_preb.txt'))
     LIB.LGBM_BoosterFree(booster2)
     assert filecmp.cmp(
-        '.tmp/test_lgb_preb.txt',
-        'test_lgb_preb.txt',
+        '.tmp/test_lgbm_preb.txt',
+        'test_lgbm_preb.txt',
         shallow=False)
 
 
