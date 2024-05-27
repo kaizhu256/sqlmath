@@ -35,6 +35,8 @@ include sqlmath_custom.c
 include sqlmath_custom.mjs
 include sqlmath_external_sqlite.c
 include sqlmath_external_zlib.c
+include sqlmath_lgbm.c
+include sqlmath_lgbm.h
 include sqlmath_wrapper_wasm.js
 include test.mjs
 include test.py
@@ -42,3 +44,4 @@ include test_data_sinefit.csv
 include test_lgb.py
 include test_lgb_binary.test
 include test_lgb_binary.train
+include test_lgb_preb.txt
