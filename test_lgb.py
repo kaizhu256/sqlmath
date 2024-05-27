@@ -278,3 +278,4 @@ def test_max_thread_control():
 
 test_dataset()
 test_booster()
+test_max_thread_control()
