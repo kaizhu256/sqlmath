@@ -1,3 +1,4 @@
+// *INDENT-OFF*
 /*jslint-disable*/
 /*
 shRollupFetch
@@ -15,6 +16,10 @@ shRollupFetch
 -#include <LightGBM/export.h>
 +// hack-lightgbm - inline header
 +// #include <LightGBM/export.h>
+
+-#define INLINE_FUNCTION inline
++// hack-lightgbm - fix warning
++#define INLINE_FUNCTION static inline
 */
 
 
@@ -1589,7 +1594,7 @@ LIGHTGBM_C_EXPORT int LGBM_NetworkInitWithFunctions(int num_machines,
 #define INLINE_FUNCTION
 #else
 /*! \brief Inline specifier. */
-#define INLINE_FUNCTION inline
+#define INLINE_FUNCTION static inline
 #endif
 
 #if !defined(__cplusplus) && (!defined(__STDC__) || (__STDC_VERSION__ < 201112L))
@@ -1637,3 +1642,4 @@ INLINE_FUNCTION void LGBM_SetLastError(const char* msg) {
 file none
 */
 /*jslint-enable*/
+// *INDENT-ON*
