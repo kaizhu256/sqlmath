@@ -20,9 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// cl.exe /LD sqlmath_lgbm.c -link -dll -out:__sqlmath_lgbm.dll
-// cl.exe /D_USRDLL /D_WINDLL sqlmath_lgbm.c lib_lightgbm.dll /link /DLL /OUT:__sqlmath_lgbm.dll // NOLINT
-// gcc -g -shared sqlmath_lgbm.c -L . -l_lightgbm -o __sqlmath_lgbm.dll
+// cl.exe /D_USRDLL /D_WINDLL sqlmath_lgbm.c lib_lightgbm.dll /link /DLL /OUT:_sqlmath_lgbm.dll // NOLINT
+// gcc -g -shared sqlmath_lgbm.c -L . -l_lightgbm -o _sqlmath_lgbm.dll
 
 // LINT_C_FILE
 
@@ -90,7 +89,7 @@ void sql1_lgbm_datasetcreatefromfile_func(
 ** the next following ".", converting each character to lowercase, and
 ** discarding the first three characters if they are "lib".
 */
-int sqlite3___sqlmath_lgbm_init(
+int sqlite3__sqlmath_lgbm_init(
     sqlite3 * db,
     char **pzErrMsg,
     const sqlite3_api_routines * pApi
