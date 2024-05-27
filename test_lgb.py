@@ -1,20 +1,15 @@
 # coding: utf-8
 import ctypes
-from pathlib import Path
 from platform import system
 
 import numpy as np
 from scipy import sparse
 
-try:
-    from lightgbm.basic import _LIB as LIB
-except ModuleNotFoundError:
-    print("Could not import lightgbm Python package, looking for lib_lightgbm at the repo root")
-    if system() in ('Windows', 'Microsoft'):
-        lib_file = Path(__file__).absolute().parents[2] / "Release" / "lib_lightgbm.dll"
-    else:
-        lib_file = Path(__file__).absolute().parents[2] / "lib_lightgbm.so"
-    LIB = ctypes.cdll.LoadLibrary(lib_file)
+if system() in ('Windows', 'Microsoft'):
+    lib_file = "./lib_lightgbm.dll"
+else:
+    lib_file = "./lib_lightgbm.so"
+LIB = ctypes.cdll.LoadLibrary(lib_file)
 
 LIB.LGBM_GetLastError.restype = ctypes.c_char_p
 
@@ -23,6 +18,8 @@ dtype_float64 = 1
 dtype_int32 = 2
 dtype_int64 = 3
 
+FILE_BINARY_TEST = "test_lgb_binary.test"
+FILE_BINARY_TRAIN = "test_lgb_binary.train"
 
 def c_str(string):
     return ctypes.c_char_p(string.encode('utf-8'))
@@ -159,13 +156,12 @@ def free_dataset(handle):
 
 
 def test_dataset():
-    binary_example_dir = Path(__file__).absolute().parents[2] / 'examples' / 'binary_classification'
-    train = load_from_file(binary_example_dir / 'binary.train', None)
-    test = load_from_mat(binary_example_dir / 'binary.test', train)
+    train = load_from_file(FILE_BINARY_TRAIN, None)
+    test = load_from_mat(FILE_BINARY_TEST, train)
     free_dataset(test)
-    test = load_from_csr(binary_example_dir / 'binary.test', train)
+    test = load_from_csr(FILE_BINARY_TEST, train)
     free_dataset(test)
-    test = load_from_csc(binary_example_dir / 'binary.test', train)
+    test = load_from_csc(FILE_BINARY_TEST, train)
     free_dataset(test)
     save_to_binary(train, 'train.binary.bin')
     free_dataset(train)
@@ -174,9 +170,8 @@ def test_dataset():
 
 
 def test_booster():
-    binary_example_dir = Path(__file__).absolute().parents[2] / 'examples' / 'binary_classification'
-    train = load_from_mat(binary_example_dir / 'binary.train', None)
-    test = load_from_mat(binary_example_dir / 'binary.test', train)
+    train = load_from_mat(FILE_BINARY_TRAIN, None)
+    test = load_from_mat(FILE_BINARY_TEST, train)
     booster = ctypes.c_void_p()
     LIB.LGBM_BoosterCreate(
         train,
@@ -210,7 +205,7 @@ def test_booster():
         c_str('model.txt'),
         ctypes.byref(num_total_model),
         ctypes.byref(booster2))
-    data = np.loadtxt(str(binary_example_dir / 'binary.test'), dtype=np.float64)
+    data = np.loadtxt(FILE_BINARY_TEST, dtype=np.float64)
     mat = data[:, 1:]
     preb = np.empty(mat.shape[0], dtype=np.float64)
     num_preb = ctypes.c_int64(0)
@@ -230,7 +225,7 @@ def test_booster():
         preb.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
     LIB.LGBM_BoosterPredictForFile(
         booster2,
-        c_str(str(binary_example_dir / 'binary.test')),
+        c_str(FILE_BINARY_TEST),
         ctypes.c_int(0),
         ctypes.c_int(0),
         ctypes.c_int(0),
@@ -239,7 +234,7 @@ def test_booster():
         c_str('preb.txt'))
     LIB.LGBM_BoosterPredictForFile(
         booster2,
-        c_str(str(binary_example_dir / 'binary.test')),
+        c_str(FILE_BINARY_TEST),
         ctypes.c_int(0),
         ctypes.c_int(0),
         ctypes.c_int(10),
@@ -280,3 +275,6 @@ def test_max_thread_control():
     )
     assert ret == 0
     assert num_threads.value == -1
+
+test_dataset()
+test_booster()
