@@ -243,7 +243,10 @@ def test_booster():
         c_str(''),
         c_str('.tmp/test_lgb_preb.txt'))
     LIB.LGBM_BoosterFree(booster2)
-    assert filecmp.cmp('.tmp/test_lgb_preb.txt', 'test_lgb_preb.txt')
+    assert filecmp.cmp(
+        '.tmp/test_lgb_preb.txt',
+        'test_lgb_preb.txt',
+        shallow=False)
 
 
 def test_max_thread_control():
