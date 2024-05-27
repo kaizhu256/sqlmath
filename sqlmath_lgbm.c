@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// cl sqlmath_lgbm.c -link -dll -out:sqlmath_lgbm.dll
-// gcc -c sqlmath_lgbm.c -L lib_lightgbm.dll
-// gcc -g -shared sqlmath_lgbm.c -L lib_lightgbm.dll -o sqlmath_lgbm.dll
+// cl.exe /LD sqlmath_lgbm.c -link -dll -out:__sqlmath_lgbm.dll
+// cl.exe /D_USRDLL /D_WINDLL sqlmath_lgbm.c lib_lightgbm.dll /link /DLL /OUT:__sqlmath_lgbm.dll // NOLINT
+// gcc -g -shared sqlmath_lgbm.c -L . -l_lightgbm -o __sqlmath_lgbm.dll
 
 // LINT_C_FILE
 
@@ -45,9 +45,23 @@ __declspec(dllexport)
 #define UNUSED_PARAMETER(x) (void)(x)
 
 
+#define SQLITE3_CREATE_FUNCTION1(func, argc) \
+    errcode = sqlite3_create_function(db, #func, argc, \
+        SQLITE_DETERMINISTIC | SQLITE_DIRECTONLY | SQLITE_UTF8, NULL, \
+        sql1_##func##_func, NULL, NULL); \
+    if (errcode != SQLITE_OK) { return errcode; }
+
+
 /*
 file sqlmath_lgbm - start
 */
+
+void lgbm_datasetfree(
+    void *handle
+) {
+    LGBM_DatasetFree((DatasetHandle) handle);
+}
+
 void sql1_lgbm_datasetcreatefromfile_func(
     sqlite3_context * context,
     int argc,
@@ -66,7 +80,7 @@ void sql1_lgbm_datasetcreatefromfile_func(
     //!! sqlite3_result_blob(context, arr, nn * sizeof(double), xdel);
     sqlite3_result_blob(context, NULL, 0,
         // destructor
-        LGBM_DatasetFree);
+        lgbm_datasetfree);
 }
 
 
@@ -76,16 +90,14 @@ void sql1_lgbm_datasetcreatefromfile_func(
 ** the next following ".", converting each character to lowercase, and
 ** discarding the first three characters if they are "lib".
 */
-int sqlite3_sqlmath_lgbm_init(
+int sqlite3___sqlmath_lgbm_init(
     sqlite3 * db,
     char **pzErrMsg,
     const sqlite3_api_routines * pApi
 ) {
-    int rc = SQLITE_OK;
-    SQLITE_EXTENSION_INIT2(pApi);
-    UNUSED_PARAMETER(db);
     UNUSED_PARAMETER(pApi);
     UNUSED_PARAMETER(pzErrMsg);
+    int errcode = 0;
     /* Insert here calls to
      **     sqlite3_create_function_v2(),
      **     sqlite3_create_collation_v2(),
@@ -93,7 +105,8 @@ int sqlite3_sqlmath_lgbm_init(
      **     sqlite3_vfs_register()
      ** to register the new features that your extension adds.
      */
-    return rc;
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 1);
+    return 0;
 }
 
 /*
