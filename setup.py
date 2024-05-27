@@ -91,7 +91,6 @@ async def build_ext_async(): # noqa: C901
             f"-D{cdefine}_C2=",
             "-D_REENTRANT=1",
             "-DSQLMATH_PYTHON_C2=" if cdefine == "SQLMATH_CUSTOM" else "",
-            "-DSRC_LIGHTGBM_H2=" if cdefine == "SQLMATH_BASE" else "",
         ]
         if npm_config_mode_debug and is_win32:
             arg_list += ["/W3"]

@@ -39,6 +39,9 @@ file sqlmath_h - start
 #       define SQLMATH_BASE_C2
 #   endif
 #endif
+#ifdef SQLMATH_BASE_C2
+#   define SRC_LIGHTGBM_H2
+#endif
 
 
 #include <assert.h>
