@@ -20,21 +20,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// cl sqlmath_lgbm.c -link -dll -out:sqlmath_lgbm.dll
+// gcc -c sqlmath_lgbm.c -L lib_lightgbm.dll
+// gcc -g -shared sqlmath_lgbm.c -L lib_lightgbm.dll -o sqlmath_lgbm.dll
 
 // LINT_C_FILE
 
 
 // header
+#define SRC_SQLITE3EXT_H2
 #undef SRC_SQLITE_BASE_C2
-#include "sqlmath_base.c"
-#include "sqlmath_lgbm.h"
+#include "sqlmath_external_sqlite.c"
+
+
+// *INDENT-OFF*
+SQLITE_EXTENSION_INIT1
+#include "./sqlmath_lgbm.h"
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+// *INDENT-ON*
+
+
+#define UNUSED_PARAMETER(x) (void)(x)
 
 
 /*
-file sqlmath_custom - start
+file sqlmath_lgbm - start
 */
-
-SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
+void sql1_lgbm_datasetcreatefromfile_func(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -55,19 +69,33 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
         LGBM_DatasetFree);
 }
 
-int sqlite3_sqlmath_custom_init(
+
+/* TODO: Change the entry point name so that "extension" is replaced by
+** text derived from the shared library filename as follows:  Copy every
+** ASCII alphabetic character from the filename after the last "/" through
+** the next following ".", converting each character to lowercase, and
+** discarding the first three characters if they are "lib".
+*/
+int sqlite3_sqlmath_lgbm_init(
     sqlite3 * db,
     char **pzErrMsg,
     const sqlite3_api_routines * pApi
 ) {
-    // coverage-hack
-    noop();
+    int rc = SQLITE_OK;
+    SQLITE_EXTENSION_INIT2(pApi);
     UNUSED_PARAMETER(db);
     UNUSED_PARAMETER(pApi);
     UNUSED_PARAMETER(pzErrMsg);
-    return 0;
+    /* Insert here calls to
+     **     sqlite3_create_function_v2(),
+     **     sqlite3_create_collation_v2(),
+     **     sqlite3_create_module_v2(), and/or
+     **     sqlite3_vfs_register()
+     ** to register the new features that your extension adds.
+     */
+    return rc;
 }
 
 /*
-file sqlmath_custom - end
+file sqlmath_lgbm - end
 */
