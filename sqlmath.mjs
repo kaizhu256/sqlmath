@@ -340,6 +340,9 @@ async function ciBuildExt1NodejsConfigure({
                 "defines": [
                     "SRC_SQLITE_BASE_C2"
                 ],
+                "libraries": [
+                    "./lib_lightgbm.dll"
+                ],
                 "sources": [
                     "sqlmath_base.c",
                     "sqlmath_external_sqlite.c",
