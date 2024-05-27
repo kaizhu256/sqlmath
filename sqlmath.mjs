@@ -338,7 +338,8 @@ async function ciBuildExt1NodejsConfigure({
             {
                 "cflags": cflagsNowarning,
                 "defines": [
-                    "SRC_SQLITE_BASE_C2"
+                    "SRC_SQLITE_BASE_C2",
+                    "SRC_LIGHTGBM_H2"
                 ],
                 "sources": [
                     "sqlmath_base.c",
