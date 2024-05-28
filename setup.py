@@ -167,13 +167,21 @@ async def build_ext_async(): # noqa: C901
 
     async def link_ext_obj(file_lib):
         arg_list = []
-        arg_list += [ # must be ordered first
-            "build/SRC_SQLITE_BASE.obj",
-            "build/SRC_ZLIB_BASE.obj",
-            #
-            "build/SQLMATH_BASE.obj",
-            "build/SQLMATH_CUSTOM.obj",
-        ]
+        if file_lib == FILE_LIB_LGBM:
+            arg_list += [
+                "build/SQLMATH_LGBM.obj",
+            ]
+            export = "sqlite3__sqlmath_lgbm_init"
+        else:
+            arg_list += [
+                # must be ordered first
+                "build/SRC_SQLITE_BASE.obj",
+                "build/SRC_ZLIB_BASE.obj",
+                #
+                "build/SQLMATH_BASE.obj",
+                "build/SQLMATH_CUSTOM.obj",
+            ]
+            export = "PyInit__sqlmath"
         if is_win32:
             arg_list = [
                 exe_link,
@@ -186,7 +194,7 @@ async def build_ext_async(): # noqa: C901
                 "/MANIFESTUAC:NO",
                 #
                 "/DLL",
-                "/EXPORT:PyInit__sqlmath",
+                f"/EXPORT:{export}",
                 #
                 f"/OUT:build/{file_lib}",
                 "/nologo",
