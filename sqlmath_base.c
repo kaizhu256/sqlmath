@@ -1670,7 +1670,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
         sqlite3_result_error(context, LGBM_GetLastError(), -1);
         return;
     }
-    sqlite3_result_double(context, (double) (intptr_t) (out));
+    sqlite3_result_int64(context, (intptr_t) (out));
 }
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - end
