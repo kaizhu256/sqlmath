@@ -59,12 +59,58 @@ async def build_ext_async(): # noqa: C901
     """This function will build c-extension."""
 
     async def build_ext_obj(cdefine):
+        if cdefine == "SQLMATH_LGBM":
+            file_obj = pathlib.Path(f"build/{cdefine}.dll")
+            if is_win32:
+                arg_list = [
+                    exe_cl,
+                    # !! "cl.exe",
+                    "/D_USRDLL",
+                    "/D_WINDLL",
+                    "sqlmath_lgbm.c",
+                    "lib_lightgbm.dll",
+                    "/link",
+                    "/DLL",
+                    "/OUT:_sqlmath_lgbm.dll",
+                    # !! *arg_list,
+                    # !! #
+                    # !! "/GL", # to link.exe /LTCG
+                    # !! "/MT", # multithreaded, statically-linked
+                    # !! "/O2",
+                    # !! #
+                    # !! "/c", f"/Tc{file_src}",
+                    # !! f"/Fo{file_obj}",
+                    # !! "/nologo",
+                ]
+            else:
+                arg_list = [
+                    # bugfix - fix multi-word cc_compiler="gcc -pthread"
+                    *cc_compiler.split(" "),
+                    *arg_list,
+                    #
+                    *cc_ccshared.strip().split(" "),
+                    *cc_cflags.strip().split(" "),
+                    #
+                    "-c", file_src,
+                    "-o", file_obj,
+                ]
+            print(f"build_ext - compile {file_obj}")
+            debuginline(arg_list)
+            await create_subprocess_exec_and_check(
+                *arg_list,
+                env=env,
+                stdout=subprocess.DEVNULL if npm_config_mode_debug else None,
+            )
+            return
+        #
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:
             case "SQLMATH_BASE":
                 file_src = pathlib.Path("sqlmath_base.c")
             case "SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
+            # !! case "SQLMATH_LGBM":
+                # !! file_src = pathlib.Path("sqlmath_lgbm.c")
             case "SRC_SQLITE_SHELL":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
             case "SRC_SQLITE_BASE":
@@ -76,6 +122,8 @@ async def build_ext_async(): # noqa: C901
                 pass
             case "SQLMATH_CUSTOM":
                 pass
+            # !! case "SQLMATH_LGBM":
+                # !! pass
             case "SRC_SQLITE_SHELL":
                 pass
             case _:
@@ -144,6 +192,7 @@ async def build_ext_async(): # noqa: C901
                 "-o", file_obj,
             ]
         print(f"build_ext - compile {file_obj}")
+        debuginline(arg_list)
         await create_subprocess_exec_and_check(
             *arg_list,
             env=env,
@@ -276,6 +325,8 @@ async def build_ext_async(): # noqa: C901
             #
             "SQLMATH_BASE",
             "SQLMATH_CUSTOM",
+            #
+            "SQLMATH_LGBM",
         ]
     ])
     #
