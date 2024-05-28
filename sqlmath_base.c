@@ -1678,6 +1678,29 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
     sqlite3_result_int64(context, (intptr_t) out);
 }
 
+SQLMATH_FUNC static void sql1_lgbm_datasetcreatefrommat_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will create dataset <out> from dense matrix <data>.
+    UNUSED_PARAMETER(argc);
+    DatasetHandle out = NULL;
+    int errcode = 0;
+    int result = 0;
+    errcode = LGBM_DatasetCreateFromMat(        //
+        sqlite3_value_blob(argv[0]),    // const void *data,
+        sqlite3_value_int(argv[1]),     // int data_type,
+        (int32_t) sqlite3_value_int(argv[2]),   // int32_t nrow,
+        (int32_t) sqlite3_value_int(argv[3]),   // int32_t ncol,
+        sqlite3_value_int(argv[4]),     // int is_row_major,
+        sqlite3_value_text(argv[5]),    // const char *parameters,
+        NULL,                   // const DatasetHandle reference,
+        &out);                  // DatasetHandle *out
+    LGBM_ASSERT_OK();
+    sqlite3_result_int64(context, (intptr_t) out);
+}
+
 SQLMATH_FUNC static void sql1_lgbm_datasetdumptext_func(
     sqlite3_context * context,
     int argc,
@@ -3289,6 +3312,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefrommat, 6);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetdumptext, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetgetnumdata, 1);
