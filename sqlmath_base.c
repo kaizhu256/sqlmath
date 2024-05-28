@@ -1339,6 +1339,35 @@ SQLMATH_API double sqlite3_value_double_or_prev(
     return *previous;
 }
 
+// *INDENT-OFF*
+typedef void(*lgbm_free) (void *);
+// *INDENT-ON*
+
+static void *lgbm_library = NULL;
+static lgbm_free lgbm_dataset_free = NULL;
+static lgbm_free lgbm_booster_free = NULL;
+
+SQLMATH_API int lgbm_dlopen(
+    void
+) {
+    HMODULE hModule = (HMODULE) lgbm_library;
+    if (hModule != NULL) {
+        return 0;
+    }
+    // Get a handle to the DLL module.
+    hModule = LoadLibrary(TEXT("lib_lightgbm.dll"));
+    if (hModule == NULL) {
+        fprintf(stderr, "\ncannot locate the .dll file\n");
+        return 1;
+    }
+    lgbm_library = (void *) hModule;
+    lgbm_dataset_free =
+        (lgbm_free) GetProcAddress(hModule, "LGBM_DatasetFree");
+    lgbm_booster_free =
+        (lgbm_free) GetProcAddress(hModule, "LGBM_BoosterFree");
+    return 0;
+}
+
 
 // file sqlmath_base - SQLMATH_FUNC
 SQLMATH_FUNC static void sql1_castrealornull_func(
@@ -1525,6 +1554,39 @@ SQLMATH_FUNC static void sql1_fmod_func(
             sqlite3_value_double_or_nan(argv[1])));
 }
 
+SQLMATH_FUNC static void sql1_lgbm_init_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will return fmod(dividend, divisor).
+    UNUSED_PARAMETER(argc);
+    UNUSED_PARAMETER(argv);
+#ifdef WIN32
+    HMODULE hModule = (HMODULE) lgbm_library;
+    if (hModule != NULL) {
+        sqlite3_result_int(context, 1);
+        return;
+    }
+    // Get a handle to the DLL module.
+    static const char filename[] = "lib_lightgbm.dll";
+    hModule = LoadLibrary("lib_lightgbm.dll");
+    if (hModule == NULL) {
+        sqlite3_result_error(context,
+            "lgbm_init() - cannot load library lib_lightgbm.dll", -1);
+        return;
+    }
+    lgbm_library = (void *) hModule;
+    lgbm_dataset_free =
+        (lgbm_free) GetProcAddress(hModule, "LGBM_DatasetFree");
+    lgbm_booster_free =
+        (lgbm_free) GetProcAddress(hModule, "LGBM_BoosterFree");
+    sqlite3_result_int(context, 0);
+#else
+    sqlite3_result_int(context, 0);
+#endif
+}
+
 SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
     sqlite3_context * context,
     int argc,
@@ -1532,20 +1594,20 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
 ) {
 // This function will return fmod(dividend, divisor).
     UNUSED_PARAMETER(argc);
-
     //!! LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromFile(
     //!! const char *filename,
     //!! const char *parameters,
     //!! const DatasetHandle reference,
     //!! DatasetHandle * out
     //!! );
-
+    //
     //!! sqlite3_result_blob(context, arr, nn * sizeof(double), xdel);
     //!! sqlite3_result_blob(context, NULL, 0,
-        //!! // destructor
-        //!! //!! LGBM_DatasetFree);
-        //!! free);
-    LoadLibrary("aa");
+    //!! // destructor
+    //!! //!! LGBM_DatasetFree);
+    //!! free);
+    //!! HMODULE handl
+    LoadLibrary("./lib_lightgbm.dll");
     sqlite3_result_int(context, 0);
 }
 

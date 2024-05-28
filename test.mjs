@@ -790,6 +790,24 @@ jstestDescribe((
 });
 
 jstestDescribe((
+    "test_lgbm"
+), function test_lgbm() {
+    jstestIt((
+        "test lgbm handling-behavior"
+    ), async function () {
+        let db = await dbOpenAsync({
+            filename: ":memory:"
+        });
+        await dbExecAsync({
+            db,
+            sql: (`
+SELECT lgbm_datasetcreatefromfile();
+            `)
+        });
+    });
+});
+
+jstestDescribe((
     "test_misc"
 ), function test_misc() {
     jstestIt((
