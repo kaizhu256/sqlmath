@@ -801,7 +801,7 @@ jstestDescribe((
         await dbExecAsync({
             db,
             sql: (`
-SELECT lgbm_datasetcreatefromfile();
+SELECT lgbm_init();
             `)
         });
     });

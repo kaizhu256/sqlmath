@@ -1340,12 +1340,13 @@ SQLMATH_API double sqlite3_value_double_or_prev(
 }
 
 // *INDENT-OFF*
-typedef void(*lgbm_free) (void *);
+typedef void(*lgbm_free_t) (void *);
+typedef void(*lgbm_datasetcreatefromfile_t) (void *);
 // *INDENT-ON*
 
 static void *lgbm_library = NULL;
-static lgbm_free lgbm_dataset_free = NULL;
-static lgbm_free lgbm_booster_free = NULL;
+static lgbm_free_t lgbm_datasetfree = NULL;
+static lgbm_free_t lgbm_boosterfree = NULL;
 
 SQLMATH_API int lgbm_dlopen(
     void
@@ -1361,10 +1362,10 @@ SQLMATH_API int lgbm_dlopen(
         return 1;
     }
     lgbm_library = (void *) hModule;
-    lgbm_dataset_free =
-        (lgbm_free) GetProcAddress(hModule, "LGBM_DatasetFree");
-    lgbm_booster_free =
-        (lgbm_free) GetProcAddress(hModule, "LGBM_BoosterFree");
+    lgbm_datasetfree =
+        (lgbm_free_t) GetProcAddress(hModule, "LGBM_DatasetFree");
+    lgbm_boosterfree =
+        (lgbm_free_t) GetProcAddress(hModule, "LGBM_BoosterFree");
     return 0;
 }
 
@@ -1577,10 +1578,10 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
         return;
     }
     lgbm_library = (void *) hModule;
-    lgbm_dataset_free =
-        (lgbm_free) GetProcAddress(hModule, "LGBM_DatasetFree");
-    lgbm_booster_free =
-        (lgbm_free) GetProcAddress(hModule, "LGBM_BoosterFree");
+    lgbm_datasetfree =
+        (lgbm_free_t) GetProcAddress(hModule, "LGBM_DatasetFree");
+    lgbm_boosterfree =
+        (lgbm_free_t) GetProcAddress(hModule, "LGBM_BoosterFree");
     sqlite3_result_int(context, 0);
 #else
     sqlite3_result_int(context, 0);
@@ -3159,7 +3160,8 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonfrom, 1);
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
-    SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 0);
+    SQLITE3_CREATE_FUNCTION1(lgbm_init, 0);
+    //!! SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
     SQLITE3_CREATE_FUNCTION1(normalizewithsquared, 1);
