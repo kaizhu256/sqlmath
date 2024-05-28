@@ -10,8 +10,8 @@ shRollupFetch
         {
             "replaceList": [
                 {
-                    "aa": "\nLIGHTGBM_C_EXPORT int (\\w*?)(\\([\\S\\s]*?\\));\n",
-                    "bb": "\nLIGHTGBM_C_EXPORT int (*$1_t) $2;\nstatic $1_t $1 = NULL;\n",
+                    "aa": "\nLIGHTGBM_C_EXPORT ([^\\(]*?) (\\w*?)(\\([\\S\\s]*?\\));\n",
+                    "bb": "\nLIGHTGBM_C_EXPORT $1 (*$2_t) $3;\nstatic $2_t $2 = NULL;\n",
                     "flags": "g",
                     "substr": ""
                 }
@@ -124,7 +124,8 @@ typedef void* ByteBufferHandle; /*!< \brief Handle of ByteBuffer. */
  * \brief Get string message of the last error.
  * \return Error information
  */
-LIGHTGBM_C_EXPORT const char* LGBM_GetLastError();
+LIGHTGBM_C_EXPORT const char* (*LGBM_GetLastError_t) ();
+static LGBM_GetLastError_t LGBM_GetLastError = NULL;
 
 /*!
  * \brief Dump all parameter names with their aliases to JSON.
