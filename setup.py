@@ -165,7 +165,7 @@ async def build_ext_async(): # noqa: C901
             msg = f"returncode={child.returncode}"
             raise subprocess.SubprocessError(msg)
 
-    async def link_ext_obj():
+    async def link_ext_obj(file_lib):
         arg_list = []
         arg_list += [ # must be ordered first
             "build/SRC_SQLITE_BASE.obj",
@@ -201,6 +201,7 @@ async def build_ext_async(): # noqa: C901
                 "-o", f"build/{file_lib}",
             ]
         await create_subprocess_exec_and_check(*arg_list, env=env)
+        shutil.copyfile(f"build/{file_lib}", f"sqlmath/{file_lib}")
     #
     # build_ext - update version
     pathlib.Path("build").mkdir(parents=True, exist_ok=True)
@@ -325,10 +326,7 @@ async def build_ext_async(): # noqa: C901
     #
     # build_ext - link c-extension
 # https://github.com/kaizhu256/sqlmath/actions/runs/4886979281/jobs/8723014944
-    await link_ext_obj()
-    #
-    # build_ext - copy c-extension to sqlmath/
-    shutil.copyfile(f"build/{file_lib}", f"sqlmath/{file_lib}")
+    await link_ext_obj(file_lib)
 
 
 def build_pkg_info():
