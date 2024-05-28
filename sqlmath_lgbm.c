@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 // cl.exe /D_USRDLL /D_WINDLL sqlmath_lgbm.c lib_lightgbm.dll /link /DLL /OUT:_sqlmath_lgbm.dll // NOLINT
-// gcc -g -shared sqlmath_lgbm.c -L . -l_lightgbm -o _sqlmath_lgbm.dll
+// gcc -g -shared sqlmath_lgbm.c -L. -l_lightgbm -o _sqlmath_lgbm.dll
 
 // LINT_C_FILE
 
