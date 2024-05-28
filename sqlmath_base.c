@@ -135,6 +135,9 @@ file sqlmath_h - start
         goto catch_error; \
     }
 
+#define LGBM_IMPORT_FUNCTION(func) \
+    func = (func##_t) GetProcAddress(hModule, #func);
+
 // This function will if <cond> is falsy, terminate process with <msg>.
 #define NAPI_ASSERT_FATAL(cond, msg) \
     if (!(cond)) { \
@@ -1342,15 +1345,6 @@ SQLMATH_API double sqlite3_value_double_or_prev(
     return *previous;
 }
 
-// *INDENT-OFF*
-typedef void(*lgbm_free_t) (void *);
-typedef void(*lgbm_datasetcreatefromfile_t) (void *);
-// *INDENT-ON*
-
-static void *lgbm_library = NULL;
-static lgbm_free_t lgbm_datasetfree = NULL;
-static lgbm_free_t lgbm_boosterfree = NULL;
-
 
 // file sqlmath_base - SQLMATH_FUNC
 SQLMATH_FUNC static void sql1_castrealornull_func(
@@ -1537,6 +1531,8 @@ SQLMATH_FUNC static void sql1_fmod_func(
             sqlite3_value_double_or_nan(argv[1])));
 }
 
+static void *lgbm_library = NULL;
+
 SQLMATH_FUNC static void sql1_lgbm_init_func(
     sqlite3_context * context,
     int argc,
@@ -1559,11 +1555,96 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
             "lgbm_init() - cannot load library lib_lightgbm.dll", -1);
         return;
     }
-    lgbm_library = (void *) hModule;
-    lgbm_datasetfree =
-        (lgbm_free_t) GetProcAddress(hModule, "LGBM_DatasetFree");
-    lgbm_boosterfree =
-        (lgbm_free_t) GetProcAddress(hModule, "LGBM_BoosterFree");
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterAddValidData);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterCalcNumPredict);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterCreate);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterCreateFromModelfile);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterDumpModel);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterFeatureImportance);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterFree);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterFreePredictSparse);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetCurrentIteration);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetEval);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetEvalCounts);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetEvalNames);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetFeatureNames);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetLeafValue);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetLinear);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetLoadedParam);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetLowerBoundValue);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetNumClasses);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetNumFeature);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetNumPredict);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetPredict);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterGetUpperBoundValue);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterLoadModelFromString);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterMerge);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterNumModelPerIteration);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterNumberOfTotalModel);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForCSC);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForCSR);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForCSRSingleRow);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForCSRSingleRowFast);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForCSRSingleRowFastInit);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForFile);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForMat);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForMatSingleRow);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForMatSingleRowFast);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForMatSingleRowFastInit);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictForMats);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterPredictSparseOutput);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterRefit);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterResetParameter);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterResetTrainingData);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterRollbackOneIter);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterSaveModel);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterSaveModelToString);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterSetLeafValue);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterShuffleModels);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterUpdateOneIter);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterUpdateOneIterCustom);
+    LGBM_IMPORT_FUNCTION(LGBM_BoosterValidateFeatureNames);
+    LGBM_IMPORT_FUNCTION(LGBM_ByteBufferFree);
+    LGBM_IMPORT_FUNCTION(LGBM_ByteBufferGetAt);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetAddFeaturesFrom);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateByReference);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromCSC);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromCSR);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromCSRFunc);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromFile);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromMat);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromMats);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromSampledColumn);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetCreateFromSerializedReference);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetDumpText);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetFree);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetFeatureNames);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetFeatureNumBin);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetField);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetNumData);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetNumFeature);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetGetSubset);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetInitStreaming);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetMarkFinished);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetPushRows);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetPushRowsByCSR);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetPushRowsByCSRWithMetadata);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetPushRowsWithMetadata);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetSaveBinary);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetSerializeReferenceToBinary);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetSetFeatureNames);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetSetField);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetSetWaitForManualFinish);
+    LGBM_IMPORT_FUNCTION(LGBM_DatasetUpdateParamChecking);
+    LGBM_IMPORT_FUNCTION(LGBM_DumpParamAliases);
+    LGBM_IMPORT_FUNCTION(LGBM_FastConfigFree);
+    LGBM_IMPORT_FUNCTION(LGBM_GetLastError);
+    LGBM_IMPORT_FUNCTION(LGBM_GetSampleCount);
+    LGBM_IMPORT_FUNCTION(LGBM_NetworkFree);
+    LGBM_IMPORT_FUNCTION(LGBM_NetworkInit);
+    LGBM_IMPORT_FUNCTION(LGBM_NetworkInitWithFunctions);
+    LGBM_IMPORT_FUNCTION(LGBM_RegisterLogCallback);
+    LGBM_IMPORT_FUNCTION(LGBM_SampleIndices);
     sqlite3_result_int(context, 0);
 #else
     sqlite3_result_int(context, 0);
