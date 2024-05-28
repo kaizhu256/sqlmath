@@ -148,7 +148,7 @@ async def build_ext_async(): # noqa: C901
                 "-o", file_obj,
             ]
         print(f"build_ext - compile {file_obj}")
-        debuginline(arg_list)
+        # !! debuginline(arg_list)
         await create_subprocess_exec_and_check(
             *arg_list,
             env=env,
@@ -268,7 +268,6 @@ async def build_ext_async(): # noqa: C901
         cc_compiler += " -ldl"
     cc_ldflags = sysconfig.get_config_var("LDFLAGS") or ""
     cc_ldshared = sysconfig.get_config_var("LDSHARED") or ""
-    file_lib = f"_sqlmath{sysconfig.get_config_var('EXT_SUFFIX')}"
     is_win32 = sys.platform == "win32"
     path_include = [
         sysconfig.get_path("platinclude"),
@@ -326,7 +325,13 @@ async def build_ext_async(): # noqa: C901
     #
     # build_ext - link c-extension
 # https://github.com/kaizhu256/sqlmath/actions/runs/4886979281/jobs/8723014944
-    await link_ext_obj(file_lib)
+    await asyncio.gather(*[
+        link_ext_obj(file_lib)
+        for file_lib in [
+            FILE_LIB_LGBM,
+            FILE_LIB_SQLMATH,
+        ]
+    ])
 
 
 def build_pkg_info():
@@ -466,11 +471,10 @@ def build_wheel(
     )
     with zipfile.ZipFile(file_wheel, "w", zipfile.ZIP_DEFLATED) as file_zip:
         dir_distinfo = f"sqlmath-{__version__}.dist-info"
-        file_lib = f"sqlmath/_sqlmath{sysconfig.get_config_var('EXT_SUFFIX')}"
         data_record = ""
         for bb, aa in (
             ("sqlmath/__init__.py", "sqlmath/__init__.py"),
-            (file_lib, file_lib),
+            (f"sqlmath/{FILE_LIB_SQLMATH}", f"sqlmath/{FILE_LIB_SQLMATH}"),
             # Place .dist-info at the end of the archive.
             (f"{dir_distinfo}/LICENSE", "LICENSE"),
             (f"{dir_distinfo}/METADATA", "PKG-INFO"),
@@ -571,6 +575,12 @@ class SetupError(Exception):
 
 
 if __name__ == "__main__":
+    FILE_LIB_LGBM = (
+        "_sqlmath_lgbm.win32_x64.dll" if sys.platform == "win32" else
+        "_sqlmath_lgbm.darwin_x64.so" if sys.platform == "darwin" else
+        "_sqlmath_lgbm.linux_x64.so"
+    )
+    FILE_LIB_SQLMATH = f"_sqlmath{sysconfig.get_config_var('EXT_SUFFIX')}"
     match sys.argv[1]:
         case "bdist_wheel":
             build_wheel("dist")
