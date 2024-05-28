@@ -59,58 +59,14 @@ async def build_ext_async(): # noqa: C901
     """This function will build c-extension."""
 
     async def build_ext_obj(cdefine):
-        if cdefine == "SQLMATH_LGBM":
-            file_obj = pathlib.Path(f"build/{cdefine}.dll")
-            if is_win32:
-                arg_list = [
-                    exe_cl,
-                    # !! "cl.exe",
-                    "/D_USRDLL",
-                    "/D_WINDLL",
-                    "sqlmath_lgbm.c",
-                    "lib_lightgbm.dll",
-                    "/link",
-                    "/DLL",
-                    "/OUT:_sqlmath_lgbm.dll",
-                    # !! *arg_list,
-                    # !! #
-                    # !! "/GL", # to link.exe /LTCG
-                    # !! "/MT", # multithreaded, statically-linked
-                    # !! "/O2",
-                    # !! #
-                    # !! "/c", f"/Tc{file_src}",
-                    # !! f"/Fo{file_obj}",
-                    # !! "/nologo",
-                ]
-            else:
-                arg_list = [
-                    # bugfix - fix multi-word cc_compiler="gcc -pthread"
-                    *cc_compiler.split(" "),
-                    *arg_list,
-                    #
-                    *cc_ccshared.strip().split(" "),
-                    *cc_cflags.strip().split(" "),
-                    #
-                    "-c", file_src,
-                    "-o", file_obj,
-                ]
-            print(f"build_ext - compile {file_obj}")
-            debuginline(arg_list)
-            await create_subprocess_exec_and_check(
-                *arg_list,
-                env=env,
-                stdout=subprocess.DEVNULL if npm_config_mode_debug else None,
-            )
-            return
-        #
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:
             case "SQLMATH_BASE":
                 file_src = pathlib.Path("sqlmath_base.c")
             case "SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
-            # !! case "SQLMATH_LGBM":
-                # !! file_src = pathlib.Path("sqlmath_lgbm.c")
+            case "SQLMATH_LGBM":
+                file_src = pathlib.Path("sqlmath_lgbm.c")
             case "SRC_SQLITE_SHELL":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
             case "SRC_SQLITE_BASE":
@@ -122,8 +78,8 @@ async def build_ext_async(): # noqa: C901
                 pass
             case "SQLMATH_CUSTOM":
                 pass
-            # !! case "SQLMATH_LGBM":
-                # !! pass
+            case "SQLMATH_LGBM":
+                pass
             case "SRC_SQLITE_SHELL":
                 pass
             case _:
@@ -208,6 +164,43 @@ async def build_ext_async(): # noqa: C901
         if child.returncode != 0:
             msg = f"returncode={child.returncode}"
             raise subprocess.SubprocessError(msg)
+
+    async def link_ext_obj():
+        arg_list = []
+        arg_list += [ # must be ordered first
+            "build/SRC_SQLITE_BASE.obj",
+            "build/SRC_ZLIB_BASE.obj",
+            #
+            "build/SQLMATH_BASE.obj",
+            "build/SQLMATH_CUSTOM.obj",
+        ]
+        if is_win32:
+            arg_list = [
+                exe_link,
+                *[f"/LIBPATH:{path}" for path in path_library],
+                *arg_list,
+                #
+                "/INCREMENTAL:NO", # optimization - reduce filesize
+                "/LTCG", # from cl.exe /GL
+                "/MANIFEST:EMBED",
+                "/MANIFESTUAC:NO",
+                #
+                "/DLL",
+                "/EXPORT:PyInit__sqlmath",
+                #
+                f"/OUT:build/{file_lib}",
+                "/nologo",
+            ]
+        else:
+            arg_list = [
+                *cc_ldshared.strip().split(" "),
+                *arg_list,
+                #
+                *cc_ldflags.strip().split(" "),
+                #
+                "-o", f"build/{file_lib}",
+            ]
+        await create_subprocess_exec_and_check(*arg_list, env=env)
     #
     # build_ext - update version
     pathlib.Path("build").mkdir(parents=True, exist_ok=True)
@@ -332,41 +325,7 @@ async def build_ext_async(): # noqa: C901
     #
     # build_ext - link c-extension
 # https://github.com/kaizhu256/sqlmath/actions/runs/4886979281/jobs/8723014944
-    arg_list = []
-    arg_list += [ # must be ordered first
-        "build/SRC_SQLITE_BASE.obj",
-        "build/SRC_ZLIB_BASE.obj",
-        #
-        "build/SQLMATH_BASE.obj",
-        "build/SQLMATH_CUSTOM.obj",
-    ]
-    if is_win32:
-        arg_list = [
-            exe_link,
-            *[f"/LIBPATH:{path}" for path in path_library],
-            *arg_list,
-            #
-            "/INCREMENTAL:NO", # optimization - reduce filesize
-            "/LTCG", # from cl.exe /GL
-            "/MANIFEST:EMBED",
-            "/MANIFESTUAC:NO",
-            #
-            "/DLL",
-            "/EXPORT:PyInit__sqlmath",
-            #
-            f"/OUT:build/{file_lib}",
-            "/nologo",
-        ]
-    else:
-        arg_list = [
-            *cc_ldshared.strip().split(" "),
-            *arg_list,
-            #
-            *cc_ldflags.strip().split(" "),
-            #
-            "-o", f"build/{file_lib}",
-        ]
-    await create_subprocess_exec_and_check(*arg_list, env=env)
+    await link_ext_obj()
     #
     # build_ext - copy c-extension to sqlmath/
     shutil.copyfile(f"build/{file_lib}", f"sqlmath/{file_lib}")
