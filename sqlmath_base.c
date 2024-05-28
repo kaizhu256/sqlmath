@@ -1659,32 +1659,18 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
 ) {
 // This function will return fmod(dividend, divisor).
     UNUSED_PARAMETER(argc);
-    // declare var
-    const char *filename = sqlite3_value_blob(argv[0]);
-    const char *parameters = sqlite3_value_blob(argv[1]);
     DatasetHandle *out = NULL;
     int errcode = 0;
-    //
     errcode = LGBM_DatasetCreateFromFile(       //
-        filename,               // const char *filename,
-        parameters,             // const char *parameters,
+        sqlite3_value_text(argv[0]),    // const char *filename,
+        sqlite3_value_text(argv[1]),    // const char *parameters,
         NULL,                   // const DatasetHandle reference,
         out);                   // DatasetHandle * out
-    //!! LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromFile(
-    //!! const char *filename,
-    //!! const char *parameters,
-    //!! const DatasetHandle reference,
-    //!! DatasetHandle * out
-    //!! );
-    //
-    //!! sqlite3_result_blob(context, arr, nn * sizeof(double), xdel);
-    //!! sqlite3_result_blob(context, NULL, 0,
-    //!! // destructor
-    //!! //!! LGBM_DatasetFree);
-    //!! free);
-    //!! HMODULE handl
-    //!! loadlibrary("./lib_lightgbm.dll");
-    sqlite3_result_int(context, 0);
+    if (errcode) {
+        sqlite3_result_error(context, LGBM_GetLastError(), -1);
+        return;
+    }
+    sqlite3_result_double(context, (double) (intptr_t) (out));
 }
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - end
@@ -3237,8 +3223,8 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonfrom, 1);
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_init, 0);
-    //!! SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
     SQLITE3_CREATE_FUNCTION1(normalizewithsquared, 1);
