@@ -1351,27 +1351,6 @@ static void *lgbm_library = NULL;
 static lgbm_free_t lgbm_datasetfree = NULL;
 static lgbm_free_t lgbm_boosterfree = NULL;
 
-SQLMATH_API int lgbm_dlopen(
-    void
-) {
-    HMODULE hModule = (HMODULE) lgbm_library;
-    if (hModule != NULL) {
-        return 0;
-    }
-    // Get a handle to the DLL module.
-    hModule = LoadLibrary(TEXT("lib_lightgbm.dll"));
-    if (hModule == NULL) {
-        fprintf(stderr, "\ncannot locate the .dll file\n");
-        return 1;
-    }
-    lgbm_library = (void *) hModule;
-    lgbm_datasetfree =
-        (lgbm_free_t) GetProcAddress(hModule, "LGBM_DatasetFree");
-    lgbm_boosterfree =
-        (lgbm_free_t) GetProcAddress(hModule, "LGBM_BoosterFree");
-    return 0;
-}
-
 
 // file sqlmath_base - SQLMATH_FUNC
 SQLMATH_FUNC static void sql1_castrealornull_func(
