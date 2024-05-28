@@ -1538,6 +1538,7 @@ SQLMATH_FUNC static void sql1_fmod_func(
 }
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - start
+// https://lightgbm.readthedocs.io/en/latest/C-API.html
 static void *lgbm_library = NULL;
 
 SQLMATH_FUNC static void sql1_lgbm_init_func(
@@ -1663,7 +1664,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will create lgbm-dataset from file.
+// This function will create lgbm-dataset <out> from file.
     UNUSED_PARAMETER(argc);
     DatasetHandle out = NULL;
     int errcode = 0;
@@ -1684,7 +1685,6 @@ SQLMATH_FUNC static void sql1_lgbm_datasetdumptext_func(
 // This function will save dataset to text file,
 // intended for debugging use only.
     UNUSED_PARAMETER(argc);
-    DatasetHandle out = NULL;
     int errcode = 0;
     errcode = LGBM_DatasetDumpText(     //
         (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]),
@@ -1698,7 +1698,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetfree_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will free lgbm-dataset.
+// This function will free space for dataset <argv[0]>.
     UNUSED_PARAMETER(argc);
     int errcode = 0;
     errcode = LGBM_DatasetFree( //
@@ -1712,9 +1712,8 @@ SQLMATH_FUNC static void sql1_lgbm_datasetgetnumdata_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will get number of datapoints from lgbm-dataset.
+// This function will get number of datapoints.
     UNUSED_PARAMETER(argc);
-    DatasetHandle out = NULL;
     int errcode = 0;
     int result = 0;
     errcode = LGBM_DatasetGetNumData(   //
@@ -1728,9 +1727,8 @@ SQLMATH_FUNC static void sql1_lgbm_datasetgetnumfeature_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will get number of features from lgbm-dataset.
+// This function will get number of features.
     UNUSED_PARAMETER(argc);
-    DatasetHandle out = NULL;
     int errcode = 0;
     int result = 0;
     errcode = LGBM_DatasetGetNumFeature(        //
