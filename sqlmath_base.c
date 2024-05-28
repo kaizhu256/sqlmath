@@ -141,8 +141,13 @@ file sqlmath_h - start
         return; \
     }
 
+#ifdef WIN32
 #define LGBM_IMPORT_FUNCTION(func) \
-    func = (func##_t) GetProcAddress(hModule, #func);
+        func = (func##_t) GetProcAddress(hModule, #func);
+#else
+#define LGBM_IMPORT_FUNCTION(func) \
+        func = (func##_t) dlsym(hModule, #func);
+#endif
 
 // This function will if <cond> is falsy, terminate process with <msg>.
 #define NAPI_ASSERT_FATAL(cond, msg) \
@@ -1549,20 +1554,26 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
 // This function will init lgbm.
     UNUSED_PARAMETER(argc);
     UNUSED_PARAMETER(argv);
-#ifdef WIN32
-    HMODULE hModule = (HMODULE) lgbm_library;
-    if (hModule != NULL) {
+    if (lgbm_library != NULL) {
         sqlite3_result_null(context);
         return;
     }
-    // Get a handle to the DLL module.
-    static const char filename[] = "lib_lightgbm.dll";
-    hModule = LoadLibrary("lib_lightgbm.dll");
+#ifdef WIN32
+    HMODULE hModule = LoadLibrary("lib_lightgbm.dll");
     if (hModule == NULL) {
         sqlite3_result_error(context,
             "lgbm_init() - cannot load library lib_lightgbm.dll", -1);
         return;
     }
+#else
+    void *hModule = dlopen("./lib_lightgbm.so", RTLD_LAZY);
+    if (hModule == NULL) {
+        sqlite3_result_error(context,
+            "lgbm_init() - cannot load library lib_lightgbm.so", -1);
+        return;
+    }
+#endif
+    lgbm_library = (void *) hModule;
     LGBM_IMPORT_FUNCTION(LGBM_BoosterAddValidData);
     LGBM_IMPORT_FUNCTION(LGBM_BoosterCalcNumPredict);
     LGBM_IMPORT_FUNCTION(LGBM_BoosterCreate);
@@ -1654,9 +1665,6 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
     LGBM_IMPORT_FUNCTION(LGBM_RegisterLogCallback);
     LGBM_IMPORT_FUNCTION(LGBM_SampleIndices);
     sqlite3_result_null(context);
-#else
-    sqlite3_result_null(context);
-#endif
 }
 
 SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
