@@ -11,7 +11,7 @@ shRollupFetch
             "replaceList": [
                 {
                     "aa": "\nLIGHTGBM_C_EXPORT ([^\\(]*?) (\\w*?)(\\([\\S\\s]*?\\));\n",
-                    "bb": "\nLIGHTGBM_C_EXPORT $1 (*$2_t) $3;\nstatic $2_t $2 = NULL;\n",
+                    "bb": "\ntypedef $1 (*$2_t) $3;\nstatic $2_t $2 = NULL;\n",
                     "flags": "g",
                     "substr": ""
                 }

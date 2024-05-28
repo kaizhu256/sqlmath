@@ -40,8 +40,11 @@ file sqlmath_h - start
 #   endif
 #endif
 #ifdef WIN32
-#include <windows.h>
+#   include <windows.h>
 #endif
+#   ifdef SQLMATH_BASE_C2
+#   include "sqlmath_base.h"
+#   endif
 
 
 #include <assert.h>
