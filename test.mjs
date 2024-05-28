@@ -806,20 +806,25 @@ jstestDescribe((
         data = await dbExecAndReturnFirstRow({
             db,
             sql: (`
+DROP TABLE IF EXISTS __tmp1;
+CREATE TEMP TABLE __tmp1 AS
+    SELECT
+        lgbm_datasetcreatefromfile(
+            'test_lgbm_binary.train',
+            'max_bin=15'
+        ) AS handle;
+
 SELECT
-    lgbm_datasetcreatefromfile(
-        'test_lgbm_binary.train',
-        'max_bin=15'
-    ) AS data;
+        handle,
+        lgbm_datasetgetnumdata(handle) AS num_data,
+        lgbm_datasetgetnumfeature(handle) AS num_feature
+    FROM __tmp1;
             `)
         });
-        data = data.data;
         debugInline(data);
-        data = await dbExecAndReturnFirstRow({
+        await dbExecAsync({
             db,
-            sql: (`
-SELECT lgbm_datasetfree(${data});
-            `)
+            sql: `SELECT lgbm_datasetfree(${data.handle});`
         });
     });
 });

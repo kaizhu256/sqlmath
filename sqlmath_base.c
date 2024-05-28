@@ -1545,7 +1545,7 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return fmod(dividend, divisor).
+// This function will init lgbm.
     UNUSED_PARAMETER(argc);
     UNUSED_PARAMETER(argv);
 #ifdef WIN32
@@ -1663,7 +1663,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return fmod(dividend, divisor).
+// This function will create lgbm-dataset from file.
     UNUSED_PARAMETER(argc);
     DatasetHandle out = NULL;
     int errcode = 0;
@@ -1676,18 +1676,67 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
     sqlite3_result_int64(context, (intptr_t) out);
 }
 
+SQLMATH_FUNC static void sql1_lgbm_datasetdumptext_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will save dataset to text file,
+// intended for debugging use only.
+    UNUSED_PARAMETER(argc);
+    DatasetHandle out = NULL;
+    int errcode = 0;
+    errcode = LGBM_DatasetDumpText(     //
+        (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]),
+        sqlite3_value_text(argv[1]));
+    LGBM_ASSERT_OK();
+    sqlite3_result_null(context);
+}
+
 SQLMATH_FUNC static void sql1_lgbm_datasetfree_func(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return fmod(dividend, divisor).
+// This function will free lgbm-dataset.
     UNUSED_PARAMETER(argc);
     int errcode = 0;
     errcode = LGBM_DatasetFree( //
         (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]));
     LGBM_ASSERT_OK();
     sqlite3_result_null(context);
+}
+
+SQLMATH_FUNC static void sql1_lgbm_datasetgetnumdata_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will get number of datapoints from lgbm-dataset.
+    UNUSED_PARAMETER(argc);
+    DatasetHandle out = NULL;
+    int errcode = 0;
+    int result = 0;
+    errcode = LGBM_DatasetGetNumData(   //
+        (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]), &result);
+    LGBM_ASSERT_OK();
+    sqlite3_result_int(context, result);
+}
+
+SQLMATH_FUNC static void sql1_lgbm_datasetgetnumfeature_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will get number of features from lgbm-dataset.
+    UNUSED_PARAMETER(argc);
+    DatasetHandle out = NULL;
+    int errcode = 0;
+    int result = 0;
+    errcode = LGBM_DatasetGetNumFeature(        //
+        (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]), &result);
+    LGBM_ASSERT_OK();
+    sqlite3_result_int(context, result);
 }
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - end
@@ -3241,7 +3290,10 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetdumptext, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 1);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetgetnumdata, 1);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetgetnumfeature, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_init, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
