@@ -39,6 +39,9 @@ file sqlmath_h - start
 #       define SQLMATH_BASE_C2
 #   endif
 #endif
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 
 #include <assert.h>
@@ -1520,6 +1523,30 @@ SQLMATH_FUNC static void sql1_fmod_func(
     sqlite3_result_double_or_null(context, fmod(        //
             sqlite3_value_double_or_nan(argv[0]),       //
             sqlite3_value_double_or_nan(argv[1])));
+}
+
+SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will return fmod(dividend, divisor).
+    UNUSED_PARAMETER(argc);
+
+    //!! LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromFile(
+    //!! const char *filename,
+    //!! const char *parameters,
+    //!! const DatasetHandle reference,
+    //!! DatasetHandle * out
+    //!! );
+
+    //!! sqlite3_result_blob(context, arr, nn * sizeof(double), xdel);
+    //!! sqlite3_result_blob(context, NULL, 0,
+        //!! // destructor
+        //!! //!! LGBM_DatasetFree);
+        //!! free);
+    LoadLibrary("aa");
+    sqlite3_result_int(context, 0);
 }
 
 SQLMATH_FUNC static void sql1_marginoferror95_func(
@@ -3070,6 +3097,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonfrom, 1);
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
     SQLITE3_CREATE_FUNCTION1(normalizewithsquared, 1);
@@ -3108,11 +3136,6 @@ file sqlmath_nodejs - start
 */
 #if defined(SQLMATH_NODEJS_C2) && !defined(SQLMATH_NODEJS_C3)
 #define SQLMATH_NODEJS_C3
-
-
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 
 // file sqlmath_nodejs - assert

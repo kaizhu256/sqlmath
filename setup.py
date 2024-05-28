@@ -123,6 +123,7 @@ async def build_ext_async(): # noqa: C901
                 exe_cl,
                 *arg_list,
                 #
+                "-DWIN32",
                 "/GL", # to link.exe /LTCG
                 "/MT", # multithreaded, statically-linked
                 "/O2",
