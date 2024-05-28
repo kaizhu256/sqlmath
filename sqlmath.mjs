@@ -335,23 +335,6 @@ async function ciBuildExt1NodejsConfigure({
             }
         },
         "targets": [
-            //!! {
-                //!! "defines": [],
-                //!! "libraries": [
-                    //!! "-l/Users/kaizhu256/Documents/sqlmath/lib_lightgbm.dll"
-                    //!! //!! "./lib_lightgbm.dll"
-                    //!! //!! "-L./lib_lightgbm.dll"
-                    //!! //!! "-L.",
-                    //!! //!! "-l_lightgbm"
-                    //!! //!! "-link",
-                    //!! //!! "lib_lightgbm.dll"
-                //!! ],
-                //!! "sources": [
-                    //!! "sqlmath_lgbm.c"
-                //!! ],
-                //!! "target_name": "SQLMATH_LGBM",
-                //!! "type": "shared_library"
-            //!! },
             {
                 "cflags": cflagsNowarning,
                 "defines": [

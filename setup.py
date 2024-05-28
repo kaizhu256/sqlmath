@@ -65,8 +65,6 @@ async def build_ext_async(): # noqa: C901
                 file_src = pathlib.Path("sqlmath_base.c")
             case "SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
-            case "SQLMATH_LGBM":
-                file_src = pathlib.Path("sqlmath_lgbm.c")
             case "SRC_SQLITE_SHELL":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
             case "SRC_SQLITE_BASE":
@@ -77,8 +75,6 @@ async def build_ext_async(): # noqa: C901
             case "SQLMATH_BASE":
                 pass
             case "SQLMATH_CUSTOM":
-                pass
-            case "SQLMATH_LGBM":
                 pass
             case "SRC_SQLITE_SHELL":
                 pass
@@ -167,21 +163,15 @@ async def build_ext_async(): # noqa: C901
 
     async def link_ext_obj(file_lib):
         arg_list = []
-        if file_lib == FILE_LIB_LGBM:
-            arg_list += [
-                "build/SQLMATH_LGBM.obj",
-            ]
-            export = "sqlite3__sqlmath_lgbm_init"
-        else:
-            arg_list += [
-                # must be ordered first
-                "build/SRC_SQLITE_BASE.obj",
-                "build/SRC_ZLIB_BASE.obj",
-                #
-                "build/SQLMATH_BASE.obj",
-                "build/SQLMATH_CUSTOM.obj",
-            ]
-            export = "PyInit__sqlmath"
+        arg_list += [
+            # must be ordered first
+            "build/SRC_SQLITE_BASE.obj",
+            "build/SRC_ZLIB_BASE.obj",
+            #
+            "build/SQLMATH_BASE.obj",
+            "build/SQLMATH_CUSTOM.obj",
+        ]
+        export = "PyInit__sqlmath"
         if is_win32:
             arg_list = [
                 exe_link,
@@ -326,8 +316,6 @@ async def build_ext_async(): # noqa: C901
             #
             "SQLMATH_BASE",
             "SQLMATH_CUSTOM",
-            #
-            "SQLMATH_LGBM",
         ]
     ])
     #
@@ -336,7 +324,6 @@ async def build_ext_async(): # noqa: C901
     await asyncio.gather(*[
         link_ext_obj(file_lib)
         for file_lib in [
-            FILE_LIB_LGBM,
             FILE_LIB_SQLMATH,
         ]
     ])
@@ -583,11 +570,6 @@ class SetupError(Exception):
 
 
 if __name__ == "__main__":
-    FILE_LIB_LGBM = (
-        "_sqlmath_lgbm.win32_x64.dll" if sys.platform == "win32" else
-        "_sqlmath_lgbm.darwin_x64.so" if sys.platform == "darwin" else
-        "_sqlmath_lgbm.linux_x64.so"
-    )
     FILE_LIB_SQLMATH = f"_sqlmath{sysconfig.get_config_var('EXT_SUFFIX')}"
     match sys.argv[1]:
         case "bdist_wheel":
