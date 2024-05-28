@@ -813,11 +813,13 @@ CREATE TEMP TABLE __tmp1 AS
             'test_lgbm_binary.train',
             'max_bin=15'
         ) AS handle;
-
 SELECT
         handle,
         lgbm_datasetgetnumdata(handle) AS num_data,
         lgbm_datasetgetnumfeature(handle) AS num_feature
+    FROM __tmp1;
+SELECT
+        lgbm_datasetdumptext(handle, '.tmp/test_lgbm_datasetdump.txt')
     FROM __tmp1;
             `)
         });
