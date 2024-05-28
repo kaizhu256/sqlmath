@@ -135,6 +135,12 @@ file sqlmath_h - start
         goto catch_error; \
     }
 
+#define LGBM_ASSERT_OK() \
+    if (errcode != 0) { \
+        sqlite3_result_error(context, LGBM_GetLastError(), -1); \
+        return; \
+    }
+
 #define LGBM_IMPORT_FUNCTION(func) \
     func = (func##_t) GetProcAddress(hModule, #func);
 
@@ -1545,7 +1551,7 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
 #ifdef WIN32
     HMODULE hModule = (HMODULE) lgbm_library;
     if (hModule != NULL) {
-        sqlite3_result_int(context, 1);
+        sqlite3_result_null(context);
         return;
     }
     // Get a handle to the DLL module.
@@ -1646,9 +1652,9 @@ SQLMATH_FUNC static void sql1_lgbm_init_func(
     LGBM_IMPORT_FUNCTION(LGBM_NetworkInitWithFunctions);
     LGBM_IMPORT_FUNCTION(LGBM_RegisterLogCallback);
     LGBM_IMPORT_FUNCTION(LGBM_SampleIndices);
-    sqlite3_result_int(context, 0);
+    sqlite3_result_null(context);
 #else
-    sqlite3_result_int(context, 0);
+    sqlite3_result_null(context);
 #endif
 }
 
@@ -1666,11 +1672,22 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
         sqlite3_value_text(argv[1]),    // const char *parameters,
         NULL,                   // const DatasetHandle reference,
         out);                   // DatasetHandle * out
-    if (errcode) {
-        sqlite3_result_error(context, LGBM_GetLastError(), -1);
-        return;
-    }
+    LGBM_ASSERT_OK();
     sqlite3_result_int64(context, (intptr_t) (out));
+}
+
+SQLMATH_FUNC static void sql1_lgbm_datasetfree_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will return fmod(dividend, divisor).
+    UNUSED_PARAMETER(argc);
+    int errcode = 0;
+    errcode = LGBM_DatasetFree( //
+        (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]));
+    LGBM_ASSERT_OK();
+    sqlite3_result_null(context);
 }
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - end
@@ -3224,6 +3241,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_init, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
