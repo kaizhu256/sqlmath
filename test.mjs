@@ -795,13 +795,30 @@ jstestDescribe((
     jstestIt((
         "test lgbm handling-behavior"
     ), async function () {
+        let data;
         let db = await dbOpenAsync({
             filename: ":memory:"
         });
         await dbExecAsync({
             db,
+            sql: "SELECT lgbm_init();"
+        });
+        data = await dbExecAndReturnFirstRow({
+            db,
             sql: (`
-SELECT lgbm_init();
+SELECT
+    lgbm_datasetcreatefromfile(
+        'test_lgbm_binary.train',
+        'max_bin=15'
+    ) AS data;
+            `)
+        });
+        data = data.data;
+        debugInline(data);
+        data = await dbExecAndReturnFirstRow({
+            db,
+            sql: (`
+SELECT lgbm_datasetfree(${data});
             `)
         });
     });

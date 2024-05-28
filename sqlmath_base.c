@@ -1665,15 +1665,15 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
 ) {
 // This function will return fmod(dividend, divisor).
     UNUSED_PARAMETER(argc);
-    DatasetHandle *out = NULL;
+    DatasetHandle out = NULL;
     int errcode = 0;
     errcode = LGBM_DatasetCreateFromFile(       //
         sqlite3_value_text(argv[0]),    // const char *filename,
         sqlite3_value_text(argv[1]),    // const char *parameters,
         NULL,                   // const DatasetHandle reference,
-        out);                   // DatasetHandle * out
+        &out);                  // DatasetHandle * out
     LGBM_ASSERT_OK();
-    sqlite3_result_int64(context, (intptr_t) (out));
+    sqlite3_result_int64(context, (intptr_t) out);
 }
 
 SQLMATH_FUNC static void sql1_lgbm_datasetfree_func(
@@ -3241,7 +3241,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(doublearray_jsonto, 1);
     SQLITE3_CREATE_FUNCTION1(fmod, 2);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetcreatefromfile, 2);
-    SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 2);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_init, 0);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
