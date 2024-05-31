@@ -1039,7 +1039,23 @@ CREATE TEMP TABLE __sinefit_csv AS
         sql
     });
 }</pre></li>
-<li>Example usage:<pre class="apidocCodePre">N/A</pre></li>
+<li>Example usage:<pre class="apidocCodePre">...
+        })
+    ),
+    "3"
+);
+// test dbExecAndReturnLastValue null-case handling-behavior
+assertJsonEqual(
+    noop(
+        await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastValue</span>({
+            db,
+            sql: "SELECT 0 WHERE 0"
+        })
+    ),
+    null
+);
+// test dbExecAndReturnLastValue json handling-behavior
+...</pre></li>
 
 <li>
     <h2>

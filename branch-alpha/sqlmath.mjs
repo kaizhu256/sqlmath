@@ -1333,9 +1333,12 @@ function jsonParseArraybuffer(buf) {
 // This function will JSON.parse arraybuffer <buf>.
 
     return JSON.parse(
-        IS_BROWSER
-        ? new TextDecoder().decode(buf)
-        : buf
+        (
+            IS_BROWSER
+            ? new TextDecoder().decode(buf)
+            : buf
+        )
+        || "null"
     );
 }
 

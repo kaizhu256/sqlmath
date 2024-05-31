@@ -38,6 +38,7 @@ import {
     dbExecAndReturnLastBlob,
     dbExecAndReturnLastRow,
     dbExecAndReturnLastTable,
+    dbExecAndReturnLastValue,
     dbExecAsync,
     dbFileLoadAsync,
     dbFileSaveAsync,
@@ -395,6 +396,7 @@ jstestDescribe((
             await Promise.all([
                 test_dbBind_exec(ii, valIn, valExpect),
                 test_dbBind_lastBlob(ii, valIn, valExpect),
+                //!! test_dbBind_lastValue(ii, valIn, valExpect),
                 test_dbBind_responseType(ii, valIn, valExpect)
             ]);
         }));
@@ -564,6 +566,26 @@ jstestDescribe((
                 })
             ),
             "3"
+        );
+        // test dbExecAndReturnLastValue null-case handling-behavior
+        assertJsonEqual(
+            noop(
+                await dbExecAndReturnLastValue({
+                    db,
+                    sql: "SELECT 0 WHERE 0"
+                })
+            ),
+            null
+        );
+        // test dbExecAndReturnLastValue json handling-behavior
+        assertJsonEqual(
+            noop(
+                await dbExecAndReturnLastValue({
+                    db,
+                    sql: "SELECT 1, 2, 3"
+                })
+            ),
+            3
         );
     });
     jstestIt((
