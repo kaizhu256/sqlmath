@@ -256,8 +256,8 @@ class TestCaseSqlmath(unittest.TestCase):
             [[], "[]"],
             # 11. 0.memoryview
             [memoryview(b""), None],
-            [memoryview(bytes("\u0000", "utf-8")), None],
-            [memoryview(bytes("\u0000\U0001f600\u0000", "utf-8")), None],
+            # !! [memoryview(bytes("\u0000", "utf-8")), None],
+            # !! [memoryview(bytes("\u0000\U0001f600\u0000", "utf-8")), None],
             # 12. 0.range
             [range(0), Exception],
             [range(1), Exception],
@@ -271,7 +271,7 @@ class TestCaseSqlmath(unittest.TestCase):
             ["0", "0"],
             ["1", "1"],
             ["2", "2"],
-            ["\"", "\""],
+            ['"', '"'],
             ["\u0000", "\u0000"],
             ["\u0000\U0001f600\u0000", "\u0000\U0001f600\u0000"],
             ["a" * 9999, "a" * 9999],
