@@ -766,12 +766,11 @@ SQLMATH_API void dbExec(
                 // export last-value as blob
                 if (nCol == -1) {
                     nCol = sqlite3_column_count(pStmt);
-                    ii = nCol - 1;
                 }
                 sqlite3_str_reset(str99);
                 sqlite3_str_append(str99,
-                    (char *) sqlite3_column_blob(pStmt, ii),
-                    sqlite3_column_bytes(pStmt, ii));
+                    (char *) sqlite3_column_blob(pStmt, nCol - 1),
+                    sqlite3_column_bytes(pStmt, nCol - 1));
                 break;
             default:
                 // insert row of column-names
@@ -1359,7 +1358,7 @@ SQLMATH_API void sqlite3_result_error2(
     const char *format,
     ...                         // NOLINT
 ) {
-// This function will return NULL if <xx> is not finite else <xx>.
+// This function will return formatted error-message as sqlite-result.
     static char errbuf[256] = { 0 };
     va_list argptr;
     va_start(argptr, format);
