@@ -766,11 +766,12 @@ SQLMATH_API void dbExec(
                 // export last-value as blob
                 if (nCol == -1) {
                     nCol = sqlite3_column_count(pStmt);
+                    ii = nCol - 1;
                 }
                 sqlite3_str_reset(str99);
                 sqlite3_str_append(str99,
-                    (char *) sqlite3_column_blob(pStmt, nCol - 1),
-                    sqlite3_column_bytes(pStmt, nCol - 1));
+                    (char *) sqlite3_column_blob(pStmt, ii),
+                    sqlite3_column_bytes(pStmt, ii));
                 break;
             default:
                 // insert row of column-names
@@ -1573,7 +1574,6 @@ SQLMATH_FUNC static void sql1_fmod_func(
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - start
 // https://lightgbm.readthedocs.io/en/latest/C-API.html
-static sqlite3_mutex *lgbm_mutex_dlopen = NULL;
 static void *lgbm_library = NULL;
 
 SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
@@ -1588,9 +1588,7 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
         sqlite3_result_null(context);
         return;
     }
-    const char *filename = sqlite3_value_text(argv[0]);
-    // mutex enter
-    sqlite3_mutex_enter(lgbm_mutex_dlopen);
+    const char *filename = (char *) sqlite3_value_text(argv[0]);
 #ifdef _WIN32
     if (filename == NULL) {
         filename = "./lib_lightgbm.dll";
@@ -1599,8 +1597,6 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     if (hModule == NULL) {
         sqlite3_result_error2(context,
             "lgbm_dlopen() - failed with error=%lu", GetLastError());
-        // mutex leave
-        sqlite3_mutex_leave(lgbm_mutex_dlopen);
         return;
     }
 #else
@@ -1614,8 +1610,6 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     void *hModule = dlopen(filename, RTLD_LAZY);
     if (hModule == NULL) {
         sqlite3_result_error2(context, "lgbm_dlopen() - %s", dlerror());
-        // mutex leave
-        sqlite3_mutex_leave(lgbm_mutex_dlopen);
         return;
     }
 #endif
@@ -1698,8 +1692,6 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     LGBM_IMPORT_FUNCTION(LGBM_RegisterLogCallback);
     LGBM_IMPORT_FUNCTION(LGBM_SampleIndices);
     sqlite3_result_null(context);
-    // mutex leave
-    sqlite3_mutex_leave(lgbm_mutex_dlopen);
 }
 
 SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
