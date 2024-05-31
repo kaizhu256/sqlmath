@@ -1731,8 +1731,8 @@ valExpect = String(valExpect);
 if (typeof valIn === "bigint") {
     valIn = String(valIn);
 }
-assertJsonEqual(valActual, valExpect, {
-    ii,
+assertJsonEqual(
+    valActual,
 ...</pre></li>
 
 <li>
@@ -1769,7 +1769,7 @@ valExpect = String(valExpect);
 if (typeof valIn === "bigint") {
     valIn = String(valIn);
 }
-assertJsonEqual(valActual, valExpect, {
+assertJsonEqual(
 ...</pre></li>
 
 <li>
@@ -1830,8 +1830,8 @@ jstestDescribe((
                 sql
             })
         ).val;
-        assertJsonEqual(valActual, valExpect, {
-            sql,
+        assertJsonEqual(valActual, valExpect);
+    });
 ...</pre></li>
 
 <li>

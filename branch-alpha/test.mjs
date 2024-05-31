@@ -199,12 +199,17 @@ jstestDescribe((
                         [valExpect, valExpect, 0, undefined]
                     ]
                 ];
-                assertJsonEqual(bufActual, bufExpect, {
+                assertJsonEqual(
                     bufActual,
-                    ii,
-                    valExpect,
-                    valIn
-                });
+                    bufExpect,
+                    {
+                        bufActual,
+                        bufExpect,
+                        ii,
+                        valExpect,
+                        valIn
+                    }
+                );
             }));
         }
         async function test_dbBind_lastBlob(ii, valIn, valExpect) {
@@ -272,13 +277,46 @@ jstestDescribe((
                 }
                 break;
             }
-            assertJsonEqual(bufActual, bufExpect, {
+            assertJsonEqual(
                 bufActual,
                 bufExpect,
-                ii,
-                valExpect,
-                valIn
+                {
+                    bufActual,
+                    bufExpect,
+                    ii,
+                    valExpect,
+                    valIn
+                }
+            );
+        }
+        async function test_dbBind_lastValue(ii, valIn, valExpect) {
+            let valActual;
+            if (valExpect === Error) {
+                assertErrorThrownAsync(
+                    dbExecAndReturnLastValue.bind(undefined, {
+                        bindList: [valIn],
+                        db,
+                        sql: "SELECT 1, 2, 3; SELECT 1, 2, ?"
+                    }),
+                    "inclusive-range|not JSON serializable"
+                );
+                return;
+            }
+            valActual = await dbExecAndReturnLastValue({
+                bindList: [valIn],
+                db,
+                sql: "SELECT 1, 2, 3; SELECT 1, 2, ?"
             });
+            assertJsonEqual(
+                valActual,
+                valExpect,
+                {
+                    ii,
+                    valActual,
+                    valExpect,
+                    valIn
+                }
+            );
         }
         async function test_dbBind_responseType(ii, valIn, valExpect) {
             await Promise.all([
@@ -286,7 +324,7 @@ jstestDescribe((
                 "list",
                 undefined
             ].map(async function (responseType) {
-                let bufActual;
+                let valActual;
                 if (valExpect === Error) {
                     assertErrorThrownAsync(
                         dbExecAsync.bind(undefined, {
@@ -299,7 +337,7 @@ jstestDescribe((
                     );
                     return;
                 }
-                bufActual = await dbExecAsync({
+                valActual = await dbExecAsync({
                     bindList: [valIn],
                     db,
                     responseType,
@@ -307,23 +345,27 @@ jstestDescribe((
                 });
                 switch (responseType) {
                 case "arraybuffer":
-                    bufActual = JSON.parse(
-                        new TextDecoder().decode(bufActual)
+                    valActual = JSON.parse(
+                        new TextDecoder().decode(valActual)
                     )[0][1][0];
                     break;
                 case "list":
-                    bufActual = bufActual[0][1][0];
+                    valActual = valActual[0][1][0];
                     break;
                 default:
-                    bufActual = bufActual[0][0].val;
+                    valActual = valActual[0][0].val;
                 }
-                assertJsonEqual(bufActual, valExpect, {
-                    bufActual,
-                    ii,
-                    responseType,
+                assertJsonEqual(
+                    valActual,
                     valExpect,
-                    valIn
-                });
+                    {
+                        ii,
+                        responseType,
+                        valActual,
+                        valExpect,
+                        valIn
+                    }
+                );
             }));
         }
         db = await dbOpenAsync({filename: ":memory:"});
@@ -396,7 +438,7 @@ jstestDescribe((
             await Promise.all([
                 test_dbBind_exec(ii, valIn, valExpect),
                 test_dbBind_lastBlob(ii, valIn, valExpect),
-                //!! test_dbBind_lastValue(ii, valIn, valExpect),
+                test_dbBind_lastValue(ii, valIn, valExpect),
                 test_dbBind_responseType(ii, valIn, valExpect)
             ]);
         }));
@@ -495,12 +537,16 @@ jstestDescribe((
             if (typeof valIn === "bigint") {
                 valIn = String(valIn);
             }
-            assertJsonEqual(valActual, valExpect, {
-                ii,
+            assertJsonEqual(
                 valActual,
                 valExpect,
-                valIn
-            });
+                {
+                    ii,
+                    valActual,
+                    valExpect,
+                    valIn
+                }
+            );
         }));
     });
 });
@@ -713,13 +759,12 @@ SELECT * FROM testDbExecAsync2;
             db,
             sql: "SELECT * FROM t01"
         });
-        assertJsonEqual(data, [
+        assertJsonEqual(
+            data,
             [
-                {
-                    c01: 1
-                }
+                [{c01: 1}]
             ]
-        ]);
+        );
     });
     jstestIt((
         "test dbOpenAsync handling-behavior"
@@ -1007,12 +1052,16 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                 }, undefined, 4));
                 return;
             }
-            assertJsonEqual(valActual, valExpect, {
-                ii,
+            assertJsonEqual(
                 valActual,
                 valExpect,
-                valIn
-            });
+                {
+                    ii,
+                    valActual,
+                    valExpect,
+                    valIn
+                }
+            );
         }));
     });
     jstestIt((
@@ -1244,11 +1293,7 @@ SELECT
                         sql
                     })
                 ).val;
-                assertJsonEqual(valActual, valExpect, {
-                    sql,
-                    valActual,
-                    valExpect
-                });
+                assertJsonEqual(valActual, valExpect);
             });
         });
     });
