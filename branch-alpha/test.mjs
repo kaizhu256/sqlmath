@@ -199,17 +199,13 @@ jstestDescribe((
                         [valExpect, valExpect, 0, undefined]
                     ]
                 ];
-                assertJsonEqual(
+                assertJsonEqual(bufActual, bufExpect, {
                     bufActual,
                     bufExpect,
-                    {
-                        bufActual,
-                        bufExpect,
-                        ii,
-                        valExpect,
-                        valIn
-                    }
-                );
+                    ii,
+                    valExpect,
+                    valIn
+                });
             }));
         }
         async function test_dbBind_lastBlob(ii, valIn, valExpect) {
@@ -277,17 +273,13 @@ jstestDescribe((
                 }
                 break;
             }
-            assertJsonEqual(
+            assertJsonEqual(bufActual, bufExpect, {
                 bufActual,
                 bufExpect,
-                {
-                    bufActual,
-                    bufExpect,
-                    ii,
-                    valExpect,
-                    valIn
-                }
-            );
+                ii,
+                valExpect,
+                valIn
+            });
         }
         async function test_dbBind_lastValue(ii, valIn, valExpect) {
             let valActual;
@@ -307,21 +299,18 @@ jstestDescribe((
                 db,
                 sql: "SELECT 1, 2, 3; SELECT 1, 2, ?"
             });
-            assertJsonEqual(
+            assertJsonEqual(valActual, valExpect, {
+                ii,
                 valActual,
                 valExpect,
-                {
-                    ii,
-                    valActual,
-                    valExpect,
-                    valIn
-                }
-            );
+                valIn
+            });
         }
         async function test_dbBind_responseType(ii, valIn, valExpect) {
             await Promise.all([
                 "arraybuffer",
                 "list",
+                "lastvalue",
                 undefined
             ].map(async function (responseType) {
                 let valActual;
@@ -349,23 +338,21 @@ jstestDescribe((
                         new TextDecoder().decode(valActual)
                     )[0][1][0];
                     break;
+                case "lastvalue":
+                    break;
                 case "list":
                     valActual = valActual[0][1][0];
                     break;
                 default:
                     valActual = valActual[0][0].val;
                 }
-                assertJsonEqual(
+                assertJsonEqual(valActual, valExpect, {
+                    ii,
+                    responseType,
                     valActual,
                     valExpect,
-                    {
-                        ii,
-                        responseType,
-                        valActual,
-                        valExpect,
-                        valIn
-                    }
-                );
+                    valIn
+                });
             }));
         }
         db = await dbOpenAsync({filename: ":memory:"});
@@ -537,16 +524,12 @@ jstestDescribe((
             if (typeof valIn === "bigint") {
                 valIn = String(valIn);
             }
-            assertJsonEqual(
+            assertJsonEqual(valActual, valExpect, {
+                ii,
                 valActual,
                 valExpect,
-                {
-                    ii,
-                    valActual,
-                    valExpect,
-                    valIn
-                }
-            );
+                valIn
+            });
         }));
     });
 });
@@ -759,12 +742,7 @@ SELECT * FROM testDbExecAsync2;
             db,
             sql: "SELECT * FROM t01"
         });
-        assertJsonEqual(
-            data,
-            [
-                [{c01: 1}]
-            ]
-        );
+        assertJsonEqual(data, [[{c01: 1}]]);
     });
     jstestIt((
         "test dbOpenAsync handling-behavior"
@@ -1052,16 +1030,12 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                 }, undefined, 4));
                 return;
             }
-            assertJsonEqual(
+            assertJsonEqual(valActual, valExpect, {
+                ii,
                 valActual,
                 valExpect,
-                {
-                    ii,
-                    valActual,
-                    valExpect,
-                    valIn
-                }
-            );
+                valIn
+            });
         }));
     });
     jstestIt((
