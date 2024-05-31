@@ -138,8 +138,8 @@ function dbCloseAsync<span class="apidocSignatureSpan">(db)</span>
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstRow">9.
-function dbExecAndReturnFirstRow<span class="apidocSignatureSpan">({
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob">9.
+function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">({
     bindList = [],
     db,
     sql
@@ -149,8 +149,8 @@ function dbExecAndReturnFirstRow<span class="apidocSignatureSpan">({
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstTable">10.
-function dbExecAndReturnFirstTable<span class="apidocSignatureSpan">({
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow">10.
+function dbExecAndReturnLastRow<span class="apidocSignatureSpan">({
     bindList = [],
     db,
     sql
@@ -160,8 +160,8 @@ function dbExecAndReturnFirstTable<span class="apidocSignatureSpan">({
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlobAsync">11.
-function dbExecAndReturnLastBlobAsync<span class="apidocSignatureSpan">({
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable">11.
+function dbExecAndReturnLastTable<span class="apidocSignatureSpan">({
     bindList = [],
     db,
     sql
@@ -873,8 +873,8 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstRow" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstRow">9.
-    function dbExecAndReturnFirstRow<span class="apidocSignatureSpan">({
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob">9.
+    function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">({
     bindList = [],
     db,
     sql
@@ -882,108 +882,7 @@ jstestIt((
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnFirstRow({
-    bindList = [],
-    db,
-    sql
-}) {
-<span class="apidocCodeCommentSpan">
-// This function will exec &lt;sql&gt; in &lt;db&gt;,
-// and return first-row or empty-object.
-
-</span>    return (
-        noop(
-            noop(
-                await dbExecAsync({
-                    bindList,
-                    db,
-                    sql
-                })
-            )[0]
-            || []
-        )[0]
-        || {}
-    );
-}</pre></li>
-<li>Example usage:<pre class="apidocCodePre">...
-                "myy": 10,
-                "nnn": 6,
-                "rr0": 0,
-                "rr1": -1.63694722,
-                "xx1": 51,
-                "yy1": 5
-            };
-            valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnFirstRow</span>({
-                db,
-                sql: (`
-SELECT
-    ${sqlSinefitExtractLnr("__wsf", 0, "")}
-FROM (
-    SELECT
-        win_sinefit2(1, NULL, xx, yy) AS __wsf
-...</pre></li>
-
-<li>
-    <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstTable" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnFirstTable">10.
-    function dbExecAndReturnFirstTable<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
-    </a>
-    </h2>
-</li>
-<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnFirstTable({
-    bindList = [],
-    db,
-    sql
-}) {
-<span class="apidocCodeCommentSpan">
-// This function will exec &lt;sql&gt; in &lt;db&gt;,
-// and return first-table or empty-list.
-
-</span>    return (
-        noop(
-            await dbExecAsync({
-                bindList,
-                db,
-                sql
-            })
-        )[0]
-        || []
-    );
-}</pre></li>
-<li>Example usage:<pre class="apidocCodePre">...
-                    elem = elem.split(" ");
-                    return {
-                        date: elem[0],
-                        ii,
-                        priceClose: Number(elem[1])
-                    };
-                });
-                valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnFirstTable</span>({
-                    bindList: {
-                        testDataSpx
-                    },
-                    db,
-                    sql: (`
-DROP TABLE IF EXISTS __sinefit_csv;
-CREATE TEMP TABLE __sinefit_csv AS
-...</pre></li>
-
-<li>
-    <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlobAsync" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlobAsync">11.
-    function dbExecAndReturnLastBlobAsync<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
-    </a>
-    </h2>
-</li>
-<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastBlobAsync({
+<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastBlob({
     bindList = [],
     db,
     sql
@@ -1004,17 +903,102 @@ CREATE TEMP TABLE __sinefit_csv AS
     ),
     []
 );
-// test dbExecAndReturnLastBlobAsync null-case handling-behavior
+// test dbExecAndReturnLastBlob null-case handling-behavior
 assertJsonEqual(
     new TextDecoder().decode(
-        await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastBlobAsync</span>({
+        await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastBlob</span>({
             db,
             sql: "SELECT 0 WHERE 0"
         })
     ),
     ""
 );
-// test dbExecAndReturnLastBlobAsync string handling-behavior
+// test dbExecAndReturnLastBlob string handling-behavior
+...</pre></li>
+
+<li>
+    <h2>
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow">10.
+    function dbExecAndReturnLastRow<span class="apidocSignatureSpan">({
+    bindList = [],
+    db,
+    sql
+})</span>
+    </a>
+    </h2>
+</li>
+<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastRow({
+    bindList = [],
+    db,
+    sql
+}) {
+<span class="apidocCodeCommentSpan">
+// This function will exec &lt;sql&gt; in &lt;db&gt;,
+// and return last-row or empty-object.
+
+</span>    let result = await dbExecAsync({bindList, db, sql});
+    result = result[result.length - 1] || [];
+    result = result[result.length - 1] || {};
+    return result;
+}</pre></li>
+<li>Example usage:<pre class="apidocCodePre">...
+                "myy": 10,
+                "nnn": 6,
+                "rr0": 0,
+                "rr1": -1.63694722,
+                "xx1": 51,
+                "yy1": 5
+            };
+            valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastRow</span>({
+                db,
+                sql: (`
+SELECT
+    ${sqlSinefitExtractLnr("__wsf", 0, "")}
+FROM (
+    SELECT
+        win_sinefit2(1, NULL, xx, yy) AS __wsf
+...</pre></li>
+
+<li>
+    <h2>
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable">11.
+    function dbExecAndReturnLastTable<span class="apidocSignatureSpan">({
+    bindList = [],
+    db,
+    sql
+})</span>
+    </a>
+    </h2>
+</li>
+<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastTable({
+    bindList = [],
+    db,
+    sql
+}) {
+<span class="apidocCodeCommentSpan">
+// This function will exec &lt;sql&gt; in &lt;db&gt;,
+// and return last-table or empty-list.
+
+</span>    let result = await dbExecAsync({bindList, db, sql});
+    result = result[result.length - 1] || [];
+    return result;
+}</pre></li>
+<li>Example usage:<pre class="apidocCodePre">...
+                    elem = elem.split(" ");
+                    return {
+                        date: elem[0],
+                        ii,
+                        priceClose: Number(elem[1])
+                    };
+                });
+                valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastTable</span>({
+                    bindList: {
+                        testDataSpx
+                    },
+                    db,
+                    sql: (`
+DROP TABLE IF EXISTS __sinefit_csv;
+CREATE TEMP TABLE __sinefit_csv AS
 ...</pre></li>
 
 <li>
@@ -1504,10 +1488,10 @@ dbTableImportAsync({
     return argv[0];
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-        lgbm_datasetgetnumfeature(handle) AS num_feature
-    FROM __tmp1;
 SELECT
-        lgbm_datasetdumptext(handle, '.tmp/test_lgbm_datasetdump.txt')
+        handle,
+        lgbm_datasetgetnumdata(handle) AS num_data,
+        lgbm_datasetgetnumfeature(handle) AS num_feature
     FROM __tmp1;
             `)
         });
@@ -1785,7 +1769,7 @@ jstestDescribe((
     ]) {
         let sql = `SELECT ${func}(${arg}) AS val`;
         let valActual = <span class="apidocCodeKeywordSpan">noop</span>(
-            await dbExecAndReturnFirstRow({
+            await dbExecAndReturnLastRow({
                 db,
                 sql
             })
