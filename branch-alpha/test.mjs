@@ -888,6 +888,12 @@ SELECT
             sql: (`
 DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 AS
+    --!! SELECT
+        --!! lgbm_datasetcreatefromfile(
+            --!! 'test_lgbm_binary.train',
+            --!! 'max_bin=15',
+            --!! 0
+        --!! ) AS handle;
     SELECT
         lgbm_datasetcreatefromtable(
             'max_bin=15',
