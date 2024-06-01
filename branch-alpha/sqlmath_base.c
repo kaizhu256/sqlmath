@@ -1814,7 +1814,6 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step(
     sqlite3_value ** argv
 ) {
 // This function will aggregate sql-table into lgbm-dataset.
-    UNUSED_PARAMETER(argc);
     // dblwin - init
     const int ncol = argc - 1;
     const int bytesParam = sqlite3_value_bytes(argv[0]);
@@ -3297,7 +3296,6 @@ SQLMATH_FUNC static void sql3_win_quantile1_inverse(
     sqlite3_value ** argv
 ) {
 // This function will calculate running quantile.
-    UNUSED_PARAMETER(argc);
     UNUSED_PARAMETER(argv);
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
