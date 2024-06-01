@@ -1544,20 +1544,21 @@ dbTableImportAsync({
     return argv[0];
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-SELECT
-        handle,
-        lgbm_datasetgetnumdata(handle) AS num_data,
-        lgbm_datasetgetnumfeature(handle) AS num_feature
-    FROM __tmp1;
-            `)
-        });
-        <span class="apidocCodeKeywordSpan">debugInline</span>(data);
-        await dbExecAsync({
-            db,
-            sql: `SELECT lgbm_datasetfree(${data.handle});`
-        });
     });
-});
+    data = await dbExecAndReturnLastTable({
+        db,
+        sql: (`
+SELECT * FROM test_lgbm;
+        `)
+    });
+    <span class="apidocCodeKeywordSpan">debugInline</span>(data);
+    await dbExecAsync({
+        db,
+        sql: (`
+SELECT
+    lgbm_datasetfree(data_test_handle),
+    lgbm_datasetfree(data_train_handle)
+FROM test_lgbm;
 ...</pre></li>
 
 <li>

@@ -853,77 +853,74 @@ jstestDescribe((
         dbExecAsync({
             db,
             sql: (`
-DROP TABLE IF EXISTS __tmp1;
-CREATE TEMP TABLE __tmp1 AS
-    SELECT
-        lgbm_datasetcreatefromfile(
-            'test_lgbm_binary.train',
-            'max_bin=15',
-            0
-        ) AS handle;
-
-SELECT
-        lgbm_datasetdumptext(handle, '.tmp/test_lgbm_datasetdump.txt')
-    FROM __tmp1;
+CREATE TABLE test_lgbm(
+    data_test_handle INTEGER,
+    data_test_num_data REAL,
+    data_test_num_feature REAL,
+    --
+    data_train_handle INTEGER,
+    data_train_num_data REAL,
+    data_train_num_feature REAL
+);
+INSERT INTO test_lgbm(rowid) SELECT 1;
+UPDATE test_lgbm
+    SET
+        data_train_handle = __handle
+    FROM (
+        SELECT
+            lgbm_datasetcreatefromfile(
+                'test_lgbm_binary.train',
+                'max_bin=15',
+                0
+            ) AS __handle
+    );
+UPDATE test_lgbm
+    SET
+        data_test_handle = __handle
+    FROM (
+        SELECT
+            lgbm_datasetcreatefromtable(
+                'max_bin=15',
+                aa,
+                bb,
+                cc
+            ) AS __handle
+            FROM (
+                SELECT
+                    0 AS aa,
+                    0 AS bb,
+                    0 AS cc
+            )
+    );
+UPDATE test_lgbm
+    SET
+        data_test_num_data = lgbm_datasetgetnumdata(__data_test_handle),
+        data_test_num_feature = lgbm_datasetgetnumfeature(__data_test_handle),
+        data_train_num_data = lgbm_datasetgetnumdata(__data_train_handle),
+        data_train_num_feature = lgbm_datasetgetnumfeature(__data_train_handle)
+    FROM (
+        SELECT
+            data_test_handle AS __data_test_handle,
+            data_train_handle AS __data_train_handle
+        FROM test_lgbm
+    );
             `)
         });
-        data = await dbExecAndReturnLastRow({
+        data = await dbExecAndReturnLastTable({
             db,
             sql: (`
-SELECT
-        handle,
-        lgbm_datasetgetnumdata(handle) AS num_data,
-        lgbm_datasetgetnumfeature(handle) AS num_feature
-    FROM __tmp1;
+SELECT * FROM test_lgbm;
             `)
         });
         debugInline(data);
         await dbExecAsync({
             db,
-            sql: `SELECT lgbm_datasetfree(${data.handle});`
-        });
-        //
-        dbExecAsync({
-            db,
-            sql: (`
-DROP TABLE IF EXISTS __tmp1;
-CREATE TEMP TABLE __tmp1 AS
-    --!! SELECT
-        --!! lgbm_datasetcreatefromfile(
-            --!! 'test_lgbm_binary.train',
-            --!! 'max_bin=15',
-            --!! 0
-        --!! ) AS handle;
-    SELECT
-        lgbm_datasetcreatefromtable(
-            'max_bin=15',
-            --!! 0
-            aa,
-            bb,
-            cc
-        ) AS handle
-        FROM (
-            SELECT
-                0 AS aa,
-                0 AS bb,
-                0 AS cc
-        );
-            `)
-        });
-        data = await dbExecAndReturnLastRow({
-            db,
             sql: (`
 SELECT
-        handle,
-        lgbm_datasetgetnumdata(handle) AS num_data,
-        lgbm_datasetgetnumfeature(handle) AS num_feature
-    FROM __tmp1;
+        lgbm_datasetfree(data_test_handle),
+        lgbm_datasetfree(data_train_handle)
+    FROM test_lgbm;
             `)
-        });
-        debugInline(data);
-        await dbExecAsync({
-            db,
-            sql: `SELECT lgbm_datasetfree(${data.handle});`
         });
     });
 });
