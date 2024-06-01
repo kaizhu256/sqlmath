@@ -1722,7 +1722,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
         (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[2]),        //
         &out);                  // DatasetHandle * out
     LGBM_ASSERT_OK();
-    sqlite3_result_int64(context, (intptr_t) out);
+    sqlite3_result_int64(context, (int64_t) (intptr_t) out);
   catch_error:
     (void) 0;
 }
@@ -1747,7 +1747,7 @@ SQLMATH_FUNC static void sql1_lgbm_datasetcreatefrommat_func(
         (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[6]),        //
         &out);                  // DatasetHandle *out
     LGBM_ASSERT_OK();
-    sqlite3_result_int64(context, (intptr_t) out);
+    sqlite3_result_int64(context, (int64_t) (intptr_t) out);
   catch_error:
     (void) 0;
 }
@@ -1775,7 +1775,7 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_final(
         NULL,                   // const DatasetHandle reference,
         &out);                  // DatasetHandle *out
     LGBM_ASSERT_OK();
-    sqlite3_result_int64(context, (intptr_t) out);
+    sqlite3_result_int64(context, (int64_t) (intptr_t) out);
   catch_error:
     doublewinAggfree(dblwinAgg);
 }
