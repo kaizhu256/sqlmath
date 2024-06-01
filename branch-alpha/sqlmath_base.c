@@ -1789,21 +1789,21 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step(
     UNUSED_PARAMETER(argc);
     // dblwin - init
     const int ncol = argc - 1;
-    const int bytesParam = sqlite3_value_bytes(argv[argc - 1]);
+    const int bytesParam = sqlite3_value_bytes(argv[0]);
     DOUBLEWIN_AGGREGATE_CONTEXT((bytesParam / 8) + 1);
     if (dblwin->nbody == 0) {
         // dbwin - init ncol
         dblwin->ncol = ncol;
         // dbwin - init parameters
         if (bytesParam > 0) {
-            memcpy(dblwin_head, sqlite3_value_text(argv[argc - 1]),
+            memcpy(dblwin_head, sqlite3_value_text(argv[0]),
                 bytesParam);
         }
         ((char *) dblwin_head)[bytesParam] = 0;
     }
     // dblwin - push xx
     for (int ii = 0; ii < ncol; ii += 1) {
-        DOUBLEWIN_AGGREGATE_PUSH(sqlite3_value_double_or_nan(argv[ii]));
+        DOUBLEWIN_AGGREGATE_PUSH(sqlite3_value_double_or_nan(argv[ii + 1]));
     }
 }
 
@@ -1871,6 +1871,23 @@ SQLMATH_FUNC static void sql1_lgbm_datasetgetnumfeature_func(
         (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]), &result);
     LGBM_ASSERT_OK();
     sqlite3_result_int(context, result);
+  catch_error:
+    (void) 0;
+}
+
+SQLMATH_FUNC static void sql1_lgbm_datasetsavebinary_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will save dataset <handle> to binary file <filename>.
+    UNUSED_PARAMETER(argc);
+    int errcode = 0;
+    errcode = LGBM_DatasetSaveBinary(   //
+        (DatasetHandle) (intptr_t) sqlite3_value_int64(argv[0]),
+        (char *) sqlite3_value_text(argv[1]));
+    LGBM_ASSERT_OK();
+    sqlite3_result_null(context);
   catch_error:
     (void) 0;
 }
@@ -3431,6 +3448,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetfree, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetgetnumdata, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_datasetgetnumfeature, 1);
+    SQLITE3_CREATE_FUNCTION1(lgbm_datasetsavebinary, 1);
     SQLITE3_CREATE_FUNCTION1(lgbm_dlopen, 1);
     SQLITE3_CREATE_FUNCTION1(marginoferror95, 2);
     SQLITE3_CREATE_FUNCTION1(normalizewithsqrt, 1);
@@ -3442,7 +3460,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(squaredwithsign, 1);
     SQLITE3_CREATE_FUNCTION1(squared, 1);
     SQLITE3_CREATE_FUNCTION1(throwerror, 1);
-    SQLITE3_CREATE_FUNCTION2(lgbm_datasetcreatefromtable, 2);
+    SQLITE3_CREATE_FUNCTION2(lgbm_datasetcreatefromtable, -1);
     SQLITE3_CREATE_FUNCTION2(median, 1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
     SQLITE3_CREATE_FUNCTION3(stdev, 1);

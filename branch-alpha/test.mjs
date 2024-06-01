@@ -848,9 +848,11 @@ jstestDescribe((
         let db = await dbOpenAsync({filename: ":memory:"});
         dbExecAsync({
             db,
+            sql: "SELECT lgbm_dlopen(NULL);"
+        });
+        dbExecAsync({
+            db,
             sql: (`
-SELECT lgbm_dlopen(NULL);
-
 DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 AS
     SELECT
@@ -863,6 +865,43 @@ CREATE TEMP TABLE __tmp1 AS
 SELECT
         lgbm_datasetdumptext(handle, '.tmp/test_lgbm_datasetdump.txt')
     FROM __tmp1;
+            `)
+        });
+        data = await dbExecAndReturnLastRow({
+            db,
+            sql: (`
+SELECT
+        handle,
+        lgbm_datasetgetnumdata(handle) AS num_data,
+        lgbm_datasetgetnumfeature(handle) AS num_feature
+    FROM __tmp1;
+            `)
+        });
+        debugInline(data);
+        await dbExecAsync({
+            db,
+            sql: `SELECT lgbm_datasetfree(${data.handle});`
+        });
+        //
+        dbExecAsync({
+            db,
+            sql: (`
+DROP TABLE IF EXISTS __tmp1;
+CREATE TEMP TABLE __tmp1 AS
+    SELECT
+        lgbm_datasetcreatefromtable(
+            'max_bin=15',
+            --!! 0
+            aa,
+            bb,
+            cc
+        ) AS handle
+        FROM (
+            SELECT
+                0 AS aa,
+                0 AS bb,
+                0 AS cc
+        );
             `)
         });
         data = await dbExecAndReturnLastRow({
