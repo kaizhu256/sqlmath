@@ -1756,6 +1756,7 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_final(
     sqlite3_context * context
 ) {
 // This function will aggregate sql-table into lgbm-dataset.
+    float *label = NULL;
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
     // dblwin - null-case
@@ -1763,21 +1764,48 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_final(
         sqlite3_result_null(context);
         goto catch_error;
     }
+    // init label
     DatasetHandle out = NULL;
+    const int ncol = (int) dblwin->ncol;
+    const int nrow = (int) dblwin->nbody / dblwin->ncol;
     int errcode = 0;
+    label = sqlite3_malloc(nrow * sizeof(float));
+    if (label == NULL) {
+        sqlite3_result_error_nomem(context);
+        goto catch_error;
+    }
+    int kk = 0;
+    int ll = 0;
+    for (int ii = 0; ii < nrow; ii += 1) {
+        label[ii] = (float) dblwin_body[kk];
+        kk += 1;
+        for (int jj = 1; jj < ncol; jj += 1) {
+            dblwin_body[ll] = dblwin_body[kk];
+            kk += 1;
+            ll += 1;
+        }
+    }
     errcode = LGBM_DatasetCreateFromMat(        //
-        doublewinBody(dblwin),  // const void *data,
+        dblwin_body,            // const void *data,
         C_API_DTYPE_FLOAT64,    // int data_type,
-        (int32_t) dblwin->nbody / dblwin->ncol, // int32_t nrow,
-        (int32_t) dblwin->ncol, // int32_t ncol,
+        (int32_t) nrow,         // int32_t nrow,
+        (int32_t) ncol - 1,     // int32_t ncol,
         1,                      // int is_row_major,
-        (char *) doublewinHead(dblwin), // const char *parameters,
+        (char *) dblwin_head,   // const char *parameters,
         NULL,                   // const DatasetHandle reference,
         &out);                  // DatasetHandle *out
+    LGBM_ASSERT_OK();
+    errcode = LGBM_DatasetSetField(     //
+        out,                    // DatasetHandle handle,
+        "label\x00",            // const char *field_name,
+        label,                  // const void *field_data,
+        nrow,                   // int num_element,
+        C_API_DTYPE_FLOAT32);   // int type
     LGBM_ASSERT_OK();
     sqlite3_result_int64(context, (int64_t) (intptr_t) out);
   catch_error:
     doublewinAggfree(dblwinAgg);
+    sqlite3_free(label);
 }
 
 SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step(
@@ -1796,8 +1824,7 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step(
         dblwin->ncol = ncol;
         // dbwin - init parameters
         if (bytesParam > 0) {
-            memcpy(dblwin_head, sqlite3_value_text(argv[0]),
-                bytesParam);
+            memcpy(dblwin_head, sqlite3_value_text(argv[0]), bytesParam);
         }
         ((char *) dblwin_head)[bytesParam] = 0;
     }
