@@ -1772,8 +1772,7 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_final(
         (int32_t) dblwin->ncol, // int32_t ncol,
         1,                      // int is_row_major,
         (char *) doublewinHead(dblwin), // const char *parameters,
-        // const DatasetHandle reference,
-        NULL,                   //
+        NULL,                   // const DatasetHandle reference,
         &out);                  // DatasetHandle *out
     LGBM_ASSERT_OK();
     sqlite3_result_int64(context, (intptr_t) out);
@@ -1789,11 +1788,18 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step(
 // This function will aggregate sql-table into lgbm-dataset.
     UNUSED_PARAMETER(argc);
     // dblwin - init
-    const int ncol = argc;
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    const int ncol = argc - 1;
+    const int bytesParam = sqlite3_value_bytes(argv[argc - 1]);
+    DOUBLEWIN_AGGREGATE_CONTEXT((bytesParam / 8) + 1);
     if (dblwin->nbody == 0) {
         // dbwin - init ncol
         dblwin->ncol = ncol;
+        // dbwin - init parameters
+        if (bytesParam > 0) {
+            memcpy(dblwin_head, sqlite3_value_text(argv[argc - 1]),
+                bytesParam);
+        }
+        ((char *) dblwin_head)[bytesParam] = 0;
     }
     // dblwin - push xx
     for (int ii = 0; ii < ncol; ii += 1) {
@@ -3436,6 +3442,7 @@ int sqlite3_sqlmath_base_init(
     SQLITE3_CREATE_FUNCTION1(squaredwithsign, 1);
     SQLITE3_CREATE_FUNCTION1(squared, 1);
     SQLITE3_CREATE_FUNCTION1(throwerror, 1);
+    SQLITE3_CREATE_FUNCTION2(lgbm_datasetcreatefromtable, 2);
     SQLITE3_CREATE_FUNCTION2(median, 1);
     SQLITE3_CREATE_FUNCTION2(quantile, 2);
     SQLITE3_CREATE_FUNCTION3(stdev, 1);
