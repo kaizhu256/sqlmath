@@ -846,11 +846,18 @@ jstestDescribe((
     ), async function () {
         let data;
         let db = await dbOpenAsync({filename: ":memory:"});
-        dbExecAsync({
+        await dbExecAsync({
             db,
             sql: "SELECT lgbm_dlopen(NULL);"
         });
-        dbExecAsync({
+        await dbTableImportAsync({
+            db,
+            filename: "test_lgbm_binary.test",
+            headerMissing: true,
+            mode: "tsv",
+            tableName: "test_lgbm_binary_test"
+        });
+        await dbExecAsync({
             db,
             sql: (`
 CREATE TABLE test_lgbm(
@@ -862,36 +869,31 @@ CREATE TABLE test_lgbm(
     data_train_num_data REAL,
     data_train_num_feature REAL
 );
-INSERT INTO test_lgbm(rowid) SELECT 1;
-UPDATE test_lgbm
-    SET
-        data_train_handle = __handle
-    FROM (
-        SELECT
-            lgbm_datasetcreatefromfile(
-                'test_lgbm_binary.train',
-                'max_bin=15',
-                0
-            ) AS __handle
-    );
-UPDATE test_lgbm
-    SET
-        data_test_handle = __handle
-    FROM (
-        SELECT
-            lgbm_datasetcreatefromtable(
-                'max_bin=15',
-                aa,
-                bb,
-                cc
-            ) AS __handle
-            FROM (
-                SELECT
-                    0 AS aa,
-                    0 AS bb,
-                    0 AS cc
-            )
-    );
+INSERT INTO test_lgbm(data_test_handle, data_train_handle)
+    SELECT
+        (
+            SELECT
+                lgbm_datasetcreatefromtable(
+                    'max_bin=15',
+                    'c_1',  'c_2',  'c_3',  'c_4',
+                    'c_5',  'c_6',  'c_7',  'c_8',
+                    'c_9',  'c_10', 'c_11', 'c_12',
+                    'c_13', 'c_14', 'c_15', 'c_16',
+                    'c_17', 'c_18', 'c_19', 'c_20',
+                    'c_21', 'c_22', 'c_23', 'c_24',
+                    'c_25', 'c_26', 'c_27', 'c_28',
+                    'c_29'
+                )
+            FROM test_lgbm_binary_test
+        ) AS data_test_handle,
+        (
+            SELECT
+                lgbm_datasetcreatefromfile(
+                    'test_lgbm_binary.train',
+                    'max_bin=15',
+                    0
+                )
+        ) AS data_train_handle;
 UPDATE test_lgbm
     SET
         data_test_num_data = lgbm_datasetgetnumdata(__data_test_handle),

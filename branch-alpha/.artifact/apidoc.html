@@ -242,6 +242,8 @@ function dbOpenAsync<span class="apidocSignatureSpan">({
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbTableImportAsync">18.
 function dbTableImportAsync<span class="apidocSignatureSpan">({
     db,
+    filename,
+    headerMissing,
     mode,
     tableName,
     textData
@@ -1419,6 +1421,8 @@ jstestIt((
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbTableImportAsync" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbTableImportAsync">18.
     function dbTableImportAsync<span class="apidocSignatureSpan">({
     db,
+    filename,
+    headerMissing,
     mode,
     tableName,
     textData
@@ -1428,6 +1432,8 @@ jstestIt((
 </li>
 <li>Description and source-code:<pre class="apidocCodePre">async function dbTableImportAsync({
     db,
+    filename,
+    headerMissing,
     mode,
     tableName,
     textData
@@ -1437,6 +1443,9 @@ jstestIt((
     let rowList;
     let rowidList;
     let tmp;
+    if (filename) {
+        textData = await moduleFs.promises.readFile(filename, "utf8");
+    }
     switch (mode) {
     case "csv":
         rowList = jsonRowListFromCsv({
@@ -1466,6 +1475,12 @@ jstestIt((
             return val;
         });
     }
+    // headerMissing
+    if (headerMissing &amp;&amp; (rowList.length &gt; 0 &amp;&amp; Array.isArray(rowList[0]))) {
+        rowList.unshift(Array.from(rowList[0]).map(function (ignore, ii) {
+            return String(ii + 1);
+        }));
+    }
     // normalize rowList[ii] to list
     if (rowList.length === 0) {
         rowList.push([
@@ -1492,39 +1507,25 @@ jstestIt((
     // preserve rowid
     if (rowidList) {
         colList.unshift("rowid");
-        rowList.forEach(function (row, ii) {
-            row.unshift(rowidList[ii]);
-        });
-    }
-    // normalize colList
-    tmp = new Set();
-    colList = colList.map(function (colName) {
-        let colName2;
-        let duplicate = 0;
-        colName = "c_" + colName.toLowerCase().replace((
-            /\W/g
-        ), "_");
-        while (true) {
-            duplicate += 1;
-            colNam...
+        rowList.forEach(funct...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-duplicate_header,duplicate_header
-"aaa","b""bb","ccc"
-"aaa","b
-bb","ccc"
-zzz,yyy,xxx
-    `).trim()
-}),
-<span class="apidocCodeKeywordSpan">dbTableImportAsync</span>({
+    ), async function () {
+let data;
+let db = await dbOpenAsync({filename: ":memory:"});
+await dbExecAsync({
     db,
-    mode: "json",
-    tableName: "__json0",
-    textData: "null"
-}),
-dbTableImportAsync({
+    sql: "SELECT lgbm_dlopen(NULL);"
+});
+await <span class="apidocCodeKeywordSpan">dbTableImportAsync</span>({
     db,
+    filename: "test_lgbm_binary.test",
+    headerMissing: true,
+    mode: "tsv",
+    tableName: "test_lgbm_binary_test"
+});
+await dbExecAsync({
 ...</pre></li>
 
 <li>
