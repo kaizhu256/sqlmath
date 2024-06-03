@@ -10,7 +10,6 @@
 #define NO_GZIP
 #define ZEXPORT
 #define ZEXTERN
-#define ZLIB_INTERNAL
 
 
 // *INDENT-OFF*
