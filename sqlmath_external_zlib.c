@@ -163,6 +163,11 @@ shRollupFetch
         }
     ]
 }
+-#ifndef NO_GZIP
+-#  define GZIP
++#ifndef NO_GZIP
++// hack-zlib - fix warning - 'GZIP': macro redefinition
++// #  define GZIP
 */
 
 
@@ -13661,7 +13666,8 @@ file https://github.com/madler/zlib/blob/v1.3/deflate.h
    the crc code when it is not needed.  For shared libraries, gzip encoding
    should be left enabled. */
 #ifndef NO_GZIP
-#  define GZIP
+// hack-zlib - fix warning - 'GZIP': macro redefinition
+// #  define GZIP
 #endif
 
 /* define LIT_MEM to slightly increase the speed of deflate (order 1% to 2%) at
