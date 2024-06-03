@@ -179,7 +179,7 @@ shCiBaseCustomArtifactUpload() {(set -e
         rm -f "branch-$GITHUB_BRANCH0/"*.tar.gz
         cp ../../dist/sqlmath-*.tar.gz "branch-$GITHUB_BRANCH0"
         ;;
-    MINGW64_NT*)
+    MINGW*)
         rm -f "branch-$GITHUB_BRANCH0/"*-win*
         rm -f "branch-$GITHUB_BRANCH0/"*_win*
         ;;
@@ -498,11 +498,20 @@ shSqlmathUpdate() {(set -e
     . "$HOME/myci2.sh" : && shMyciUpdate
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
+        # shRollupFetch
         shRollupFetch asset_sqlmath_external_rollup.js
         shRollupFetch index.html
         shRollupFetch sqlmath_base.h
         shRollupFetch sqlmath_external_sqlite.c
         shRollupFetch sqlmath_external_zlib.c
+        # shIndentC
+        if (uname | grep -q "MING\|MSYS")
+        then
+            shIndentC sqlmath_base.c
+            shIndentC sqlmath_custom.c
+            shIndentC sqlmath_external_sqlite.c
+            shIndentC sqlmath_external_zlib.c
+        fi
         return
     fi
     if [ -d "$HOME/Documents/sqlmath/" ]
