@@ -7,7 +7,6 @@
 
 
 #define DIST_CODE_LEN 512
-#define GZIP 2
 #define ZLIB_INTERNAL
 #define ZEXPORT
 #define ZEXTERN
@@ -153,12 +152,6 @@ shRollupFetch
         {
             "aa": " *?__declspec\\(dllexport\\)",
             "bb": "",
-            "flags": "gm",
-            "substr": ""
-        },
-        {
-            "aa": "^# *?define GZIP\\b",
-            "bb": "// hack-zlib - fix warning\n// $&",
             "flags": "gm",
             "substr": ""
         },
@@ -20070,7 +20063,7 @@ file https://github.com/madler/zlib/blob/v1.3/gzguts.h
 #define LOOK 0      /* look for a gzip header */
 #define COPY 1      /* copy input directly */
 // hack-zlib - fix warning
-// #define GZIP 2      /* decompress a gzip stream */
+#define GZIP 2      /* decompress a gzip stream */
 
 /* internal gzip file state data structure */
 typedef struct {
