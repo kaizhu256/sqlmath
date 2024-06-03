@@ -142,9 +142,9 @@ pip install sqlmath==2024.6.1
         sed -i -e "s|\<3\.44\.2\>|3\.45\.3|g" "$FILE"
         sed -i -e "s|\<3440200\>|3450300|g" "$FILE"
     done
-    git grep "3\.44\.0\|3440200"
     shRollupFetch sqlmath_external_sqlite.c
     shRollupFetch sqlmath_external_zlib.c
     sh jslint_ci.sh shSqlmathUpdate
+    git grep "3\.44\.0\|3440200"
 )
 ```
