@@ -13661,8 +13661,7 @@ file https://github.com/madler/zlib/blob/v1.3/deflate.h
    the crc code when it is not needed.  For shared libraries, gzip encoding
    should be left enabled. */
 #ifndef NO_GZIP
-// hack-zlib - fix warning
-// #  define GZIP
+#  define GZIP
 #endif
 
 /* define LIT_MEM to slightly increase the speed of deflate (order 1% to 2%) at
@@ -20062,7 +20061,6 @@ file https://github.com/madler/zlib/blob/v1.3/gzguts.h
 /* values for gz_state how */
 #define LOOK 0      /* look for a gzip header */
 #define COPY 1      /* copy input directly */
-// hack-zlib - fix warning
 #define GZIP 2      /* decompress a gzip stream */
 
 /* internal gzip file state data structure */
