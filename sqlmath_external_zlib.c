@@ -15,7 +15,7 @@
 
 #ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-wunused-const-variable"
+#pragma clang diagnostic ignored "-Wunused-const-variable"
 #endif                          // __clang__
 // *INDENT-OFF*
 /*jslint-disable*/
