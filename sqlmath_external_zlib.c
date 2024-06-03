@@ -13,10 +13,10 @@
 #define ZEXTERN
 
 
-#ifdef __CLANG__
+#ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-const-variable"
-#endif                          // __CLANG__
+#pragma clang diagnostic ignored "-wunused-const-variable"
+#endif                          // __clang__
 // *INDENT-OFF*
 /*jslint-disable*/
 /*
@@ -22468,6 +22468,6 @@ file none
 
 
 // *INDENT-ON*
-#ifdef __CLANG__
+#ifdef __clang__
 #pragma clang diagnostic pop
-#endif                          // __CLANG__
+#endif                          // __clang__
