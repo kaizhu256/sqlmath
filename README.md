@@ -133,6 +133,7 @@ pip install sqlmath==2024.6.1
 ### sqlite upgrade
 - goto https://www.sqlite.org/changes.html
 ```shell
+(set -ex
     curl -L https://www.sqlite.org/2024/sqlite-autoconf-3450300.tar.gz | tar -xz
     mv sqlite-autoconf-3450300 .sqlite-autoconf-3450300
     git grep "3\.44\.0\|3440200"
@@ -145,4 +146,5 @@ pip install sqlmath==2024.6.1
     shRollupFetch sqlmath_external_zlib.c
     sh jslint_ci.sh shSqlmathUpdate
     git grep "3\.44\.0\|3440200"
+)
 ```
