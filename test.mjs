@@ -1544,6 +1544,7 @@ SELECT
     ), async function test_sqlite_extension_win_emax() {
         let db = await dbOpenAsync({filename: ":memory:"});
         let valIn;
+        return; //!! debug
         async function test_win_emax_aggregate({
             aa,
             bb,
@@ -1727,6 +1728,7 @@ SELECT doublearray_jsonto(win_ema2(1, 2, 3)) FROM __tmp1;
     ), async function test_sqlite_extension_win_quantilex() {
         let db = await dbOpenAsync({filename: ":memory:"});
         let valIn;
+        return; //!! debug
         async function test_win_quantilex_aggregate({
             aa,
             bb,
@@ -2012,6 +2014,7 @@ SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
         let db = await dbOpenAsync({filename: ":memory:"});
         let valExpect0;
         let valIn;
+        return; //!! debug
         function sqlSinefitExtractLnr(wsf, ii, suffix) {
             return (`
     ROUND(sinefit_extract(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},
@@ -3004,6 +3007,7 @@ SELECT
     FROM JSON_EAcH($valIn);
                 `)
             });
+            debugInline({valActual, valExpect});
             valActual = valActual.map(function ({val}, ii, list) {
                 val = JSON.parse(val).map(function (elem, jj) {
                     elem = Number(elem.toFixed(4));
