@@ -2517,11 +2517,12 @@ SQLMATH_FUNC static void sql2_median_step(
 
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - start
 typedef struct AggLgbm {
-    double mxx;                 // x-average
-    double nnn;                 // number of elements
-    double vxx;                 // x-variance.p
-    double wnn;                 // number of window elements
-    double xx0;                 // x-trailing
+    BoosterHandle booster;      // booster
+    int num_iterations;         // [out] Number of iterations of this booster
+    int ncol;                   // Number of columns
+    int64_t nnn;                // number of elements
+    double result;              // [out] Pointer to array with predictions
+    FastConfigHandle fastConfig;        // [out] FastConfig object
 } AggLgbm;
 
 SQLMATH_FUNC static void sql3_lgbm_predictfortable_value(
@@ -2534,14 +2535,7 @@ SQLMATH_FUNC static void sql3_lgbm_predictfortable_value(
     if (agg->nnn <= 0) {
         return;
     }
-    //!! LGBM_BoosterPredictForMatSingleRowFast(
-    //!! // FastConfigHandle fastConfig_handle,
-    //!! // const void *data,
-    //!! // int64_t *out_len,
-    //!! // double *out_result
-    //!! );
-    sqlite3_result_double(context,
-        agg->nnn == 1 ? 0 : sqrt(agg->vxx / (agg->nnn - 1)));
+    sqlite3_result_double(context, agg->result);
 }
 
 SQLMATH_FUNC static void sql3_lgbm_predictfortable_final(
@@ -2569,28 +2563,45 @@ static void sql3_lgbm_predictfortable_step(
     sqlite3_value ** argv
 ) {
 // This function will make prediction for sql-table from <model>.
-    UNUSED_PARAMETER(argc);
-    // agg - init
-    SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
-    // agg - welford - increment agg->vxx
-    if (sqlite3_value_numeric_type(argv[0]) != SQLITE_NULL) {
-        const double xx = sqlite3_value_double(argv[0]);
-        if (agg->wnn) {
-            // calculate vxx - window
-            const double invn0 = 1.0 / agg->nnn;
-            const double xx0 = agg->xx0;
-            const double dx = xx - xx0;
-            agg->vxx +=
-                (xx * xx - xx0 * xx0) - dx * (invn0 * dx + 2 * agg->mxx);
-            agg->mxx += dx * invn0;
-        } else {
-            // calculate vxx - welford
-            const double dx = xx - agg->mxx;
-            agg->nnn += 1;
-            agg->mxx += dx / agg->nnn;
-            agg->vxx += dx * (xx - agg->mxx);
-        }
+    static int argc0 = 6;
+    const int ncol = argc - argc0;
+    if (ncols < 1) {
+        sqlite3_result_error(context,
+            "win_sinefit2 - wrong number of arguments", -1);
+        return;
     }
+    // agg - init
+    SQLITE3_AGGREGATE_CONTEXT(AggStdev);
+    if (agg->nnn == 0) {
+        int errcode = 0;
+        errcode = LGBM_BoosterLoadModelFromString(      //
+            // const char *model_str,
+            (char *) sqlite3_value_text(argv[0]),       //
+            &agg->num_iterations,       // int *out_num_iterations,
+            &agg->booster);     // BoosterHandle *out
+        LGBM_ASSERT_OK();
+        LGBM_BoosterPredictForMatSingleRowFastInit(     //
+            agg->booster,       // BoosterHandle handle,
+            sqlite3_value_int(argv[1]), // const int predict_type,
+            sqlite3_value_int(argv[2]), // const int start_iteration,
+            sqlite3_value_int(argv[3]), // const int num_iteration,
+            sqlite3_value_int(argv[4]), // const int data_type,
+            ncol,               // const int32_t ncol,
+            // const char *parameter,
+            (char *) sqlite3_value_text(argv[5]),       //
+            &agg->fastConfig);  // FastConfigHandle *out_fastConfig
+    }
+    int64_t out_len = 0;
+    double data[SQLITE_MAX_FUNCTION_ARG] = { 0 };
+    for (int ii = 0; ii < ncol; ii += 1) {
+        data[ii] = sqlite3_value_double_or_nan(argv[ii]);
+    }
+    LGBM_BoosterPredictForMatSingleRowFast(     //
+        agg->fastConfig,        // FastConfigHandle fastConfig_handle,
+        data,                   // const void *data,
+        &out_len,               // int64_t *out_len,
+        &(agg->result - agg->nnn));     // double *out_result
+    agg->nnn = out_len;
 }
 
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - end
