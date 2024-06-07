@@ -1573,7 +1573,7 @@ SELECT
     FROM (
         SELECT
             *,
-            ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+            ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
         FROM JSON_EAcH($valIn)
     );
                 `)
@@ -1590,7 +1590,7 @@ SELECT
                 db,
                 sql: (`
 SELECT
-        rnum,
+        id2,
         doublearray_jsonto(win_ema2(
             ${alpha},
             value->>1,
@@ -1602,7 +1602,7 @@ SELECT
             value->>1,
             value->>1,
             value->>1,
-            IIF(rnum = 1, -1, value->>1)
+            IIF(id2 = 1, -1, value->>1)
         ) OVER (
             ORDER BY value->>0 ASC
             ${sqlBetween}
@@ -1610,7 +1610,7 @@ SELECT
     FROM (
         SELECT
             *,
-            ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+            ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
         FROM JSON_EAcH($valIn)
     );
                 `)
@@ -1766,7 +1766,7 @@ SELECT
     FROM (
         SELECT
             *,
-            ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+            ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
         FROM JSON_EAcH($valIn)
     );
                 `)
@@ -1783,7 +1783,7 @@ SELECT
                 db,
                 sql: (`
 SELECT
-        rnum,
+        id2,
         doublearray_jsonto(win_quantile2(
             ${quantile}, value->>1,
             ${quantile}, value->>1,
@@ -1794,7 +1794,7 @@ SELECT
             ${quantile}, value->>1,
             ${quantile}, value->>1,
             ${quantile}, value->>1,
-            ${quantile}, IIF(rnum = 1, -1, value->>1)
+            ${quantile}, IIF(id2 = 1, -1, value->>1)
         ) OVER (
             ORDER BY value->>0 ASC
             ${sqlBetween}
@@ -1802,7 +1802,7 @@ SELECT
     FROM (
         SELECT
             *,
-            ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+            ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
         FROM JSON_EAcH($valIn)
     );
                 `)
@@ -2030,8 +2030,8 @@ SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
         "test sqlite-extension-win_sinefit2 handling-behavior"
     ), async function test_sqlite_extension_win_sinefit2() {
         let db = await dbOpenAsync({filename: ":memory:"});
-        let rnum2 = 9;
-        let rnum3 = 10;
+        let id3 = 9;
+        let id4 = 10;
         let valExpect0;
         let valIn;
         function sqlSinefitExtractLnr(wsf, ii, suffix) {
@@ -2078,7 +2078,7 @@ SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
 DROP TABLE IF EXISTS __sinefit_win;
 CREATE TEMP TABLE __sinefit_win AS
     SELECT
-        rnum,
+        id2,
         __wsf,
         sinefit_extract(__wsf, 0, 'xx1', 0) AS xx11,
         sinefit_extract(__wsf, 0, 'yy1', 0) AS yy11,
@@ -2088,7 +2088,7 @@ CREATE TEMP TABLE __sinefit_win AS
         sinefit_extract(__wsf, 9, 'yy1', 0) AS yy13
     FROM (
         SELECT
-            rnum,
+            id2,
             win_sinefit2(
                 1, ${xx2},
                 value->>0, value->>1,
@@ -2100,7 +2100,7 @@ CREATE TEMP TABLE __sinefit_win AS
                 value->>0, value->>1,
                 value->>0, value->>1,
                 value->>0, value->>1,
-                value->>0, IIF(rnum = ${rnum2}, -1, value->>1)
+                value->>0, IIF(id2 = ${id3}, -1, value->>1)
             ) OVER (
                 ORDER BY NULL ASC
                 ${sqlBetween}
@@ -2108,7 +2108,7 @@ CREATE TEMP TABLE __sinefit_win AS
         FROM (
             SELECT
                 *,
-                ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+                ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
             FROM JSON_EAcH($valIn)
         )
     );
@@ -2127,7 +2127,7 @@ UPDATE __sinefit_win
             0, 0,
             0, 0
         )
-    WHERE rnum = ${rnum3};
+    WHERE id2 = ${id4};
 UPDATE __sinefit_win
     SET
         __wsf = sinefit_refitlast(
@@ -2143,9 +2143,9 @@ UPDATE __sinefit_win
             xx12, yy12,
             xx13, yy13
         )
-    WHERE rnum = ${rnum3};
+    WHERE id2 = ${id4};
 SELECT
-        rnum,
+        id2,
         ${sqlSinefitExtractLnr("__wsf", 0, "1")},
         ${sqlSinefitExtractLnr("__wsf", 8, "2")},
         ${sqlSinefitExtractLnr("__wsf", 9, "3")}
@@ -2153,6 +2153,7 @@ SELECT
                 `)
             });
             valActual = valActual.map(function ({
+                id2,
                 laa1,
                 laa2,
                 laa3,
@@ -2183,7 +2184,6 @@ SELECT
                 nnn1,
                 nnn2,
                 nnn3,
-                rnum,
                 rr01,
                 rr02,
                 rr03,
@@ -2201,55 +2201,55 @@ SELECT
                 let obj2;
                 let obj3;
                 obj1 = {
-                    laa: laa1,
-                    lbb: lbb1,
-                    lee: lee1,
-                    lxy: lxy1,
-                    lyy: lyy1,
-                    mee: mee1,
-                    mxe: mxe1,
-                    mxx: mxx1,
-                    myy: myy1,
-                    nnn: nnn1,
-                    rnum,
-                    rr0: rr01,
-                    rr1: rr11,
-                    xx1: xx11,
-                    yy1: yy11
+                    id2,
+                    "laa": laa1,
+                    "lbb": lbb1,
+                    "lee": lee1,
+                    "lxy": lxy1,
+                    "lyy": lyy1,
+                    "mee": mee1,
+                    "mxe": mxe1,
+                    "mxx": mxx1,
+                    "myy": myy1,
+                    "nnn": nnn1,
+                    "rr0": rr01,
+                    "rr1": rr11,
+                    "xx1": xx11,
+                    "yy1": yy11
                 };
                 obj2 = {
-                    laa: laa2,
-                    lbb: lbb2,
-                    lee: lee2,
-                    lxy: lxy2,
-                    lyy: lyy2,
-                    mee: mee2,
-                    mxe: mxe2,
-                    mxx: mxx2,
-                    myy: myy2,
-                    nnn: nnn2,
-                    rnum,
-                    rr0: rr02,
-                    rr1: rr12,
-                    xx1: xx12,
-                    yy1: yy12
+                    id2,
+                    "laa": laa2,
+                    "lbb": lbb2,
+                    "lee": lee2,
+                    "lxy": lxy2,
+                    "lyy": lyy2,
+                    "mee": mee2,
+                    "mxe": mxe2,
+                    "mxx": mxx2,
+                    "myy": myy2,
+                    "nnn": nnn2,
+                    "rr0": rr02,
+                    "rr1": rr12,
+                    "xx1": xx12,
+                    "yy1": yy12
                 };
                 obj3 = {
-                    laa: laa3,
-                    lbb: lbb3,
-                    lee: lee3,
-                    lxy: lxy3,
-                    lyy: lyy3,
-                    mee: mee3,
-                    mxe: mxe3,
-                    mxx: mxx3,
-                    myy: myy3,
-                    nnn: nnn3,
-                    rnum,
-                    rr0: rr03,
-                    rr1: rr13,
-                    xx1: xx13,
-                    yy1: yy13
+                    id2,
+                    "laa": laa3,
+                    "lbb": lbb3,
+                    "lee": lee3,
+                    "lxy": lxy3,
+                    "lyy": lyy3,
+                    "mee": mee3,
+                    "mxe": mxe3,
+                    "mxx": mxx3,
+                    "myy": myy3,
+                    "nnn": nnn3,
+                    "rr0": rr03,
+                    "rr1": rr13,
+                    "xx1": xx13,
+                    "yy1": yy13
                 };
                 switch (list.length - ii) {
                 case 1:
@@ -2270,6 +2270,7 @@ SELECT
         }
         valExpect0 = [
             {
+                "id2": 1,
                 "laa": null,
                 "lbb": null,
                 "lee": null,
@@ -2280,13 +2281,13 @@ SELECT
                 "mxx": 2,
                 "myy": 0,
                 "nnn": 1,
-                "rnum": 1,
                 "rr0": 0,
                 "rr1": null,
                 "xx1": 2,
                 "yy1": 0
             },
             {
+                "id2": 2,
                 "laa": null,
                 "lbb": null,
                 "lee": null,
@@ -2297,13 +2298,13 @@ SELECT
                 "mxx": 2,
                 "myy": 0.5,
                 "nnn": 2,
-                "rnum": 2,
                 "rr0": 0,
                 "rr1": null,
                 "xx1": 2,
                 "yy1": 1
             },
             {
+                "id2": 3,
                 "laa": -4.5,
                 "lbb": 2.5,
                 "lee": 0.40824829,
@@ -2314,13 +2315,13 @@ SELECT
                 "mxx": 2.33333333,
                 "myy": 1.33333333,
                 "nnn": 3,
-                "rnum": 3,
                 "rr0": 0,
                 "rr1": 0,
                 "xx1": 3,
                 "yy1": 3
             },
             {
+                "id2": 4,
                 "laa": -3,
                 "lbb": 1.81818182,
                 "lee": 0.47673129,
@@ -2331,13 +2332,13 @@ SELECT
                 "mxx": 2.75,
                 "myy": 2,
                 "nnn": 4,
-                "rnum": 4,
                 "rr0": 0,
                 "rr1": -0.27272727,
                 "xx1": 4,
                 "yy1": 4
             },
             {
+                "id2": 5,
                 "laa": -2.29411765,
                 "lbb": 1.52941176,
                 "lee": 0.50874702,
@@ -2348,13 +2349,13 @@ SELECT
                 "mxx": 3.2,
                 "myy": 2.6,
                 "nnn": 5,
-                "rnum": 5,
                 "rr0": 0,
                 "rr1": -0.35294118,
                 "xx1": 5,
                 "yy1": 5
             },
             {
+                "id2": 6,
                 "laa": -2.54385965,
                 "lbb": 1.63157895,
                 "lee": 0.50725727,
@@ -2365,13 +2366,13 @@ SELECT
                 "mxx": 3.5,
                 "myy": 3.16666667,
                 "nnn": 6,
-                "rnum": 6,
                 "rr0": 0,
                 "rr1": 0.38596491,
                 "xx1": 5,
                 "yy1": 6
             },
             {
+                "id2": 7,
                 "laa": -2.65,
                 "lbb": 1.675,
                 "lee": 0.48550416,
@@ -2382,13 +2383,13 @@ SELECT
                 "mxx": 3.71428571,
                 "myy": 3.57142857,
                 "nnn": 7,
-                "rnum": 7,
                 "rr0": 0,
                 "rr1": 0.275,
                 "xx1": 5,
                 "yy1": 6
             },
             {
+                "id2": 8,
                 "laa": -2.5,
                 "lbb": 1.625,
                 "lee": 0.46770717,
@@ -2399,13 +2400,13 @@ SELECT
                 "mxx": 4,
                 "myy": 4,
                 "nnn": 8,
-                "rnum": 8,
                 "rr0": 0,
                 "rr1": -0.25,
                 "xx1": 6,
                 "yy1": 7
             },
             {
+                "id2": 9,
                 "laa": 0.75,
                 "lbb": 0.85,
                 "lee": 0.94207218,
@@ -2416,13 +2417,13 @@ SELECT
                 "mxx": 5,
                 "myy": 5,
                 "nnn": 8,
-                "rnum": 9,
                 "rr0": 0,
                 "rr1": -1.25,
                 "xx1": 10,
                 "yy1": 8
             },
             {
+                "id2": 10,
                 "laa": 2.75,
                 "lbb": 0.55,
                 "lee": 0.8587782,
@@ -2433,7 +2434,6 @@ SELECT
                 "mxx": 5,
                 "myy": 5.5,
                 "nnn": 8,
-                "rnum": 10,
                 "rr0": -0.87387387,
                 "rr1": 1.15,
                 "xx1": 2,
@@ -2496,7 +2496,7 @@ SELECT
         FROM (
             SELECT
                 *,
-                ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+                ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
             FROM JSON_EAcH($valIn)
         )
     );
@@ -2571,6 +2571,7 @@ SELECT
                 bb: 0,
                 valExpect: valExpect0,
                 valExpect2: {
+                    "id2": id3,
                     "laa": 5.25,
                     "lbb": -0.275,
                     "lee": 2.49624718,
@@ -2581,13 +2582,13 @@ SELECT
                     "mxx": 5,
                     "myy": 3.875,
                     "nnn": 8,
-                    "rnum": rnum2,
                     "rr0": 0,
                     "rr1": -3.5,
                     "xx1": 10,
                     "yy1": -1
                 },
                 valExpect3: {
+                    "id2": id4,
                     "laa": 7.25,
                     "lbb": -0.575,
                     "lee": 1.95735791,
@@ -2598,7 +2599,6 @@ SELECT
                     "mxx": 5,
                     "myy": 4.375,
                     "nnn": 8,
-                    "rnum": rnum3,
                     "rr0": -3.79279279,
                     "rr1": -1.1,
                     "xx1": 2,
@@ -3015,7 +3015,7 @@ SELECT
                 db,
                 sql: (`
 SELECT
-        rnum,
+        id2,
         doublearray_jsonto(win_sum2(
             value->>1,
             value->>1,
@@ -3026,7 +3026,7 @@ SELECT
             value->>1,
             value->>1,
             value->>1,
-            IIF(rnum = 1, -1, value->>1)
+            IIF(id2 = 1, -1, value->>1)
         ) OVER (
             ORDER BY value->>0 ASC
             ${sqlBetween}
@@ -3034,7 +3034,7 @@ SELECT
     FROM (
         SELECT
             *,
-            ROW_NUMBER() OVER(ORDER BY id ASC) AS rnum
+            ROW_NUMBER() OVER(ORDER BY id ASC) AS id2
         FROM JSON_EAcH($valIn)
     );
                 `)
