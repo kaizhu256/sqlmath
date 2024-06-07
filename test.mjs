@@ -895,6 +895,28 @@ CREATE TABLE __test_preb AS
         lgbm_predictfortable(
             (SELECT model FROM __test_lgbm),    -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
+            0,                          -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- parameter
+            c_2,  c_3,  c_4,
+            c_5,  c_6,  c_7,  c_8,
+            c_9,  c_10, c_11, c_12,
+            c_13, c_14, c_15, c_16,
+            c_17, c_18, c_19, c_20,
+            c_21, c_22, c_23, c_24,
+            c_25, c_26, c_27, c_28,
+            c_29
+        ) OVER (
+            ORDER BY rowid ASC
+            ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
+        ) AS prediction
+    FROM __test_file_test;
+DROP TABLE IF EXISTS __test_preb;
+CREATE TABLE __test_preb AS
+    SELECT
+        lgbm_predictfortable(
+            (SELECT model FROM __test_lgbm),    -- model
+            ${LGBM_PREDICT_NORMAL},     -- predict_type
             10,                         -- start_iteration
             25,                         -- num_iteration
             '',                         -- parameter
@@ -907,7 +929,7 @@ CREATE TABLE __test_preb AS
             c_25, c_26, c_27, c_28,
             c_29
         ) OVER (
-            ORDER BY rowid
+            ORDER BY rowid ASC
             ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
         ) AS prediction
     FROM __test_file_test;
@@ -1055,7 +1077,7 @@ SELECT
                             db,
                             sql: (`
 SELECT
-        GROUP_CONCAT(prediction, CHAR(10)) || CHAR(1)
+        GROUP_CONCAT(prediction, CHAR(10)) || CHAR(10)
     FROM __test_preb;
                             `)
                         })
