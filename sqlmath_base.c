@@ -2617,7 +2617,7 @@ static void sql3_lgbm_predictfortable_step(
         agg->fastConfig,        // FastConfigHandle fastConfig_handle,
         data,                   // const void *data,
         &out_len,               // int64_t *out_len,
-        &agg->result - agg->nnn);       // double *out_result
+        &agg->result);          // double *out_result
     LGBM_ASSERT_OK();
     agg->nnn = out_len;
   catch_error:
