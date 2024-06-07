@@ -848,7 +848,33 @@ jstestDescribe((
         let filePreb = "test_lgbm_preb.txt";
         let fileTest = "test_lgbm_binary.test";
         let fileTrain = "test_lgbm_binary.train";
-        let sqlDatasetFromFile = (`
+        let sqlFilePredict = (`
+SELECT
+        lgbm_modelpredictforfile(
+            model,                      -- model
+            '${fileTest}',              -- data_filename
+            0,                          -- data_has_header
+            ${LGBM_PREDICT_NORMAL},     -- predict_type
+            0,                          -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- parameter
+            '.tmp/test_lgbm_preb.txt'   -- result_filename
+        )
+    FROM test_lgbm;
+SELECT
+        lgbm_modelpredictforfile(
+            model,                      -- model
+            '${fileTest}',              -- data_filename
+            0,                          -- data_has_header
+            ${LGBM_PREDICT_NORMAL},     -- predict_type
+            10,                         -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- parameter
+            '.tmp/test_lgbm_preb.txt'   -- result_filename
+        )
+    FROM test_lgbm;
+        `);
+        let sqlFileTrain = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -870,7 +896,7 @@ UPDATE test_lgbm
                 )
         );
         `);
-        let sqlDatasetFromTable = (`
+        let sqlTableTrain = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -908,12 +934,8 @@ UPDATE test_lgbm
             FROM test_file_test
         );
         `);
-        async function test2(sqlDatasetFrom) {
+        async function test2(sqlFromTrain, sqlFromPredict) {
             let db = await dbOpenAsync({filename: ":memory:"});
-            await dbExecAsync({
-                db,
-                sql: "SELECT lgbm_dlopen(NULL);"
-            });
             await Promise.all([
                 dbTableImportAsync({
                     db,
@@ -933,6 +955,7 @@ UPDATE test_lgbm
             await dbExecAsync({
                 db,
                 sql: (`
+SELECT lgbm_dlopen(NULL);
 CREATE TABLE test_lgbm(
     data_test_handle INTEGER,
     data_test_num_data REAL,
@@ -945,7 +968,7 @@ CREATE TABLE test_lgbm(
     model BLOB
 );
 INSERT INTO test_lgbm(rowid) SELECT 1;
-${sqlDatasetFrom};
+${sqlFromTrain};
 UPDATE test_lgbm
     SET
         data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
@@ -961,30 +984,7 @@ UPDATE test_lgbm
             10, -- eval_step
             'app=binary metric=auc num_leaves=31 verbose=0'
         );
-SELECT
-        lgbm_modelpredictforfile(
-            model,                      -- model
-            '${fileTest}',              -- data_filename
-            0,                          -- data_has_header
-            ${LGBM_PREDICT_NORMAL},     -- predict_type
-            0,                          -- start_iteration
-            25,                         -- num_iteration
-            '',                         -- parameter
-            '.tmp/test_lgbm_preb.txt'   -- result_filename
-        )
-    FROM test_lgbm;
-SELECT
-        lgbm_modelpredictforfile(
-            model,                      -- model
-            '${fileTest}',              -- data_filename
-            0,                          -- data_has_header
-            ${LGBM_PREDICT_NORMAL},     -- predict_type
-            10,                         -- start_iteration
-            25,                         -- num_iteration
-            '',                         -- parameter
-            '.tmp/test_lgbm_preb.txt'   -- result_filename
-        )
-    FROM test_lgbm;
+${sqlFromPredict};
                 `)
             });
             assertJsonEqual(
@@ -1024,8 +1024,8 @@ SELECT
             });
         }
         await Promise.all([
-            test2(sqlDatasetFromFile),
-            test2(sqlDatasetFromTable)
+            test2(sqlFileTrain, sqlFilePredict, 1),
+            test2(sqlTableTrain, sqlFilePredict, 2)
         ]);
     });
 });
