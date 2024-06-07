@@ -860,7 +860,7 @@ SELECT
             '',                         -- parameter
             'fileActual'                -- result_filename
         )
-    FROM __test_lgbm;
+    FROM __lgbm_state;
 SELECT
         lgbm_modelpredictforfile(
             model,                      -- model
@@ -872,14 +872,14 @@ SELECT
             '',                         -- parameter
             'fileActual'                -- result_filename
         )
-    FROM __test_lgbm;
+    FROM __lgbm_state;
         `);
         let sqlPredictTable = (`
-DROP TABLE IF EXISTS __test_preb;
-CREATE TABLE __test_preb AS
+DROP TABLE IF EXISTS __lgbm_table_preb;
+CREATE TABLE __lgbm_table_preb AS
     SELECT
         lgbm_predictfortable(
-            (SELECT model FROM __test_lgbm),    -- model
+            (SELECT model FROM __lgbm_state),    -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
             0,                          -- start_iteration
             25,                         -- num_iteration
@@ -896,12 +896,12 @@ CREATE TABLE __test_preb AS
             ORDER BY rowid ASC
             ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
         ) AS prediction
-    FROM __test_file_test;
-DROP TABLE IF EXISTS __test_preb;
-CREATE TABLE __test_preb AS
+    FROM __lgbm_file_test;
+DROP TABLE IF EXISTS __lgbm_table_preb;
+CREATE TABLE __lgbm_table_preb AS
     SELECT
         lgbm_predictfortable(
-            (SELECT model FROM __test_lgbm),    -- model
+            (SELECT model FROM __lgbm_state),    -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
             10,                         -- start_iteration
             25,                         -- num_iteration
@@ -918,10 +918,10 @@ CREATE TABLE __test_preb AS
             ORDER BY rowid ASC
             ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
         ) AS prediction
-    FROM __test_file_test;
+    FROM __lgbm_file_test;
         `);
         let sqlTrainFile = (`
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         data_train_handle = (
             SELECT
@@ -931,7 +931,7 @@ UPDATE __test_lgbm
                     0
                 )
         );
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         data_test_handle = (
             SELECT
@@ -943,7 +943,7 @@ UPDATE __test_lgbm
         );
         `);
         let sqlTrainTable = (`
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         data_train_handle = (
             SELECT
@@ -959,9 +959,9 @@ UPDATE __test_lgbm
                     c_25, c_26, c_27, c_28,
                     c_29
                 )
-            FROM __test_file_train
+            FROM __lgbm_file_train
         );
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         data_test_handle = (
             SELECT
@@ -977,39 +977,46 @@ UPDATE __test_lgbm
                     c_25, c_26, c_27, c_28,
                     c_29
                 )
-            FROM __test_file_test
+            FROM __lgbm_file_test
         );
         `);
-        async function test2(sqlTrainXxx, sqlPredictXxx, sqlIi) {
+        async function test2(sqlIi, sqlTrainXxx, sqlPredictXxx) {
             let db = await dbOpenAsync({filename: ":memory:"});
             let fileActual = `.tmp/test_lgbm_preb_${sqlIi}.txt`;
             await Promise.all([
                 dbTableImportAsync({
                     db,
+                    filename: filePreb,
+                    headerMissing: true,
+                    mode: "tsv",
+                    tableName: "__lgbm_file_preb"
+                }),
+                dbTableImportAsync({
+                    db,
                     filename: fileTest,
                     headerMissing: true,
                     mode: "tsv",
-                    tableName: "__test_file_test"
+                    tableName: "__lgbm_file_test"
                 }),
                 dbTableImportAsync({
                     db,
                     filename: fileTrain,
                     headerMissing: true,
                     mode: "tsv",
-                    tableName: "__test_file_train"
+                    tableName: "__lgbm_file_train"
                 })
             ]);
-            debugInline(
-                await dbExecAndReturnLastTable({
-                    db,
-                    sql: "SELECT * FROM __test_file_test"
-                })
-            );
+            //!! debugInline(
+                //!! await dbExecAndReturnLastTable({
+                    //!! db,
+                    //!! sql: "SELECT * FROM __lgbm_file_test"
+                //!! })
+            //!! );
             await dbExecAsync({
                 db,
                 sql: (`
 SELECT lgbm_dlopen(NULL);
-CREATE TABLE __test_lgbm(
+CREATE TABLE __lgbm_state(
     data_test_handle INTEGER,
     data_test_num_data REAL,
     data_test_num_feature REAL,
@@ -1018,17 +1025,20 @@ CREATE TABLE __test_lgbm(
     data_train_num_data REAL,
     data_train_num_feature REAL,
     --
+    count_actual REAL,
+    count_expect REAL,
+    --
     model BLOB
 );
-INSERT INTO __test_lgbm(rowid) SELECT 1;
+INSERT INTO __lgbm_state(rowid) SELECT 1;
 ${sqlTrainXxx};
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
         data_test_num_feature = lgbm_datasetgetnumfeature(data_test_handle),
         data_train_num_data = lgbm_datasetgetnumdata(data_train_handle),
         data_train_num_feature = lgbm_datasetgetnumfeature(data_train_handle);
-UPDATE __test_lgbm
+UPDATE __lgbm_state
     SET
         model = lgbm_train(
             data_train_handle,
@@ -1037,8 +1047,28 @@ UPDATE __test_lgbm
             10, -- eval_step
             'app=binary metric=auc num_leaves=31 verbose=0'
         );
+UPDATE __lgbm_state
+    SET
+        count_expect = (SELECT COUNT(*) FROM __lgbm_file_preb);
 ${sqlPredictXxx.replace(/fileActual/g, fileActual)};
+SELECT
+        lgbm_datasetfree(data_test_handle),
+        lgbm_datasetfree(data_train_handle)
+    FROM __lgbm_state;
                 `)
+            });
+            if (sqlPredictXxx === sqlPredictFile) {
+                dbTableImportAsync({
+                    db,
+                    filename: fileActual,
+                    headerMissing: true,
+                    mode: "tsv",
+                    tableName: "__lgbm_table_preb"
+                });
+            }
+            await dbFileSaveAsync({
+                db,
+                filename: `.tmp/test_lgbm_${sqlIi}.sqlite`
             });
             assertJsonEqual(
                 noop(
@@ -1050,7 +1080,7 @@ SELECT
         data_test_num_feature,
         data_train_num_data,
         data_train_num_feature
-    FROM __test_lgbm;
+    FROM __lgbm_state;
                         `)
                     })
                 ),
@@ -1061,42 +1091,18 @@ SELECT
                     "data_train_num_feature": 28
                 }
             );
-            if (sqlPredictXxx === sqlPredictTable) {
-                await fsWriteFileUnlessTest(
-                    fileActual,
-                    noop(
-                        await dbExecAndReturnLastValue({
-                            db,
-                            sql: (`
-SELECT
-        GROUP_CONCAT(prediction, CHAR(10)) || CHAR(10)
-    FROM __test_preb;
-                            `)
-                        })
-                    ),
-                    "force"
+            if (sqlPredictXxx === sqlPredictFile) {
+                assertJsonEqual(
+                    await fsReadFileUnlessTest(fileActual, "force"),
+                    await fsReadFileUnlessTest(filePreb, "force")
                 );
             }
-            assertJsonEqual(
-                await fsReadFileUnlessTest(fileActual, "force"),
-                await fsReadFileUnlessTest(filePreb, "force")
-            );
-            // cleanup
-            await dbExecAsync({
-                db,
-                sql: (`
-SELECT
-        lgbm_datasetfree(data_test_handle),
-        lgbm_datasetfree(data_train_handle)
-    FROM __test_lgbm;
-                `)
-            });
         }
         await Promise.all([
-            test2(sqlTrainFile, sqlPredictFile, 1),
-            //!! test2(sqlTrainTable, sqlPredictFile, 2),
-            //!! test2(sqlTrainFile, sqlPredictTable, 3),
-            test2(sqlTrainTable, sqlPredictTable, 4)
+            test2(1, sqlTrainFile, sqlPredictFile),
+            //!! test2(2, sqlTrainTable, sqlPredictFile),
+            //!! test2(3, sqlTrainFile, sqlPredictTable),
+            test2(4, sqlTrainTable, sqlPredictTable)
         ]);
     });
 });
