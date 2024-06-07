@@ -917,7 +917,7 @@ CREATE TABLE __lgbm_table_preb AS
         ) OVER (
             ORDER BY rowid ASC
             ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
-        ) AS prediction
+        ) AS c_1
     FROM __lgbm_file_test;
         `);
         let sqlTrainFile = (`
@@ -980,7 +980,7 @@ UPDATE __lgbm_state
             FROM __lgbm_file_test
         );
         `);
-        async function test2(sqlIi, sqlTrainXxx, sqlPredictXxx) {
+        async function testLgbm(sqlIi, sqlTrainXxx, sqlPredictXxx) {
             let db = await dbOpenAsync({filename: ":memory:"});
             let fileActual = `.tmp/test_lgbm_preb_${sqlIi}.txt`;
             await Promise.all([
@@ -1097,12 +1097,30 @@ SELECT
                     await fsReadFileUnlessTest(filePreb, "force")
                 );
             }
+            assertJsonEqual(
+                noop(
+                    await dbExecAndReturnLastTable({
+                        db,
+                        sql: (`
+SELECT ROUND(c_1, 8) AS c_1 FROM __lgbm_table_preb;
+                        `)
+                    })
+                ),
+                noop(
+                    await dbExecAndReturnLastTable({
+                        db,
+                        sql: (`
+SELECT ROUND(c_1, 8) AS c_1 FROM __lgbm_file_preb;
+                        `)
+                    })
+                )
+            );
         }
         await Promise.all([
-            test2(1, sqlTrainFile, sqlPredictFile),
-            //!! test2(2, sqlTrainTable, sqlPredictFile),
-            //!! test2(3, sqlTrainFile, sqlPredictTable),
-            test2(4, sqlTrainTable, sqlPredictTable)
+            testLgbm(1, sqlTrainFile, sqlPredictFile),
+            testLgbm(2, sqlTrainTable, sqlPredictFile),
+            testLgbm(3, sqlTrainFile, sqlPredictTable),
+            testLgbm(4, sqlTrainTable, sqlPredictTable)
         ]);
     });
 });
