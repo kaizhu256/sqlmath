@@ -2515,6 +2515,86 @@ SQLMATH_FUNC static void sql2_median_step(
 
 // SQLMATH_FUNC sql2_quantile_func - end
 
+// SQLMATH_FUNC sql3_lgbm_predictfortable_func - start
+typedef struct AggLgbm {
+    double mxx;                 // x-average
+    double nnn;                 // number of elements
+    double vxx;                 // x-variance.p
+    double wnn;                 // number of window elements
+    double xx0;                 // x-trailing
+} AggLgbm;
+
+SQLMATH_FUNC static void sql3_lgbm_predictfortable_value(
+    sqlite3_context * context
+) {
+// This function will make prediction for sql-table from <model>.
+    // agg - init
+    SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
+    // agg - null-case
+    if (agg->nnn <= 0) {
+        return;
+    }
+    //!! LGBM_BoosterPredictForMatSingleRowFast(
+    //!! // FastConfigHandle fastConfig_handle,
+    //!! // const void *data,
+    //!! // int64_t *out_len,
+    //!! // double *out_result
+    //!! );
+    sqlite3_result_double(context,
+        agg->nnn == 1 ? 0 : sqrt(agg->vxx / (agg->nnn - 1)));
+}
+
+SQLMATH_FUNC static void sql3_lgbm_predictfortable_final(
+    sqlite3_context * context
+) {
+// This function will make prediction for sql-table from <model>.
+    // agg - value
+    sql3_lgbm_predictfortable_value(context);
+}
+
+SQLMATH_FUNC static void sql3_lgbm_predictfortable_inverse(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will make prediction for sql-table from <model>.
+    UNUSED_PARAMETER(argc);
+    UNUSED_PARAMETER(argv);
+    UNUSED_PARAMETER(context);
+}
+
+static void sql3_lgbm_predictfortable_step(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will make prediction for sql-table from <model>.
+    UNUSED_PARAMETER(argc);
+    // agg - init
+    SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
+    // agg - welford - increment agg->vxx
+    if (sqlite3_value_numeric_type(argv[0]) != SQLITE_NULL) {
+        const double xx = sqlite3_value_double(argv[0]);
+        if (agg->wnn) {
+            // calculate vxx - window
+            const double invn0 = 1.0 / agg->nnn;
+            const double xx0 = agg->xx0;
+            const double dx = xx - xx0;
+            agg->vxx +=
+                (xx * xx - xx0 * xx0) - dx * (invn0 * dx + 2 * agg->mxx);
+            agg->mxx += dx * invn0;
+        } else {
+            // calculate vxx - welford
+            const double dx = xx - agg->mxx;
+            agg->nnn += 1;
+            agg->mxx += dx / agg->nnn;
+            agg->vxx += dx * (xx - agg->mxx);
+        }
+    }
+}
+
+// SQLMATH_FUNC sql3_lgbm_predictfortable_func - end
+
 // SQLMATH_FUNC sql3_stdev_func - start
 typedef struct AggStdev {
     double mxx;                 // x-average
