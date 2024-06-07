@@ -2525,9 +2525,10 @@ typedef struct AggLgbm {
     BoosterHandle booster;      // booster
     int num_iterations;         // [out] Number of iterations of this booster
     int ncol;                   // Number of columns
+    //
+    FastConfigHandle fastConfig;        // [out] FastConfig object
     int64_t nnn;                // number of elements
     double result;              // [out] Pointer to array with predictions
-    FastConfigHandle fastConfig;        // [out] FastConfig object
 } AggLgbm;
 
 SQLMATH_FUNC static void sql3_lgbm_predictfortable_value(
