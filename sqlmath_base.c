@@ -2548,8 +2548,17 @@ SQLMATH_FUNC static void sql3_lgbm_predictfortable_final(
     sqlite3_context * context
 ) {
 // This function will make prediction for sql-table from <model>.
+    int errcode = 0;
     // agg - value
     sql3_lgbm_predictfortable_value(context);
+    // agg - init
+    SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
+    // agg - cleanup
+    errcode = LGBM_BoosterFree(agg->booster);
+    errcode = LGBM_FastConfigFree(agg->fastConfig);
+    LGBM_ASSERT_OK();
+  catch_error:
+    (void) 0;
 }
 
 SQLMATH_FUNC static void sql3_lgbm_predictfortable_inverse(

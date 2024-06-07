@@ -907,6 +907,7 @@ CREATE TABLE __test_preb AS
             c_25, c_26, c_27, c_28,
             c_29
         ) OVER (
+            ORDER BY rowid
             ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
         ) AS prediction
     FROM __test_file_test;
