@@ -858,7 +858,7 @@ SELECT
             0,                          -- start_iteration
             25,                         -- num_iteration
             '',                         -- parameter
-            '.tmp/test_lgbm_preb.txt'   -- result_filename
+            'fileActual'                -- result_filename
         )
     FROM test_lgbm;
 SELECT
@@ -870,7 +870,7 @@ SELECT
             10,                         -- start_iteration
             25,                         -- num_iteration
             '',                         -- parameter
-            '.tmp/test_lgbm_preb.txt'   -- result_filename
+            'fileActual'                -- result_filename
         )
     FROM test_lgbm;
         `);
@@ -934,8 +934,9 @@ UPDATE test_lgbm
             FROM test_file_test
         );
         `);
-        async function test2(sqlFromTrain, sqlFromPredict) {
+        async function test2(sqlFromTrain, sqlFromPredict, sqlIi) {
             let db = await dbOpenAsync({filename: ":memory:"});
+            let fileActual = `.tmp/test_lgbm_preb_${sqlIi}.txt`;
             await Promise.all([
                 dbTableImportAsync({
                     db,
@@ -984,7 +985,7 @@ UPDATE test_lgbm
             10, -- eval_step
             'app=binary metric=auc num_leaves=31 verbose=0'
         );
-${sqlFromPredict};
+${sqlFromPredict.replace(/fileActual/g, fileActual)};
                 `)
             });
             assertJsonEqual(
@@ -1009,7 +1010,7 @@ SELECT
                 }
             );
             assertJsonEqual(
-                await fsReadFileUnlessTest(".tmp/test_lgbm_preb.txt", "force"),
+                await fsReadFileUnlessTest(fileActual, "force"),
                 await fsReadFileUnlessTest(filePreb, "force")
             );
             // cleanup
