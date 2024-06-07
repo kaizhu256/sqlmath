@@ -2038,8 +2038,8 @@ SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
             valExpect2,
             valExpect3
         }) {
-            let id2 = 25;
-            let id3 = 28;
+            let id2 = 43;
+            let id3 = 49;
             let sqlBetween = "";
             let valActual;
             let xx2 = 2;
@@ -2049,7 +2049,7 @@ SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
                 );
             }
             // test win_sinefit2-aggregate handling-behavior
-            valActual = await dbExecAsync({
+            valActual = await dbExecAndReturnLastTable({
                 bindList: {
                     valIn
                 },
@@ -2102,7 +2102,7 @@ UPDATE __sinefit_win
             0, 0,
             0, 0
         )
-    WHERE id = 28;
+    WHERE id = ${id3};
 UPDATE __sinefit_win
     SET
         __wsf = sinefit_refitlast(
@@ -2127,7 +2127,7 @@ SELECT
     FROM __sinefit_win;
                 `)
             });
-            valActual = valActual[0].map(function ({
+            valActual = valActual.map(function ({
                 id,
                 laa1,
                 laa2,
@@ -2245,7 +2245,7 @@ SELECT
         }
         valExpect0 = [
             {
-                "id": 1,
+                "id": 2,
                 "laa": null,
                 "lbb": null,
                 "lee": null,
@@ -2262,7 +2262,7 @@ SELECT
                 "yy1": 0
             },
             {
-                "id": 4,
+                "id": 10,
                 "laa": null,
                 "lbb": null,
                 "lee": null,
@@ -2279,7 +2279,7 @@ SELECT
                 "yy1": 1
             },
             {
-                "id": 7,
+                "id": 14,
                 "laa": -4.5,
                 "lbb": 2.5,
                 "lee": 0.40824829,
@@ -2296,7 +2296,7 @@ SELECT
                 "yy1": 3
             },
             {
-                "id": 10,
+                "id": 19,
                 "laa": -3,
                 "lbb": 1.81818182,
                 "lee": 0.47673129,
@@ -2313,7 +2313,7 @@ SELECT
                 "yy1": 4
             },
             {
-                "id": 13,
+                "id": 24,
                 "laa": -2.29411765,
                 "lbb": 1.52941176,
                 "lee": 0.50874702,
@@ -2330,7 +2330,7 @@ SELECT
                 "yy1": 5
             },
             {
-                "id": 16,
+                "id": 29,
                 "laa": -2.54385965,
                 "lbb": 1.63157895,
                 "lee": 0.50725727,
@@ -2347,7 +2347,7 @@ SELECT
                 "yy1": 6
             },
             {
-                "id": 19,
+                "id": 34,
                 "laa": -2.65,
                 "lbb": 1.675,
                 "lee": 0.48550416,
@@ -2364,7 +2364,7 @@ SELECT
                 "yy1": 6
             },
             {
-                "id": 22,
+                "id": 38,
                 "laa": -2.5,
                 "lbb": 1.625,
                 "lee": 0.46770717,
@@ -2381,7 +2381,7 @@ SELECT
                 "yy1": 7
             },
             {
-                "id": 25,
+                "id": 43,
                 "laa": 0.75,
                 "lbb": 0.85,
                 "lee": 0.94207218,
@@ -2398,7 +2398,7 @@ SELECT
                 "yy1": 8
             },
             {
-                "id": 28,
+                "id": 49,
                 "laa": 2.75,
                 "lbb": 0.55,
                 "lee": 0.8587782,
@@ -2541,7 +2541,7 @@ SELECT
                 bb: 0,
                 valExpect: valExpect0,
                 valExpect2: {
-                    "id": 25,
+                    "id": 43,
                     "laa": 5.25,
                     "lbb": -0.275,
                     "lee": 2.49624718,
@@ -2558,7 +2558,7 @@ SELECT
                     "yy1": -1
                 },
                 valExpect3: {
-                    "id": 28,
+                    "id": 49,
                     "laa": 7.25,
                     "lbb": -0.575,
                     "lee": 1.95735791,
