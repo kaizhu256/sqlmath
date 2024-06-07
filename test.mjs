@@ -845,45 +845,10 @@ jstestDescribe((
     jstestIt((
         "test lgbm handling-behavior"
     ), async function () {
-        let db = await dbOpenAsync({filename: ":memory:"});
         let filePreb = "test_lgbm_preb.txt";
         let fileTest = "test_lgbm_binary.test";
         let fileTrain = "test_lgbm_binary.train";
-        await dbExecAsync({
-            db,
-            sql: "SELECT lgbm_dlopen(NULL);"
-        });
-        await Promise.all([
-            dbTableImportAsync({
-                db,
-                filename: fileTest,
-                headerMissing: true,
-                mode: "tsv",
-                tableName: "test_file_test"
-            }),
-            dbTableImportAsync({
-                db,
-                filename: fileTrain,
-                headerMissing: true,
-                mode: "tsv",
-                tableName: "test_file_train"
-            })
-        ]);
-        await dbExecAsync({
-            db,
-            sql: (`
-CREATE TABLE test_lgbm(
-    data_test_handle INTEGER,
-    data_test_num_data REAL,
-    data_test_num_feature REAL,
-    --
-    data_train_handle INTEGER,
-    data_train_num_data REAL,
-    data_train_num_feature REAL,
-    --
-    model BLOB
-);
-INSERT INTO test_lgbm(rowid) SELECT 1;
+        let sqlDatasetFromFile = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -904,10 +869,8 @@ UPDATE test_lgbm
                     data_train_handle -- reference
                 )
         );
-SELECT
-        lgbm_datasetfree(data_test_handle),
-        lgbm_datasetfree(data_train_handle)
-    FROM test_lgbm;
+        `);
+        let sqlDatasetFromTable = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -944,6 +907,45 @@ UPDATE test_lgbm
                 )
             FROM test_file_test
         );
+        `);
+        async function test2(sqlDatasetFrom) {
+            let db = await dbOpenAsync({filename: ":memory:"});
+            await dbExecAsync({
+                db,
+                sql: "SELECT lgbm_dlopen(NULL);"
+            });
+            await Promise.all([
+                dbTableImportAsync({
+                    db,
+                    filename: fileTest,
+                    headerMissing: true,
+                    mode: "tsv",
+                    tableName: "test_file_test"
+                }),
+                dbTableImportAsync({
+                    db,
+                    filename: fileTrain,
+                    headerMissing: true,
+                    mode: "tsv",
+                    tableName: "test_file_train"
+                })
+            ]);
+            await dbExecAsync({
+                db,
+                sql: (`
+CREATE TABLE test_lgbm(
+    data_test_handle INTEGER,
+    data_test_num_data REAL,
+    data_test_num_feature REAL,
+    --
+    data_train_handle INTEGER,
+    data_train_num_data REAL,
+    data_train_num_feature REAL,
+    --
+    model BLOB
+);
+INSERT INTO test_lgbm(rowid) SELECT 1;
+${sqlDatasetFrom};
 UPDATE test_lgbm
     SET
         data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
@@ -983,43 +985,48 @@ SELECT
             '.tmp/test_lgbm_preb.txt'   -- result_filename
         )
     FROM test_lgbm;
-            `)
-        });
-        assertJsonEqual(
-            noop(
-                await dbExecAndReturnLastRow({
-                    db,
-                    sql: (`
+                `)
+            });
+            assertJsonEqual(
+                noop(
+                    await dbExecAndReturnLastRow({
+                        db,
+                        sql: (`
 SELECT
         data_test_num_data,
         data_test_num_feature,
         data_train_num_data,
         data_train_num_feature
     FROM test_lgbm;
-                    `)
-                })
-            ),
-            {
-                "data_test_num_data": 500,
-                "data_test_num_feature": 28,
-                "data_train_num_data": 7000,
-                "data_train_num_feature": 28
-            }
-        );
-        assertJsonEqual(
-            await fsReadFileUnlessTest(".tmp/test_lgbm_preb.txt", "force"),
-            await fsReadFileUnlessTest(filePreb, "force")
-        );
-        // cleanup
-        await dbExecAsync({
-            db,
-            sql: (`
+                        `)
+                    })
+                ),
+                {
+                    "data_test_num_data": 500,
+                    "data_test_num_feature": 28,
+                    "data_train_num_data": 7000,
+                    "data_train_num_feature": 28
+                }
+            );
+            assertJsonEqual(
+                await fsReadFileUnlessTest(".tmp/test_lgbm_preb.txt", "force"),
+                await fsReadFileUnlessTest(filePreb, "force")
+            );
+            // cleanup
+            await dbExecAsync({
+                db,
+                sql: (`
 SELECT
         lgbm_datasetfree(data_test_handle),
         lgbm_datasetfree(data_train_handle)
     FROM test_lgbm;
-            `)
-        });
+                `)
+            });
+        }
+        await Promise.all([
+            test2(sqlDatasetFromFile),
+            test2(sqlDatasetFromTable)
+        ]);
     });
 });
 
