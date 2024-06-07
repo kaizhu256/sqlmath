@@ -2569,7 +2569,7 @@ static void sql3_lgbm_predictfortable_step(
     sqlite3_value ** argv
 ) {
 // This function will make prediction for sql-table from <model>.
-    static int argc0 = 6;
+    static int argc0 = 5;
     const int ncol = argc - argc0;
     if (ncol < 1) {
         sqlite3_result_error(context,
@@ -2591,10 +2591,10 @@ static void sql3_lgbm_predictfortable_step(
             sqlite3_value_int(argv[1]), // const int predict_type,
             sqlite3_value_int(argv[2]), // const int start_iteration,
             sqlite3_value_int(argv[3]), // const int num_iteration,
-            sqlite3_value_int(argv[4]), // const int data_type,
+            C_API_DTYPE_FLOAT64,        // const int data_type,
             ncol,               // const int32_t ncol,
             // const char *parameter,
-            (char *) sqlite3_value_text(argv[5]),       //
+            (char *) sqlite3_value_text(argv[4]),       //
             &agg->fastConfig);  // FastConfigHandle *out_fastConfig
     }
     int64_t out_len = 0;
@@ -4004,6 +4004,7 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC2(lgbm_datasetcreatefromtable, -1, 0);
     SQL_CREATE_FUNC2(median, 1, 0);
     SQL_CREATE_FUNC2(quantile, 2, 0);
+    SQL_CREATE_FUNC3(lgbm_predictfortable, -1, 0);
     SQL_CREATE_FUNC3(stdev, 1, 0);
     SQL_CREATE_FUNC3(win_coinflip2, -1, 0);
     SQL_CREATE_FUNC3(win_ema1, 2, 0);

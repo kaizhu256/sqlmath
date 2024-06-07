@@ -860,7 +860,7 @@ SELECT
             '',                         -- parameter
             'fileActual'                -- result_filename
         )
-    FROM test_lgbm;
+    FROM __test_lgbm;
 SELECT
         lgbm_modelpredictforfile(
             model,                      -- model
@@ -872,36 +872,45 @@ SELECT
             '',                         -- parameter
             'fileActual'                -- result_filename
         )
-    FROM test_lgbm;
+    FROM __test_lgbm;
         `);
         let sqlPredictTable = (`
-SELECT
-        lgbm_modelpredictforfile(
-            model,                      -- model
-            '${fileTest}',              -- data_filename
-            0,                          -- data_has_header
-            ${LGBM_PREDICT_NORMAL},     -- predict_type
-            0,                          -- start_iteration
-            25,                         -- num_iteration
-            '',                         -- parameter
-            'fileActual'                -- result_filename
-        )
-    FROM test_lgbm;
-SELECT
-        lgbm_modelpredictforfile(
-            model,                      -- model
-            '${fileTest}',              -- data_filename
-            0,                          -- data_has_header
+--!! DROP TABLE IF EXISTS __test_lgbm_predict;
+--!! CREATE TABLE __test_lgbm_predict AS
+    --!! SELECT
+        --!! lgbm_predictfortable(
+            --!! model,                      -- model
+            --!! '${fileTest}',              -- data_filename
+            --!! 0,                          -- data_has_header
+            --!! ${LGBM_PREDICT_NORMAL},     -- predict_type
+            --!! 0,                          -- start_iteration
+            --!! 25,                         -- num_iteration
+            --!! '',                         -- parameter
+            --!! 'fileActual'                -- result_filename
+        --!! )
+    --!! FROM __test_lgbm;
+DROP TABLE IF EXISTS __test_lgbm_predict;
+CREATE TABLE __test_lgbm_predict AS
+    SELECT
+        lgbm_predictfortable(
+            (SELECT model FROM __test_lgbm),    -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
             10,                         -- start_iteration
             25,                         -- num_iteration
             '',                         -- parameter
-            'fileActual'                -- result_filename
+            c_1,  c_2,  c_3,  c_4,
+            c_5,  c_6,  c_7,  c_8,
+            c_9,  c_10, c_11, c_12,
+            c_13, c_14, c_15, c_16,
+            c_17, c_18, c_19, c_20,
+            c_21, c_22, c_23, c_24,
+            c_25, c_26, c_27, c_28,
+            c_29
         )
-    FROM test_lgbm;
+    FROM test_file_test;
         `);
         let sqlTrainFile = (`
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         data_train_handle = (
             SELECT
@@ -911,7 +920,7 @@ UPDATE test_lgbm
                     0
                 )
         );
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         data_test_handle = (
             SELECT
@@ -923,7 +932,7 @@ UPDATE test_lgbm
         );
         `);
         let sqlTrainTable = (`
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         data_train_handle = (
             SELECT
@@ -941,7 +950,7 @@ UPDATE test_lgbm
                 )
             FROM test_file_train
         );
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         data_test_handle = (
             SELECT
@@ -983,7 +992,7 @@ UPDATE test_lgbm
                 db,
                 sql: (`
 SELECT lgbm_dlopen(NULL);
-CREATE TABLE test_lgbm(
+CREATE TABLE __test_lgbm(
     data_test_handle INTEGER,
     data_test_num_data REAL,
     data_test_num_feature REAL,
@@ -994,15 +1003,15 @@ CREATE TABLE test_lgbm(
     --
     model BLOB
 );
-INSERT INTO test_lgbm(rowid) SELECT 1;
+INSERT INTO __test_lgbm(rowid) SELECT 1;
 ${sqlTrainXxx};
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
         data_test_num_feature = lgbm_datasetgetnumfeature(data_test_handle),
         data_train_num_data = lgbm_datasetgetnumdata(data_train_handle),
         data_train_num_feature = lgbm_datasetgetnumfeature(data_train_handle);
-UPDATE test_lgbm
+UPDATE __test_lgbm
     SET
         model = lgbm_train(
             data_train_handle,
@@ -1024,7 +1033,7 @@ SELECT
         data_test_num_feature,
         data_train_num_data,
         data_train_num_feature
-    FROM test_lgbm;
+    FROM __test_lgbm;
                         `)
                     })
                 ),
@@ -1046,7 +1055,7 @@ SELECT
 SELECT
         lgbm_datasetfree(data_test_handle),
         lgbm_datasetfree(data_train_handle)
-    FROM test_lgbm;
+    FROM __test_lgbm;
                 `)
             });
         }
