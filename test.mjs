@@ -874,6 +874,32 @@ SELECT
         )
     FROM test_lgbm;
         `);
+        let sqlPredictTable = (`
+SELECT
+        lgbm_modelpredictforfile(
+            model,                      -- model
+            '${fileTest}',              -- data_filename
+            0,                          -- data_has_header
+            ${LGBM_PREDICT_NORMAL},     -- predict_type
+            0,                          -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- parameter
+            'fileActual'                -- result_filename
+        )
+    FROM test_lgbm;
+SELECT
+        lgbm_modelpredictforfile(
+            model,                      -- model
+            '${fileTest}',              -- data_filename
+            0,                          -- data_has_header
+            ${LGBM_PREDICT_NORMAL},     -- predict_type
+            10,                         -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- parameter
+            'fileActual'                -- result_filename
+        )
+    FROM test_lgbm;
+        `);
         let sqlTrainFile = (`
 UPDATE test_lgbm
     SET
@@ -1026,7 +1052,9 @@ SELECT
         }
         await Promise.all([
             test2(sqlTrainFile, sqlPredictFile, 1),
-            test2(sqlTrainTable, sqlPredictFile, 2)
+            test2(sqlTrainTable, sqlPredictFile, 2),
+            test2(sqlTrainFile, sqlPredictTable, 3),
+            test2(sqlTrainTable, sqlPredictTable, 4)
         ]);
     });
 });
