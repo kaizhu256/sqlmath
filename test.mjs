@@ -3080,7 +3080,7 @@ SELECT win_sum2() FROM (SELECT 1);
                     });
                 }, "wrong number of arguments");
                 // test win_sum1-null-case handling-behavior
-                valActual = await dbExecAsync({
+                valActual = await dbExecAndReturnLastTable({
                     db,
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
@@ -3088,12 +3088,12 @@ CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT win_sum1(1, 2) FROM __tmp1;
                     `)
                 });
-                valActual = valActual[0].map(function ({val}) {
+                valActual = valActual.map(function ({val}) {
                     return val;
                 });
                 assertJsonEqual(valActual, [null]);
                 // test win_sum2-null-case handling-behavior
-                valActual = await dbExecAsync({
+                valActual = await dbExecAndReturnLastTable({
                     db,
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
@@ -3101,7 +3101,7 @@ CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT doublearray_jsonto(win_sum2(1, 2, 3)) FROM __tmp1;
                     `)
                 });
-                valActual = valActual[0].map(function ({val}) {
+                valActual = valActual.map(function ({val}) {
                     return val;
                 });
                 assertJsonEqual(valActual, [null]);
