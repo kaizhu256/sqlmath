@@ -108,6 +108,11 @@ file sqlmath_h - start
 #define UNUSED_PARAMETER(x) ((void)(x))
 
 
+#ifndef SQLITE_MAX_FUNCTION_ARG
+#define SQLITE_MAX_FUNCTION_ARG 127
+#endif                          // SQLITE_MAX_FUNCTION_ARG
+
+
 #define DOUBLEWIN_AGGREGATE_CONTEXT(nhead) \
     Doublewin **dblwinAgg = (Doublewin **) \
         sqlite3_aggregate_context(context, sizeof(*dblwinAgg)); \
@@ -2565,13 +2570,13 @@ static void sql3_lgbm_predictfortable_step(
 // This function will make prediction for sql-table from <model>.
     static int argc0 = 6;
     const int ncol = argc - argc0;
-    if (ncols < 1) {
+    if (ncol < 1) {
         sqlite3_result_error(context,
             "win_sinefit2 - wrong number of arguments", -1);
         return;
     }
     // agg - init
-    SQLITE3_AGGREGATE_CONTEXT(AggStdev);
+    SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
     if (agg->nnn == 0) {
         int errcode = 0;
         errcode = LGBM_BoosterLoadModelFromString(      //
@@ -2600,8 +2605,10 @@ static void sql3_lgbm_predictfortable_step(
         agg->fastConfig,        // FastConfigHandle fastConfig_handle,
         data,                   // const void *data,
         &out_len,               // int64_t *out_len,
-        &(agg->result - agg->nnn));     // double *out_result
+        &agg->result - agg->nnn);       // double *out_result
     agg->nnn = out_len;
+  catch_error:
+    (void) 0;
 }
 
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - end
