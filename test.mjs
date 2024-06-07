@@ -848,7 +848,7 @@ jstestDescribe((
         let filePreb = "test_lgbm_preb.txt";
         let fileTest = "test_lgbm_binary.test";
         let fileTrain = "test_lgbm_binary.train";
-        let sqlFilePredict = (`
+        let sqlPredictFile = (`
 SELECT
         lgbm_modelpredictforfile(
             model,                      -- model
@@ -874,7 +874,7 @@ SELECT
         )
     FROM test_lgbm;
         `);
-        let sqlFileTrain = (`
+        let sqlTrainFile = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -896,7 +896,7 @@ UPDATE test_lgbm
                 )
         );
         `);
-        let sqlTableTrain = (`
+        let sqlTrainTable = (`
 UPDATE test_lgbm
     SET
         data_train_handle = (
@@ -934,7 +934,7 @@ UPDATE test_lgbm
             FROM test_file_test
         );
         `);
-        async function test2(sqlFromTrain, sqlFromPredict, sqlIi) {
+        async function test2(sqlTrainXxx, sqlPredictXxx, sqlIi) {
             let db = await dbOpenAsync({filename: ":memory:"});
             let fileActual = `.tmp/test_lgbm_preb_${sqlIi}.txt`;
             await Promise.all([
@@ -969,7 +969,7 @@ CREATE TABLE test_lgbm(
     model BLOB
 );
 INSERT INTO test_lgbm(rowid) SELECT 1;
-${sqlFromTrain};
+${sqlTrainXxx};
 UPDATE test_lgbm
     SET
         data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
@@ -985,7 +985,7 @@ UPDATE test_lgbm
             10, -- eval_step
             'app=binary metric=auc num_leaves=31 verbose=0'
         );
-${sqlFromPredict.replace(/fileActual/g, fileActual)};
+${sqlPredictXxx.replace(/fileActual/g, fileActual)};
                 `)
             });
             assertJsonEqual(
@@ -1025,8 +1025,8 @@ SELECT
             });
         }
         await Promise.all([
-            test2(sqlFileTrain, sqlFilePredict, 1),
-            test2(sqlTableTrain, sqlFilePredict, 2)
+            test2(sqlTrainFile, sqlPredictFile, 1),
+            test2(sqlTrainTable, sqlPredictFile, 2)
         ]);
     });
 });
