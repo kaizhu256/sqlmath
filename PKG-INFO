@@ -159,17 +159,17 @@ pip install sqlmath==2024.6.1
 - goto https://www.sqlite.org/changes.html
 ```shell
 (set -ex
-    curl -L https://www.sqlite.org/2024/sqlite-autoconf-3450300.tar.gz | tar -xz
-    mv sqlite-autoconf-3450300 .sqlite-autoconf-3450300
-    git grep "3\.44\.0\|3440200"
+    curl -L https://www.sqlite.org/2024/sqlite-autoconf-3460000.tar.gz | tar -xz
+    mv sqlite-autoconf-3460000 .sqlite-autoconf-3460000
+    git grep "3\.45\.3\|3450300"
     for FILE in .ci.sh sqlmath_external_sqlite.c sqlmath_external_zlib.c
     do
-        sed -i -e "s|\<3\.44\.2\>|3\.45\.3|g" "$FILE"
-        sed -i -e "s|\<3440200\>|3450300|g" "$FILE"
+        sed -i -e "s|\<3\.45\.3\>|3\.46\.0|g" "$FILE"
+        sed -i -e "s|\<3450300\>|3460000|g" "$FILE"
     done
     shRollupFetch sqlmath_external_sqlite.c
     shRollupFetch sqlmath_external_zlib.c
     sh jslint_ci.sh shSqlmathUpdate
-    git grep "3\.44\.0\|3440200"
+    git grep "3\.45\.3\|3450300"
 )
 ```
