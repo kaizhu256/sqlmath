@@ -2555,6 +2555,7 @@ SQLMATH_FUNC static void sql3_lgbm_predictfortable_final(
     SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
     // agg - cleanup
     errcode = LGBM_BoosterFree(agg->booster);
+    LGBM_ASSERT_OK();
     errcode = LGBM_FastConfigFree(agg->fastConfig);
     LGBM_ASSERT_OK();
   catch_error:
@@ -2580,6 +2581,7 @@ static void sql3_lgbm_predictfortable_step(
 // This function will make prediction for sql-table from <model>.
     static int argc0 = 5;
     const int ncol = argc - argc0;
+    int errcode = 0;
     if (ncol < 1) {
         sqlite3_result_error(context,
             "win_sinefit2 - wrong number of arguments", -1);
@@ -2588,14 +2590,13 @@ static void sql3_lgbm_predictfortable_step(
     // agg - init
     SQLITE3_AGGREGATE_CONTEXT(AggLgbm);
     if (agg->nnn == 0) {
-        int errcode = 0;
         errcode = LGBM_BoosterLoadModelFromString(      //
             // const char *model_str,
             (char *) sqlite3_value_text(argv[0]),       //
             &agg->num_iterations,       // int *out_num_iterations,
             &agg->booster);     // BoosterHandle *out
         LGBM_ASSERT_OK();
-        LGBM_BoosterPredictForMatSingleRowFastInit(     //
+        errcode = LGBM_BoosterPredictForMatSingleRowFastInit(   //
             agg->booster,       // BoosterHandle handle,
             sqlite3_value_int(argv[1]), // const int predict_type,
             sqlite3_value_int(argv[2]), // const int start_iteration,
@@ -2605,17 +2606,19 @@ static void sql3_lgbm_predictfortable_step(
             // const char *parameter,
             (char *) sqlite3_value_text(argv[4]),       //
             &agg->fastConfig);  // FastConfigHandle *out_fastConfig
+        LGBM_ASSERT_OK();
     }
     int64_t out_len = 0;
     double data[SQLITE_MAX_FUNCTION_ARG] = { 0 };
     for (int ii = 0; ii < ncol; ii += 1) {
         data[ii] = sqlite3_value_double_or_nan(argv[ii]);
     }
-    LGBM_BoosterPredictForMatSingleRowFast(     //
+    errcode = LGBM_BoosterPredictForMatSingleRowFast(   //
         agg->fastConfig,        // FastConfigHandle fastConfig_handle,
         data,                   // const void *data,
         &out_len,               // int64_t *out_len,
         &agg->result - agg->nnn);       // double *out_result
+    LGBM_ASSERT_OK();
     agg->nnn = out_len;
   catch_error:
     (void) 0;
