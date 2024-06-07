@@ -1776,7 +1776,7 @@ SELECT
             });
             assertJsonEqual(valActual, valExpect);
             // test win_quantile2-aggregate handling-behavior
-            valActual = await dbExecAsync({
+            valActual = await dbExecAndReturnLastTable({
                 bindList: {
                     valIn: JSON.stringify(valIn)
                 },
@@ -1807,7 +1807,7 @@ SELECT
     );
                 `)
             });
-            valActual = valActual[0].map(function ({val}, ii, list) {
+            valActual = valActual.map(function ({val}, ii, list) {
                 val = JSON.parse(val).map(function (elem, jj) {
                     elem = Number(elem.toFixed(4));
                     if (ii + (bb || 0) + 1 >= list.length && jj === 9) {
@@ -1856,7 +1856,7 @@ SELECT win_quantile2(NULL, 1) FROM (SELECT 1);
                     });
                 }, "argument 'quantile'");
                 // test win_quantile1-null-case handling-behavior
-                valActual = await dbExecAsync({
+                valActual = await dbExecAndReturnLastTable({
                     db,
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
@@ -1864,12 +1864,12 @@ CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT win_quantile1(1, 2) FROM __tmp1;
                     `)
                 });
-                valActual = valActual[0].map(function ({val}) {
+                valActual = valActual.map(function ({val}) {
                     return val;
                 });
                 assertJsonEqual(valActual, [null]);
                 // test win_quantile2-null-case handling-behavior
-                valActual = await dbExecAsync({
+                valActual = await dbExecAndReturnLastTable({
                     db,
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
@@ -1877,7 +1877,7 @@ CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT doublearray_jsonto(win_quantile2(1, 2, 3)) FROM __tmp1;
                     `)
                 });
-                valActual = valActual[0].map(function ({val}) {
+                valActual = valActual.map(function ({val}) {
                     return val;
                 });
                 assertJsonEqual(valActual, [null]);
@@ -2466,7 +2466,7 @@ SELECT win_sinefit2(1, 2, 3) FROM (SELECT 1);
                     });
                 }, "wrong number of arguments");
                 // test win_sinefit2-null-case handling-behavior
-                valActual = await dbExecAsync({
+                valActual = await dbExecAndReturnLastTable({
                     db,
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
@@ -2474,7 +2474,7 @@ CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT doublearray_jsonto(win_sinefit2(1, 2, 3, 4)) FROM __tmp1;
                     `)
                 });
-                valActual = valActual[0].map(function ({val}) {
+                valActual = valActual.map(function ({val}) {
                     return val;
                 });
                 assertJsonEqual(valActual, [null]);
@@ -2989,7 +2989,7 @@ SELECT
                 );
             }
             // test win_sum1-aggregate handling-behavior
-            valActual = await dbExecAsync({
+            valActual = await dbExecAndReturnLastTable({
                 bindList: {
                     valIn: JSON.stringify(valIn)
                 },
@@ -3003,7 +3003,7 @@ SELECT
     FROM JSON_EAcH($valIn);
                 `)
             });
-            valActual = valActual[0].map(function ({val}) {
+            valActual = valActual.map(function ({val}) {
                 return Number(val.toFixed(4));
             });
             assertJsonEqual(valActual, valExpect);
