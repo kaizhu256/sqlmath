@@ -875,8 +875,8 @@ SELECT
     FROM __test_lgbm;
         `);
         let sqlPredictTable = (`
---!! DROP TABLE IF EXISTS __test_lgbm_predict;
---!! CREATE TABLE __test_lgbm_predict AS
+--!! DROP TABLE IF EXISTS __test_preb;
+--!! CREATE TABLE __test_preb AS
     --!! SELECT
         --!! lgbm_predictfortable(
             --!! model,                      -- model
@@ -889,8 +889,8 @@ SELECT
             --!! 'fileActual'                -- result_filename
         --!! )
     --!! FROM __test_lgbm;
-DROP TABLE IF EXISTS __test_lgbm_predict;
-CREATE TABLE __test_lgbm_predict AS
+DROP TABLE IF EXISTS __test_preb;
+CREATE TABLE __test_preb AS
     SELECT
         lgbm_predictfortable(
             (SELECT model FROM __test_lgbm),    -- model
@@ -898,7 +898,7 @@ CREATE TABLE __test_lgbm_predict AS
             10,                         -- start_iteration
             25,                         -- num_iteration
             '',                         -- parameter
-            c_1,  c_2,  c_3,  c_4,
+            c_2,  c_3,  c_4,
             c_5,  c_6,  c_7,  c_8,
             c_9,  c_10, c_11, c_12,
             c_13, c_14, c_15, c_16,
@@ -906,8 +906,10 @@ CREATE TABLE __test_lgbm_predict AS
             c_21, c_22, c_23, c_24,
             c_25, c_26, c_27, c_28,
             c_29
-        )
-    FROM test_file_test;
+        ) OVER (
+            ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
+        ) AS prediction
+    FROM __test_file_test;
         `);
         let sqlTrainFile = (`
 UPDATE __test_lgbm
@@ -948,7 +950,7 @@ UPDATE __test_lgbm
                     c_25, c_26, c_27, c_28,
                     c_29
                 )
-            FROM test_file_train
+            FROM __test_file_train
         );
 UPDATE __test_lgbm
     SET
@@ -966,7 +968,7 @@ UPDATE __test_lgbm
                     c_25, c_26, c_27, c_28,
                     c_29
                 )
-            FROM test_file_test
+            FROM __test_file_test
         );
         `);
         async function test2(sqlTrainXxx, sqlPredictXxx, sqlIi) {
@@ -978,14 +980,14 @@ UPDATE __test_lgbm
                     filename: fileTest,
                     headerMissing: true,
                     mode: "tsv",
-                    tableName: "test_file_test"
+                    tableName: "__test_file_test"
                 }),
                 dbTableImportAsync({
                     db,
                     filename: fileTrain,
                     headerMissing: true,
                     mode: "tsv",
-                    tableName: "test_file_train"
+                    tableName: "__test_file_train"
                 })
             ]);
             await dbExecAsync({
@@ -1044,6 +1046,22 @@ SELECT
                     "data_train_num_feature": 28
                 }
             );
+            if (sqlPredictXxx === sqlPredictTable) {
+                await fsWriteFileUnlessTest(
+                    fileActual,
+                    noop(
+                        await dbExecAndReturnLastValue({
+                            db,
+                            sql: (`
+SELECT
+        GROUP_CONCAT(prediction, CHAR(10)) || CHAR(1)
+    FROM __test_preb;
+                            `)
+                        })
+                    ),
+                    "force"
+                );
+            }
             assertJsonEqual(
                 await fsReadFileUnlessTest(fileActual, "force"),
                 await fsReadFileUnlessTest(filePreb, "force")
