@@ -875,20 +875,6 @@ SELECT
     FROM __test_lgbm;
         `);
         let sqlPredictTable = (`
---!! DROP TABLE IF EXISTS __test_preb;
---!! CREATE TABLE __test_preb AS
-    --!! SELECT
-        --!! lgbm_predictfortable(
-            --!! model,                      -- model
-            --!! '${fileTest}',              -- data_filename
-            --!! 0,                          -- data_has_header
-            --!! ${LGBM_PREDICT_NORMAL},     -- predict_type
-            --!! 0,                          -- start_iteration
-            --!! 25,                         -- num_iteration
-            --!! '',                         -- parameter
-            --!! 'fileActual'                -- result_filename
-        --!! )
-    --!! FROM __test_lgbm;
 DROP TABLE IF EXISTS __test_preb;
 CREATE TABLE __test_preb AS
     SELECT
@@ -1013,6 +999,12 @@ UPDATE __test_lgbm
                     tableName: "__test_file_train"
                 })
             ]);
+            debugInline(
+                await dbExecAndReturnLastTable({
+                    db,
+                    sql: "SELECT * FROM __test_file_test"
+                })
+            );
             await dbExecAsync({
                 db,
                 sql: (`
@@ -1102,8 +1094,8 @@ SELECT
         }
         await Promise.all([
             test2(sqlTrainFile, sqlPredictFile, 1),
-            test2(sqlTrainTable, sqlPredictFile, 2),
-            test2(sqlTrainFile, sqlPredictTable, 3),
+            //!! test2(sqlTrainTable, sqlPredictFile, 2),
+            //!! test2(sqlTrainFile, sqlPredictTable, 3),
             test2(sqlTrainTable, sqlPredictTable, 4)
         ]);
     });

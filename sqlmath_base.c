@@ -2610,8 +2610,11 @@ static void sql3_lgbm_predictfortable_step(
     }
     int64_t out_len = 0;
     double data[SQLITE_MAX_FUNCTION_ARG] = { 0 };
+    // fprintf(stderr, "\nlgbm_modelpredictfortable - out_num_iterations=%d",
+    //     sqlite3_value_int(argv[3]));
     for (int ii = 0; ii < ncol; ii += 1) {
-        data[ii] = sqlite3_value_double_or_nan(argv[ii]);
+        data[ii] = sqlite3_value_double_or_nan(argv[argc0 + ii]);
+        // fprintf(stderr, " %0.3f", data[ii]);
     }
     errcode = LGBM_BoosterPredictForMatSingleRowFast(   //
         agg->fastConfig,        // FastConfigHandle fastConfig_handle,
