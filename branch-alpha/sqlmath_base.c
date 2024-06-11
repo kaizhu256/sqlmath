@@ -152,14 +152,6 @@ file sqlmath_h - start
         goto catch_error; \
     }
 
-#ifdef _WIN32
-#define LGBM_DLSYM(func) \
-        func = (func##_t) GetProcAddress((HMODULE) lgbm_library, #func);
-#else
-#define LGBM_DLSYM(func) \
-        func = (func##_t) dlsym(lgbm_library, #func);
-#endif                          // _WIN32
-
 // This function will if <cond> is falsy, terminate process with <msg>.
 #define NAPI_ASSERT_FATAL(cond, msg) \
     if (!(cond)) { \
@@ -1760,8 +1752,6 @@ SQLMATH_FUNC static void sql1_fmod_func(
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - start
 // https://lightgbm.readthedocs.io/en/latest/C-API.html
-static void *lgbm_library = NULL;
-
 SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     sqlite3_context * context,
     int argc,
@@ -1787,101 +1777,7 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     if (errcode) {
         return;
     }
-    LGBM_DLSYM(LGBM_BoosterAddValidData);
-    LGBM_DLSYM(LGBM_BoosterCalcNumPredict);
-    LGBM_DLSYM(LGBM_BoosterCreate);
-    LGBM_DLSYM(LGBM_BoosterCreateFromModelfile);
-    LGBM_DLSYM(LGBM_BoosterDumpModel);
-    LGBM_DLSYM(LGBM_BoosterFeatureImportance);
-    LGBM_DLSYM(LGBM_BoosterFree);
-    LGBM_DLSYM(LGBM_BoosterFreePredictSparse);
-    LGBM_DLSYM(LGBM_BoosterGetCurrentIteration);
-    LGBM_DLSYM(LGBM_BoosterGetEval);
-    LGBM_DLSYM(LGBM_BoosterGetEvalCounts);
-    LGBM_DLSYM(LGBM_BoosterGetEvalNames);
-    LGBM_DLSYM(LGBM_BoosterGetFeatureNames);
-    LGBM_DLSYM(LGBM_BoosterGetLeafValue);
-    LGBM_DLSYM(LGBM_BoosterGetLinear);
-    LGBM_DLSYM(LGBM_BoosterGetLoadedParam);
-    LGBM_DLSYM(LGBM_BoosterGetLowerBoundValue);
-    LGBM_DLSYM(LGBM_BoosterGetNumClasses);
-    LGBM_DLSYM(LGBM_BoosterGetNumFeature);
-    LGBM_DLSYM(LGBM_BoosterGetNumPredict);
-    LGBM_DLSYM(LGBM_BoosterGetPredict);
-    LGBM_DLSYM(LGBM_BoosterGetUpperBoundValue);
-    LGBM_DLSYM(LGBM_BoosterLoadModelFromString);
-    LGBM_DLSYM(LGBM_BoosterMerge);
-    LGBM_DLSYM(LGBM_BoosterNumModelPerIteration);
-    LGBM_DLSYM(LGBM_BoosterNumberOfTotalModel);
-    LGBM_DLSYM(LGBM_BoosterPredictForArrow);
-    LGBM_DLSYM(LGBM_BoosterPredictForCSC);
-    LGBM_DLSYM(LGBM_BoosterPredictForCSR);
-    LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRow);
-    LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRowFast);
-    LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRowFastInit);
-    LGBM_DLSYM(LGBM_BoosterPredictForFile);
-    LGBM_DLSYM(LGBM_BoosterPredictForMat);
-    LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRow);
-    LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRowFast);
-    LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRowFastInit);
-    LGBM_DLSYM(LGBM_BoosterPredictForMats);
-    LGBM_DLSYM(LGBM_BoosterPredictSparseOutput);
-    LGBM_DLSYM(LGBM_BoosterRefit);
-    LGBM_DLSYM(LGBM_BoosterResetParameter);
-    LGBM_DLSYM(LGBM_BoosterResetTrainingData);
-    LGBM_DLSYM(LGBM_BoosterRollbackOneIter);
-    LGBM_DLSYM(LGBM_BoosterSaveModel);
-    LGBM_DLSYM(LGBM_BoosterSaveModelToString);
-    LGBM_DLSYM(LGBM_BoosterSetLeafValue);
-    LGBM_DLSYM(LGBM_BoosterShuffleModels);
-    LGBM_DLSYM(LGBM_BoosterUpdateOneIter);
-    LGBM_DLSYM(LGBM_BoosterUpdateOneIterCustom);
-    LGBM_DLSYM(LGBM_BoosterValidateFeatureNames);
-    LGBM_DLSYM(LGBM_ByteBufferFree);
-    LGBM_DLSYM(LGBM_ByteBufferGetAt);
-    LGBM_DLSYM(LGBM_DatasetAddFeaturesFrom);
-    LGBM_DLSYM(LGBM_DatasetCreateByReference);
-    LGBM_DLSYM(LGBM_DatasetCreateFromArrow);
-    LGBM_DLSYM(LGBM_DatasetCreateFromCSC);
-    LGBM_DLSYM(LGBM_DatasetCreateFromCSR);
-    LGBM_DLSYM(LGBM_DatasetCreateFromCSRFunc);
-    LGBM_DLSYM(LGBM_DatasetCreateFromFile);
-    LGBM_DLSYM(LGBM_DatasetCreateFromMat);
-    LGBM_DLSYM(LGBM_DatasetCreateFromMats);
-    LGBM_DLSYM(LGBM_DatasetCreateFromSampledColumn);
-    LGBM_DLSYM(LGBM_DatasetCreateFromSerializedReference);
-    LGBM_DLSYM(LGBM_DatasetDumpText);
-    LGBM_DLSYM(LGBM_DatasetFree);
-    LGBM_DLSYM(LGBM_DatasetGetFeatureNames);
-    LGBM_DLSYM(LGBM_DatasetGetFeatureNumBin);
-    LGBM_DLSYM(LGBM_DatasetGetField);
-    LGBM_DLSYM(LGBM_DatasetGetNumData);
-    LGBM_DLSYM(LGBM_DatasetGetNumFeature);
-    LGBM_DLSYM(LGBM_DatasetGetSubset);
-    LGBM_DLSYM(LGBM_DatasetInitStreaming);
-    LGBM_DLSYM(LGBM_DatasetMarkFinished);
-    LGBM_DLSYM(LGBM_DatasetPushRows);
-    LGBM_DLSYM(LGBM_DatasetPushRowsByCSR);
-    LGBM_DLSYM(LGBM_DatasetPushRowsByCSRWithMetadata);
-    LGBM_DLSYM(LGBM_DatasetPushRowsWithMetadata);
-    LGBM_DLSYM(LGBM_DatasetSaveBinary);
-    LGBM_DLSYM(LGBM_DatasetSerializeReferenceToBinary);
-    LGBM_DLSYM(LGBM_DatasetSetFeatureNames);
-    LGBM_DLSYM(LGBM_DatasetSetField);
-    LGBM_DLSYM(LGBM_DatasetSetFieldFromArrow);
-    LGBM_DLSYM(LGBM_DatasetSetWaitForManualFinish);
-    LGBM_DLSYM(LGBM_DatasetUpdateParamChecking);
-    LGBM_DLSYM(LGBM_DumpParamAliases);
-    LGBM_DLSYM(LGBM_FastConfigFree);
-    LGBM_DLSYM(LGBM_GetLastError);
-    LGBM_DLSYM(LGBM_GetMaxThreads);
-    LGBM_DLSYM(LGBM_GetSampleCount);
-    LGBM_DLSYM(LGBM_NetworkFree);
-    LGBM_DLSYM(LGBM_NetworkInit);
-    LGBM_DLSYM(LGBM_NetworkInitWithFunctions);
-    LGBM_DLSYM(LGBM_RegisterLogCallback);
-    LGBM_DLSYM(LGBM_SampleIndices);
-    LGBM_DLSYM(LGBM_SetMaxThreads);
+    LGBM_dlsym();
 }
 
 SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
