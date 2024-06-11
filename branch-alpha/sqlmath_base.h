@@ -36,7 +36,7 @@
 #define LGBM_DLSYM(func) \
     func = (func##_t) dlsym(lgbm_library, #func);
 #endif                          // _WIN32
-static void *lgbm_library = NULL;
+// https://github.com/microsoft/LightGBM/blob/v4.3.0/include/LightGBM/arrow.h
 typedef struct ArrowSchema {
     // Array type description
     const char *format;
@@ -74,6 +74,7 @@ typedef struct ArrowArray {
     // Opaque producer-specific data
     void *private_data;
 } ArrowArray;
+static void *lgbm_library = NULL;
 
 
 #endif                          // SQLMATH_BASE_H3

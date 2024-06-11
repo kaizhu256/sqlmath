@@ -787,6 +787,8 @@ DELETE FROM ${tableChart} WHERE datatype = 'xx_label';
             `);
         }),
         [
+            "sector",
+            "subsector",
             "stock"
         ].map(function (grouping) {
             return [
@@ -813,7 +815,83 @@ DELETE FROM ${tableChart} WHERE datatype = 'xx_label';
                     ),
                     yvalueSuffix: " %"
                 };
-                sqlSelect = (`
+                sqlSelect = (
+                    grouping === "sector"
+                    ? (`
+SELECT
+        IIF(category LIKE 'short%', 1, grouping_index) AS series_color,
+        category LIKE '-%' AS is_dummy,
+        0 AS is_hidden,
+        -- grouping IN ('account', 'exchange') AS is_hidden,
+        printf(
+            '%05.4f%% - %s - %s',
+            ${columnData},
+            grouping,
+            category
+        ) AS series_label,
+        ROW_NUMBER() OVER (
+            ORDER BY
+                grouping_index,
+                category != '----' DESC,
+                ${columnData} DESC
+        ) AS xx,
+        category AS xx_label,
+        ${columnData} AS yy
+    FROM (
+        SELECT
+            category,
+            grouping,
+            grouping_index,
+            ${columnData},
+            perc_holding
+        FROM tradebot_position_category
+        WHERE
+            grouping != 'subsector'
+        --
+        UNION ALL
+        --
+        SELECT
+            '----' AS category,
+            '----' AS grouping,
+            grouping_index,
+            NULL AS ${columnData},
+            NULL perc_holding
+        FROM (
+            SELECT DISTINCT
+                grouping,
+                grouping_index
+            FROM tradebot_position_category
+        )
+    )
+                    `)
+                    : grouping === "subsector"
+                    ? (`
+SELECT
+        IIF(category LIKE 'short%', 1, grouping_index) AS series_color,
+        category LIKE '-%' AS is_dummy,
+        0 AS is_hidden,
+        printf('%05.4f%% - %s', ${columnData}, category) AS series_label,
+        ROW_NUMBER() OVER (
+            ORDER BY
+                grouping_index,
+                category != '----' DESC,
+                ${columnData} DESC
+        ) AS xx,
+        SUBSTR(category, INSTR(category, '____') + 4) AS xx_label,
+        ${columnData} AS yy
+    FROM (
+        SELECT
+            category,
+            grouping,
+            grouping_index,
+            ${columnData},
+            perc_holding
+        FROM tradebot_position_category
+        WHERE
+            grouping = 'subsector'
+    )
+                    `)
+                    : (`
 SELECT
         IIF(is_short, 1, 2) AS series_color,
         0 AS is_dummy,
@@ -829,7 +907,8 @@ SELECT
         sym AS xx_label,
         ${columnData} AS yy
     FROM tradebot_position_stock
-                `);
+                    `)
+                );
                 tableChart = `chart._{{ii}}_tradebot_${grouping}_${ptype}`;
                 return (`
 -- chart - ${tableChart} - create
