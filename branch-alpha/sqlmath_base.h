@@ -12,7 +12,7 @@ shRollupFetch
             "replaceList": [
                 {
                     "aa": "\nLIGHTGBM_C_EXPORT ([^\\(]*?) (\\w*?)(\\([\\S\\s]*?\\));\n",
-                    "bb": "\nLIGHTGBM_C_EXPORT $1 (*$2_t) $3;\nstatic $2_t $2 = NULL;\n",
+                    "bb": "\nLIGHTGBM_C_EXPORT $1 (*$2_t) $3;\nstatic $2_t $2 = NULL;\n// LGBM_DLSYM($2);\n",
                     "flags": "g",
                     "substr": ""
                 }
@@ -181,6 +181,7 @@ typedef void* ByteBufferHandle; /*!< \brief Handle of ByteBuffer. */
  */
 LIGHTGBM_C_EXPORT const char* (*LGBM_GetLastError_t) ();
 static LGBM_GetLastError_t LGBM_GetLastError = NULL;
+// LGBM_DLSYM(LGBM_GetLastError);
 
 /*!
  * \brief Dump all parameter names with their aliases to JSON.
@@ -193,6 +194,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DumpParamAliases_t) (int64_t buffer_len,
                                             int64_t* out_len,
                                             char* out_str);
 static LGBM_DumpParamAliases_t LGBM_DumpParamAliases = NULL;
+// LGBM_DLSYM(LGBM_DumpParamAliases);
 
 /*!
  * \brief Register a callback function for log redirecting.
@@ -201,6 +203,7 @@ static LGBM_DumpParamAliases_t LGBM_DumpParamAliases = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_RegisterLogCallback_t) (void (*callback)(const char*));
 static LGBM_RegisterLogCallback_t LGBM_RegisterLogCallback = NULL;
+// LGBM_DLSYM(LGBM_RegisterLogCallback);
 
 /*!
  * \brief Get number of samples based on parameters and total number of rows of data.
@@ -213,6 +216,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_GetSampleCount_t) (int32_t num_total_row,
                                           const char* parameters,
                                           int* out);
 static LGBM_GetSampleCount_t LGBM_GetSampleCount = NULL;
+// LGBM_DLSYM(LGBM_GetSampleCount);
 
 /*!
  * \brief Create sample indices for total number of rows.
@@ -229,6 +233,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_SampleIndices_t) (int32_t num_total_row,
                                          void* out,
                                          int32_t* out_len);
 static LGBM_SampleIndices_t LGBM_SampleIndices = NULL;
+// LGBM_DLSYM(LGBM_SampleIndices);
 
 /*!
  * \brief Get a ByteBuffer value at an index.
@@ -239,6 +244,7 @@ static LGBM_SampleIndices_t LGBM_SampleIndices = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_ByteBufferGetAt_t) (ByteBufferHandle handle, int32_t index, uint8_t* out_val);
 static LGBM_ByteBufferGetAt_t LGBM_ByteBufferGetAt = NULL;
+// LGBM_DLSYM(LGBM_ByteBufferGetAt);
 
 /*!
  * \brief Free space for byte buffer.
@@ -247,6 +253,7 @@ static LGBM_ByteBufferGetAt_t LGBM_ByteBufferGetAt = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_ByteBufferFree_t) (ByteBufferHandle handle);
 static LGBM_ByteBufferFree_t LGBM_ByteBufferFree = NULL;
+// LGBM_DLSYM(LGBM_ByteBufferFree);
 
 /* --- start Dataset interface */
 
@@ -263,6 +270,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromFile_t) (const char* filename,
                                                  const DatasetHandle reference,
                                                  DatasetHandle* out);
 static LGBM_DatasetCreateFromFile_t LGBM_DatasetCreateFromFile = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromFile);
 
 /*!
  * \brief Allocate the space for dataset and bucket feature bins according to sampled data.
@@ -287,6 +295,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromSampledColumn_t) (double** sample_
                                                           const char* parameters,
                                                           DatasetHandle* out);
 static LGBM_DatasetCreateFromSampledColumn_t LGBM_DatasetCreateFromSampledColumn = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromSampledColumn);
 
 /*!
  * \brief Allocate the space for dataset and bucket feature bins according to reference dataset.
@@ -299,6 +308,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateByReference_t) (const DatasetHandle re
                                                     int64_t num_total_row,
                                                     DatasetHandle* out);
 static LGBM_DatasetCreateByReference_t LGBM_DatasetCreateByReference = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateByReference);
 
 /*!
  * \brief Initialize the Dataset for streaming.
@@ -319,6 +329,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetInitStreaming_t) (DatasetHandle dataset,
                                                 int32_t nthreads,
                                                 int32_t omp_max_threads);
 static LGBM_DatasetInitStreaming_t LGBM_DatasetInitStreaming = NULL;
+// LGBM_DLSYM(LGBM_DatasetInitStreaming);
 
 /*!
  * \brief Allocate the space for dataset and bucket feature bins according to serialized reference dataset.
@@ -337,6 +348,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromSerializedReference_t) (const void
                                                                 const char* parameters,
                                                                 DatasetHandle* out);
 static LGBM_DatasetCreateFromSerializedReference_t LGBM_DatasetCreateFromSerializedReference = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromSerializedReference);
 
 /*!
  * \brief Push data to existing dataset, if ``nrow + start_row == num_total_row``, will call ``dataset->FinishLoad``.
@@ -355,6 +367,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetPushRows_t) (DatasetHandle dataset,
                                            int32_t ncol,
                                            int32_t start_row);
 static LGBM_DatasetPushRows_t LGBM_DatasetPushRows = NULL;
+// LGBM_DLSYM(LGBM_DatasetPushRows);
 
 /*!
  * \brief Push data to existing dataset.
@@ -388,6 +401,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetPushRowsWithMetadata_t) (DatasetHandle datas
                                                        const int32_t* query,
                                                        int32_t tid);
 static LGBM_DatasetPushRowsWithMetadata_t LGBM_DatasetPushRowsWithMetadata = NULL;
+// LGBM_DLSYM(LGBM_DatasetPushRowsWithMetadata);
 
 /*!
  * \brief Push data to existing dataset, if ``nrow + start_row == num_total_row``, will call ``dataset->FinishLoad``.
@@ -414,6 +428,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetPushRowsByCSR_t) (DatasetHandle dataset,
                                                 int64_t num_col,
                                                 int64_t start_row);
 static LGBM_DatasetPushRowsByCSR_t LGBM_DatasetPushRowsByCSR = NULL;
+// LGBM_DLSYM(LGBM_DatasetPushRowsByCSR);
 
 /*!
  * \brief Push CSR data to existing dataset. (See ``LGBM_DatasetPushRowsWithMetadata`` for more details.)
@@ -448,6 +463,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetPushRowsByCSRWithMetadata_t) (DatasetHandle 
                                                             const int32_t* query,
                                                             int32_t tid);
 static LGBM_DatasetPushRowsByCSRWithMetadata_t LGBM_DatasetPushRowsByCSRWithMetadata = NULL;
+// LGBM_DLSYM(LGBM_DatasetPushRowsByCSRWithMetadata);
 
 /*!
  * \brief Set whether or not the Dataset waits for a manual MarkFinished call or calls FinishLoad on itself automatically.
@@ -458,6 +474,7 @@ static LGBM_DatasetPushRowsByCSRWithMetadata_t LGBM_DatasetPushRowsByCSRWithMeta
  */
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetSetWaitForManualFinish_t) (DatasetHandle dataset, int wait);
 static LGBM_DatasetSetWaitForManualFinish_t LGBM_DatasetSetWaitForManualFinish = NULL;
+// LGBM_DLSYM(LGBM_DatasetSetWaitForManualFinish);
 
 /*!
  * \brief Mark the Dataset as complete by calling ``dataset->FinishLoad``.
@@ -466,6 +483,7 @@ static LGBM_DatasetSetWaitForManualFinish_t LGBM_DatasetSetWaitForManualFinish =
  */
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetMarkFinished_t) (DatasetHandle dataset);
 static LGBM_DatasetMarkFinished_t LGBM_DatasetMarkFinished = NULL;
+// LGBM_DLSYM(LGBM_DatasetMarkFinished);
 
 /*!
  * \brief Create a dataset from CSR format.
@@ -494,6 +512,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromCSR_t) (const void* indptr,
                                                 const DatasetHandle reference,
                                                 DatasetHandle* out);
 static LGBM_DatasetCreateFromCSR_t LGBM_DatasetCreateFromCSR = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromCSR);
 
 /*!
  * \brief Create a dataset from CSR format through callbacks.
@@ -513,6 +532,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromCSRFunc_t) (void* get_row_funptr,
                                                     const DatasetHandle reference,
                                                     DatasetHandle* out);
 static LGBM_DatasetCreateFromCSRFunc_t LGBM_DatasetCreateFromCSRFunc = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromCSRFunc);
 
 /*!
  * \brief Create a dataset from CSC format.
@@ -541,6 +561,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromCSC_t) (const void* col_ptr,
                                                 const DatasetHandle reference,
                                                 DatasetHandle* out);
 static LGBM_DatasetCreateFromCSC_t LGBM_DatasetCreateFromCSC = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromCSC);
 
 /*!
  * \brief Create dataset from dense matrix.
@@ -563,6 +584,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromMat_t) (const void* data,
                                                 const DatasetHandle reference,
                                                 DatasetHandle* out);
 static LGBM_DatasetCreateFromMat_t LGBM_DatasetCreateFromMat = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromMat);
 
 /*!
  * \brief Create dataset from array of dense matrices.
@@ -587,6 +609,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromMats_t) (int32_t nmat,
                                                  const DatasetHandle reference,
                                                  DatasetHandle* out);
 static LGBM_DatasetCreateFromMats_t LGBM_DatasetCreateFromMats = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromMats);
 
 /*!
  * \brief Create dataset from Arrow.
@@ -605,6 +628,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetCreateFromArrow_t) (int64_t n_chunks,
                                                   const DatasetHandle reference,
                                                   DatasetHandle *out);
 static LGBM_DatasetCreateFromArrow_t LGBM_DatasetCreateFromArrow = NULL;
+// LGBM_DLSYM(LGBM_DatasetCreateFromArrow);
 
 /*!
  * \brief Create subset of a data.
@@ -621,6 +645,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetSubset_t) (const DatasetHandle handle,
                                             const char* parameters,
                                             DatasetHandle* out);
 static LGBM_DatasetGetSubset_t LGBM_DatasetGetSubset = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetSubset);
 
 /*!
  * \brief Save feature names to dataset.
@@ -633,6 +658,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetSetFeatureNames_t) (DatasetHandle handle,
                                                   const char** feature_names,
                                                   int num_feature_names);
 static LGBM_DatasetSetFeatureNames_t LGBM_DatasetSetFeatureNames = NULL;
+// LGBM_DLSYM(LGBM_DatasetSetFeatureNames);
 
 /*!
  * \brief Get feature names of dataset.
@@ -653,6 +679,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetFeatureNames_t) (DatasetHandle handle,
                                                   size_t* out_buffer_len,
                                                   char** feature_names);
 static LGBM_DatasetGetFeatureNames_t LGBM_DatasetGetFeatureNames = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetFeatureNames);
 
 /*!
  * \brief Free space for dataset.
@@ -661,6 +688,7 @@ static LGBM_DatasetGetFeatureNames_t LGBM_DatasetGetFeatureNames = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetFree_t) (DatasetHandle handle);
 static LGBM_DatasetFree_t LGBM_DatasetFree = NULL;
+// LGBM_DLSYM(LGBM_DatasetFree);
 
 /*!
  * \brief Save dataset to binary file.
@@ -671,6 +699,7 @@ static LGBM_DatasetFree_t LGBM_DatasetFree = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetSaveBinary_t) (DatasetHandle handle,
                                              const char* filename);
 static LGBM_DatasetSaveBinary_t LGBM_DatasetSaveBinary = NULL;
+// LGBM_DLSYM(LGBM_DatasetSaveBinary);
 
 /*!
  * \brief Create a dataset schema representation as a binary byte array (excluding data).
@@ -683,6 +712,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetSerializeReferenceToBinary_t) (DatasetHandle
                                                              ByteBufferHandle* out,
                                                              int32_t* out_len);
 static LGBM_DatasetSerializeReferenceToBinary_t LGBM_DatasetSerializeReferenceToBinary = NULL;
+// LGBM_DLSYM(LGBM_DatasetSerializeReferenceToBinary);
 
 /*!
  * \brief Save dataset to text file, intended for debugging use only.
@@ -693,6 +723,7 @@ static LGBM_DatasetSerializeReferenceToBinary_t LGBM_DatasetSerializeReferenceTo
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetDumpText_t) (DatasetHandle handle,
                                            const char* filename);
 static LGBM_DatasetDumpText_t LGBM_DatasetDumpText = NULL;
+// LGBM_DLSYM(LGBM_DatasetDumpText);
 
 /*!
  * \brief Set vector to a content in info.
@@ -713,6 +744,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetSetField_t) (DatasetHandle handle,
                                            int num_element,
                                            int type);
 static LGBM_DatasetSetField_t LGBM_DatasetSetField = NULL;
+// LGBM_DLSYM(LGBM_DatasetSetField);
 
 /*!
  * \brief Set vector to a content in info.
@@ -733,6 +765,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetSetFieldFromArrow_t) (DatasetHandle handle,
                                                     const ArrowArray* chunks,
                                                     const ArrowSchema* schema);
 static LGBM_DatasetSetFieldFromArrow_t LGBM_DatasetSetFieldFromArrow = NULL;
+// LGBM_DLSYM(LGBM_DatasetSetFieldFromArrow);
 
 /*!
  * \brief Get info vector from dataset.
@@ -749,6 +782,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetField_t) (DatasetHandle handle,
                                            const void** out_ptr,
                                            int* out_type);
 static LGBM_DatasetGetField_t LGBM_DatasetGetField = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetField);
 
 /*!
  * \brief Raise errors for attempts to update dataset parameters.
@@ -759,6 +793,7 @@ static LGBM_DatasetGetField_t LGBM_DatasetGetField = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetUpdateParamChecking_t) (const char* old_parameters,
                                                       const char* new_parameters);
 static LGBM_DatasetUpdateParamChecking_t LGBM_DatasetUpdateParamChecking = NULL;
+// LGBM_DLSYM(LGBM_DatasetUpdateParamChecking);
 
 /*!
  * \brief Get number of data points.
@@ -769,6 +804,7 @@ static LGBM_DatasetUpdateParamChecking_t LGBM_DatasetUpdateParamChecking = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetNumData_t) (DatasetHandle handle,
                                              int* out);
 static LGBM_DatasetGetNumData_t LGBM_DatasetGetNumData = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetNumData);
 
 /*!
  * \brief Get number of features.
@@ -779,6 +815,7 @@ static LGBM_DatasetGetNumData_t LGBM_DatasetGetNumData = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetNumFeature_t) (DatasetHandle handle,
                                                 int* out);
 static LGBM_DatasetGetNumFeature_t LGBM_DatasetGetNumFeature = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetNumFeature);
 
 /*!
  * \brief Get number of bins for feature.
@@ -791,6 +828,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_DatasetGetFeatureNumBin_t) (DatasetHandle handle,
                                                    int feature,
                                                    int* out);
 static LGBM_DatasetGetFeatureNumBin_t LGBM_DatasetGetFeatureNumBin = NULL;
+// LGBM_DLSYM(LGBM_DatasetGetFeatureNumBin);
 
 /*!
  * \brief Add features from ``source`` to ``target``.
@@ -801,6 +839,7 @@ static LGBM_DatasetGetFeatureNumBin_t LGBM_DatasetGetFeatureNumBin = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_DatasetAddFeaturesFrom_t) (DatasetHandle target,
                                                   DatasetHandle source);
 static LGBM_DatasetAddFeaturesFrom_t LGBM_DatasetAddFeaturesFrom = NULL;
+// LGBM_DLSYM(LGBM_DatasetAddFeaturesFrom);
 
 /* --- start Booster interfaces */
 
@@ -812,6 +851,7 @@ static LGBM_DatasetAddFeaturesFrom_t LGBM_DatasetAddFeaturesFrom = NULL;
 */
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetLinear_t) (BoosterHandle handle, int* out);
 static LGBM_BoosterGetLinear_t LGBM_BoosterGetLinear = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetLinear);
 
 /*!
  * \brief Create a new boosting learner.
@@ -824,6 +864,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterCreate_t) (const DatasetHandle train_data,
                                          const char* parameters,
                                          BoosterHandle* out);
 static LGBM_BoosterCreate_t LGBM_BoosterCreate = NULL;
+// LGBM_DLSYM(LGBM_BoosterCreate);
 
 /*!
  * \brief Load an existing booster from model file.
@@ -836,6 +877,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterCreateFromModelfile_t) (const char* filename
                                                       int* out_num_iterations,
                                                       BoosterHandle* out);
 static LGBM_BoosterCreateFromModelfile_t LGBM_BoosterCreateFromModelfile = NULL;
+// LGBM_DLSYM(LGBM_BoosterCreateFromModelfile);
 
 /*!
  * \brief Load an existing booster from string.
@@ -848,6 +890,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterLoadModelFromString_t) (const char* model_st
                                                       int* out_num_iterations,
                                                       BoosterHandle* out);
 static LGBM_BoosterLoadModelFromString_t LGBM_BoosterLoadModelFromString = NULL;
+// LGBM_DLSYM(LGBM_BoosterLoadModelFromString);
 
 /*!
  * \brief Get parameters as JSON string.
@@ -862,6 +905,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetLoadedParam_t) (BoosterHandle handle,
                                                  int64_t* out_len,
                                                  char* out_str);
 static LGBM_BoosterGetLoadedParam_t LGBM_BoosterGetLoadedParam = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetLoadedParam);
 
 
 /*!
@@ -871,6 +915,7 @@ static LGBM_BoosterGetLoadedParam_t LGBM_BoosterGetLoadedParam = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterFree_t) (BoosterHandle handle);
 static LGBM_BoosterFree_t LGBM_BoosterFree = NULL;
+// LGBM_DLSYM(LGBM_BoosterFree);
 
 /*!
  * \brief Shuffle models.
@@ -883,6 +928,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterShuffleModels_t) (BoosterHandle handle,
                                                 int start_iter,
                                                 int end_iter);
 static LGBM_BoosterShuffleModels_t LGBM_BoosterShuffleModels = NULL;
+// LGBM_DLSYM(LGBM_BoosterShuffleModels);
 
 /*!
  * \brief Merge model from ``other_handle`` into ``handle``.
@@ -893,6 +939,7 @@ static LGBM_BoosterShuffleModels_t LGBM_BoosterShuffleModels = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterMerge_t) (BoosterHandle handle,
                                         BoosterHandle other_handle);
 static LGBM_BoosterMerge_t LGBM_BoosterMerge = NULL;
+// LGBM_DLSYM(LGBM_BoosterMerge);
 
 /*!
  * \brief Add new validation data to booster.
@@ -903,6 +950,7 @@ static LGBM_BoosterMerge_t LGBM_BoosterMerge = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterAddValidData_t) (BoosterHandle handle,
                                                const DatasetHandle valid_data);
 static LGBM_BoosterAddValidData_t LGBM_BoosterAddValidData = NULL;
+// LGBM_DLSYM(LGBM_BoosterAddValidData);
 
 /*!
  * \brief Reset training data for booster.
@@ -913,6 +961,7 @@ static LGBM_BoosterAddValidData_t LGBM_BoosterAddValidData = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterResetTrainingData_t) (BoosterHandle handle,
                                                     const DatasetHandle train_data);
 static LGBM_BoosterResetTrainingData_t LGBM_BoosterResetTrainingData = NULL;
+// LGBM_DLSYM(LGBM_BoosterResetTrainingData);
 
 /*!
  * \brief Reset config for booster.
@@ -923,6 +972,7 @@ static LGBM_BoosterResetTrainingData_t LGBM_BoosterResetTrainingData = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterResetParameter_t) (BoosterHandle handle,
                                                  const char* parameters);
 static LGBM_BoosterResetParameter_t LGBM_BoosterResetParameter = NULL;
+// LGBM_DLSYM(LGBM_BoosterResetParameter);
 
 /*!
  * \brief Get number of classes.
@@ -933,6 +983,7 @@ static LGBM_BoosterResetParameter_t LGBM_BoosterResetParameter = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetNumClasses_t) (BoosterHandle handle,
                                                 int* out_len);
 static LGBM_BoosterGetNumClasses_t LGBM_BoosterGetNumClasses = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetNumClasses);
 
 /*!
  * \brief Update the model for one iteration.
@@ -943,6 +994,7 @@ static LGBM_BoosterGetNumClasses_t LGBM_BoosterGetNumClasses = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterUpdateOneIter_t) (BoosterHandle handle,
                                                 int* is_finished);
 static LGBM_BoosterUpdateOneIter_t LGBM_BoosterUpdateOneIter = NULL;
+// LGBM_DLSYM(LGBM_BoosterUpdateOneIter);
 
 /*!
  * \brief Refit the tree model using the new data (online learning).
@@ -957,6 +1009,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterRefit_t) (BoosterHandle handle,
                                         int32_t nrow,
                                         int32_t ncol);
 static LGBM_BoosterRefit_t LGBM_BoosterRefit = NULL;
+// LGBM_DLSYM(LGBM_BoosterRefit);
 
 /*!
  * \brief Update the model by specifying gradient and Hessian directly
@@ -975,6 +1028,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterUpdateOneIterCustom_t) (BoosterHandle handle
                                                       const float* hess,
                                                       int* is_finished);
 static LGBM_BoosterUpdateOneIterCustom_t LGBM_BoosterUpdateOneIterCustom = NULL;
+// LGBM_DLSYM(LGBM_BoosterUpdateOneIterCustom);
 
 /*!
  * \brief Rollback one iteration.
@@ -983,6 +1037,7 @@ static LGBM_BoosterUpdateOneIterCustom_t LGBM_BoosterUpdateOneIterCustom = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterRollbackOneIter_t) (BoosterHandle handle);
 static LGBM_BoosterRollbackOneIter_t LGBM_BoosterRollbackOneIter = NULL;
+// LGBM_DLSYM(LGBM_BoosterRollbackOneIter);
 
 /*!
  * \brief Get index of the current boosting iteration.
@@ -993,6 +1048,7 @@ static LGBM_BoosterRollbackOneIter_t LGBM_BoosterRollbackOneIter = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetCurrentIteration_t) (BoosterHandle handle,
                                                       int* out_iteration);
 static LGBM_BoosterGetCurrentIteration_t LGBM_BoosterGetCurrentIteration = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetCurrentIteration);
 
 /*!
  * \brief Get number of trees per iteration.
@@ -1003,6 +1059,7 @@ static LGBM_BoosterGetCurrentIteration_t LGBM_BoosterGetCurrentIteration = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterNumModelPerIteration_t) (BoosterHandle handle,
                                                        int* out_tree_per_iteration);
 static LGBM_BoosterNumModelPerIteration_t LGBM_BoosterNumModelPerIteration = NULL;
+// LGBM_DLSYM(LGBM_BoosterNumModelPerIteration);
 
 /*!
  * \brief Get number of weak sub-models.
@@ -1013,6 +1070,7 @@ static LGBM_BoosterNumModelPerIteration_t LGBM_BoosterNumModelPerIteration = NUL
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterNumberOfTotalModel_t) (BoosterHandle handle,
                                                      int* out_models);
 static LGBM_BoosterNumberOfTotalModel_t LGBM_BoosterNumberOfTotalModel = NULL;
+// LGBM_DLSYM(LGBM_BoosterNumberOfTotalModel);
 
 /*!
  * \brief Get number of evaluation metrics.
@@ -1023,6 +1081,7 @@ static LGBM_BoosterNumberOfTotalModel_t LGBM_BoosterNumberOfTotalModel = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetEvalCounts_t) (BoosterHandle handle,
                                                 int* out_len);
 static LGBM_BoosterGetEvalCounts_t LGBM_BoosterGetEvalCounts = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetEvalCounts);
 
 /*!
  * \brief Get names of evaluation metrics.
@@ -1043,6 +1102,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetEvalNames_t) (BoosterHandle handle,
                                                size_t* out_buffer_len,
                                                char** out_strs);
 static LGBM_BoosterGetEvalNames_t LGBM_BoosterGetEvalNames = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetEvalNames);
 
 /*!
  * \brief Get names of features.
@@ -1063,6 +1123,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetFeatureNames_t) (BoosterHandle handle,
                                                   size_t* out_buffer_len,
                                                   char** out_strs);
 static LGBM_BoosterGetFeatureNames_t LGBM_BoosterGetFeatureNames = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetFeatureNames);
 
 /*!
  * \brief Check that the feature names of the data match the ones used to train the booster.
@@ -1075,6 +1136,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterValidateFeatureNames_t) (BoosterHandle handl
                                                        const char** data_names,
                                                        int data_num_features);
 static LGBM_BoosterValidateFeatureNames_t LGBM_BoosterValidateFeatureNames = NULL;
+// LGBM_DLSYM(LGBM_BoosterValidateFeatureNames);
 
 /*!
  * \brief Get number of features.
@@ -1085,6 +1147,7 @@ static LGBM_BoosterValidateFeatureNames_t LGBM_BoosterValidateFeatureNames = NUL
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetNumFeature_t) (BoosterHandle handle,
                                                 int* out_len);
 static LGBM_BoosterGetNumFeature_t LGBM_BoosterGetNumFeature = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetNumFeature);
 
 /*!
  * \brief Get evaluation for training data and validation data.
@@ -1102,6 +1165,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetEval_t) (BoosterHandle handle,
                                           int* out_len,
                                           double* out_results);
 static LGBM_BoosterGetEval_t LGBM_BoosterGetEval = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetEval);
 
 /*!
  * \brief Get number of predictions for training data and validation data
@@ -1115,6 +1179,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetNumPredict_t) (BoosterHandle handle,
                                                 int data_idx,
                                                 int64_t* out_len);
 static LGBM_BoosterGetNumPredict_t LGBM_BoosterGetNumPredict = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetNumPredict);
 
 /*!
  * \brief Get prediction for training data and validation data.
@@ -1131,6 +1196,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetPredict_t) (BoosterHandle handle,
                                              int64_t* out_len,
                                              double* out_result);
 static LGBM_BoosterGetPredict_t LGBM_BoosterGetPredict = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetPredict);
 
 /*!
  * \brief Make prediction for file.
@@ -1157,6 +1223,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForFile_t) (BoosterHandle handle,
                                                  const char* parameter,
                                                  const char* result_filename);
 static LGBM_BoosterPredictForFile_t LGBM_BoosterPredictForFile = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForFile);
 
 /*!
  * \brief Get number of predictions.
@@ -1179,6 +1246,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterCalcNumPredict_t) (BoosterHandle handle,
                                                  int num_iteration,
                                                  int64_t* out_len);
 static LGBM_BoosterCalcNumPredict_t LGBM_BoosterCalcNumPredict = NULL;
+// LGBM_DLSYM(LGBM_BoosterCalcNumPredict);
 
 /*!
  * \brief Release FastConfig object.
@@ -1188,6 +1256,7 @@ static LGBM_BoosterCalcNumPredict_t LGBM_BoosterCalcNumPredict = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_FastConfigFree_t) (FastConfigHandle fastConfig);
 static LGBM_FastConfigFree_t LGBM_FastConfigFree = NULL;
+// LGBM_DLSYM(LGBM_FastConfigFree);
 
 /*!
  * \brief Make prediction for a new dataset in CSR format.
@@ -1233,6 +1302,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForCSR_t) (BoosterHandle handle,
                                                 int64_t* out_len,
                                                 double* out_result);
 static LGBM_BoosterPredictForCSR_t LGBM_BoosterPredictForCSR = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForCSR);
 
 /*!
  * \brief Make sparse prediction for a new dataset in CSR or CSC format. Currently only used for feature contributions.
@@ -1281,6 +1351,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictSparseOutput_t) (BoosterHandle handle
                                                       int32_t** out_indices,
                                                       void** out_data);
 static LGBM_BoosterPredictSparseOutput_t LGBM_BoosterPredictSparseOutput = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictSparseOutput);
 
 /*!
  * \brief Method corresponding to ``LGBM_BoosterPredictSparseOutput`` to free the allocated data.
@@ -1293,6 +1364,7 @@ static LGBM_BoosterPredictSparseOutput_t LGBM_BoosterPredictSparseOutput = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterFreePredictSparse_t) (void* indptr, int32_t* indices, void* data, int indptr_type, int data_type);
 static LGBM_BoosterFreePredictSparse_t LGBM_BoosterFreePredictSparse = NULL;
+// LGBM_DLSYM(LGBM_BoosterFreePredictSparse);
 
 /*!
  * \brief Make prediction for a new dataset in CSR format. This method re-uses the internal predictor structure
@@ -1339,6 +1411,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForCSRSingleRow_t) (BoosterHandle han
                                                          int64_t* out_len,
                                                          double* out_result);
 static LGBM_BoosterPredictForCSRSingleRow_t LGBM_BoosterPredictForCSRSingleRow = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRow);
 
 /*!
  * \brief Initialize and return a ``FastConfigHandle`` for use with ``LGBM_BoosterPredictForCSRSingleRowFast``.
@@ -1368,6 +1441,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForCSRSingleRowFastInit_t) (BoosterHa
                                                                  const char* parameter,
                                                                  FastConfigHandle *out_fastConfig);
 static LGBM_BoosterPredictForCSRSingleRowFastInit_t LGBM_BoosterPredictForCSRSingleRowFastInit = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRowFastInit);
 
 /*!
  * \brief Faster variant of ``LGBM_BoosterPredictForCSRSingleRow``.
@@ -1410,6 +1484,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForCSRSingleRowFast_t) (FastConfigHan
                                                              int64_t* out_len,
                                                              double* out_result);
 static LGBM_BoosterPredictForCSRSingleRowFast_t LGBM_BoosterPredictForCSRSingleRowFast = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRowFast);
 
 /*!
  * \brief Make prediction for a new dataset in CSC format.
@@ -1455,6 +1530,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForCSC_t) (BoosterHandle handle,
                                                 int64_t* out_len,
                                                 double* out_result);
 static LGBM_BoosterPredictForCSC_t LGBM_BoosterPredictForCSC = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForCSC);
 
 /*!
  * \brief Make prediction for a new dataset.
@@ -1494,6 +1570,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForMat_t) (BoosterHandle handle,
                                                 int64_t* out_len,
                                                 double* out_result);
 static LGBM_BoosterPredictForMat_t LGBM_BoosterPredictForMat = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForMat);
 
 /*!
  * \brief Make prediction for a new dataset. This method re-uses the internal predictor structure
@@ -1532,6 +1609,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForMatSingleRow_t) (BoosterHandle han
                                                          int64_t* out_len,
                                                          double* out_result);
 static LGBM_BoosterPredictForMatSingleRow_t LGBM_BoosterPredictForMatSingleRow = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRow);
 
 /*!
  * \brief Initialize and return a ``FastConfigHandle`` for use with ``LGBM_BoosterPredictForMatSingleRowFast``.
@@ -1561,6 +1639,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForMatSingleRowFastInit_t) (BoosterHa
                                                                  const char* parameter,
                                                                  FastConfigHandle *out_fastConfig);
 static LGBM_BoosterPredictForMatSingleRowFastInit_t LGBM_BoosterPredictForMatSingleRowFastInit = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRowFastInit);
 
 /*!
  * \brief Faster variant of ``LGBM_BoosterPredictForMatSingleRow``.
@@ -1587,6 +1666,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForMatSingleRowFast_t) (FastConfigHan
                                                              int64_t* out_len,
                                                              double* out_result);
 static LGBM_BoosterPredictForMatSingleRowFast_t LGBM_BoosterPredictForMatSingleRowFast = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForMatSingleRowFast);
 
 /*!
  * \brief Make prediction for a new dataset presented in a form of array of pointers to rows.
@@ -1624,6 +1704,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForMats_t) (BoosterHandle handle,
                                                  int64_t* out_len,
                                                  double* out_result);
 static LGBM_BoosterPredictForMats_t LGBM_BoosterPredictForMats = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForMats);
 
 /*!
  * \brief Make prediction for a new dataset.
@@ -1659,6 +1740,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterPredictForArrow_t) (BoosterHandle handle,
                                                   int64_t* out_len,
                                                   double* out_result);
 static LGBM_BoosterPredictForArrow_t LGBM_BoosterPredictForArrow = NULL;
+// LGBM_DLSYM(LGBM_BoosterPredictForArrow);
 
 /*!
  * \brief Save model into file.
@@ -1675,6 +1757,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterSaveModel_t) (BoosterHandle handle,
                                             int feature_importance_type,
                                             const char* filename);
 static LGBM_BoosterSaveModel_t LGBM_BoosterSaveModel = NULL;
+// LGBM_DLSYM(LGBM_BoosterSaveModel);
 
 /*!
  * \brief Save model to string.
@@ -1695,6 +1778,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterSaveModelToString_t) (BoosterHandle handle,
                                                     int64_t* out_len,
                                                     char* out_str);
 static LGBM_BoosterSaveModelToString_t LGBM_BoosterSaveModelToString = NULL;
+// LGBM_DLSYM(LGBM_BoosterSaveModelToString);
 
 /*!
  * \brief Dump model to JSON.
@@ -1715,6 +1799,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterDumpModel_t) (BoosterHandle handle,
                                             int64_t* out_len,
                                             char* out_str);
 static LGBM_BoosterDumpModel_t LGBM_BoosterDumpModel = NULL;
+// LGBM_DLSYM(LGBM_BoosterDumpModel);
 
 /*!
  * \brief Get leaf value.
@@ -1729,6 +1814,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetLeafValue_t) (BoosterHandle handle,
                                                int leaf_idx,
                                                double* out_val);
 static LGBM_BoosterGetLeafValue_t LGBM_BoosterGetLeafValue = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetLeafValue);
 
 /*!
  * \brief Set leaf value.
@@ -1743,6 +1829,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterSetLeafValue_t) (BoosterHandle handle,
                                                int leaf_idx,
                                                double val);
 static LGBM_BoosterSetLeafValue_t LGBM_BoosterSetLeafValue = NULL;
+// LGBM_DLSYM(LGBM_BoosterSetLeafValue);
 
 /*!
  * \brief Get model feature importance.
@@ -1759,6 +1846,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_BoosterFeatureImportance_t) (BoosterHandle handle,
                                                     int importance_type,
                                                     double* out_results);
 static LGBM_BoosterFeatureImportance_t LGBM_BoosterFeatureImportance = NULL;
+// LGBM_DLSYM(LGBM_BoosterFeatureImportance);
 
 /*!
  * \brief Get model upper bound value.
@@ -1769,6 +1857,7 @@ static LGBM_BoosterFeatureImportance_t LGBM_BoosterFeatureImportance = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetUpperBoundValue_t) (BoosterHandle handle,
                                                      double* out_results);
 static LGBM_BoosterGetUpperBoundValue_t LGBM_BoosterGetUpperBoundValue = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetUpperBoundValue);
 
 /*!
  * \brief Get model lower bound value.
@@ -1779,6 +1868,7 @@ static LGBM_BoosterGetUpperBoundValue_t LGBM_BoosterGetUpperBoundValue = NULL;
 LIGHTGBM_C_EXPORT int (*LGBM_BoosterGetLowerBoundValue_t) (BoosterHandle handle,
                                                      double* out_results);
 static LGBM_BoosterGetLowerBoundValue_t LGBM_BoosterGetLowerBoundValue = NULL;
+// LGBM_DLSYM(LGBM_BoosterGetLowerBoundValue);
 
 /*!
  * \brief Initialize the network.
@@ -1793,6 +1883,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_NetworkInit_t) (const char* machines,
                                        int listen_time_out,
                                        int num_machines);
 static LGBM_NetworkInit_t LGBM_NetworkInit = NULL;
+// LGBM_DLSYM(LGBM_NetworkInit);
 
 /*!
  * \brief Finalize the network.
@@ -1800,6 +1891,7 @@ static LGBM_NetworkInit_t LGBM_NetworkInit = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_NetworkFree_t) ();
 static LGBM_NetworkFree_t LGBM_NetworkFree = NULL;
+// LGBM_DLSYM(LGBM_NetworkFree);
 
 /*!
  * \brief Initialize the network with external collective functions.
@@ -1814,6 +1906,7 @@ LIGHTGBM_C_EXPORT int (*LGBM_NetworkInitWithFunctions_t) (int num_machines,
                                                     void* reduce_scatter_ext_fun,
                                                     void* allgather_ext_fun);
 static LGBM_NetworkInitWithFunctions_t LGBM_NetworkInitWithFunctions = NULL;
+// LGBM_DLSYM(LGBM_NetworkInitWithFunctions);
 
 /*!
  * \brief Set maximum number of threads used by LightGBM routines in this process.
@@ -1822,6 +1915,7 @@ static LGBM_NetworkInitWithFunctions_t LGBM_NetworkInitWithFunctions = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_SetMaxThreads_t) (int num_threads);
 static LGBM_SetMaxThreads_t LGBM_SetMaxThreads = NULL;
+// LGBM_DLSYM(LGBM_SetMaxThreads);
 
 /*!
  * \brief Get current maximum number of threads used by LightGBM routines in this process.
@@ -1830,6 +1924,7 @@ static LGBM_SetMaxThreads_t LGBM_SetMaxThreads = NULL;
  */
 LIGHTGBM_C_EXPORT int (*LGBM_GetMaxThreads_t) (int* out);
 static LGBM_GetMaxThreads_t LGBM_GetMaxThreads = NULL;
+// LGBM_DLSYM(LGBM_GetMaxThreads);
 
 #if !defined(__cplusplus) && (!defined(__STDC__) || (__STDC_VERSION__ < 199901L))
 /*! \brief Inline specifier no-op in C using standards before C99. */

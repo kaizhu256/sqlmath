@@ -1802,6 +1802,7 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     LGBM_DLSYM(LGBM_BoosterGetFeatureNames);
     LGBM_DLSYM(LGBM_BoosterGetLeafValue);
     LGBM_DLSYM(LGBM_BoosterGetLinear);
+    LGBM_DLSYM(LGBM_BoosterGetLoadedParam);
     LGBM_DLSYM(LGBM_BoosterGetLowerBoundValue);
     LGBM_DLSYM(LGBM_BoosterGetNumClasses);
     LGBM_DLSYM(LGBM_BoosterGetNumFeature);
@@ -1812,6 +1813,7 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     LGBM_DLSYM(LGBM_BoosterMerge);
     LGBM_DLSYM(LGBM_BoosterNumModelPerIteration);
     LGBM_DLSYM(LGBM_BoosterNumberOfTotalModel);
+    LGBM_DLSYM(LGBM_BoosterPredictForArrow);
     LGBM_DLSYM(LGBM_BoosterPredictForCSC);
     LGBM_DLSYM(LGBM_BoosterPredictForCSR);
     LGBM_DLSYM(LGBM_BoosterPredictForCSRSingleRow);
@@ -1834,8 +1836,12 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     LGBM_DLSYM(LGBM_BoosterShuffleModels);
     LGBM_DLSYM(LGBM_BoosterUpdateOneIter);
     LGBM_DLSYM(LGBM_BoosterUpdateOneIterCustom);
+    LGBM_DLSYM(LGBM_BoosterValidateFeatureNames);
+    LGBM_DLSYM(LGBM_ByteBufferFree);
+    LGBM_DLSYM(LGBM_ByteBufferGetAt);
     LGBM_DLSYM(LGBM_DatasetAddFeaturesFrom);
     LGBM_DLSYM(LGBM_DatasetCreateByReference);
+    LGBM_DLSYM(LGBM_DatasetCreateFromArrow);
     LGBM_DLSYM(LGBM_DatasetCreateFromCSC);
     LGBM_DLSYM(LGBM_DatasetCreateFromCSR);
     LGBM_DLSYM(LGBM_DatasetCreateFromCSRFunc);
@@ -1843,27 +1849,39 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     LGBM_DLSYM(LGBM_DatasetCreateFromMat);
     LGBM_DLSYM(LGBM_DatasetCreateFromMats);
     LGBM_DLSYM(LGBM_DatasetCreateFromSampledColumn);
+    LGBM_DLSYM(LGBM_DatasetCreateFromSerializedReference);
     LGBM_DLSYM(LGBM_DatasetDumpText);
     LGBM_DLSYM(LGBM_DatasetFree);
     LGBM_DLSYM(LGBM_DatasetGetFeatureNames);
+    LGBM_DLSYM(LGBM_DatasetGetFeatureNumBin);
     LGBM_DLSYM(LGBM_DatasetGetField);
     LGBM_DLSYM(LGBM_DatasetGetNumData);
     LGBM_DLSYM(LGBM_DatasetGetNumFeature);
     LGBM_DLSYM(LGBM_DatasetGetSubset);
+    LGBM_DLSYM(LGBM_DatasetInitStreaming);
+    LGBM_DLSYM(LGBM_DatasetMarkFinished);
     LGBM_DLSYM(LGBM_DatasetPushRows);
     LGBM_DLSYM(LGBM_DatasetPushRowsByCSR);
+    LGBM_DLSYM(LGBM_DatasetPushRowsByCSRWithMetadata);
+    LGBM_DLSYM(LGBM_DatasetPushRowsWithMetadata);
     LGBM_DLSYM(LGBM_DatasetSaveBinary);
+    LGBM_DLSYM(LGBM_DatasetSerializeReferenceToBinary);
     LGBM_DLSYM(LGBM_DatasetSetFeatureNames);
     LGBM_DLSYM(LGBM_DatasetSetField);
+    LGBM_DLSYM(LGBM_DatasetSetFieldFromArrow);
+    LGBM_DLSYM(LGBM_DatasetSetWaitForManualFinish);
     LGBM_DLSYM(LGBM_DatasetUpdateParamChecking);
+    LGBM_DLSYM(LGBM_DumpParamAliases);
     LGBM_DLSYM(LGBM_FastConfigFree);
     LGBM_DLSYM(LGBM_GetLastError);
+    LGBM_DLSYM(LGBM_GetMaxThreads);
     LGBM_DLSYM(LGBM_GetSampleCount);
     LGBM_DLSYM(LGBM_NetworkFree);
     LGBM_DLSYM(LGBM_NetworkInit);
     LGBM_DLSYM(LGBM_NetworkInitWithFunctions);
     LGBM_DLSYM(LGBM_RegisterLogCallback);
     LGBM_DLSYM(LGBM_SampleIndices);
+    LGBM_DLSYM(LGBM_SetMaxThreads);
 }
 
 SQLMATH_FUNC static void sql1_lgbm_datasetcreatefromfile_func(
