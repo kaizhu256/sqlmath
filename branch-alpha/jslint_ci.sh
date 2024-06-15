@@ -2068,7 +2068,7 @@ function replaceListReplace(replaceList, data) {
             if (dataUriType) {
                 return;
             }
-            if (dateCommitted) {
+            if (dateCommitted && dateCommitted.toString()) {
                 result += (
                     "\n\n\n/*\n"
                     + "repo " + prefix.replace("/blob/", "/tree/") + "\n"
