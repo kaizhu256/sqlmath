@@ -125,6 +125,7 @@
     process_env, process_exit, promises, property, property_dict, push, quote,
     ranges, readFile, readdir, readonly, recursive, reduce, repeat, replace,
     resolve, result, reverse, role, round, scriptId, search, set, shebang,
+    shell,
     shift, signature, single, slice, some, sort, source, spawn, splice, split,
     stack, stack_trace, start, startOffset, startsWith, statement,
     statement_prv, stdio, stop, stop_at, stringify, subscript, switch,
@@ -11285,24 +11286,36 @@ function sentinel() {}
             }
         }));
         exitCode = await new Promise(function (resolve) {
-            moduleChildProcess.spawn(
-                (
-                    processArgv[0] === "npm"
+            let processArgv0 = processArgv[0];
 
 // If win32 environment, then replace program npm with npm.cmd.
 // Coverage-hack - Ugly-hack to get test-coverage under both win32 and linux.
 
-                    ? process.platform.replace("win32", "npm.cmd").replace(
-                        process.platform,
-                        "npm"
-                    )
-                    : processArgv[0]
-                ),
+            if (processArgv0 === "npm") {
+                processArgv0 = process.platform.replace(
+                    "win32",
+                    "npm.cmd"
+                ).replace(
+                    process.platform,
+                    "npm"
+                );
+            }
+            moduleChildProcess.spawn(
+                processArgv0,
                 processArgv.slice(1),
                 {
                     env: Object.assign({}, process.env, {
                         NODE_V8_COVERAGE: coverageDir
                     }),
+
+// https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2
+// If the input to spawn/spawnSync is sanitized, users can now pass
+// { shell: true } as an option to prevent the occurrence of EINVALs errors.
+
+                    shell: (
+                        processArgv0.endsWith(".bat")
+                        || processArgv0.endsWith(".cmd")
+                    ),
                     stdio: ["ignore", 1, 2]
                 }
             ).on("exit", resolve);
