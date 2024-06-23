@@ -163,7 +163,7 @@ let jslint_charset_ascii = (
     + "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
     + "`abcdefghijklmnopqrstuvwxyz{|}~\u007f"
 );
-let jslint_edition = "v2024.6.23";
+let jslint_edition = "v2024.6.1-beta";
 let jslint_export;                      // The jslint object to be exported.
 let jslint_fudge = 1;                   // Fudge starting line and starting
                                         // ... column to 1.
@@ -11307,6 +11307,7 @@ function sentinel() {}
                         NODE_V8_COVERAGE: coverageDir
                     }),
 
+// PR-465
 // https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2
 // Node.js will now error with EINVAL if a .bat or .cmd file is passed to
 // child_process.spawn and child_process.spawnSync without the shell option set.

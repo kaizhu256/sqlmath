@@ -4,7 +4,7 @@
 - none
 
 # v2024.6.1-beta
-- jslint - Upgrade to jslint-v2024.6.23.
+- jslint - Upgrade to jslint-v2024.6.1-beta.
 - lgbm - Include lib_lightgbm.xxx in npm/python package.
 - lgbm - Add sqlite-extension for lightgbm.
 - lgbm - Add sql-functions:
