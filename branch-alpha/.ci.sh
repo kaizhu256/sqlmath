@@ -4,24 +4,6 @@
 # sh jslint_ci.sh shCiBuildWasm
 # sh jslint_ci.sh shSqlmathUpdate
 
-: "
-    (set -ex
-    for URL in \
-https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz \
-https://www.sqlite.org/2023/sqlite-autoconf-3440200.tar.gz
-    do
-        curl -L "$URL" | tar -xz
-    done
-    for DIR in \
-        sqlite-autoconf-3440200 \
-        zlib-1.3.1
-    do
-        rm -rf ".$DIR"
-        mv "$DIR" ".$DIR"
-    done
-    )
-"
-
 shCiArtifactUploadCustom() {(set -e
 # This function will run custom-code to upload build-artifacts.
     git fetch origin artifact
@@ -58,7 +40,7 @@ import moduleChildProcess from "child_process";
 shCiBaseCustom() {(set -e
 # This function will run custom-code for base-ci.
     shCiEmsdkExport
-    FILE="$(node --input-type=module -e '
+    LGBM_FILE="$(node --input-type=module -e '
 process.stdout.write(
     process.platform === "darwin"
     ? "lib_lightgbm.dylib"
@@ -67,18 +49,20 @@ process.stdout.write(
     : "lib_lightgbm.so"
 );
 ' "$@")" # '
+    LGBM_VERSION=v4.4.0
     # bugfix - Library not loaded: /usr/local/opt/libomp/lib/libomp.dylib
-    if [ ! -f "$FILE" ]
+    if [ ! -f "$LGBM_FILE" ]
     then
         case "$(uname)" in
         Darwin*)
             brew install lightgbm
-            cp -L "/opt/homebrew/lib/$FILE" .
+            cp -L "/opt/homebrew/lib/$LGBM_FILE" .
             cp -L /opt/homebrew/opt/libomp/lib/libomp.dylib .
             ;;
         *)
             curl -LO \
-"https://github.com/microsoft/LightGBM/releases/download/v4.3.0/$FILE"
+"https://github.com/microsoft/LightGBM/releases/download\
+/${LGBM_VERSION}/$LGBM_FILE"
             ;;
         esac
     fi
@@ -513,6 +497,22 @@ shSqlmathUpdate() {(set -e
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
         # shRollupFetch
+        if [ ! -d .sqlite-autoconf-3440200 ]
+        then
+            for URL in \
+https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz \
+https://www.sqlite.org/2023/sqlite-autoconf-3440200.tar.gz
+            do
+                curl -L "$URL" | tar -xz
+            done
+            for DIR in \
+                sqlite-autoconf-3440200 \
+                zlib-1.3.1
+            do
+                rm -rf ".$DIR"
+                mv "$DIR" ".$DIR"
+            done
+        fi
         shRollupFetch asset_sqlmath_external_rollup.js
         shRollupFetch index.html
         shRollupFetch sqlmath_base.h
