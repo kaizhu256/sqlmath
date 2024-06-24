@@ -40,7 +40,7 @@ import moduleChildProcess from "child_process";
 shCiBaseCustom() {(set -e
 # This function will run custom-code for base-ci.
     shCiEmsdkExport
-    LGBM_FILE="$(node --input-type=module -e '
+    FILE="$(node --input-type=module -e '
 process.stdout.write(
     process.platform === "darwin"
     ? "lib_lightgbm.dylib"
@@ -49,20 +49,18 @@ process.stdout.write(
     : "lib_lightgbm.so"
 );
 ' "$@")" # '
-    LGBM_VERSION=v4.4.0
     # bugfix - Library not loaded: /usr/local/opt/libomp/lib/libomp.dylib
-    if [ ! -f "$LGBM_FILE" ]
+    if [ ! -f "$FILE" ]
     then
         case "$(uname)" in
         Darwin*)
             brew install lightgbm
-            cp -L "/opt/homebrew/lib/$LGBM_FILE" .
+            cp -L "/opt/homebrew/lib/$FILE" .
             cp -L /opt/homebrew/opt/libomp/lib/libomp.dylib .
             ;;
         *)
             curl -LO \
-"https://github.com/microsoft/LightGBM/releases/download\
-/${LGBM_VERSION}/$LGBM_FILE"
+"https://github.com/microsoft/LightGBM/releases/download/v4.4.0/$FILE"
             ;;
         esac
     fi
