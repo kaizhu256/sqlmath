@@ -50,16 +50,21 @@ process.stdout.write(
 );
 ' "$@")" # '
     # bugfix - Library not loaded: /usr/local/opt/libomp/lib/libomp.dylib
-    if [ ! -f "$FILE" ]
+    if [ ! -f "sqlmath/$FILE" ]
     then
         case "$(uname)" in
         Darwin*)
-            brew install lightgbm
-            cp -L "/opt/homebrew/lib/$FILE" .
-            cp -L /opt/homebrew/opt/libomp/lib/libomp.dylib .
+            brew install libomp
+            cp -L /opt/homebrew/opt/libomp/lib/libomp.dylib sqlmath/
+            pip install lightgbm=="$(printf "v4.4.0" | sed "s|v||")"
+            cp "$(
+                find "$(
+                    pip show ruff | grep Location | sed "s|Location: ||"
+                )/lightgbm" | grep "$FILE"
+            )" "sqlmath/$FILE"
             ;;
         *)
-            curl -LO \
+            curl -L -o "sqlmath/$FILE" \
 "https://github.com/microsoft/LightGBM/releases/download/v4.4.0/$FILE"
             ;;
         esac
@@ -186,10 +191,10 @@ shCiBaseCustomArtifactUpload() {(set -e
         cp ../../.artifact/asset_image_logo_* "branch-$GITHUB_BRANCH0"
     fi
     for FILE in \
-        ../../lib_lightgbm.dll \
-        ../../lib_lightgbm.dylib \
-        ../../lib_lightgbm.so \
-        ../../libomp.dylib
+        ../../sqlmath/lib_lightgbm.dll \
+        ../../sqlmath/lib_lightgbm.dylib \
+        ../../sqlmath/lib_lightgbm.so \
+        ../../sqlmath/libomp.dylib
     do
         if [ -f "$FILE" ]
         then

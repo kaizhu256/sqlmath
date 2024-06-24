@@ -1450,6 +1450,7 @@ assertJsonEqual(
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
+    let fileLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1480,8 +1481,15 @@ assertJsonEqual(
         return ptr;
     }));
     db.connPool = connPool;
-    return db;
-}</pre></li>
+    // init lightgbm
+    if (!IS_BROWSER) {
+        fileLgbm = process.platform;
+        fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
+        fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
+        fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
+        fileLgbm = `${import.meta...
+}
+</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 
 jstestDescribe((
