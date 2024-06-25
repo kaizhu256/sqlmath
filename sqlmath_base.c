@@ -2260,7 +2260,7 @@ SQLMATH_FUNC static void sql1_throwerror_func(
     sqlite3_result_error_code(context, SQLITE_INTERNAL);
 }
 
-// SQLMATH_FUNC sql2_lgbm_datasetcreatefromtable_func - start
+// SQLMATH_FUNC sql2_lgbm_datasetcreatefromsampledcolumn_func - start
 typedef struct AggLgbmDataset {
     char param_data[LGBM_PARAM_BUF_LEN_MAX];
     DatasetHandle ref;
@@ -2270,6 +2270,129 @@ typedef struct AggLgbmDataset {
     int eval_step;
 } AggLgbmDataset;
 
+SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromsampledcolumn_final0(
+    sqlite3_context * context,
+    const int modeTrain
+) {
+// This function will aggregate sql-table into lgbm-dataset.
+    float *label = NULL;
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    // dblwin - null-case
+    if (dblwin->nbody == 0) {
+        goto catch_error;
+    }
+    AggLgbmDataset *agg = (AggLgbmDataset *) dblwin_head;
+    // label - init
+    DatasetHandle out = NULL;
+    const int ncol = (int) dblwin->ncol;
+    const int nrow = (int) dblwin->nbody / dblwin->ncol;
+    int errcode = 0;
+    label = sqlite3_malloc(nrow * sizeof(float));
+    if (label == NULL) {
+        sqlite3_result_error_nomem(context);
+        goto catch_error;
+    }
+    int kk = 0;
+    int ll = 0;
+    for (int ii = 0; ii < nrow; ii += 1) {
+        label[ii] = (float) dblwin_body[kk];
+        kk += 1;
+        for (int jj = 1; jj < ncol; jj += 1) {
+            dblwin_body[ll] = dblwin_body[kk];
+            kk += 1;
+            ll += 1;
+        }
+    }
+    // dataset - init
+    errcode = LGBM_DatasetCreateFromMat(        //
+        dblwin_body,            // const void *data,
+        C_API_DTYPE_FLOAT64,    // int data_type,
+        (int32_t) nrow,         // int32_t nrow,
+        (int32_t) ncol - 1,     // int32_t ncol,
+        1,                      // int is_row_major,
+        agg->param_data,        // const char *param_data,
+        agg->ref,               // const DatasetHandle reference,
+        &out);                  // DatasetHandle *out
+    LGBM_ASSERT_OK();
+    errcode = LGBM_DatasetSetField(     //
+        out,                    // DatasetHandle handle,
+        "label\x00",            // const char *field_name,
+        label,                  // const void *field_data,
+        nrow,                   // int num_element,
+        C_API_DTYPE_FLOAT32);   // int type
+    LGBM_ASSERT_OK();
+    // agg - train
+    if (modeTrain) {
+        sql1_lgbm_trainfromdataset_func0(context,       //
+            // argv - train
+            agg->param_train,   // param_train
+            agg->num_iteration, // num_iteration
+            agg->eval_step,     // eval_step
+            // argv - data
+            out,                // train_data
+            NULL);              // test_data
+        LGBM_DatasetFree(out);
+        goto catch_error;
+    }
+    sqlite3_result_int64(context, (int64_t) out);
+  catch_error:
+    doublewinAggfree(dblwinAgg);
+    sqlite3_free(label);
+}
+
+SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromsampledcolumn_final(
+    sqlite3_context * context
+) {
+// This function will aggregate sql-table into lgbm-dataset.
+    sql2_lgbm_datasetcreatefromsampledcolumn_final0(context, 0);
+}
+
+SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromsampledcolumn_step0(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will aggregate sql-table into lgbm-dataset.
+    const int argc0 = argc_train + 2;
+    const int ncol = argc - argc0;
+    if (ncol < 1) {
+        sqlite3_result_error(context,
+            "lgbm_datasetcreatefromsampledcolumn - wrong number of arguments",
+            -1);
+        return;
+    }
+    DOUBLEWIN_AGGREGATE_CONTEXT(sizeof(AggLgbmDataset) / sizeof(double) + 1);
+    if (dblwin->nbody == 0) {
+        // dblwin - init ncol
+        dblwin->ncol = ncol;
+        // agg - init
+        AggLgbmDataset *agg = (AggLgbmDataset *) dblwin_head;
+        int param_bytes = sqlite3_value_bytes(argv[argc_train + 0]);
+        if (param_bytes + 1 >= LGBM_PARAM_BUF_LEN_MAX) {
+            sqlite3_result_error2(context,
+                "lgbm_datasetcreatefromsampledcolumn"
+                " - param_data must be < %d bytes",
+                LGBM_PARAM_BUF_LEN_MAX - 1);
+            return;
+        }
+        if (param_bytes > 0) {
+            memcpy(agg->param_data, sqlite3_value_text(argv[argc_train + 0]),
+                param_bytes);
+            agg->param_data[param_bytes] = 0;
+        }
+        agg->ref = (DatasetHandle) sqlite3_value_int64(argv[argc_train + 1]);
+    }
+    // dblwin - push xx
+    for (int ii = 0; ii < ncol; ii += 1) {
+        DOUBLEWIN_AGGREGATE_PUSH(sqlite3_value_double_or_nan(argv[argc0 +
+                    ii]));
+    }
+}
+
+// SQLMATH_FUNC sql2_lgbm_datasetcreatefromsampledcolumn_func - end
+
+// SQLMATH_FUNC sql2_lgbm_datasetcreatefromtable_func - start
 SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_final0(
     sqlite3_context * context,
     const int modeTrain
