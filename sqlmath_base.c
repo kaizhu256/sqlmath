@@ -97,6 +97,7 @@ file sqlmath_h - start
 
 #define LGBM_EVAL_BUF_LEN_MAX 16
 #define LGBM_EVAL_OUT_LEN_MAX 8
+#define LGBM_MODE_SAMPLE 2
 #define LGBM_MODE_TRAIN 1
 #define LGBM_PARAM_BUF_LEN_MAX 1024
 #define MATH_MAX(aa, bb) (((aa) < (bb)) ? (bb) : (aa))
@@ -2352,11 +2353,11 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step0(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv,
-    const int modeTrain
+    const int mode
 ) {
 // This function will aggregate sql-table into lgbm-dataset.
-    const int argc_train = modeTrain ? 3 : 0;
-    const int argc0 = argc_train + 2;
+    const int argc_mode = mode == LGBM_MODE_TRAIN ? 3 : 0;
+    const int argc0 = argc_mode + 2;
     const int ncol = argc - argc0;
     if (ncol < 1) {
         sqlite3_result_error(context,
@@ -2369,7 +2370,7 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step0(
         dblwin->ncol = ncol;
         // agg - init
         AggLgbmDataset *agg = (AggLgbmDataset *) dblwin_head;
-        int param_bytes = sqlite3_value_bytes(argv[argc_train + 0]);
+        int param_bytes = sqlite3_value_bytes(argv[argc_mode + 0]);
         if (param_bytes + 1 >= LGBM_PARAM_BUF_LEN_MAX) {
             sqlite3_result_error2(context,
                 "lgbm_datasetcreatefromtable"
@@ -2378,12 +2379,12 @@ SQLMATH_FUNC static void sql2_lgbm_datasetcreatefromtable_step0(
             return;
         }
         if (param_bytes > 0) {
-            memcpy(agg->param_data, sqlite3_value_text(argv[argc_train + 0]),
+            memcpy(agg->param_data, sqlite3_value_text(argv[argc_mode + 0]),
                 param_bytes);
             agg->param_data[param_bytes] = 0;
         }
-        agg->ref = (DatasetHandle) sqlite3_value_int64(argv[argc_train + 1]);
-        if (modeTrain) {
+        agg->ref = (DatasetHandle) sqlite3_value_int64(argv[argc_mode + 1]);
+        if (mode) {
             param_bytes = sqlite3_value_bytes(argv[0]);
             if (param_bytes + 1 >= LGBM_PARAM_BUF_LEN_MAX) {
                 sqlite3_result_error2(context,
