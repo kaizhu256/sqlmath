@@ -1447,6 +1447,30 @@ SQLMATH_API double sqlite3_value_double_or_prev(
 
 
 // file sqlmath_base - SQLMATH_FUNC
+SQLMATH_FUNC static void sql3_win_sum1_inverse(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+);
+
+SQLMATH_FUNC static void sql3_win_sum1_step(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+);
+
+SQLMATH_FUNC static void sql3_win_sum2_inverse(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+);
+
+SQLMATH_FUNC static void sql3_win_sum2_step(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+);
+
 SQLMATH_FUNC static void sql1_castrealornull_func(
     sqlite3_context * context,
     int argc,
@@ -2735,6 +2759,100 @@ SQLMATH_FUNC static void sql2_median_step(
 }
 
 // SQLMATH_FUNC sql2_quantile_func - end
+
+// SQLMATH_FUNC sql3_win_avg1_func - start
+SQLMATH_FUNC static void sql3_win_avg1_value(
+    sqlite3_context * context
+) {
+// This function will calculate running-avg.
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    sqlite3_result_double(context,
+        dblwin_head[(int) dblwin->ncol] / dblwin->nbody);
+}
+
+SQLMATH_FUNC static void sql3_win_avg1_final(
+    sqlite3_context * context
+) {
+// This function will calculate running-avg.
+    // dblwin - value
+    sql3_win_avg1_value(context);
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    // dblwin - cleanup
+    doublewinAggfree(dblwinAgg);
+}
+
+SQLMATH_FUNC static void sql3_win_avg1_inverse(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will calculate running-avg.
+    sql3_win_sum2_inverse(context, argc, argv);
+}
+
+SQLMATH_FUNC static void sql3_win_avg1_step(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will calculate running-avg.
+    sql3_win_sum1_step(context, argc, argv);
+}
+
+// SQLMATH_FUNC sql3_win_avg1_func - end
+
+// SQLMATH_FUNC sql3_win_avg2_func - start
+SQLMATH_FUNC static void sql3_win_avg2_value(
+    sqlite3_context * context
+) {
+// This function will calculate running-avg.
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    double inv = dblwin->ncol / dblwin->nbody;
+    int ncol = dblwin->ncol;
+    if (!ncol) {
+        return;
+    }
+    // dblwin - result
+    for (int ii = 0; ii < ncol; ii += 1) {
+        dblwin_head[ii] = dblwin_head[ncol + ii] * inv;
+    }
+    doublearrayResult(context, dblwin_head, dblwin->ncol, SQLITE_TRANSIENT);
+}
+
+SQLMATH_FUNC static void sql3_win_avg2_final(
+    sqlite3_context * context
+) {
+// This function will calculate running-avg.
+    // dblwin - value
+    sql3_win_avg2_value(context);
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    // dblwin - cleanup
+    doublewinAggfree(dblwinAgg);
+}
+
+SQLMATH_FUNC static void sql3_win_avg2_inverse(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will calculate running-avg.
+    sql3_win_avg1_inverse(context, argc, argv);
+}
+
+SQLMATH_FUNC static void sql3_win_avg2_step(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will calculate running-avg.
+    sql3_win_avg1_step(context, argc, argv);
+}
+
+// SQLMATH_FUNC sql3_win_avg2_func - end
 
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - start
 typedef struct AggLgbmPredict {
@@ -4245,13 +4363,15 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC2(quantile, 2, 0);
     SQL_CREATE_FUNC3(lgbm_predictfortable, -1, 0);
     SQL_CREATE_FUNC3(stdev, 1, 0);
+    SQL_CREATE_FUNC3(win_avg1, 1, 0);
+    SQL_CREATE_FUNC3(win_avg2, -1, 0);
     SQL_CREATE_FUNC3(win_coinflip2, -1, 0);
     SQL_CREATE_FUNC3(win_ema1, 2, 0);
     SQL_CREATE_FUNC3(win_ema2, -1, 0);
     SQL_CREATE_FUNC3(win_quantile1, 2, 0);
     SQL_CREATE_FUNC3(win_quantile2, -1, 0);
     SQL_CREATE_FUNC3(win_sinefit2, -1, 0);
-    SQL_CREATE_FUNC3(win_sum1, -1, 0);
+    SQL_CREATE_FUNC3(win_sum1, 1, 0);
     SQL_CREATE_FUNC3(win_sum2, -1, 0);
     return 0;
 }
