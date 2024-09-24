@@ -2798,7 +2798,35 @@ SQLMATH_FUNC static void sql3_win_avg1_step(
     sqlite3_value ** argv
 ) {
 // This function will calculate running-avg.
-    sql3_win_sum1_step(context, argc, argv);
+    if (argc < 1) {
+        sqlite3_result_error(context,
+            "win_avg2 - wrong number of arguments", -1);
+        return;
+    }
+    // dblwin - init
+    const int ncol = argc;
+    DOUBLEWIN_AGGREGATE_CONTEXT(2 * ncol);
+    if (dblwin->nbody == 0) {
+        // dblwin - init ncol
+        dblwin->ncol = ncol;
+    }
+    // dblwin - calculate avg
+    for (int ii = 0; ii < ncol; ii += 1) {
+        sqlite3_value_double_or_prev(argv[ii], &dblwin_head[ii]);
+        dblwin_head[ncol + ii] += dblwin_head[ii];
+        // fprintf(stderr, "sqlmath.win_avg2 - stp %d - xx=%f avg=%f\n", ii,
+        //     dblwin_head[ii], dblwin_head[ncol + ii]);
+        if (dblwin->wnn) {
+            dblwin_head[ncol + ii] -= dblwin_body[(int) dblwin->waa + ii];
+            // fprintf(stderr, "                   inv %d - xx=%f avg=%f\n",
+            //     ii,
+            //     dblwin_body[(int) dblwin->waa + ii], dblwin_head[ncol + ii]);
+        }
+    }
+    // dblwin - push xx
+    for (int ii = 0; ii < ncol; ii += 1) {
+        DOUBLEWIN_AGGREGATE_PUSH(dblwin_head[ii]);
+    }
 }
 
 // SQLMATH_FUNC sql3_win_avg1_func - end
@@ -4212,35 +4240,7 @@ SQLMATH_FUNC static void sql3_win_sum1_step(
     sqlite3_value ** argv
 ) {
 // This function will calculate running-sum.
-    if (argc < 1) {
-        sqlite3_result_error(context,
-            "win_sum2 - wrong number of arguments", -1);
-        return;
-    }
-    // dblwin - init
-    const int ncol = argc;
-    DOUBLEWIN_AGGREGATE_CONTEXT(2 * ncol);
-    if (dblwin->nbody == 0) {
-        // dblwin - init ncol
-        dblwin->ncol = ncol;
-    }
-    // dblwin - calculate sum
-    for (int ii = 0; ii < ncol; ii += 1) {
-        sqlite3_value_double_or_prev(argv[ii], &dblwin_head[ii]);
-        dblwin_head[ncol + ii] += dblwin_head[ii];
-        // fprintf(stderr, "sqlmath.win_sum2 - stp %d - xx=%f sum=%f\n", ii,
-        //     dblwin_head[ii], dblwin_head[ncol + ii]);
-        if (dblwin->wnn) {
-            dblwin_head[ncol + ii] -= dblwin_body[(int) dblwin->waa + ii];
-            // fprintf(stderr, "                   inv %d - xx=%f sum=%f\n",
-            //     ii,
-            //     dblwin_body[(int) dblwin->waa + ii], dblwin_head[ncol + ii]);
-        }
-    }
-    // dblwin - push xx
-    for (int ii = 0; ii < ncol; ii += 1) {
-        DOUBLEWIN_AGGREGATE_PUSH(dblwin_head[ii]);
-    }
+    sql3_win_avg1_step(context, argc, argv);
 }
 
 // SQLMATH_FUNC sql3_win_sum1_func - end
