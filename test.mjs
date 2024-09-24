@@ -1883,7 +1883,7 @@ SELECT doublearray_jsonto(win_avg2(1, 2, 3)) FROM __tmp1;
                     2, 2.3333, 2.8571, 3.375,
                     3.8889, 4.4, 4.9091, 5.3333
                 ],
-                valExpect2: 53
+                valExpect2: 4.4167
             }),
             // test win_avg2-aggregate-window handling-behavior
             test_win_avgx_aggregate({
@@ -1894,7 +1894,7 @@ SELECT doublearray_jsonto(win_avg2(1, 2, 3)) FROM __tmp1;
                     5.25, 6.25, 7.5, 8.5,
                     9.25, 9.25, 9.25, 9.25
                 ],
-                valExpect2: 26
+                valExpect2: 6.5
             }),
             test_win_avgx_aggregate({
                 aa: 3,
@@ -1904,7 +1904,7 @@ SELECT doublearray_jsonto(win_avg2(1, 2, 3)) FROM __tmp1;
                     3.25, 4.25, 5.25, 6.25,
                     7.5, 8.5, 9.25, 9.25
                 ],
-                valExpect2: 26
+                valExpect2: 6.5
             }),
             test_win_avgx_aggregate({
                 aa: 4,
@@ -1914,7 +1914,7 @@ SELECT doublearray_jsonto(win_avg2(1, 2, 3)) FROM __tmp1;
                     2.5, 3.25, 4.25, 5.25,
                     6.25, 7.5, 8.5, 9.25
                 ],
-                valExpect2: 26
+                valExpect2: 6.5
             })
         ]);
     });
