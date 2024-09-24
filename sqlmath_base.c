@@ -2820,16 +2820,21 @@ SQLMATH_FUNC static void sql3_win_avg2_value(
 // This function will calculate running-avg.
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    double inv = dblwin->ncol / dblwin->nbody;
-    int ncol = dblwin->ncol;
+    const int ncol = dblwin->ncol;
     if (!ncol) {
         return;
     }
     // dblwin - result
+    double inv = dblwin->ncol / dblwin->nbody;
     for (int ii = 0; ii < ncol; ii += 1) {
-        dblwin_head[ii] = dblwin_head[ncol + ii] * inv;
+        dblwin_head[ncol + ii] *= inv;
     }
-    doublearrayResult(context, dblwin_head, dblwin->ncol, SQLITE_TRANSIENT);
+    doublearrayResult(context, dblwin_head + (int) dblwin->ncol, dblwin->ncol,
+        SQLITE_TRANSIENT);
+    inv = 1.0 / inv;
+    for (int ii = 0; ii < ncol; ii += 1) {
+        dblwin_head[ncol + ii] *= inv;
+    }
 }
 
 SQLMATH_FUNC static void sql3_win_avg2_final(
