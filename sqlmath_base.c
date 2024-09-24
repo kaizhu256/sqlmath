@@ -1447,18 +1447,6 @@ SQLMATH_API double sqlite3_value_double_or_prev(
 
 
 // file sqlmath_base - SQLMATH_FUNC
-SQLMATH_FUNC static void sql3_win_sum1_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-);
-
-SQLMATH_FUNC static void sql3_win_sum2_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-);
-
 SQLMATH_FUNC static void sql1_castrealornull_func(
     sqlite3_context * context,
     int argc,
@@ -2777,7 +2765,13 @@ SQLMATH_FUNC static void sql3_win_avg1_inverse(
     sqlite3_value ** argv
 ) {
 // This function will calculate running-avg.
-    sql3_win_sum2_inverse(context, argc, argv);
+    UNUSED_PARAMETER(argc);
+    UNUSED_PARAMETER(argv);
+    // dblwin - init
+    DOUBLEWIN_AGGREGATE_CONTEXT(0);
+    if (!dblwin->wnn) {
+        dblwin->wnn = dblwin->nbody;
+    }
 }
 
 SQLMATH_FUNC static void sql3_win_avg1_step(
@@ -4213,13 +4207,7 @@ SQLMATH_FUNC static void sql3_win_sum1_inverse(
     sqlite3_value ** argv
 ) {
 // This function will calculate running-sum.
-    UNUSED_PARAMETER(argc);
-    UNUSED_PARAMETER(argv);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    if (!dblwin->wnn) {
-        dblwin->wnn = dblwin->nbody;
-    }
+    sql3_win_avg1_inverse(context, argc, argv);
 }
 
 SQLMATH_FUNC static void sql3_win_sum1_step(
@@ -4266,7 +4254,7 @@ SQLMATH_FUNC static void sql3_win_sum2_inverse(
     sqlite3_value ** argv
 ) {
 // This function will calculate running-sum.
-    sql3_win_sum1_inverse(context, argc, argv);
+    sql3_win_avg1_inverse(context, argc, argv);
 }
 
 SQLMATH_FUNC static void sql3_win_sum2_step(
