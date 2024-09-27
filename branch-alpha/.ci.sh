@@ -40,6 +40,7 @@ import moduleChildProcess from "child_process";
 shCiBaseCustom() {(set -e
 # This function will run custom-code for base-ci.
     shCiEmsdkExport
+    CMD="pip install lightgbm=="$(printf "v4.5.0" | sed "s|v||")""
     FILE="$(node --input-type=module -e '
 process.stdout.write(
     process.platform === "darwin"
@@ -57,12 +58,14 @@ process.stdout.write(
             brew install libomp
             cp -L /opt/homebrew/opt/libomp/lib/libomp.dylib sqlmath/
             ;;
-#         *)
+        *)
 #             curl -L -o "sqlmath/$FILE" \
 # "https://github.com/microsoft/LightGBM/releases/download/v4.5.0/$FILE"
-#             ;;
+            CMD="$CMD --config-settings=cmake.define.USE_CUDA=ON"
+            ;;
         esac
-        pip install lightgbm=="$(printf "v4.5.0" | sed "s|v||")"
+        echo $CMD
+        $CMD
         cp "$(
             find "$(
                 pip show ruff | grep Location | sed "s|Location: ||"
