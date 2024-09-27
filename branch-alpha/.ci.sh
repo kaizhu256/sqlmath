@@ -61,7 +61,8 @@ process.stdout.write(
         *)
 #             curl -L -o "sqlmath/$FILE" \
 # "https://github.com/microsoft/LightGBM/releases/download/v4.5.0/$FILE"
-            CMD="$CMD --config-settings=cmake.define.USE_CUDA=ON"
+            # CMD="$CMD --config-settings=cmake.define.USE_CUDA=ON"
+            CMD="$CMD --install-option=--cuda"
             ;;
         esac
         echo $CMD
