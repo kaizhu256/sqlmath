@@ -1636,8 +1636,8 @@ SQLMATH_FUNC static void sql1_idatetotext_func(
 ) {
 // This function will return date-string from integer-yyymmdd.
     UNUSED_PARAMETER(argc);
-    int ii = sqlite3_value_int(argv[0]);
     char zBuf[10 + 1] = { 0 };
+    const int ii = sqlite3_value_int(argv[0]);
     if (!(10000101 <= ii && ii <= 99991231)) {
         return;
     }
