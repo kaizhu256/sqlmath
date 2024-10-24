@@ -1185,9 +1185,9 @@ body {
 <pre><span class="lineno"><a href="#line_1027" id="line_1027"> 1027.</a></span><span class="count        ">    723</span><span>    colList = colList.map(function (colName) {</span></pre>
 <pre><span class="lineno"><a href="#line_1028" id="line_1028"> 1028.</a></span><span class="count        ">    723</span><span>        let colName2;</span></pre>
 <pre><span class="lineno"><a href="#line_1029" id="line_1029"> 1029.</a></span><span class="count        ">    723</span><span>        let duplicate = 0;</span></pre>
-<pre><span class="lineno"><a href="#line_1030" id="line_1030"> 1030.</a></span><span class="count        ">    723</span><span>        colName = "c_" + colName.toLowerCase().replace((</span></pre>
-<pre><span class="lineno"><a href="#line_1031" id="line_1031"> 1031.</a></span><span class="count        ">    723</span><span>            /\W/g</span></pre>
-<pre><span class="lineno"><a href="#line_1032" id="line_1032"> 1032.</a></span><span class="count        ">    723</span><span>        ), "_");</span></pre>
+<pre><span class="lineno"><a href="#line_1030" id="line_1030"> 1030.</a></span><span class="count        ">    723</span><span>        colName = colName.trim();</span></pre>
+<pre><span class="lineno"><a href="#line_1031" id="line_1031"> 1031.</a></span><span class="count        ">    723</span><span>        colName = colName.replace((/\W/g), "_");</span></pre>
+<pre><span class="lineno"><a href="#line_1032" id="line_1032"> 1032.</a></span><span class="count        ">    723</span><span>        colName = colName.replace((/^[^A-Z_a-z]|^$/gm), "_$&amp;");</span></pre>
 <pre><span class="lineno"><a href="#line_1033" id="line_1033"> 1033.</a></span><span class="count        ">    724</span><span>        while (true) {</span></pre>
 <pre><span class="lineno"><a href="#line_1034" id="line_1034"> 1034.</a></span><span class="count        ">    724</span><span>            duplicate += 1;</span></pre>
 <pre><span class="lineno"><a href="#line_1035" id="line_1035"> 1035.</a></span><span class="count        ">    724</span><span>            colName2 = (</span></pre>
