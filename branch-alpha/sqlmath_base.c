@@ -357,7 +357,6 @@ typedef struct DateTime {
     unsigned isLocal   : 1; /* Time is known to be localtime */
 } DateTime;
 SQLITE_API void sqlite3_computeFloor(DateTime *p);
-SQLITE_API void sqlite3_computeJD(DateTime *p);
 SQLITE_API void sqlite3_computeYMD(DateTime *p);
 SQLITE_API void sqlite3_computeYMD_HMS(DateTime *p);
 SQLITE_API int sqlite3_isDate(
@@ -1210,6 +1209,7 @@ SQLMATH_API int idateParse(
             && (1 <= dd && dd <= 31))) {
         return 1;
     }
+    //
     dt->validJD = 0;
     dt->validYMD = 1;
     //
@@ -1217,10 +1217,16 @@ SQLMATH_API int idateParse(
     dt->M = mmd;
     dt->D = dd;
     sqlite3_computeFloor(dt);
-    if (dt->tz) {
-        sqlite3_computeJD(dt);
-    }
     return 0;
+}
+
+SQLMATH_API int idatetimeParse(
+    DateTime * dt,
+    const int64_t idatetime
+) {
+// This function will parse int <idate> into <dt>, and return 0 on success.
+    return idateParse(dt, (int) (idatetime / 100000000))
+        || itimeParse(dt, (int) (idatetime % 1000000));
 }
 
 SQLMATH_API int itimeParse(
@@ -1236,6 +1242,7 @@ SQLMATH_API int itimeParse(
             && (0 <= ss && ss <= 59))) {
         return 1;
     }
+    //
     dt->validJD = 0;
     dt->validHMS = 1;
     //
