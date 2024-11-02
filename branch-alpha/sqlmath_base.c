@@ -1209,10 +1209,8 @@ SQLMATH_API int idateParse(
             && (1 <= dd && dd <= 31))) {
         return 1;
     }
-    //
     dt->validJD = 0;
     dt->validYMD = 1;
-    //
     dt->Y = yy;
     dt->M = mmd;
     dt->D = dd;
@@ -1242,10 +1240,8 @@ SQLMATH_API int itimeParse(
             && (0 <= ss && ss <= 59))) {
         return 1;
     }
-    //
     dt->validJD = 0;
     dt->validHMS = 1;
-    //
     dt->h = hh;
     dt->m = mmt;
     dt->rawS = 0;
@@ -1768,12 +1764,11 @@ SQLMATH_FUNC static void sql1_idatetotext_func(
 // This function will return date-string from integer-yyyymmdd.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1] = { 0 };
-    const int ii = sqlite3_value_int(argv[0]);
-    if (!(10000101 <= ii && ii <= 99991231)) {
+    DateTime dt = { 0 };
+    if (idateParse(&dt, sqlite3_value_int(argv[0]))) {
         return;
     }
-    sqlite3_snprintf(sizeof(zBuf), zBuf, "%04d-%02d-%02d", ii / 10000,
-        (ii % 10000) / 100, (ii % 100));
+    sqlite3_snprintf(sizeof(zBuf), zBuf, "%04d-%02d-%02d", dt.Y, dt.M, dt.D);
     sqlite3_result_text(context, zBuf, sizeof(zBuf) - 1, SQLITE_TRANSIENT);
 }
 
@@ -1811,16 +1806,12 @@ SQLMATH_FUNC static void sql1_idatetimetotext_func(
 // This function will return datetime-string from int64-yyyymmddhhmmss.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1 + 8 + 1] = { 0 };
-    const int64_t ii = sqlite3_value_int64(argv[0]);
-    if (!(10000101000000 <= ii && ii <= 99991231235959)) {
+    DateTime dt = { 0 };
+    if (idatetimeParse(&dt, sqlite3_value_int64(argv[0]))) {
         return;
     }
-    const int aa = ii / 1000000;
-    const int bb = ii % 1000000;
-    sqlite3_snprintf(sizeof(zBuf), zBuf,        //
-        "%04d-%02d-%02d %02d:%02d:%02d",        //
-        aa / 10000, (aa % 10000) / 100, (aa % 100),     //
-        bb / 10000, (bb % 10000) / 100, (bb % 100));
+    sqlite3_snprintf(sizeof(zBuf), zBuf, "%04d-%02d-%02d %02d:%02d:%02d",
+        dt.Y, dt.M, dt.D, dt.h, dt.m, (int) dt.s);
     sqlite3_result_text(context, zBuf, sizeof(zBuf) - 1, SQLITE_TRANSIENT);
 }
 
