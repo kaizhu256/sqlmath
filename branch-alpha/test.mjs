@@ -1397,7 +1397,20 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ["IDATEFROM", "9999-02-29", 99990301],
             ["IDATEFROM", "9999-12-31", 99991231],
             ["IDATEFROM", "9999-12-32", null],
-            ["IDATEFROM", null, null]
+            ["IDATEFROM", null, null],
+            //
+            ["IDATETIMEFROM", "", null],
+            ["IDATETIMEFROM", "0999-12-31 23:00:00", null],
+            ["IDATETIMEFROM", "1000-01-01 23:00:00", 10000101230000],
+            ["IDATETIMEFROM", "1000-02-29 23:00:00", 10000301230000],
+            ["IDATETIMEFROM", "1004-02-29 23:00:00", 10040229230000],
+            ["IDATETIMEFROM", "999-12-31 23:00:00", null],
+            ["IDATETIMEFROM", "9996-02-29 23:59:59", 99960229235959],
+            ["IDATETIMEFROM", "9997-02-29 23:59:59", 99970301235959],
+            ["IDATETIMEFROM", "9999-02-29 23:59:59", 99990301235959],
+            ["IDATETIMEFROM", "9999-12-31 23:59:59", 99991231235959],
+            ["IDATETIMEFROM", "9999-12-32 23:59:59", null],
+            ["IDATETIMEFROM", null, null]
         ].map(async function ([sqlFunc, valIn, valExpect], ii) {
             let valActual;
             valActual = (
