@@ -1386,8 +1386,16 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             filename: ":memory:"
         });
         await Promise.all([
-            ["IDATEFROM", "2000-02-29", 20000229],
-            ["IDATEFROM", "2001-02-29", 20010301],
+            ["IDATEFROM", "0999-12-31", null],
+            ["IDATEFROM", "1000-01-01", 10000101],
+            ["IDATEFROM", "1000-02-29", 10000301],
+            ["IDATEFROM", "1004-02-29", 10040229],
+            ["IDATEFROM", "999-12-31", null],
+            ["IDATEFROM", "9996-02-29", 99960229],
+            ["IDATEFROM", "9997-02-29", 99970301],
+            ["IDATEFROM", "9999-02-29", 99990301],
+            ["IDATEFROM", "9999-12-31", 99991231],
+            ["IDATEFROM", "9999-12-32", null],
             ["IDATEFROM", null, null]
         ].map(async function ([sqlFunc, valIn, valExpect], ii) {
             let valActual;

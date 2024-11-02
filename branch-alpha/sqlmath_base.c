@@ -1741,15 +1741,15 @@ SQLMATH_FUNC static void sql1_idatefrom_func(
     int argc,
     sqlite3_value ** argv
 ) {
-    DateTime tt;
-    if (sqlite3_isDate(context, argc, argv, &tt)) {
+    DateTime dt = { 0 };
+    if (sqlite3_isDate(context, argc, argv, &dt)) {
         return;
     }
-    sqlite3_computeYMD(&tt);
-    if (!(1000 <= tt.Y && tt.Y <= 9999)) {
+    sqlite3_computeYMD(&dt);
+    if (!(1000 <= dt.Y && dt.Y <= 9999)) {
         return;
     }
-    const int ii = tt.Y * 10000 + tt.M * 100 + tt.D;
+    const int ii = dt.Y * 10000 + dt.M * 100 + dt.D;
     if (!(10000101 <= ii && ii <= 99991231)) {
         return;
     }
@@ -1782,16 +1782,16 @@ SQLMATH_FUNC static void sql1_idatetimefrom_func(
     int argc,
     sqlite3_value ** argv
 ) {
-    DateTime tt;
-    if (sqlite3_isDate(context, argc, argv, &tt)) {
+    DateTime dt = { 0 };
+    if (sqlite3_isDate(context, argc, argv, &dt)) {
         return;
     }
-    sqlite3_computeYMD_HMS(&tt);
-    if (!(1000 <= tt.Y && tt.Y <= 9999)) {
+    sqlite3_computeYMD_HMS(&dt);
+    if (!(1000 <= dt.Y && dt.Y <= 9999)) {
         return;
     }
-    const int64_t ii = (int64_t) (tt.Y * 10000 + tt.M * 100 + tt.D) * 1000000
-        + (int64_t) (tt.h * 10000 + tt.m * 100 + (int) tt.s);
+    const int64_t ii = (int64_t) (dt.Y * 10000 + dt.M * 100 + dt.D) * 1000000
+        + (int64_t) (dt.h * 10000 + dt.m * 100 + (int) dt.s);
     if (!(10000101000000 <= ii && ii <= 99991231235959)) {
         return;
     }
