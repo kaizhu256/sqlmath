@@ -1634,7 +1634,7 @@ SQLMATH_FUNC static void sql1_idatetotext_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return date-string from integer-yyymmdd.
+// This function will return date-string from integer-yyyymmdd.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1] = { 0 };
     const int ii = sqlite3_value_int(argv[0]);
@@ -1651,7 +1651,7 @@ SQLMATH_FUNC static void sql1_idatetimetotext_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return date-string from integer-yyymmdd.
+// This function will return datetime-string from int64-yyyymmddhhmmss.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1 + 8 + 1] = { 0 };
     const int64_t ii = sqlite3_value_int64(argv[0]);
