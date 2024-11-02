@@ -1782,9 +1782,6 @@ SQLMATH_FUNC static void sql1_idatetimefrom_func(
         return;
     }
     sqlite3_computeYMD_HMS(&dt);
-    if (!(1000 <= dt.Y && dt.Y <= 9999)) {
-        return;
-    }
     const int64_t ii = (int64_t) (dt.Y * 10000 + dt.M * 100 + dt.D) * 1000000
         + (int64_t) (dt.h * 10000 + dt.m * 100 + (int) dt.s);
     if (!(10000101000000 <= ii && ii <= 99991231235959)) {

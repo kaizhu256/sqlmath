@@ -1382,11 +1382,22 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
     jstestIt((
         "test_sqlite_extension_idate_xxx handling-behavior"
     ), async function test_sqlite_extension_idate_xxx() {
-        let db = await dbOpenAsync({
-            filename: ":memory:"
-        });
-        await Promise.all([
-            ["IDATEFROM", "", null],
+        let db = await dbOpenAsync({filename: ":memory:"});
+        let promiseList = [];
+        promiseList.push([
+            "IDATEFROM",
+            "IDATETIMEFROM",
+            "IDATETOTEXT",
+            "IDATETIMETOTEXT"
+        ].map(function (sqlFunc) {
+            return [
+                [sqlFunc, "", null],
+                [sqlFunc, "0", null],
+                [sqlFunc, 0, null],
+                [sqlFunc, null, null]
+            ];
+        }).flat());
+        promiseList.push([
             ["IDATEFROM", "-1000-01-01", null],
             ["IDATEFROM", "-9999-12-31", null],
             ["IDATEFROM", "0999-12-31", null],
@@ -1398,24 +1409,18 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ["IDATEFROM", "9997-02-29", 99970301],
             ["IDATEFROM", "9999-12-31", 99991231],
             ["IDATEFROM", "9999-12-32", null],
-            ["IDATEFROM", 0, null],
             ["IDATEFROM", 10000101, null],
             ["IDATEFROM", 99991231, null],
-            ["IDATEFROM", null, null],
             //
-            //!! ["IDATETOTEXT", "", null],
-            //!! ["IDATETOTEXT", "0999-12-31", null],
             ["IDATETOTEXT", 10000101, "1000-01-01"],
-            //!! ["IDATETOTEXT", 10000229, "1000-03-01"],
+            ["IDATETOTEXT", 10000229, "1000-02-29"],
             ["IDATETOTEXT", 10040229, "1004-02-29"],
-            //!! ["IDATETOTEXT", null, "999-12-31"],
+            ["IDATETOTEXT", 9991231, null],
             ["IDATETOTEXT", 99960229, "9996-02-29"],
-            //!! ["IDATETOTEXT", 99970229, "9997-03-01"],
+            ["IDATETOTEXT", 99970229, "9997-02-29"],
             ["IDATETOTEXT", 99991231, "9999-12-31"],
-            //!! ["IDATETOTEXT", null, "9999-12-32"],
-            //!! ["IDATETOTEXT", null, null],
+            ["IDATETOTEXT", 99991232, null],
             //
-            ["IDATETIMEFROM", "", null],
             ["IDATETIMEFROM", "-1000-01-01 00:00:00", null],
             ["IDATETIMEFROM", "-9999-12-31 23:59:59", null],
             ["IDATETIMEFROM", "0999-12-31 23:59:00", null],
@@ -1427,11 +1432,12 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ["IDATETIMEFROM", "9997-02-29 23:59:59", 99970301235959],
             ["IDATETIMEFROM", "9999-12-31 23:59:59", 99991231235959],
             ["IDATETIMEFROM", "9999-12-32 23:59:59", null],
-            ["IDATETIMEFROM", 0, null],
             ["IDATETIMEFROM", 10000101000000, null],
-            ["IDATETIMEFROM", 99991231235959, null],
-            ["IDATETIMEFROM", null, null]
-        ].map(async function ([sqlFunc, valIn, valExpect], ii) {
+            ["IDATETIMEFROM", 99991231235959, null]
+        ]);
+        await Promise.all(promiseList.flat().map(async function ([
+            sqlFunc, valIn, valExpect
+        ], ii) {
             let valActual;
             valActual = (
                 await dbExecAndReturnLastValue({
