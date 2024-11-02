@@ -1221,7 +1221,7 @@ SQLMATH_API int idatetimeParse(
     const int64_t idatetime
 ) {
 // This function will parse int <idate> into <dt>, and return 0 on success.
-    return idateParse(dt, (int) (idatetime / 100000000))
+    return idateParse(dt, (int) (idatetime / 1000000))
         || itimeParse(dt, (int) (idatetime % 1000000));
 }
 

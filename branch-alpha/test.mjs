@@ -1412,6 +1412,8 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ["IDATEFROM", 10000101, null],
             ["IDATEFROM", 99991231, null],
             //
+            ["IDATETOTEXT", "1000-01-01", null],
+            ["IDATETOTEXT", "9999-12-31", null],
             ["IDATETOTEXT", 10000101, "1000-01-01"],
             ["IDATETOTEXT", 10000229, "1000-02-29"],
             ["IDATETOTEXT", 10040229, "1004-02-29"],
@@ -1433,7 +1435,18 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ["IDATETIMEFROM", "9999-12-31 23:59:59", 99991231235959],
             ["IDATETIMEFROM", "9999-12-32 23:59:59", null],
             ["IDATETIMEFROM", 10000101000000, null],
-            ["IDATETIMEFROM", 99991231235959, null]
+            ["IDATETIMEFROM", 99991231235959, null],
+            //
+            ["IDATETIMETOTEXT", "1000-01-01 00:00:00", null],
+            ["IDATETIMETOTEXT", "9999-12-31 00:00:00", null],
+            ["IDATETIMETOTEXT", 10000101000000, "1000-01-01 00:00:00"],
+            ["IDATETIMETOTEXT", 10000229000000, "1000-02-29 00:00:00"],
+            ["IDATETIMETOTEXT", 10040229000000, "1004-02-29 00:00:00"],
+            ["IDATETIMETOTEXT", 9991231000000, null],
+            ["IDATETIMETOTEXT", 99960229000000, "9996-02-29 00:00:00"],
+            ["IDATETIMETOTEXT", 99970229000000, "9997-02-29 00:00:00"],
+            ["IDATETIMETOTEXT", 99991231000000, "9999-12-31 00:00:00"],
+            ["IDATETIMETOTEXT", 99991232000000, null]
         ]);
         await Promise.all(promiseList.flat().map(async function ([
             sqlFunc, valIn, valExpect
