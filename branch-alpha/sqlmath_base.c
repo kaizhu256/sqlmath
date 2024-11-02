@@ -261,8 +261,7 @@ typedef uint8_t u8;
 /*
 ** A structure for holding a single date and time.
 */
-typedef struct DateTime DateTime;
-struct DateTime {
+typedef struct DateTime {
     sqlite3_int64 iJD;  /* The julian day number times 86400000 */
     int Y, M, D;        /* Year, month, and day */
     int h, m;           /* Hour and minutes */
@@ -277,7 +276,7 @@ struct DateTime {
     unsigned useSubsec : 1; /* Display subsecond precision */
     unsigned isUtc     : 1; /* Time is known to be UTC */
     unsigned isLocal   : 1; /* Time is known to be localtime */
-};
+} DateTime;
 SQLITE_API void sqlite3_computeYMD(DateTime *p);
 SQLITE_API void sqlite3_computeYMD_HMS(DateTime *p);
 SQLITE_API int sqlite3_isDate(
