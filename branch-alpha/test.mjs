@@ -1398,58 +1398,66 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             ];
         }).flat());
         promiseList.push([
-            ["IDATEFROM", "-1000-01-01", null],
-            ["IDATEFROM", "-9999-12-31", null],
-            ["IDATEFROM", "0999-12-31", null],
-            ["IDATEFROM", "1000-01-01", 10000101],
-            ["IDATEFROM", "1000-02-29", 10000301],
-            ["IDATEFROM", "1004-02-29", 10040229],
-            ["IDATEFROM", "999-12-31", null],
-            ["IDATEFROM", "9996-02-29", 99960229],
-            ["IDATEFROM", "9997-02-29", 99970301],
-            ["IDATEFROM", "9999-12-31", 99991231],
-            ["IDATEFROM", "9999-12-32", null],
-            ["IDATEFROM", 10000101, null],
-            ["IDATEFROM", 99991231, null],
-            //
-            ["IDATETOTEXT", "1000-01-01", null],
-            ["IDATETOTEXT", "9999-12-31", null],
-            ["IDATETOTEXT", 10000101, "1000-01-01"],
-            ["IDATETOTEXT", 10000229, "1000-02-29"],
-            ["IDATETOTEXT", 10040229, "1004-02-29"],
-            ["IDATETOTEXT", 9991231, null],
-            ["IDATETOTEXT", 99960229, "9996-02-29"],
-            ["IDATETOTEXT", 99970229, "9997-02-29"],
-            ["IDATETOTEXT", 99991231, "9999-12-31"],
-            ["IDATETOTEXT", 99991232, null],
-            //
-            ["IDATETIMEFROM", "-1000-01-01 00:00:00", null],
-            ["IDATETIMEFROM", "-9999-12-31 23:59:59", null],
-            ["IDATETIMEFROM", "0999-12-31 23:59:00", null],
-            ["IDATETIMEFROM", "1000-01-01 00:00:00", 10000101000000],
-            ["IDATETIMEFROM", "1000-02-29 00:00:00", 10000301000000],
-            ["IDATETIMEFROM", "1004-02-29 00:00:00", 10040229000000],
-            ["IDATETIMEFROM", "999-12-31 23:59:00", null],
-            ["IDATETIMEFROM", "9996-02-29 23:59:59", 99960229235959],
-            ["IDATETIMEFROM", "9997-02-29 23:59:59", 99970301235959],
-            ["IDATETIMEFROM", "9999-12-31 23:59:59", 99991231235959],
-            ["IDATETIMEFROM", "9999-12-32 23:59:59", null],
-            ["IDATETIMEFROM", 10000101000000, null],
-            ["IDATETIMEFROM", 99991231235959, null],
-            //
-            ["IDATETIMETOTEXT", "1000-01-01 00:00:00", null],
-            ["IDATETIMETOTEXT", "9999-12-31 00:00:00", null],
-            ["IDATETIMETOTEXT", 10000101000000, "1000-01-01 00:00:00"],
-            ["IDATETIMETOTEXT", 10000229000000, "1000-02-29 00:00:00"],
-            ["IDATETIMETOTEXT", 10040229000000, "1004-02-29 00:00:00"],
-            ["IDATETIMETOTEXT", 9991231000000, null],
-            ["IDATETIMETOTEXT", 99960229000000, "9996-02-29 00:00:00"],
-            ["IDATETIMETOTEXT", 99970229000000, "9997-02-29 00:00:00"],
-            ["IDATETIMETOTEXT", 99991231000000, "9999-12-31 00:00:00"],
-            ["IDATETIMETOTEXT", 99991232000000, null]
-        ]);
+            "IDATEFROM",
+            "IDATETIMEFROM"
+        ].map(function (sqlFunc) {
+            return [
+                ["-1000-01-01 00:00:00", null],
+                ["-9999-12-31 23:59:59", null],
+                ["0999-12-31 23:59:00", null],
+                ["1000-01-01 00:00:00", 10000101000000],
+                ["1000-02-29 00:00:00", 10000301000000],
+                ["1004-02-29 00:00:00", 10040229000000],
+                ["999-12-31 23:59:00", null],
+                ["9996-02-29 23:59:59", 99960229235959],
+                ["9997-02-29 23:59:59", 99970301235959],
+                ["9999-12-31 23:59:59", 99991231235959],
+                ["9999-12-32 23:59:59", null],
+                [10000101000000, null],
+                [99991231235959, null]
+            ].map(function ([valIn, valExpect]) {
+                [valIn, valExpect] = [valIn, valExpect].map(function (arg) {
+                    return (
+                        (arg === null || sqlFunc.startsWith("IDATETIME"))
+                        ? arg
+                        : typeof arg === "string"
+                        ? arg.slice(0, -9)
+                        : Math.floor(arg / 1000000)
+                    );
+                });
+                return [sqlFunc, valIn, valExpect];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATETOTEXT",
+            "IDATETIMETOTEXT"
+        ].map(function (sqlFunc) {
+            return [
+                ["1000-01-01 00:00:00", null],
+                ["9999-12-31 23:59:59", null],
+                [10000101000000, "1000-01-01 00:00:00"],
+                [10000229000000, "1000-02-29 00:00:00"],
+                [10040229000000, "1004-02-29 00:00:00"],
+                [9991231000000, null],
+                [99960229235959, "9996-02-29 23:59:59"],
+                [99970229235959, "9997-02-29 23:59:59"],
+                [99991231235959, "9999-12-31 23:59:59"],
+                [99991232235959, null]
+            ].map(function ([valIn, valExpect]) {
+                [valIn, valExpect] = [valIn, valExpect].map(function (arg) {
+                    return (
+                        (arg === null || sqlFunc.startsWith("IDATETIME"))
+                        ? arg
+                        : typeof arg === "string"
+                        ? arg.slice(0, -9)
+                        : Math.floor(arg / 1000000)
+                    );
+                });
+                return [sqlFunc, valIn, valExpect];
+            });
+        }).flat());
         await Promise.all(promiseList.flat().map(async function ([
-            sqlFunc, valIn, valExpect
+            sqlFunc, valIn, valExpect, modifier
         ], ii) {
             let valActual;
             valActual = (
@@ -1458,7 +1466,11 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                         valIn
                     },
                     db,
-                    sql: `SELECT ${sqlFunc}($valIn);`
+                    sql: (
+                        modifier
+                        ? `SELECT ${sqlFunc}($valIn, '${modifier}');`
+                        : `SELECT ${sqlFunc}($valIn);`
+                    )
                 })
             );
             assertJsonEqual(valActual, valExpect, {

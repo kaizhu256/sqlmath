@@ -1126,10 +1126,10 @@ SELECT win_sum1(1) FROM __tmp1;
     });
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-    ["IDATETIMETOTEXT", 99991232000000, null]
+    ["IDATETIMETOTEXT", 99991232235959, null]
 ]);
 await Promise.all(promiseList.flat().map(async function ([
-    sqlFunc, valIn, valExpect
+    sqlFunc, valIn, valExpect, modifier
 ], ii) {
     let valActual;
     valActual = (
@@ -1138,9 +1138,9 @@ await Promise.all(promiseList.flat().map(async function ([
                 valIn
             },
             db,
-            sql: `SELECT ${sqlFunc}($valIn);`
-        })
-    );
+            sql: (
+                modifier
+                ? `SELECT ${sqlFunc}($valIn, '${modifier}');`
 ...</pre></li>
 
 <li>
