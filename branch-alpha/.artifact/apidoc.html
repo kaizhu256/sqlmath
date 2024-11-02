@@ -1126,21 +1126,21 @@ SELECT win_sum1(1) FROM __tmp1;
     });
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-        })
-    ),
-    "3"
-);
-// test dbExecAndReturnLastValue null-case handling-behavior
-assertJsonEqual(
-    noop(
+await Promise.all([
+    ["IDATEFROM", "2000-02-29", 20000229],
+    ["IDATEFROM", "2001-02-29", 20010301],
+    ["IDATEFROM", null, null]
+].map(async function ([sqlFunc, valIn, valExpect], ii) {
+    let valActual;
+    valActual = (
         await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastValue</span>({
+            bindList: {
+                valIn
+            },
             db,
-            sql: "SELECT 0 WHERE 0"
+            sql: `SELECT ${sqlFunc}($valIn);`
         })
-    ),
-    null
-);
-// test dbExecAndReturnLastValue json handling-behavior
+    );
 ...</pre></li>
 
 <li>

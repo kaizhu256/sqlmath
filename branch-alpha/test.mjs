@@ -1380,6 +1380,35 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
         }));
     });
     jstestIt((
+        "test_sqlite_extension_idate_xxx handling-behavior"
+    ), async function test_sqlite_extension_idate_xxx() {
+        let db = await dbOpenAsync({
+            filename: ":memory:"
+        });
+        await Promise.all([
+            ["IDATEFROM", "2000-02-29", 20000229],
+            ["IDATEFROM", "2001-02-29", 20010301],
+            ["IDATEFROM", null, null]
+        ].map(async function ([sqlFunc, valIn, valExpect], ii) {
+            let valActual;
+            valActual = (
+                await dbExecAndReturnLastValue({
+                    bindList: {
+                        valIn
+                    },
+                    db,
+                    sql: `SELECT ${sqlFunc}($valIn);`
+                })
+            );
+            assertJsonEqual(valActual, valExpect, {
+                ii,
+                valActual,
+                valExpect,
+                valIn
+            });
+        }));
+    });
+    jstestIt((
         "test sqlite-extension-math handling-behavior"
     ), async function test_sqlite_extension_math() {
         let db = await dbOpenAsync({
