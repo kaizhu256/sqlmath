@@ -1380,12 +1380,13 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
         }));
     });
     jstestIt((
-        "test_sqlite_extension_idate_xxx handling-behavior"
-    ), async function test_sqlite_extension_idate_xxx() {
+        "test_sqlite_extension_idatefrom_xxx handling-behavior"
+    ), async function test_sqlite_extension_idatefrom_xxx() {
         let db = await dbOpenAsync({
             filename: ":memory:"
         });
         await Promise.all([
+            ["IDATEFROM", "", null],
             ["IDATEFROM", "0999-12-31", null],
             ["IDATEFROM", "1000-01-01", 10000101],
             ["IDATEFROM", "1000-02-29", 10000301],
