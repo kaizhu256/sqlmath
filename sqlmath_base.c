@@ -358,6 +358,11 @@ typedef struct DateTime {
     unsigned isUtc     : 1; /* Time is known to be UTC */
     unsigned isLocal   : 1; /* Time is known to be localtime */
 } DateTime;
+SQLITE_API int idateAdd(
+    sqlite3_context * context,
+    const int argc,
+    sqlite3_value ** argv
+);
 SQLITE_API int idateDateonly(
     const sqlite3_int64 idate64
 );
@@ -544,6 +549,36 @@ SQLMATH_API void dbCall(
             funcname);
     }
 }
+
+//!! SQLITE_API void idateAdd(
+    //!! sqlite3_context * context,
+    //!! const int argc,
+    //!! sqlite3_value ** argv
+//!! ) {
+    //!! DateTime dt = { 0 };
+    //!! DateTime *dt = &dt0;
+    //!! //
+    //!! if (idateParse(dt, sqlite3_value_int64(argv[0]), 1)) {
+        //!! return;
+    //!! }
+    //!! //
+    //!! for (int ii = 1; ii < argc; ii++) {
+        //!! const char *zz = sqlite3_value_text(argv[ii]);
+        //!! int nn = sqlite3_value_bytes(argv[ii]);
+        //!! if (zz == 0 || parseModifier(context, (char *) zz, nn, dt, ii))
+            //!! return;
+    //!! }
+    //!! computeJD(dt);
+    //!! if (dt->isError || !validJulianDay(dt->iJD))
+        //!! return;
+    //!! if (argc == 1 && dt->validYMD && dt->D > 28) {
+        //!! /* Make sure a YYYY-MM-DD is normalized.
+         //!! ** Example: 2023-02-31 -> 2023-03-03 */
+        //!! assert(dt->validJD);
+        //!! dt->validYMD = 0;
+    //!! }
+    //!! return 0;
+//!! }
 
 SQLMATH_API void dbClose(
     Jsbaton * baton
