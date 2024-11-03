@@ -1392,9 +1392,16 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
         ].map(function (sqlFunc) {
             return [
                 [sqlFunc, "", null],
+                [sqlFunc, "+0", null],
+                [sqlFunc, "+1", null],
+                [sqlFunc, "-0", null],
+                [sqlFunc, "-1", null],
                 [sqlFunc, "0", null],
+                [sqlFunc, -1, null],
                 [sqlFunc, 0, null],
-                [sqlFunc, null, null]
+                [sqlFunc, 1, null],
+                [sqlFunc, null, null],
+                [sqlFunc, undefined, null]
             ];
         }).flat());
         promiseList.push([
@@ -1406,16 +1413,18 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                 ["-9999-12-31 23:59:59", null],
                 ["0999-12-31 23:59:00", null],
                 ["1000-01-01 00:00:00", 10000101000000],
+                ["1000-01-01 00:00:00", null, -1],
                 ["1000-02-29 00:00:00", 10000301000000],
                 ["1004-02-29 00:00:00", 10040229000000],
                 ["999-12-31 23:59:00", null],
                 ["9996-02-29 23:59:59", 99960229235959],
                 ["9997-02-29 23:59:59", 99970301235959],
                 ["9999-12-31 23:59:59", 99991231235959],
+                ["9999-12-31 23:59:59", null, 1],
                 ["9999-12-32 23:59:59", null],
                 [10000101000000, null],
                 [99991231235959, null]
-            ].map(function ([valIn, valExpect]) {
+            ].map(function ([valIn, valExpect, modifier]) {
                 [valIn, valExpect] = [valIn, valExpect].map(function (arg) {
                     return (
                         (arg === null || sqlFunc.startsWith("IDATETIME"))
@@ -1425,7 +1434,14 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                         : Math.floor(arg / 1000000)
                     );
                 });
-                return [sqlFunc, valIn, valExpect];
+                modifier = (
+                    !modifier
+                    ? modifier
+                    : sqlFunc.startsWith("IDATETIME")
+                    ? `${modifier} SECOND`
+                    : `${modifier} DAY`
+                );
+                return [sqlFunc, valIn, valExpect, modifier];
             });
         }).flat());
         promiseList.push([
@@ -1456,6 +1472,10 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                 return [sqlFunc, valIn, valExpect];
             });
         }).flat());
+        promiseList.push([
+            ["IDATETIMETOTEXT", 99991231235959, "9999-12-31 23:59:59"],
+            ["IDATETIMETOTEXT", 99991231235960, null]
+        ]);
         await Promise.all(promiseList.flat().map(async function ([
             sqlFunc, valIn, valExpect, modifier
         ], ii) {
@@ -1475,6 +1495,7 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             );
             assertJsonEqual(valActual, valExpect, {
                 ii,
+                modifier,
                 valActual,
                 valExpect,
                 valIn

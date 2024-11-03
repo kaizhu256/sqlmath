@@ -1220,7 +1220,8 @@ SQLMATH_API int idatetimeParse(
     DateTime * dt,
     const int64_t idatetime
 ) {
-// This function will parse int <idate> into <dt>, and return 0 on success.
+// This function will parse int64 <idatetime> into <dt>,
+// and return 0 on success.
     return idateParse(dt, (int) (idatetime / 1000000))
         || itimeParse(dt, (int) (idatetime % 1000000));
 }
@@ -1733,7 +1734,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func(
 /*
 **    date( TIMESTRING, MOD, MOD, ...)
 **
-** Return integer YYYYMMDD
+** Return int YYYYMMDD
 */
     sqlite3_context * context,
     int argc,
@@ -1756,7 +1757,7 @@ SQLMATH_FUNC static void sql1_idatetotext_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return date-string from integer-yyyymmdd.
+// This function will return date-string from int YYYYMMDD.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1] = { 0 };
     DateTime dt = { 0 };
@@ -1795,7 +1796,7 @@ SQLMATH_FUNC static void sql1_idatetimetotext_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will return datetime-string from int64-yyyymmddhhmmss.
+// This function will return datetime-string from int64 YYYYMMDDHHMMSS.
     UNUSED_PARAMETER(argc);
     char zBuf[10 + 1 + 8 + 1] = { 0 };
     DateTime dt = { 0 };

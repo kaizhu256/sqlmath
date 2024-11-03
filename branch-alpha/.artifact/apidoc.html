@@ -1126,8 +1126,8 @@ SELECT win_sum1(1) FROM __tmp1;
     });
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-    });
-}).flat());
+    ["IDATETIMETOTEXT", 99991231235960, null]
+]);
 await Promise.all(promiseList.flat().map(async function ([
     sqlFunc, valIn, valExpect, modifier
 ], ii) {
