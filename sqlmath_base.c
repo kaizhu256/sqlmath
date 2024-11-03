@@ -358,7 +358,7 @@ typedef struct DateTime {
     unsigned isUtc     : 1; /* Time is known to be UTC */
     unsigned isLocal   : 1; /* Time is known to be localtime */
 } DateTime;
-SQLITE_API int idateAdd(
+SQLITE_API void idateAdd(
     sqlite3_context * context,
     const int argc,
     sqlite3_value ** argv
@@ -549,36 +549,6 @@ SQLMATH_API void dbCall(
             funcname);
     }
 }
-
-//!! SQLITE_API void idateAdd(
-    //!! sqlite3_context * context,
-    //!! const int argc,
-    //!! sqlite3_value ** argv
-//!! ) {
-    //!! DateTime dt = { 0 };
-    //!! DateTime *dt = &dt0;
-    //!! //
-    //!! if (idateParse(dt, sqlite3_value_int64(argv[0]), 1)) {
-        //!! return;
-    //!! }
-    //!! //
-    //!! for (int ii = 1; ii < argc; ii++) {
-        //!! const char *zz = sqlite3_value_text(argv[ii]);
-        //!! int nn = sqlite3_value_bytes(argv[ii]);
-        //!! if (zz == 0 || parseModifier(context, (char *) zz, nn, dt, ii))
-            //!! return;
-    //!! }
-    //!! computeJD(dt);
-    //!! if (dt->isError || !validJulianDay(dt->iJD))
-        //!! return;
-    //!! if (argc == 1 && dt->validYMD && dt->D > 28) {
-        //!! /* Make sure a YYYY-MM-DD is normalized.
-         //!! ** Example: 2023-02-31 -> 2023-03-03 */
-        //!! assert(dt->validJD);
-        //!! dt->validYMD = 0;
-    //!! }
-    //!! return 0;
-//!! }
 
 SQLMATH_API void dbClose(
     Jsbaton * baton
@@ -1703,6 +1673,19 @@ SQLMATH_FUNC static void sql1_fmod_func(
     sqlite3_result_double_or_null(context, fmod(        //
             sqlite3_value_double_or_nan(argv[0]),       //
             sqlite3_value_double_or_nan(argv[1])));
+}
+
+SQLMATH_FUNC static void sql1_idateadd_func(
+/*
+**    date( TIMESTRING, MOD, MOD, ...)
+**
+** Return int YYYYMMDD
+*/
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+    idateAdd(context, argc, argv);
 }
 
 SQLMATH_FUNC static void sql1_idatefrom_func(
@@ -4412,6 +4395,7 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(doublearray_jsonfrom, 1, 0);
     SQL_CREATE_FUNC1(doublearray_jsonto, 1, 0);
     SQL_CREATE_FUNC1(fmod, 2, SQLITE_DETERMINISTIC);
+    SQL_CREATE_FUNC1(idateadd, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatefrom, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatetimefrom, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatetoepoch, 1, SQLITE_DETERMINISTIC);
