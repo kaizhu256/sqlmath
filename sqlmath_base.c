@@ -371,6 +371,12 @@ SQLITE_API int sqlite3_isDate(
     sqlite3_value **argv,
     DateTime *p
 );
+SQLITE_API int sqlite3_isDate2(
+    sqlite3_context *context,
+    int argc,
+    sqlite3_value **argv,
+    DateTime *p
+);
 SQLITE_API int sqlite3_parseModifier(
     sqlite3_context * pCtx,     /* Function context */
     const char *z,              /* The text of the modifier */
@@ -1758,12 +1764,8 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
         if (idateParse(dt, argv)) {
             return;
         }
-        for (int ii = 1; ii < argc; ii += 1) {
-            const char *zz = (char *) sqlite3_value_text(argv[ii]);
-            int nn = sqlite3_value_bytes(argv[ii]);
-            if (zz == 0 || sqlite3_parseModifier(context, zz, nn, dt, ii)) {
-                return;
-            }
+        if (sqlite3_isDate2(context, argc, argv, dt)) {
+            return;
         }
         break;
         // case IDATE_TYPE_TEXT:
