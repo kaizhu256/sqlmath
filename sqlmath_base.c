@@ -1215,9 +1215,6 @@ SQLMATH_API int idateParse(
 ) {
 // This function will parse <idate> and <itime> into <dt>,
 // and return 0 on success.
-    if (dt->isError || dt->validJD || dt->validHMS || dt->validYMD) {
-        return 1;
-    }
     const int64_t idate64 = sqlite3_value_int64(argv[0]);
     // parse idate
     {
@@ -1750,8 +1747,10 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     const int typeFrom,
     const int typeTo
 ) {
+    // init dt
     DateTime __dt = { 0 };
     DateTime *dt = &__dt;
+    // parse argv
     switch (typeFrom) {
     case IDATE_TYPE_IDATE:
         if (idateParse(dt, argv)) {
@@ -1768,14 +1767,11 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
         }
     }
     // normalize YMD
-    if (dt->D > 28) {
-        dt->validYMD = 0;
-    }
     sqlite3_computeYMD_HMS(dt);
     if (dt->isError || !(0 <= dt->iJD && dt->iJD <= 464269060799999)) {
         return;
     }
-    // result
+    // serialize result
     switch (typeTo) {
     case IDATE_TYPE_EPOCH:
         sqlite3_result_int64(context,
