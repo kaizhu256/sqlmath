@@ -333,7 +333,6 @@ SQLMATH_API void doublewinResultBlob(
 
 
 // file sqlmath_h - idate
-#define DATETIME_ALLOCA(dt) DateTime __##dt = { 0 }; DateTime *dt = &__##dt;
 #define IDATE_TYPE_EPOCH        3
 #define IDATE_TYPE_IDATE        0
 #define IDATE_TYPE_IDATE_DATEONLY         1
@@ -1751,7 +1750,8 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     const int typeFrom,
     const int typeTo
 ) {
-    DATETIME_ALLOCA(dt);
+    DateTime __dt = { 0 };
+    DateTime *dt = &__dt;
     switch (typeFrom) {
     case IDATE_TYPE_IDATE:
         if (idateParse(dt, argv)) {
@@ -1775,6 +1775,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     if (dt->isError || !(0 <= dt->iJD && dt->iJD <= 464269060799999)) {
         return;
     }
+    // result
     switch (typeTo) {
     case IDATE_TYPE_EPOCH:
         sqlite3_result_int64(context,
