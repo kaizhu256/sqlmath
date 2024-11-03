@@ -358,14 +358,13 @@ typedef struct DateTime {
     unsigned isUtc     : 1; /* Time is known to be UTC */
     unsigned isLocal   : 1; /* Time is known to be localtime */
 } DateTime;
-SQLITE_API void sqlite3_computeJD(DateTime *p);
 SQLITE_API void idatetimefromFunc(
     sqlite3_context * context,
     const int argc,
     sqlite3_value ** argv,
     const int dateonly
 );
-SQLMATH_API int idatetimeParse(
+SQLITE_API int idatetimeParse(
     DateTime * dt,
     const int idate,
     const int itime,
@@ -1188,64 +1187,6 @@ SQLMATH_API void doublewinResultBlob(
 }
 
 // SQLMATH_API doublewin - end
-
-// SQLMATH_API idate - start
-SQLMATH_API int idatetimeParse(
-    DateTime * dt,
-    const int idate,
-    const int itime,
-    const int modejd
-) {
-// This function will parse <idate> and <itime> into <dt>,
-// and return 0 on success.
-    // parse idate
-    {
-        const int yy = idate / 10000;
-        const int mmd = (idate / 100) % 100;
-        const int dd = idate % 100;
-        if (!((1000 <= yy && yy <= 9999)
-                && (1 <= mmd && mmd <= 12)
-                && (1 <= dd && dd <= 31))) {
-            return 1;
-        }
-        dt->validJD = 0;
-        dt->validYMD = 1;
-        dt->Y = yy;
-        dt->M = mmd;
-        dt->D = dd;
-    }
-    // parse itime
-    if (itime == 0) {
-        dt->validJD = 0;
-        dt->validHMS = 1;
-        dt->h = 0;
-        dt->m = 0;
-        dt->rawS = 0;
-        dt->s = 0;
-    } else {
-        const int hh = itime / 10000;
-        const int mmt = (itime / 100) % 100;
-        const int ss = itime % 100;
-        if (!((0 <= hh && hh <= 23)
-                && (0 <= mmt && mmt <= 59)
-                && (0 <= ss && ss <= 59))) {
-            return 1;
-        }
-        dt->validJD = 0;
-        dt->validHMS = 1;
-        dt->h = hh;
-        dt->m = mmt;
-        dt->rawS = 0;
-        dt->s = ss;
-    }
-    // parse julianday
-    if (modejd) {
-        sqlite3_computeJD(dt);
-    }
-    return 0;
-}
-
-// SQLMATH_API idate - end
 
 // SQLMATH_API str99 - start
 SQLMATH_API void str99ArrayAppendDouble(
