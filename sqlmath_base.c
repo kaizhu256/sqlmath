@@ -1695,6 +1695,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     // parse argv
     switch (typeFrom) {
     case IDATE_TYPE_IDATE:
+        noop();
         const int64_t idate64 = sqlite3_value_int64(argv[0]);
         const int modeDateonly = 10000101 <= idate64 && idate64 <= 99991231;
         // parse idate
@@ -1740,9 +1741,9 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
             return;
         }
     }
-    // normalize YMD
+    // normalize YMD_HMS
     sqlite3_computeYMD_HMS(dt);
-    if (dt->isError || !(0 <= dt->iJD && dt->iJD <= 464269060799999)) {
+    if (dt->isError) {
         return;
     }
     // serialize result
