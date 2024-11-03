@@ -1445,6 +1445,26 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             });
         }).flat());
         promiseList.push([
+            "IDATETIMETOEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                ["1000-01-01 00:00:00", null],
+                ["9999-12-31 23:59:59", null],
+                [10000101000000, -30610224000],
+                [10000229000000, -30605126400],
+                [10000301000000, -30605126400],
+                [10040229000000, -30478982400],
+                [9991231000000, null],
+                [99960229235959, 253281254399],
+                [99970229235959, 253312876799],
+                [99970301235959, 253312876799],
+                [99991231235959, 253402300799],
+                [99991232235959, null]
+            ].map(function ([valIn, valExpect]) {
+                return [sqlFunc, valIn, valExpect];
+            });
+        }).flat());
+        promiseList.push([
             "IDATETOTEXT",
             "IDATETIMETOTEXT"
         ].map(function (sqlFunc) {
