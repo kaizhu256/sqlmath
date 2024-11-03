@@ -1689,14 +1689,17 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     const int typeFrom,
     const int typeTo
 ) {
-    // init dt
+    // declare var
     DateTime __dt = { 0 };
     DateTime *dt = &__dt;
+    int idate = 0;
+    int itime = 0;
     int modeDateonly = 0;
+    int64_t idate64 = 0;
     // parse argv
     switch (typeFrom) {
     case IDATE_TYPE_IDATE:
-        const int64_t idate64 = sqlite3_value_int64(argv[0]);
+        idate64 = sqlite3_value_int64(argv[0]);
         modeDateonly = 10000101 <= idate64 && idate64 <= 99991231;
         // parse idate
         {
@@ -1772,9 +1775,8 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
         // case IDATE_TYPE_IDATE:
         // case IDATE_TYPE_IDATE_DATEONLY:
     default:
-        noop();
         // Return int YYYYMMDD
-        const int idate = dt->Y * 10000 + dt->M * 100 + dt->D;
+        idate = dt->Y * 10000 + dt->M * 100 + dt->D;
         if (!(10000101 <= idate && idate <= 99991231)) {
             return;
         }
@@ -1783,7 +1785,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
             return;
         }
         // Return int64 YYYYMMDDHHMMSS
-        const int itime = dt->h * 10000 + dt->m * 100 + dt->s;
+        itime = dt->h * 10000 + dt->m * 100 + dt->s;
         if (!(000000 <= itime && itime <= 235959)) {
             return;
         }
