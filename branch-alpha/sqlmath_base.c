@@ -357,13 +357,11 @@ typedef struct DateTime {
     unsigned isLocal   : 1; /* Time is known to be localtime */
 } DateTime;
 SQLITE_API void sqlite3_computeHMS(DateTime *p);
-SQLITE_API void sqlite3_computeJD(DateTime *p);
-SQLITE_API void sqlite3_computeYMD(DateTime *p);
-SQLITE_API int sqlite3_isDate(
-    sqlite3_context *context,
-    int argc,
-    sqlite3_value **argv,
-    DateTime *p
+SQLITE_API void idatetimefromFunc(
+    sqlite3_context * context,
+    const int argc,
+    sqlite3_value ** argv,
+    const int dateonly
 );
 SQLMATH_API int idatetimeParse(
     DateTime * dt,
@@ -1721,39 +1719,6 @@ SQLMATH_FUNC static void sql1_fmod_func(
             sqlite3_value_double_or_nan(argv[1])));
 }
 
-SQLMATH_FUNC static void sql1_idatetimefrom_func0(
-/*
-**    datetime( TIMESTRING, MOD, MOD, ...)
-**
-** Return int64 YYYYMMDDHHMMSS
-*/
-    sqlite3_context * context,
-    const int argc,
-    sqlite3_value ** argv,
-    const int dateonly
-) {
-    DateTime dt = { 0 };
-    if (sqlite3_isDate(context, argc, argv, &dt)) {
-        return;
-    }
-    sqlite3_computeYMD(&dt);
-    const int idate = dt.Y * 10000 + dt.M * 100 + dt.D;
-    if (!(10000101 <= idate && idate <= 99991231)) {
-        return;
-    }
-    if (dateonly) {
-        sqlite3_result_int(context, idate);
-        return;
-    }
-    sqlite3_computeHMS(&dt);
-    const int itime = dt.h * 10000 + dt.m * 100 + dt.s;
-    if (!(000000 <= itime && itime <= 235959)) {
-        return;
-    }
-    sqlite3_result_int64(context,
-        ((int64_t) idate) * 1000000 + (int64_t) itime);
-}
-
 SQLMATH_FUNC static void sql1_idatefrom_func(
 /*
 **    date( TIMESTRING, MOD, MOD, ...)
@@ -1764,7 +1729,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func(
     int argc,
     sqlite3_value ** argv
 ) {
-    sql1_idatetimefrom_func0(context, argc, argv, 1);
+    idatetimefromFunc(context, argc, argv, 1);
 }
 
 SQLMATH_FUNC static void sql1_idatetotext_func(
@@ -1793,7 +1758,7 @@ SQLMATH_FUNC static void sql1_idatetimefrom_func(
     int argc,
     sqlite3_value ** argv
 ) {
-    sql1_idatetimefrom_func0(context, argc, argv, 0);
+    idatetimefromFunc(context, argc, argv, 0);
 }
 
 SQLMATH_FUNC static void sql1_idatetimetotext_func(
