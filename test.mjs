@@ -1385,6 +1385,7 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
         let db = await dbOpenAsync({filename: ":memory:"});
         let promiseList = [];
         promiseList.push([
+            "IDATEADD",
             "IDATEFROM",
             "IDATETIMEFROM",
             "IDATETOTEXT"
@@ -1475,6 +1476,7 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
                 [9991231000000, null],
                 [99960229235959, "9996-02-29 23:59:59"],
                 [99970229235959, "9997-02-29 23:59:59"],
+                [99970301235959, "9997-02-29 23:59:59"],
                 [99991231235959, "9999-12-31 23:59:59"],
                 [99991232235959, null]
             ].map(function ([valIn, valExpect]) {
