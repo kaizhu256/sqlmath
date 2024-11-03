@@ -1692,12 +1692,12 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     // init dt
     DateTime __dt = { 0 };
     DateTime *dt = &__dt;
+    int modeDateonly = 0;
     // parse argv
     switch (typeFrom) {
     case IDATE_TYPE_IDATE:
-        noop();
         const int64_t idate64 = sqlite3_value_int64(argv[0]);
-        const int modeDateonly = 10000101 <= idate64 && idate64 <= 99991231;
+        modeDateonly = 10000101 <= idate64 && idate64 <= 99991231;
         // parse idate
         {
             const int idate = modeDateonly ? idate64 : idate64 / 1000000;
