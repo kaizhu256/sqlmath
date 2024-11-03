@@ -1800,6 +1800,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
         // case IDATE_TYPE_IDATE:
         // case IDATE_TYPE_IDATE_DATEONLY:
     default:
+        noop();
         // Return int YYYYMMDD
         const int idate = dt->Y * 10000 + dt->M * 100 + dt->D;
         if (!(10000101 <= idate && idate <= 99991231)) {
