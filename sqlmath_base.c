@@ -376,6 +376,7 @@ SQLITE_API int sqlite3_isDate2(
     sqlite3_value **argv,
     DateTime *p
 );
+//!! SQLMATH_API int idateValidate(dt);
 
 
 // file sqlmath_h - str99
@@ -1692,8 +1693,6 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     // declare var
     DateTime __dt = { 0 };
     DateTime *dt = &__dt;
-    int idate = 0;
-    int itime = 0;
     int modeDateonly = 0;
     int64_t idate64 = 0;
     // parse argv
@@ -1725,7 +1724,7 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
             const int ss = itime % 100;
             if (!((0 <= hh && hh <= 23)
                     && (0 <= mmt && mmt <= 59)
-                    && (0 <= ss && ss <= 59))) {
+                    && (0 <= ss && ss < 60))) {
                 return;
             }
             dt->validHMS = 1;
@@ -1747,6 +1746,15 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
     // normalize YMD_HMS
     sqlite3_computeYMD_HMS(dt);
     if (dt->isError) {
+        return;
+    }
+    // validate dt
+    if (!((1000 <= dt->Y && dt->Y <= 9999)
+            && (1 <= dt->M && dt->M <= 12)
+            && (1 <= dt->D && dt->D <= 31)
+            && (0 <= dt->h && dt->h <= 23)
+            && (0 <= dt->m && dt->m <= 59)
+            && (0 <= dt->s && dt->s < 60))) {
         return;
     }
     // serialize result
@@ -1776,21 +1784,15 @@ SQLMATH_FUNC static void sql1_idatefrom_func0(
         // case IDATE_TYPE_IDATE_DATEONLY:
     default:
         // Return int YYYYMMDD
-        idate = dt->Y * 10000 + dt->M * 100 + dt->D;
-        if (!(10000101 <= idate && idate <= 99991231)) {
-            return;
-        }
         if (typeTo == IDATE_TYPE_IDATE_DATEONLY) {
-            sqlite3_result_int(context, idate);
+            sqlite3_result_int(context, //
+                dt->Y * 10000 + dt->M * 100 + dt->D);
             return;
         }
         // Return int64 YYYYMMDDHHMMSS
-        itime = dt->h * 10000 + dt->m * 100 + dt->s;
-        if (!(000000 <= itime && itime <= 235959)) {
-            return;
-        }
-        sqlite3_result_int64(context,
-            ((int64_t) idate) * 1000000 + (int64_t) itime);
+        sqlite3_result_int64(context,   //
+            (int64_t) (dt->Y * 10000 + dt->M * 100 + dt->D) * 1000000   //
+            + (int64_t) (dt->h * 10000 + dt->m * 100 + dt->s));
     }
 }
 
