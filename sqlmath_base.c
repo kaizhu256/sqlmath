@@ -3988,15 +3988,15 @@ static void winSinefitSnr(
     // calculate snr - saa
     saa = sqrt(2 * wsf->vyy * invn0     //
         * (1 - wsf->vxy * wsf->vxy / (wsf->vxx * wsf->vyy)));
-    // calculate snr - sww, spp - using incremental-discrete-fourier-transform
+    // calculate snr - sww - using incremental-discrete-fourier-transform
     {
-        const double ibb = 2 * MATH_PI * (ncol * WIN_SINEFIT_STEP * 1.0 / wbb);
+        const double ibb = 2 * MATH_PI * (wbb / (ncol * WIN_SINEFIT_STEP));
         const double rr0 = isfinite(wsf->rr0) ? wsf->rr0 : 0;
         const double rr1 = isfinite(wsf->rr1) ? wsf->rr1 : 0;
         const double rr2 = wsf->wnn ? rr1 - rr0 : rr1;
         double cfkmax = 0;
         double tmp = 0;
-        double kk = 0;
+        int kk = 0;
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
             // rr   = yy - (laa + lbb*tt)
             // dfkr = cos(2*pi/nnn*kk*ibb)*(rr1 - rr0)
@@ -4012,14 +4012,6 @@ static void winSinefitSnr(
                 && cfkmax < tmp) {
                 cfkmax = tmp;
                 sww = kk;
-                spp = atan(xxyy[ii + 4] / xxyy[ii + 3]);
-                if (!isfinite(spp)) {
-                    spp = 0;
-                }
-                fprintf(stderr, //
-                    "\nwinSinefitSnr - sww=%f spp=%f re=%f im=%f\n",    //
-                    sww, spp,   //
-                    xxyy[ii + 3], xxyy[ii + 4]);
             }
             kk += 1;
         }
@@ -4028,6 +4020,45 @@ static void winSinefitSnr(
     const double inva = 1.0 / saa;
     if (inva <= 0 || !isfinite(inva) || !isnormal(sww)) {
         return;
+    }
+    // calculate snr - spp - using multivariate-linear-regression
+    if (1) {
+        double sumxx = 0;
+        double sumxy = 0;
+        double sumxz = 0;
+        double sumyy = 0;
+        double sumyz = 0;
+        // szz  ~ sin(sww*tt + spp)
+        // szz  ~ sbb*sxx + scc*syy
+        // sbb  = sin(spp)
+        // scc  = cos(spp)
+        // sxx  = cos(sww*tt)
+        // syy  = sin(sww*tt)
+        // rr   = szz - sbb*sxx - scc*syy
+        // gb   = d/db[z-b*x-c*y]^2 = -2*x*(z - b*x - c*y)
+        // gc   = d/dc[z-b*x-c*y]^2 = -2*y*(z - b*x - c*y)
+        // invp = 1/(sum(xx)*sum(yy) - sum(xy)^2)
+        // sbb  = invp*(sum(yy)*sum(xz) - sum(xy)*sum(yz))
+        // scc  = invp*(sum(xx)*sum(yz) - sum(xy)*sum(xz))
+        // spp  = asin(sbb) = acos(scc)
+        // spp  = atan(sbb/scc)
+        for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
+            tmp = sww * xxyy[ii + 0];
+            const double sxx = cos(tmp);
+            const double syy = sin(tmp);
+            const double szz = inva * xxyy[ii + 2];
+            sumxx += sxx * sxx;
+            sumxy += sxx * syy;
+            sumxz += sxx * szz;
+            sumyy += syy * syy;
+            sumyz += syy * szz;
+        }
+        const double sbb = sumyy * sumxz - sumxy * sumyz;
+        const double scc = sumxx * sumyz - sumxy * sumxz;
+        spp = atan(sbb / scc);
+        if (!isfinite(spp)) {
+            spp = 0;
+        }
     }
     // Offset spp by pi if root of derivative is maxima instead of minima.
     if (1) {
