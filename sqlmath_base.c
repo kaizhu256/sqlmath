@@ -3990,13 +3990,13 @@ static void winSinefitSnr(
         * (1 - wsf->vxy * wsf->vxy / (wsf->vxx * wsf->vyy)));
     // calculate snr - sww, spp - using incremental-discrete-fourier-transform
     {
-        const double ibb = 2 * MATH_PI * (wbb / (ncol * WIN_SINEFIT_STEP));
+        const double ibb = 2 * MATH_PI * (ncol * WIN_SINEFIT_STEP * 1.0 / wbb);
         const double rr0 = isfinite(wsf->rr0) ? wsf->rr0 : 0;
         const double rr1 = isfinite(wsf->rr1) ? wsf->rr1 : 0;
         const double rr2 = wsf->wnn ? rr1 - rr0 : rr1;
         double cfkmax = 0;
         double tmp = 0;
-        int kk = 0;
+        double kk = 0;
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
             // rr   = yy - (laa + lbb*tt)
             // dfkr = cos(2*pi/nnn*kk*ibb)*(rr1 - rr0)
@@ -4016,6 +4016,10 @@ static void winSinefitSnr(
                 if (!isfinite(spp)) {
                     spp = 0;
                 }
+                fprintf(stderr, //
+                    "\nwinSinefitSnr - sww=%f spp=%f re=%f im=%f\n",    //
+                    sww, spp,   //
+                    xxyy[ii + 3], xxyy[ii + 4]);
             }
             kk += 1;
         }
