@@ -3971,7 +3971,7 @@ static const int WIN_SINEFIT_STEP = 3 + 2;
 static void winSinefitSnr(
     WinSinefit * wsf,
     double *xxyy,
-    const int wbb,
+    const double wbb,
     const int nbody,
     const int ncol
 ) {
@@ -3995,8 +3995,8 @@ static void winSinefitSnr(
         const double rr1 = isfinite(wsf->rr1) ? wsf->rr1 : 0;
         const double rr2 = wsf->wnn ? rr1 - rr0 : rr1;
         double cfkmax = 0;
+        double kk = 0;
         double tmp = 0;
-        int kk = 0;
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
             // rr   = yy - (laa + lbb*tt)
             // dfkr = cos(2*pi/nnn*kk*ibb)*(rr1 - rr0)
