@@ -4012,10 +4012,10 @@ static void winSinefitSnr(
                 && cfkmax < tmp) {
                 cfkmax = tmp;
                 sww = kk;
-                //!! spp = atan(xxyy[ii + 4] / xxyy[ii + 3]);
-                //!! if (!isfinite(spp)) {
-                    //!! spp = 0;
-                //!! }
+                spp = atan(xxyy[ii + 4] / xxyy[ii + 3]);
+                if (!isfinite(spp)) {
+                    spp = 0;
+                }
             }
             kk += 1;
         }
