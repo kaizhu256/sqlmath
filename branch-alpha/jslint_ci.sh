@@ -385,9 +385,7 @@ shCiArtifactUpload() {(set -e
     (
     cd "branch-$GITHUB_BRANCH0"
     sleep 15
-    echo foo
     shDirHttplinkValidate
-    echo bar
     )
 )}
 
