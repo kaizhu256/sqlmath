@@ -23,11 +23,11 @@ jobs:
           # - x86
         node_version:
           - 20
-          # !! - 22
+          - 22
         os:
-          # !! - macos-latest
+          - macos-latest
           - ubuntu-latest
-          # !! - windows-latest
+          - windows-latest
         python_version:
           - "3.12"
 # base - .github/workflows/ci.yml - beg

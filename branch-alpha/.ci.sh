@@ -17,7 +17,7 @@ shCiArtifactUploadCustom() {(set -e
     PID_LIST="$PID_LIST $!"
     shBrowserScreenshot .artifact/apidoc.html &
     PID_LIST="$PID_LIST $!"
-    shPidListWait shCiArtifactUploadCustom "$PID_LIST"
+    shPidListWait screenshot "$PID_LIST"
 )}
 
 shCiBaseCustom() {(set -e
