@@ -1380,192 +1380,722 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
         }));
     });
     jstestIt((
+        "test_sqlite_extension_idate_xxx handling-behavior"
+    ), async function test_sqlite_extension_idate_xxx() {
+        let db = await dbOpenAsync({filename: ":memory:"});
+        let promiseList = [];
+        function idateArgNormalize(sqlFunc, arg, mode) {
+            function idateArgYmdTruncate() {
+                if (Number.isFinite(Number(arg))) {
+                    return Math.floor(arg / 1_00_00_00);
+                }
+                return arg.split(" ")[0];
+            }
+            switch (arg !== null && mode) {
+            case "expect":
+                if ((/(?:IDATEFROM|'IYMDH\w*?').*?_YMD$/).test(sqlFunc)) {
+                    return arg - (arg % 1_00_00_00);
+                }
+                if ((/'IY'/).test(sqlFunc)) {
+                    arg = idateArgYmdTruncate(arg);
+                    return arg - (arg % 1_00_00);
+                }
+                if ((/'IYM'/).test(sqlFunc)) {
+                    arg = idateArgYmdTruncate(arg);
+                    return arg - (arg % 1_00);
+                }
+                if ((/'IYMD'/).test(sqlFunc)) {
+                    arg = idateArgYmdTruncate(arg);
+                    return arg - (arg % 1);
+                }
+                if ((/'IYMDH'/).test(sqlFunc)) {
+                    return arg - (arg % 1_00_00);
+                }
+                if ((/'IYMDHM'/).test(sqlFunc)) {
+                    return arg - (arg % 1_00);
+                }
+                if (
+                    (/^IDATEYMDFROM|'ITEXTYMD'/).test(sqlFunc)
+                    || ((/_YMD$/).test(sqlFunc) && !(/IDATEFROM/).test(sqlFunc))
+                ) {
+                    return idateArgYmdTruncate(arg);
+                }
+                break;
+            case "input":
+                if ((/_YMD$/).test(sqlFunc)) {
+                    return idateArgYmdTruncate(arg);
+                }
+                break;
+            }
+            return arg;
+        }
+        promiseList.push([
+            "IDATEADD",
+            //
+            "IDATEFROM",
+            // "IDATEFROMEPOCH",
+            "IDATEYMDFROM",
+            // "IDATEYMDFROMEPOCH",
+            //
+            "IDATETO('IDATE')",
+            "IDATETO('IEPOCH')",
+            "IDATETO('IJULIAN')",
+            "IDATETO('ITEXT')",
+            "IDATETO('ITEXTYMD')",
+            "IDATETO('IY')",
+            "IDATETO('IYM')",
+            "IDATETO('IYMD')",
+            "IDATETO('IYMDH')",
+            "IDATETO('IYMDHM')",
+            "IDATETO('IYMDHMS')",
+            "IDATETOEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                ["", null],
+                ["+0", null],
+                ["+1", null],
+                ["-0", null],
+                ["-1", null],
+                ["-1000-01-01 00:00:00", null],
+                ["-10000101000000", null],
+                ["-9991231000000", null],
+                ["-9999-12-31 23:59:59", null],
+                ["-99991231235959", null],
+                ["-99991231235960", null],
+                ["0", null],
+                ["0999-12-31 23:59:00", null],
+                ["09991231235900", null],
+                ["1000-01-01 00:00:00", null, -1],
+                ["10000101000000", null, -1],
+                ["999-12-31 23:59:00", null],
+                ["999-12-31 23:59:59", null],
+                ["9991231000000", null],
+                ["9999-12-31 23:59:59", null, 1],
+                ["9999-12-31 23:59:60", null],
+                ["9999-12-32 23:59:59", null],
+                ["99991231235959", null, 1],
+                ["99991231235960", null],
+                [-1, null],
+                [-10000101000000, null],
+                [-9991231000000, null],
+                [-99991231235959, null],
+                [-99991231235960, null],
+                [0, null],
+                [1, null],
+                [10000101000000, null, -1],
+                [9991231000000, null],
+                [9991231235900, null],
+                [99991231235959, null, 1],
+                [99991231235960, null],
+                [99991232235959, null],
+                [null, null]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [sqlFunc, valIn, valExpect, modifier];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEFROM",
+            "IDATEYMDFROM"
+        ].map(function (sqlFunc) {
+            return [
+                [10000101000000, null],
+                [99991231235959, null]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [sqlFunc, valIn, valExpect, modifier];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEADD",
+            "IDATETO('IDATE')",
+            "IDATETO('IEPOCH')",
+            "IDATETO('IJULIAN')",
+            "IDATETO('ITEXT')",
+            "IDATETO('ITEXTYMD')",
+            "IDATETO('IY')",
+            "IDATETO('IYM')",
+            "IDATETO('IYMD')",
+            "IDATETO('IYMDH')",
+            "IDATETO('IYMDHM')",
+            "IDATETO('IYMDHMS')",
+            "IDATETOEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                ["1000-01-01 00:00:00", null],
+                ["9999-12-31 23:59:59", null],
+                [2086302.5, null],
+                [5373483.5, null]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [sqlFunc, valIn, valExpect, modifier];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEADD",
+            "IDATETO('IDATE')"
+        ].map(function (sqlFunc) {
+            return [
+                ["10000101000000", 10000101000000],
+                ["99991231235959", 99991231235959],
+                [10000101000000, 10000101000000],
+                [10000229000000, 10000301000000],
+                [10000301000000, 10000301000000],
+                [10040229000000, 10040229000000],
+                [99960229235959, 99960229235959],
+                [99970229235959, 99970301235959],
+                [99970301235959, 99970301235959],
+                [99991231235959, 99991231235959]
+            ].map(function ([valIn, valExpect]) {
+                return [sqlFunc, `${sqlFunc}_YMD`].map(function (sqlFunc) {
+                    return [
+                        sqlFunc,
+                        idateArgNormalize(sqlFunc, valIn, "input"),
+                        idateArgNormalize(sqlFunc, valExpect, "expect")
+                    ];
+                });
+            }).flat();
+        }).flat());
+        promiseList.push([
+            "IDATEFROMEPOCH",
+            "IDATEYMDFROMEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                [10000101000000, "-30610224000"],
+                [10000101000000, -30610224000],
+                [10000301000000, -30605126400],
+                [10040229000000, -30478982400],
+                [99960229235959, 253281254399, 253281168000],
+                [99970301235959, 253312876799, 253312790400],
+                [99991231235959, "253402300799", "253402214400"],
+                [99991231235959, 253402300799, 253402214400]
+            ].map(function ([valExpect, valIn, valInYmd]) {
+                return [
+                    sqlFunc,
+                    (
+                        (/^IDATEYMDFROM|_YMD$/).test(sqlFunc)
+                        ? valInYmd || valIn
+                        : valIn
+                    ),
+                    idateArgNormalize(sqlFunc, valExpect, "expect")
+                ];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEFROMEPOCH",
+            "IDATEYMDFROMEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                [-30610224000, 10000101000000, "-0 SECOND"],
+                [-30610224000, null, "-1 SECOND"],
+                [253402214400, 99991231000000, "+0 DAY"],
+                [253402214400, null, "+1 DAY"]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [
+                    sqlFunc,
+                    valIn,
+                    idateArgNormalize(sqlFunc, valExpect, "expect"),
+                    modifier
+                ];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEFROM_JULIAN",
+            "IDATEYMDFROM_JULIAN"
+        ].map(function (sqlFunc) {
+            return [
+                [10000101000000, "2086302.5"],
+                [10000101000000, 2086302.5],
+                [10000301000000, 2086361.5],
+                [10040229000000, 2087821.5],
+                [99960229235959, 5372083.49998843, 5372082.5],
+                [99970301235959, 5372449.49998843, 5372448.5],
+                [99991231235959, "5373484.49998843", "5373483.5"],
+                [99991231235959, 5373484.49998843, 5373483.5]
+            ].map(function ([valExpect, valIn, valInYmd]) {
+                return [
+                    sqlFunc,
+                    (
+                        (/^IDATEYMDFROM|_YMD$/).test(sqlFunc)
+                        ? valInYmd || valIn
+                        : valIn
+                    ),
+                    idateArgNormalize(sqlFunc, valExpect, "expect")
+                ];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEFROM_JULIAN",
+            "IDATEYMDFROM_JULIAN"
+        ].map(function (sqlFunc) {
+            return [
+                [2086302.5, 10000101000000, "-0 SECOND"],
+                [2086302.5, null, "-1 SECOND"],
+                [5373483.5, 99991231000000, "+0 DAY"],
+                [5373483.5, null, "+1 DAY"]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [
+                    sqlFunc,
+                    valIn,
+                    idateArgNormalize(sqlFunc, valExpect, "expect"),
+                    modifier
+                ];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATEFROM_TEXT",
+            "IDATEYMDFROM_TEXT"
+        ].map(function (sqlFunc) {
+            return [
+                ["1000-01-01 00:00:00", 10000101000000],
+                ["1000-02-29 00:00:00", 10000301000000],
+                ["1000-03-01 00:00:00", 10000301000000],
+                ["1004-02-29 00:00:00", 10040229000000],
+                ["9996-02-29 23:59:59", 99960229235959],
+                ["9997-02-29 23:59:59", 99970301235959],
+                ["9997-03-01 23:59:59", 99970301235959],
+                ["9999-12-31 23:59:59", 99991231235959]
+            ].map(function ([valIn, valExpect]) {
+                return [sqlFunc, `${sqlFunc}_YMD`].map(function (sqlFunc) {
+                    return [
+                        sqlFunc,
+                        idateArgNormalize(sqlFunc, valIn, "input"),
+                        idateArgNormalize(sqlFunc, valExpect, "expect")
+                    ];
+                });
+            }).flat();
+        }).flat());
+        promiseList.push([
+            "IDATETO('IEPOCH')",
+            "IDATETOEPOCH"
+        ].map(function (sqlFunc) {
+            return [
+                ["10000101000000", -30610224000],
+                ["99991231235959", 253402300799, 253402214400],
+                [10000101000000, -30610224000],
+                [10000229000000, -30605126400],
+                [10000301000000, -30605126400],
+                [10040229000000, -30478982400],
+                [99960229235959, 253281254399, 253281168000],
+                [99970229235959, 253312876799, 253312790400],
+                [99970301235959, 253312876799, 253312790400],
+                [99991231235959, 253402300799, 253402214400],
+                //
+                ["1000-01-01 00:00:00", null],
+                ["9999-12-31 23:59:59", null]
+            ].map(function ([valIn, valExpect, valExpectYmd]) {
+                return [sqlFunc, `${sqlFunc}_YMD`].map(function (sqlFunc) {
+                    return [
+                        sqlFunc,
+                        idateArgNormalize(sqlFunc, valIn, "input"),
+                        (
+                            (/^IDATEYMDFROM|_YMD$/).test(sqlFunc)
+                            ? valExpectYmd || valExpect
+                            : valExpect
+                        )
+                    ];
+                });
+            }).flat();
+        }).flat());
+        promiseList.push([
+            "IDATETO('IJULIAN')"
+        ].map(function (sqlFunc) {
+            return [
+                ["10000101000000", 2086302.5],
+                ["99991231235959", 5373484.49998843, 5373483.5],
+                [10000101000000, 2086302.5],
+                [10000229000000, 2086361.5],
+                [10000301000000, 2086361.5],
+                [10040229000000, 2087821.5],
+                [99960229235959, 5372083.49998843, 5372082.5],
+                [99970229235959, 5372449.49998843, 5372448.5],
+                [99970301235959, 5372449.49998843, 5372448.5],
+                [99991231235959, 5373484.49998843, 5373483.5]
+            ].map(function ([valIn, valExpect, valExpectYmd]) {
+                return [sqlFunc, `${sqlFunc}_YMD`].map(function (sqlFunc) {
+                    return [
+                        sqlFunc,
+                        idateArgNormalize(sqlFunc, valIn, "input"),
+                        (
+                            (/^IDATEYMDFROM|_YMD$/).test(sqlFunc)
+                            ? valExpectYmd || valExpect
+                            : valExpect
+                        )
+                    ];
+                });
+            }).flat();
+        }).flat());
+        promiseList.push([
+            "IDATETO('ITEXT')",
+            "IDATETO('ITEXTYMD')"
+        ].map(function (sqlFunc) {
+            return [
+                ["10000101000000", "1000-01-01 00:00:00"],
+                ["99991231235959", "9999-12-31 23:59:59"],
+                [10000101000000, "1000-01-01 00:00:00"],
+                [10000229000000, "1000-03-01 00:00:00"],
+                [10000301000000, "1000-03-01 00:00:00"],
+                [10040229000000, "1004-02-29 00:00:00"],
+                [99960229235959, "9996-02-29 23:59:59"],
+                [99970229235959, "9997-03-01 23:59:59"],
+                [99970301235959, "9997-03-01 23:59:59"],
+                [99991231235959, "9999-12-31 23:59:59"]
+            ].map(function ([valIn, valExpect]) {
+                return [
+                    sqlFunc,
+                    idateArgNormalize(sqlFunc, valIn, "input"),
+                    idateArgNormalize(sqlFunc, valExpect, "expect")
+                ];
+            });
+        }).flat());
+        promiseList.push([
+            "IDATETO('IY')",
+            "IDATETO('IYM')",
+            "IDATETO('IYMD')",
+            "IDATETO('IYMDH')",
+            "IDATETO('IYMDHM')",
+            "IDATETO('IYMDHMS')"
+        ].map(function (sqlFunc) {
+            return [
+                ["10000101000000", 10000101000000],
+                ["99991231235959", 99991231235959],
+                [10000101000000, 10000101000000],
+                [10000101000000, null, -1],
+                [10000229000000, 10000301000000],
+                [10000301000000, 10000301000000],
+                [10040229000000, 10040229000000],
+                [99960229235959, 99960229235959],
+                [99970229235959, 99970301235959],
+                [99970301235959, 99970301235959],
+                [99991231235959, 99991231235959],
+                [99991231235959, null, 1]
+            ].map(function ([valIn, valExpect, modifier]) {
+                return [sqlFunc, `${sqlFunc}_YMD`].map(function (sqlFunc) {
+                    return [
+                        sqlFunc,
+                        idateArgNormalize(sqlFunc, valIn, "input"),
+                        idateArgNormalize(sqlFunc, valExpect, "expect"),
+                        modifier
+                    ];
+                });
+            }).flat();
+        }).flat());
+        await Promise.all(promiseList.flat().map(async function ([
+            sqlFunc, valIn, valExpect, modifier
+        ], ii) {
+            let sql;
+            let sqlFunc2 = sqlFunc.replace((/_JULIAN|_TEXT|_YMD/g), "");
+            let valActual;
+            sql = String(
+                modifier === undefined
+                ? `SELECT ${sqlFunc2}($valIn, '+0 SECOND');`
+                : typeof modifier === "number"
+                ? (
+                    (/^IDATEYMDFROM|YMD$/).test(sqlFunc)
+                    ? `SELECT ${sqlFunc2}($valIn, '${modifier} DAY');`
+                    : `SELECT ${sqlFunc2}($valIn, '${modifier} SECOND');`
+                )
+                : `SELECT ${sqlFunc2}($valIn, '${modifier}');`
+            ).replace(")(", ", ");
+            valActual = (
+                await dbExecAndReturnLastValue({
+                    bindList: {
+                        valIn
+                    },
+                    db,
+                    sql
+                })
+            );
+            assertJsonEqual(valActual, valExpect, {
+                ii,
+                modifier,
+                sql,
+                sqlFunc,
+                valActual,
+                valExpect,
+                valIn
+            });
+        }));
+    });
+    jstestIt((
         "test sqlite-extension-math handling-behavior"
     ), async function test_sqlite_extension_math() {
-        let db = await dbOpenAsync({
-            filename: ":memory:"
-        });
+        let db = await dbOpenAsync({filename: ":memory:"});
         // test sqlmath-defined-func handling-behavior
         Object.entries({
             "''": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "",
-                "copyblob": ""
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "",
+                "COPYBLOB": "",
+                "SHA256": (
+                    "E3B0C44298FC1C149AFBF4C8996FB924"
+                    + "27AE41E4649B934CA495991B7852B855"
+                )
             },
             "'-0.5'": {
-                "castrealornull": -0.5,
-                "castrealorzero": -0.5,
-                "casttextorempty": "-0.5",
-                "copyblob": "-0.5"
+                "CASTREALORNULL": -0.5,
+                "CASTREALORZERO": -0.5,
+                "CASTTEXTOREMPTY": "-0.5",
+                "COPYBLOB": "-0.5",
+                "SHA256": (
+                    "1B07B0CFFA0B3F596B5E048B01151688"
+                    + "86CC5183DD518655B5515EE5DDDAC6D1"
+                )
             },
             "'-1'": {
-                "castrealornull": -1,
-                "castrealorzero": -1,
-                "casttextorempty": "-1",
-                "copyblob": "-1",
-                "cot": -0.642092615934331,
-                "coth": -1.31303528549933,
-                "sign": -1,
-                "sqrtwithsign": -1
+                "CASTREALORNULL": -1,
+                "CASTREALORZERO": -1,
+                "CASTTEXTOREMPTY": "-1",
+                "COPYBLOB": "-1",
+                "COT": -0.642092615934331,
+                "COTH": -1.31303528549933,
+                "SHA256": (
+                    "1BAD6B8CF97131FCEAB8543E81F77571"
+                    + "95FBB1D36B376EE994AD1CF17699C464"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": -1
             },
             "'0'": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "0",
-                "copyblob": "0",
-                "cot": null,
-                "coth": null,
-                "sign": 0,
-                "sqrtwithsign": 0
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "0",
+                "COPYBLOB": "0",
+                "COT": null,
+                "COTH": null,
+                "SHA256": (
+                    "5FECEB66FFC86F38D952786C6D696C79"
+                    + "C2DBC239DD4E91B46729D73A27FB57E9"
+                ),
+                "SIGN": 0,
+                "SQRTWITHSIGN": 0
             },
             "'0.5'": {
-                "castrealornull": 0.5,
-                "castrealorzero": 0.5,
-                "casttextorempty": "0.5",
-                "copyblob": "0.5"
+                "CASTREALORNULL": 0.5,
+                "CASTREALORZERO": 0.5,
+                "CASTTEXTOREMPTY": "0.5",
+                "COPYBLOB": "0.5",
+                "SHA256": (
+                    "D2CBAD71FF333DE67D07EC676E352AB7"
+                    + "F38248EB69C942950157220607C55E84"
+                )
             },
             "'1'": {
-                "castrealornull": 1,
-                "castrealorzero": 1,
-                "casttextorempty": "1",
-                "copyblob": "1",
-                "cot": 0.642092615934331,
-                "coth": 1.31303528549933,
-                "sign": 1,
-                "sqrtwithsign": 1
+                "CASTREALORNULL": 1,
+                "CASTREALORZERO": 1,
+                "CASTTEXTOREMPTY": "1",
+                "COPYBLOB": "1",
+                "COT": 0.642092615934331,
+                "COTH": 1.31303528549933,
+                "SHA256": (
+                    "6B86B273FF34FCE19D6B804EFF5A3F57"
+                    + "47ADA4EAA22F1D49C01E52DDB7875B4B"
+                ),
+                "SIGN": 1,
+                "SQRTWITHSIGN": 1
             },
             "'aa'": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "aa",
-                "copyblob": "aa"
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "aa",
+                "COPYBLOB": "aa",
+                "SHA256": (
+                    "961B6DD3EDE3CB8ECBAACBD68DE040CD"
+                    + "78EB2ED5889130CCEB4C49268EA4D506"
+                )
+            },
+            "'abc'": {
+                "SHA256": (
+                    "BA7816BF8F01CFEA414140DE5DAE2223"
+                    + "B00361A396177A9CB410FF61F20015AD"
+                )
+            },
+            "'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq'": {
+                "SHA256": (
+                    "248D6A61D20638B8E5C026930C3E6039"
+                    + "A33CE45964FF2167F6ECEDD419DB06C1"
+                )
             },
             "'hello'": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "hello",
-                "copyblob": "hello"
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "hello",
+                "COPYBLOB": "hello",
+                "SHA256": (
+                    "2CF24DBA5FB0A30E26E83B2AC5B9E29E"
+                    + "1B161E5C1FA7425E73043362938B9824"
+                )
             },
             "-0.5": {
-                "castrealornull": -0.5,
-                "castrealorzero": -0.5,
-                "casttextorempty": "-0.5",
-                "copyblob": -0.5
+                "CASTREALORNULL": -0.5,
+                "CASTREALORZERO": -0.5,
+                "CASTTEXTOREMPTY": "-0.5",
+                "COPYBLOB": -0.5,
+                "SHA256": (
+                    "1B07B0CFFA0B3F596B5E048B01151688"
+                    + "86CC5183DD518655B5515EE5DDDAC6D1"
+                )
             },
             "-0x7fffffffffffffff": {
-                "cot": -0.0118008981305845,
-                "coth": -1,
-                "sign": -1,
-                "sqrtwithsign": -3037000499.97605
+                "COT": -0.0118008981305845,
+                "COTH": -1,
+                "SHA256": ( // '-9223372036854775807'
+                    "B7AE81320053F61245ED2D36E72E1D05"
+                    + "AD4235D8C784E60285F1EB1F06DA7845"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": -3037000499.97605
             },
             "-1": {
-                "castrealornull": -1,
-                "castrealorzero": -1,
-                "casttextorempty": "-1",
-                "copyblob": -1,
-                "cot": -0.642092615934331,
-                "coth": -1.31303528549933,
-                "sign": -1,
-                "sqrtwithsign": -1
+                "CASTREALORNULL": -1,
+                "CASTREALORZERO": -1,
+                "CASTTEXTOREMPTY": "-1",
+                "COPYBLOB": -1,
+                "COT": -0.642092615934331,
+                "COTH": -1.31303528549933,
+                "SHA256": (
+                    "1BAD6B8CF97131FCEAB8543E81F77571"
+                    + "95FBB1D36B376EE994AD1CF17699C464"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": -1
             },
             "-1e999": {
-                "cot": null,
-                "coth": -1,
-                "sign": -1,
-                "sqrtwithsign": null
+                "COT": null,
+                "COTH": -1,
+                "SHA256": ( // '-Inf'
+                    "8C1FB05600CEB1FF74474E66DDD603F5"
+                    + "FE8C839B03598A124E2AACB6A08C8837"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": null
             },
             "0": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "0",
-                "copyblob": 0,
-                "cot": null,
-                "coth": null,
-                "sign": 0,
-                "sqrtwithsign": 0
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "0",
+                "COPYBLOB": 0,
+                "COT": null,
+                "COTH": null,
+                "SHA256": (
+                    "5FECEB66FFC86F38D952786C6D696C79"
+                    + "C2DBC239DD4E91B46729D73A27FB57E9"
+                ),
+                "SIGN": 0,
+                "SQRTWITHSIGN": 0
             },
             "0.5": {
-                "castrealornull": 0.5,
-                "castrealorzero": 0.5,
-                "casttextorempty": "0.5",
-                "copyblob": 0.5
+                "CASTREALORNULL": 0.5,
+                "CASTREALORZERO": 0.5,
+                "CASTTEXTOREMPTY": "0.5",
+                "COPYBLOB": 0.5,
+                "SHA256": (
+                    "D2CBAD71FF333DE67D07EC676E352AB7"
+                    + "F38248EB69C942950157220607C55E84"
+                )
             },
             "0.5, 0.5": {
-                "roundorzero": 1
+                "ROUNDORZERO": 1
             },
             "0.5, 1": {
-                "roundorzero": 0.5
+                "ROUNDORZERO": 0.5
             },
             "0.5, NULL": {
-                "roundorzero": 1
+                "ROUNDORZERO": 1
             },
             "0x7fffffffffffffff": {
-                "cot": 0.0118008981305845,
-                "coth": 1,
-                "sign": 1,
-                "sqrtwithsign": 3037000499.97605
+                "COT": 0.0118008981305845,
+                "COTH": 1,
+                "SHA256": ( // '9223372036854775807'
+                    "B34A1C30A715F6BF8B7243AFA7FAB883"
+                    + "CE3612B7231716BDCBBDC1982E1AED29"
+                ),
+                "SIGN": 1,
+                "SQRTWITHSIGN": 3037000499.97605
             },
             "0x8000000000000000": {
-                "cot": -0.0118008981305845,
-                "coth": -1,
-                "sign": -1,
-                "sqrtwithsign": -3037000499.97605
+                "COT": -0.0118008981305845,
+                "COTH": -1,
+                "SHA256": ( // '-9223372036854775808'
+                    "85386477F3AF47E4A0B308EE3B3A688D"
+                    + "F16E8B2228105DD7D4DCD42A9807CB78"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": -3037000499.97605
             },
             "0xffffffffffffffff": {
-                "cot": -0.642092615934331,
-                "coth": -1.31303528549933,
-                "sign": -1,
-                "sqrtwithsign": -1
+                "COT": -0.642092615934331,
+                "COTH": -1.31303528549933,
+                "SHA256": ( // '-1'
+                    "1BAD6B8CF97131FCEAB8543E81F77571"
+                    + "95FBB1D36B376EE994AD1CF17699C464"
+                ),
+                "SIGN": -1,
+                "SQRTWITHSIGN": -1
             },
             "1": {
-                "castrealornull": 1,
-                "castrealorzero": 1,
-                "casttextorempty": "1",
-                "copyblob": 1,
-                "cot": 0.642092615934331,
-                "coth": 1.31303528549933,
-                "sign": 1,
-                "sqrtwithsign": 1
+                "CASTREALORNULL": 1,
+                "CASTREALORZERO": 1,
+                "CASTTEXTOREMPTY": "1",
+                "COPYBLOB": 1,
+                "COT": 0.642092615934331,
+                "COTH": 1.31303528549933,
+                "SHA256": (
+                    "6B86B273FF34FCE19D6B804EFF5A3F57"
+                    + "47ADA4EAA22F1D49C01E52DDB7875B4B"
+                ),
+                "SIGN": 1,
+                "SQRTWITHSIGN": 1
             },
             "1e999": {
-                "castrealornull": null,
-                "castrealorzero": 0,
-                "cot": null,
-                "coth": 1,
-                "sign": 1,
-                "sqrtwithsign": null
+                "CASTREALORNULL": null,
+                "CASTREALORZERO": 0,
+                "COT": null,
+                "COTH": 1,
+                "SHA256": ( // 'Inf'
+                    "1DAEC9C71EE2A842CDEE6977AD8C562E"
+                    + "D4AA4FB1338BECD25D79A104B473D9D8"
+                ),
+                "SIGN": 1,
+                "SQRTWITHSIGN": null
             },
-            "null": {
-                "castrealornull": null,
-                "castrealorzero": 0,
-                "casttextorempty": "",
-                "copyblob": null,
-                "cot": null,
-                "coth": null,
-                "sign": null,
-                "sqrtwithsign": null
+            "NULL": {
+                "CASTREALORNULL": null,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "",
+                "COPYBLOB": null,
+                "COT": null,
+                "COTH": null,
+                "SHA256": "",
+                "SIGN": null,
+                "SQRTWITHSIGN": null
             },
-            "null, 0": {
-                "roundorzero": 0
+            "NULL, 0": {
+                "ROUNDORZERO": 0
             },
-            "null, 0.5": {
-                "roundorzero": 0
+            "NULL, 0.5": {
+                "ROUNDORZERO": 0
             },
-            "null, null": {
-                "roundorzero": 0
+            "NULL, NULL": {
+                "ROUNDORZERO": 0
             },
-            "zeroblob(0)": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "",
-                "copyblob": null
+            "ZEROBLOB(0)": {
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "",
+                "COPYBLOB": null,
+                "SHA256": (
+                    "E3B0C44298FC1C149AFBF4C8996FB924"
+                    + "27AE41E4649B934CA495991B7852B855"
+                )
             },
-            "zeroblob(1)": {
-                "castrealornull": 0,
-                "castrealorzero": 0,
-                "casttextorempty": "",
-                "copyblob": null
+            "ZEROBLOB(1)": {
+                "CASTREALORNULL": 0,
+                "CASTREALORZERO": 0,
+                "CASTTEXTOREMPTY": "",
+                "COPYBLOB": null,
+                "SHA256": (
+                    "6E340B9CFFB37A989CA544E6BB780A2C"
+                    + "78901D3FB33738768511A30617AFA01D"
+                )
             }
         }).forEach(function ([
             arg, funcDict
@@ -1573,14 +2103,23 @@ SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
             Object.entries(funcDict).forEach(async function ([
                 func, valExpect
             ]) {
-                let sql = `SELECT ${func}(${arg}) AS val`;
-                let valActual = noop(
-                    await dbExecAndReturnLastRow({
+                let sql;
+                let valActual;
+                sql = (
+                    func === "SHA256"
+                    ? `SELECT HEX(${func}(${arg}))`
+                    : `SELECT ${func}(${arg})`
+                );
+                valActual = noop(
+                    await dbExecAndReturnLastValue({
                         db,
                         sql
                     })
-                ).val;
-                assertJsonEqual(valActual, valExpect);
+                );
+                assertJsonEqual(valActual, valExpect, {
+                    sql,
+                    valExpect
+                });
             });
         });
     });

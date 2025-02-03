@@ -2,7 +2,7 @@
 
 
 # Status
-| Branch | [master<br>(v2024.10.23)](https://github.com/kaizhu256/sqlmath/tree/master) | [beta<br>(Web Demo)](https://github.com/kaizhu256/sqlmath/tree/beta) | [alpha<br>(Development)](https://github.com/kaizhu256/sqlmath/tree/alpha) |
+| Branch | [master<br>(v2024.12.25)](https://github.com/kaizhu256/sqlmath/tree/master) | [beta<br>(Web Demo)](https://github.com/kaizhu256/sqlmath/tree/beta) | [alpha<br>(Development)](https://github.com/kaizhu256/sqlmath/tree/alpha) |
 |--:|:--:|:--:|:--:|
 | CI | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Amaster) | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Abeta) | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=alpha)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Aalpha) |
 | Coverage | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) |
@@ -121,11 +121,11 @@ PORT=8080 sh jslint_ci.sh shHttpFileServer
 ```shell
 python -m build
 #
-twine upload --repository testpypi dist/sqlmath-2024.10.23*
-py -m pip install --index-url https://test.pypi.org/simple/ sqlmath==2024.10.23
+twine upload --repository testpypi dist/sqlmath-2024.12.25*
+py -m pip install --index-url https://test.pypi.org/simple/ sqlmath==2024.12.25
 #
-twine upload dist/sqlmath-2024.10.23*
-pip install sqlmath==2024.10.23
+twine upload dist/sqlmath-2024.12.25*
+pip install sqlmath==2024.12.25
 ```
 
 
