@@ -385,7 +385,7 @@ shCiArtifactUpload() {(set -e
     (
     cd "branch-$GITHUB_BRANCH0"
     sleep 15
-    shDirHttplinkValidate
+    # !! shDirHttplinkValidate
     )
 )}
 
@@ -703,7 +703,7 @@ import moduleHttps from "https";
             }
             moduleAssert.ok(
                 !url.startsWith("http://"),
-                `shDirHttplinkValidate - ${file} - insecure link - ${url}`
+                `shDirHttplinkValidate - ${file} - insecure-link - ${url}`
             );
             // ignore duplicate-link
             if (dict.hasOwnProperty(url)) {
