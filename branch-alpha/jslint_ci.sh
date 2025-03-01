@@ -736,14 +736,14 @@ import moduleHttps from "https";
             return "";
         });
         data.replace((
-            /(\bhref=|\bsrc=|\burl\(|\[[^]+?\]\()("?.+?)(?:[")\]]|$)/gm
-        ), function (ignore, linkType, url) {
+            /(\bhref=|\bsrc=|\burl\(|\[[^]+?\]\()("?.+?)(?:[")\]]|$)(.*?<!--no-validate-->)/gm
+        ), function (ignore, linkType, url, noValidate) {
             if (!linkType.startsWith("[")) {
                 url = url.slice(1);
             }
             if ((
                 /^$|^\\|^data:/m
-            ).test(url)) {
+            ).test(url) || noValidate) {
                 return "";
             }
             // ignore duplicate-link
