@@ -676,6 +676,7 @@ import moduleHttps from "https";
             /\bhttps?:\/\/.+?([\s")\]]|\W?$)/gm
         ), function (url, removeLast) {
             let req;
+            let timeStart = Date.now();
             if (removeLast && removeLast !== "/") {
                 url = url.slice(0, -1);
             }
@@ -715,19 +716,20 @@ import moduleHttps from "https";
                     "user-agent": "undefined"
                 }
             }, function (res) {
-                req.destroy();
-                res.destroy();
                 console.error(
                     `shDirHttplinkValidate ${res.statusCode} ${url}`
+                    + ` - ${Date.now() - timeStart}ms`
                 );
                 moduleAssert.ok(res.statusCode < 400);
+                req.destroy();
+                res.destroy();
             });
             req.on("error", function (err) {
                 console.error(
                     `shDirHttplinkValidate - ${file} - error - ${url}`
+                    + ` - ${Date.now() - timeStart}ms`
                 );
-                console.error(err);
-                process.exit(1);
+                throw err;
             });
             req.setTimeout(60000);
             req.end();
