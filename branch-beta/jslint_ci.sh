@@ -703,7 +703,7 @@ import moduleHttps from "https";
             }
             moduleAssert.ok(
                 !url.startsWith("http://"),
-                `shDirHttplinkValidate - ${file} - insecure link - ${url}`
+                `shDirHttplinkValidate - ${file} - insecure-link - ${url}`
             );
             // ignore duplicate-link
             if (dict.hasOwnProperty(url)) {
@@ -715,17 +715,21 @@ import moduleHttps from "https";
                     "user-agent": "undefined"
                 }
             }, function (res) {
-                console.error(
-                    "shDirHttplinkValidate " + res.statusCode + " " + url
-                );
-                moduleAssert.ok(
-                    res.statusCode < 400,
-                    `shDirHttplinkValidate - ${file} - unreachable url ${url}`
-                );
-                req.abort();
+                req.destroy();
                 res.destroy();
+                console.error(
+                    `shDirHttplinkValidate ${res.statusCode} ${url}`
+                );
+                moduleAssert.ok(res.statusCode < 400);
             });
-            req.setTimeout(30000);
+            req.on("error", function (err) {
+                console.error(
+                    `shDirHttplinkValidate - ${file} - error - ${url}`
+                );
+                console.error(err);
+                process.exit(1);
+            });
+            req.setTimeout(60000);
             req.end();
             return "";
         });
@@ -750,15 +754,9 @@ import moduleHttps from "https";
             ).test(url)) {
                 moduleFs.stat(url.split("?")[0], function (ignore, exists) {
                     console.error(
-                        "shDirHttplinkValidate " + Boolean(exists) + " " + url
+                        `shDirHttplinkValidate ${Boolean(exists)} ${url}`
                     );
-                    moduleAssert.ok(
-                        exists,
-                        (
-                            `shDirHttplinkValidate - ${file}`
-                            + `- unreachable file ${url}`
-                        )
-                    );
+                    moduleAssert.ok(exists);
                 });
             }
             return "";
