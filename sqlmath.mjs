@@ -350,12 +350,25 @@ async function ciBuildExt1NodejsConfigure({
             {
                 "cflags": cflagsNowarning,
                 "defines": [
-                    "SRC_SQLITE_BASE_C2"
+                    "SRC_ZLIB_BASE"
+                ],
+                "sources": [
+                    "sqlmath_external_zlib.c"
+                ],
+                "target_name": "SRC_ZLIB_BASE",
+                "type": "static_library",
+                "xcode_settings": {
+                    "OTHER_CFLAGS": cflagsNowarning
+                }
+            },
+            {
+                "cflags": cflagsNowarning,
+                "defines": [
+                    "SRC_SQLITE_BASE"
                 ],
                 "sources": [
                     "sqlmath_base.c",
-                    "sqlmath_external_sqlite.c",
-                    "sqlmath_external_zlib.c"
+                    "sqlmath_external_sqlite.c"
                 ],
                 "target_name": "SRC_SQLITE_BASE",
                 "type": "static_library",

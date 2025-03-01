@@ -33,12 +33,12 @@ file sqlmath_h - start
 
 
 #define NAPI_VERSION 6
-#ifdef SRC_SQLITE_BASE_C2
-#   undef SRC_SQLITE_BASE_C2
+#ifdef SRC_SQLITE_BASE
+#   undef SRC_SQLITE_BASE
 #   ifndef SQLMATH_BASE_C2
 #       define SQLMATH_BASE_C2
 #   endif                       // SQLMATH_BASE_C2
-#endif                          // SRC_SQLITE_BASE_C2
+#endif                          // SRC_SQLITE_BASE
 #ifdef _WIN32
 #   include <windows.h>
 #else

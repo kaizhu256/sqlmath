@@ -1,6 +1,9 @@
 #ifndef SRC_ZLIB_H2
 #define SRC_ZLIB_H2
 
+#ifdef SRC_ZLIB_BASE
+#   define SRC_ZLIB_C2
+#endif                          // SRC_ZLIB_BASE
 
 #define DIST_CODE_LEN 512
 #define NO_GZIP
