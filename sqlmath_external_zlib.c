@@ -3,6 +3,8 @@
 
 #ifndef SRC_SQLITE_H2
 #   define SRC_ZLIB_C2
+#   define SRC_SQLITE3EXT_H2
+#   include "sqlmath_external_sqlite.c"
 #endif
 
 
@@ -39,11 +41,11 @@ shRollupFetch
         },
         {
             "footer": "\n#endif // SRC_ZLIB_H3\n",
+            "header": "\n#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)\n#define SRC_ZLIB_C3\n",
             "sh": "cat .zlib-1.3.1/zutil.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zutil.h"
         },
         {
-            "header": "\n#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)\n#define SRC_ZLIB_C3\n",
             "sh": "cat .zlib-1.3.1/adler32.c",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/adler32.c"
         },
@@ -2793,6 +2795,9 @@ ZEXTERN int            ZEXPORTVA gzvprintf(gzFile file,
 /*
 file https://github.com/madler/zlib/blob/v1.3.1/zutil.h
 */
+
+#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)
+#define SRC_ZLIB_C3
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -3057,9 +3062,6 @@ static     ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
 /*
 file https://github.com/madler/zlib/blob/v1.3.1/adler32.c
 */
-
-#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)
-#define SRC_ZLIB_C3
 /* adler32.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-2011, 2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
