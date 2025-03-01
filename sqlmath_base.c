@@ -3977,7 +3977,7 @@ typedef struct WinSinefit {
     double yy1;                 // y-current
 } WinSinefit;
 static const int WIN_SINEFIT_N = sizeof(WinSinefit) / sizeof(double);
-static const int WIN_SINEFIT_STEP = 3 + 0;
+static const int WIN_SINEFIT_STEP = 3 + 2;
 
 static void winSinefitSnr(
     WinSinefit * wsf,
@@ -3988,7 +3988,6 @@ static void winSinefitSnr(
 ) {
 // This function will calculate running sine-regression as:
 //     yy = saa*sin(sww*xx + spp)
-    UNUSED_PARAMETER(wbb);
     // declare var0
     const double nnn = nbody / (ncol * WIN_SINEFIT_STEP);
     const double invn0 = 1.0 / nnn;
