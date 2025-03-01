@@ -3997,10 +3997,8 @@ static void winSinefitSnr(
     double sww = 0;
     double tmp = 0;
     // guess snr - saa
-    if (1) {
-        saa = sqrt(2 * wsf->vyy * invn0 //
-            * (1 - wsf->vxy * wsf->vxy / (wsf->vxx * wsf->vyy)));
-    }
+    saa = sqrt(2 * wsf->vyy * invn0     //
+        * (1 - wsf->vxy * wsf->vxy / (wsf->vxx * wsf->vyy)));
     if (saa <= 0 || !isnormal(saa)) {
         return;
     }
