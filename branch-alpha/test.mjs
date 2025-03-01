@@ -2138,7 +2138,7 @@ DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT
         1 AS id,
-        MEDIAN(val) AS mdn,
+        MEDIAN2(val) AS mdn,
         QUANTILE(val, 0.5) AS qnt,
         STDEV(val) AS std
     FROM __tmp1;
@@ -2254,7 +2254,7 @@ SELECT
 SELECT QUANTILE(value, ${kk}) AS qnt FROM JSON_EACH($tmp1) WHERE 0;
 -- test last-row handling-behavior
 SELECT
-        MEDIAN(value) AS mdn,
+        MEDIAN2(value) AS mdn,
         QUANTILE(value, ${kk}) AS qnt,
         ROUND(stdev(value), 8) AS std
     FROM JSON_EACH($tmp1);
@@ -3838,7 +3838,7 @@ SELECT
     FROM __sinefit_csv
     JOIN (
         SELECT
-            MEDIAN(rr) AS rr_avg,
+            MEDIAN2(rr) AS rr_avg,
             STDEV(rr) AS rr_err
         FROM __sinefit_csv
     )

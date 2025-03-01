@@ -2296,7 +2296,7 @@ body {
 <pre><span class="lineno"><a href="#line_2138" id="line_2138"> 2138.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
 <pre><span class="lineno"><a href="#line_2139" id="line_2139"> 2139.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2140" id="line_2140"> 2140.</a></span><span class="count        ">      1</span><span>        1 AS id,</span></pre>
-<pre><span class="lineno"><a href="#line_2141" id="line_2141"> 2141.</a></span><span class="count        ">      1</span><span>        MEDIAN(val) AS mdn,</span></pre>
+<pre><span class="lineno"><a href="#line_2141" id="line_2141"> 2141.</a></span><span class="count        ">      1</span><span>        MEDIAN2(val) AS mdn,</span></pre>
 <pre><span class="lineno"><a href="#line_2142" id="line_2142"> 2142.</a></span><span class="count        ">      1</span><span>        QUANTILE(val, 0.5) AS qnt,</span></pre>
 <pre><span class="lineno"><a href="#line_2143" id="line_2143"> 2143.</a></span><span class="count        ">      1</span><span>        STDEV(val) AS std</span></pre>
 <pre><span class="lineno"><a href="#line_2144" id="line_2144"> 2144.</a></span><span class="count        ">      1</span><span>    FROM __tmp1;</span></pre>
@@ -2412,7 +2412,7 @@ body {
 <pre><span class="lineno"><a href="#line_2254" id="line_2254"> 2254.</a></span><span class="count        ">     76</span><span>SELECT QUANTILE(value, ${kk}) AS qnt FROM JSON_EACH($tmp1) WHERE 0;</span></pre>
 <pre><span class="lineno"><a href="#line_2255" id="line_2255"> 2255.</a></span><span class="count        ">     76</span><span>-- test last-row handling-behavior</span></pre>
 <pre><span class="lineno"><a href="#line_2256" id="line_2256"> 2256.</a></span><span class="count        ">     76</span><span>SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_2257" id="line_2257"> 2257.</a></span><span class="count        ">     76</span><span>        MEDIAN(value) AS mdn,</span></pre>
+<pre><span class="lineno"><a href="#line_2257" id="line_2257"> 2257.</a></span><span class="count        ">     76</span><span>        MEDIAN2(value) AS mdn,</span></pre>
 <pre><span class="lineno"><a href="#line_2258" id="line_2258"> 2258.</a></span><span class="count        ">     76</span><span>        QUANTILE(value, ${kk}) AS qnt,</span></pre>
 <pre><span class="lineno"><a href="#line_2259" id="line_2259"> 2259.</a></span><span class="count        ">     76</span><span>        ROUND(stdev(value), 8) AS std</span></pre>
 <pre><span class="lineno"><a href="#line_2260" id="line_2260"> 2260.</a></span><span class="count        ">     76</span><span>    FROM JSON_EACH($tmp1);</span></pre>
@@ -3996,7 +3996,7 @@ body {
 <pre><span class="lineno"><a href="#line_3838" id="line_3838"> 3838.</a></span><span class="count        ">      1</span><span>    FROM __sinefit_csv</span></pre>
 <pre><span class="lineno"><a href="#line_3839" id="line_3839"> 3839.</a></span><span class="count        ">      1</span><span>    JOIN (</span></pre>
 <pre><span class="lineno"><a href="#line_3840" id="line_3840"> 3840.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_3841" id="line_3841"> 3841.</a></span><span class="count        ">      1</span><span>            MEDIAN(rr) AS rr_avg,</span></pre>
+<pre><span class="lineno"><a href="#line_3841" id="line_3841"> 3841.</a></span><span class="count        ">      1</span><span>            MEDIAN2(rr) AS rr_avg,</span></pre>
 <pre><span class="lineno"><a href="#line_3842" id="line_3842"> 3842.</a></span><span class="count        ">      1</span><span>            STDEV(rr) AS rr_err</span></pre>
 <pre><span class="lineno"><a href="#line_3843" id="line_3843"> 3843.</a></span><span class="count        ">      1</span><span>        FROM __sinefit_csv</span></pre>
 <pre><span class="lineno"><a href="#line_3844" id="line_3844"> 3844.</a></span><span class="count        ">      1</span><span>    )</span></pre>
