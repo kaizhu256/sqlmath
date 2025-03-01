@@ -1320,7 +1320,7 @@ jstestDescribe((
     });
     jstestIt((
         "test sqlite-extension-doublearray_xxx handling-behavior"
-    ), async function test_sqlite_extension_DOUBLEARRAY_XXX() {
+    ), async function test_sqlite_extension_doublearray_xxx() {
         let db = await dbOpenAsync({
             filename: ":memory:"
         });
