@@ -2,16 +2,6 @@
 #define SRC_ZLIB_H2
 
 
-#ifndef SRC_SQLITE_H2
-#   define SRC_ZLIB_C2
-#endif
-
-
-#   define SRC_SQLITE3EXT_H2
-#   undef SRC_SQLITE_BASE_C2
-#   include "sqlmath_external_sqlite.c"
-
-
 #define DIST_CODE_LEN 512
 #define NO_GZIP
 #define ZEXPORT
@@ -35,15 +25,15 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/LICENSE"
         },
         {
-            "sh": "cat .zlib-1.3.1/zconf.h",
-            "url": "https://github.com/madler/zlib/blob/v1.3.1/zconf.h"
-        },
-        {
             "sh": "cat .zlib-1.3.1/zlib.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zlib.h"
         },
         {
             "header": "\n#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)\n#define SRC_ZLIB_C3\n",
+            "sh": "cat .zlib-1.3.1/zconf.h",
+            "url": "https://github.com/madler/zlib/blob/v1.3.1/zconf.h"
+        },
+        {
             "sh": "cat .zlib-1.3.1/zutil.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zutil.h"
         },
