@@ -1,3 +1,6 @@
+#define SRC_ZLIB_H2
+
+
 #define DIST_CODE_LEN 512
 #define NO_GZIP
 #define ZEXPORT
@@ -21,6 +24,7 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/LICENSE"
         },
         {
+            "header": "\n#if defined(SRC_ZLIB_H2) && !defined(SRC_ZLIB_H3)\n#define SRC_ZLIB_H3\n",
             "sh": "cat .zlib-1.3.1/zconf.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zconf.h"
         },
@@ -29,10 +33,12 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zlib.h"
         },
         {
+            "footer": "\n#endif // SRC_ZLIB_H3\n",
             "sh": "cat .zlib-1.3.1/zutil.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zutil.h"
         },
         {
+            "header": "\n#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)\n#define SRC_ZLIB_C3\n",
             "sh": "cat .zlib-1.3.1/adler32.c",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/adler32.c"
         },
@@ -109,6 +115,7 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/gzread.c"
         },
         {
+            "footer": "\n#endif // SRC_ZLIB_C3\n",
             "sh": "cat .zlib-1.3.1/gzwrite.c",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/gzwrite.c"
         }
@@ -175,6 +182,9 @@ Copyright notice:
 /*
 file https://github.com/madler/zlib/blob/v1.3.1/zconf.h
 */
+
+#if defined(SRC_ZLIB_H2) && !defined(SRC_ZLIB_H3)
+#define SRC_ZLIB_H3
 /* zconf.h -- configuration of the zlib compression library
  * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -3036,11 +3046,15 @@ static     ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
 
 #endif /* ZUTIL_H */
+#endif // SRC_ZLIB_H3
 
 
 /*
 file https://github.com/madler/zlib/blob/v1.3.1/adler32.c
 */
+
+#if defined(SRC_ZLIB_C2) && !defined(SRC_ZLIB_C3)
+#define SRC_ZLIB_C3
 /* adler32.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-2011, 2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -12105,6 +12119,7 @@ static int ZEXPORT gzclose_w(gzFile file) {
     free(state);
     return ret;
 }
+#endif // SRC_ZLIB_C3
 
 
 /*
