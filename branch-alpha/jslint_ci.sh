@@ -716,16 +716,18 @@ import moduleHttps from "https";
                 }
             }, function (res) {
                 console.error(
-                    "shDirHttplinkValidate " + res.statusCode + " " + url
+                    `shDirHttplinkValidate ${res.statusCode} ${url}`
                 );
-                moduleAssert.ok(
-                    res.statusCode < 400,
-                    `shDirHttplinkValidate - ${file} - unreachable url ${url}`
-                );
+                moduleAssert.ok(res.statusCode < 400);
                 req.abort();
                 res.destroy();
             });
             req.setTimeout(30000);
+            req.on("timeout", function () {
+                throw new Error(
+                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
+                );
+            });
             req.end();
             return "";
         });
@@ -750,15 +752,9 @@ import moduleHttps from "https";
             ).test(url)) {
                 moduleFs.stat(url.split("?")[0], function (ignore, exists) {
                     console.error(
-                        "shDirHttplinkValidate " + Boolean(exists) + " " + url
+                        `shDirHttplinkValidate ${Boolean(exists)} ${url}`
                     );
-                    moduleAssert.ok(
-                        exists,
-                        (
-                            `shDirHttplinkValidate - ${file}`
-                            + `- unreachable file ${url}`
-                        )
-                    );
+                    moduleAssert.ok(exists);
                 });
             }
             return "";
