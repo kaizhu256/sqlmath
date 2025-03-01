@@ -1,6 +1,11 @@
 #define SRC_ZLIB_H2
 
 
+#ifndef SRC_SQLITE_H2
+#   define SRC_ZLIB_C2
+#endif
+
+
 #define DIST_CODE_LEN 512
 #define NO_GZIP
 #define ZEXPORT
