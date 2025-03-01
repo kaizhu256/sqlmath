@@ -3996,7 +3996,7 @@ static void winSinefitSnr(
     double spp = 0;
     double sww = 0;
     double tmp = 0;
-    // calculate snr - saa
+    // guess snr - saa
     if (1) {
         saa = sqrt(2 * wsf->vyy * invn0 //
             * (1 - wsf->vxy * wsf->vxy / (wsf->vxx * wsf->vyy)));
@@ -4005,11 +4005,11 @@ static void winSinefitSnr(
         return;
     }
     const double inva = 1.0 / saa;
-    // calculate snr - sww - using x-variance.p
+    // guess snr - sww - using x-variance.p
     if (1) {
         sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);       // window-period
     }
-    // calculate snr - spp - using multivariate-linear-regression
+    // guess snr - spp - using multivariate-linear-regression
     if (1) {
         double sumxx = 0;
         double sumxy = 0;
