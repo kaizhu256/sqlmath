@@ -676,11 +676,6 @@ import moduleHttps from "https";
             /\bhttps?:\/\/.+?([\s")\]]|\W?$)/gm
         ), function (url, removeLast) {
             let req;
-            function onTimeout() {
-                throw new Error(
-                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
-                );
-            }
             if (removeLast && removeLast !== "/") {
                 url = url.slice(0, -1);
             }
@@ -720,16 +715,18 @@ import moduleHttps from "https";
                     "user-agent": "undefined"
                 }
             }, function (res) {
-                res.on("timeout", onTimeout);
+                req.destroy();
+                res.destroy();
                 console.error(
                     `shDirHttplinkValidate ${res.statusCode} ${url}`
                 );
                 moduleAssert.ok(res.statusCode < 400);
-                req.abort();
-                res.destroy();
             });
-            req.setTimeout(30000);
-            req.on("timeout", onTimeout);
+            req.setTimeout(60000, function () {
+                throw new Error(
+                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
+                );
+            });
             req.end();
             return "";
         });
