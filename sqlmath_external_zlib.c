@@ -1,11 +1,15 @@
+#ifndef SRC_ZLIB_H2
 #define SRC_ZLIB_H2
 
 
 #ifndef SRC_SQLITE_H2
 #   define SRC_ZLIB_C2
-#   define SRC_SQLITE3EXT_H2
-#   include "sqlmath_external_sqlite.c"
 #endif
+
+
+#   define SRC_SQLITE3EXT_H2
+#   undef SRC_SQLITE_BASE_C2
+#   include "sqlmath_external_sqlite.c"
 
 
 #define DIST_CODE_LEN 512
@@ -12139,3 +12143,4 @@ file none
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif                          // __clang__
+#endif // SRC_ZLIB_H2
