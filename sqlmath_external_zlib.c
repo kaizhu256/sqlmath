@@ -1,11 +1,3 @@
-#define SRC_SQLITE_ZLIB_C2
-
-
-#define SRC_SQLITE3EXT_H2
-#undef SRC_SQLITE_BASE_C2
-#include "sqlmath_external_sqlite.c"
-
-
 #define DIST_CODE_LEN 512
 #define NO_GZIP
 #define ZEXPORT
