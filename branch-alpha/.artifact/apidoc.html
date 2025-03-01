@@ -705,7 +705,7 @@ SELECT WIN_SUM1(1) FROM __tmp1;
                     sql: (`
 DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 (val REAL);
-SELECT doublearray_jsonto(WIN_SUM2(1, 2, 3)) FROM __tmp1;
+SELECT DOUBLEARRAY_JSONTO(WIN_SUM2(1, 2, 3)) FROM __tmp1;
 ...</pre></li>
 
 <li>
@@ -770,7 +770,7 @@ jstestIt((
 <li>Example usage:<pre class="apidocCodePre">...
             db,
             sql: (`
-SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;
+SELECT DOUBLEARRAY_JSONTO(DOUBLEARRAY_JSONFROM($valIn)) AS result;
             `)
         })
     ).result;

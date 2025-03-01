@@ -1102,7 +1102,7 @@ body {
 <pre><span class="lineno"><a href="#line_944" id="line_944">  944.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __lgbm_table_preb;</span></pre>
 <pre><span class="lineno"><a href="#line_945" id="line_945">  945.</a></span><span class="count        ">      1</span><span>CREATE TABLE __lgbm_table_preb AS</span></pre>
 <pre><span class="lineno"><a href="#line_946" id="line_946">  946.</a></span><span class="count        ">      1</span><span>    SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_947" id="line_947">  947.</a></span><span class="count        ">      1</span><span>        doublearray_extract(__lgp, 0) AS prediction</span></pre>
+<pre><span class="lineno"><a href="#line_947" id="line_947">  947.</a></span><span class="count        ">      1</span><span>        DOUBLEARRAY_EXTRACT(__lgp, 0) AS prediction</span></pre>
 <pre><span class="lineno"><a href="#line_948" id="line_948">  948.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_949" id="line_949">  949.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_950" id="line_950">  950.</a></span><span class="count        ">      1</span><span>            lgbm_predictfortable(</span></pre>
@@ -1129,7 +1129,7 @@ body {
 <pre><span class="lineno"><a href="#line_971" id="line_971">  971.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __lgbm_table_preb;</span></pre>
 <pre><span class="lineno"><a href="#line_972" id="line_972">  972.</a></span><span class="count        ">      1</span><span>CREATE TABLE __lgbm_table_preb AS</span></pre>
 <pre><span class="lineno"><a href="#line_973" id="line_973">  973.</a></span><span class="count        ">      1</span><span>    SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_974" id="line_974">  974.</a></span><span class="count        ">      1</span><span>        doublearray_extract(__lgp, 0) AS _1</span></pre>
+<pre><span class="lineno"><a href="#line_974" id="line_974">  974.</a></span><span class="count        ">      1</span><span>        DOUBLEARRAY_EXTRACT(__lgp, 0) AS _1</span></pre>
 <pre><span class="lineno"><a href="#line_975" id="line_975">  975.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_976" id="line_976">  976.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_977" id="line_977">  977.</a></span><span class="count        ">      1</span><span>            lgbm_predictfortable(</span></pre>
@@ -1478,7 +1478,7 @@ body {
 <pre><span class="lineno"><a href="#line_1320" id="line_1320"> 1320.</a></span><span class="count        ">      1</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_1321" id="line_1321"> 1321.</a></span><span class="count        ">      1</span><span>    jstestIt((</span></pre>
 <pre><span class="lineno"><a href="#line_1322" id="line_1322"> 1322.</a></span><span class="count        ">      1</span><span>        "test sqlite-extension-doublearray_xxx handling-behavior"</span></pre>
-<pre><span class="lineno"><a href="#line_1323" id="line_1323"> 1323.</a></span><span class="count        ">      1</span><span>    ), async function test_sqlite_extension_doublearray_xxx() {</span></pre>
+<pre><span class="lineno"><a href="#line_1323" id="line_1323"> 1323.</a></span><span class="count        ">      1</span><span>    ), async function test_sqlite_extension_DOUBLEARRAY_XXX() {</span></pre>
 <pre><span class="lineno"><a href="#line_1324" id="line_1324"> 1324.</a></span><span class="count        ">      1</span><span>        let db = await dbOpenAsync({</span></pre>
 <pre><span class="lineno"><a href="#line_1325" id="line_1325"> 1325.</a></span><span class="count        ">      1</span><span>            filename: ":memory:"</span></pre>
 <pre><span class="lineno"><a href="#line_1326" id="line_1326"> 1326.</a></span><span class="count        ">      1</span><span>        });</span></pre>
@@ -1516,7 +1516,7 @@ body {
 <pre><span class="lineno"><a href="#line_1358" id="line_1358"> 1358.</a></span><span class="count        ">     23</span><span>                        },</span></pre>
 <pre><span class="lineno"><a href="#line_1359" id="line_1359"> 1359.</a></span><span class="count        ">     23</span><span>                        db,</span></pre>
 <pre><span class="lineno"><a href="#line_1360" id="line_1360"> 1360.</a></span><span class="count        ">     23</span><span>                        sql: (`</span></pre>
-<pre><span class="lineno"><a href="#line_1361" id="line_1361"> 1361.</a></span><span class="count        ">     23</span><span>SELECT doublearray_jsonto(doublearray_jsonfrom($valIn)) AS result;</span></pre>
+<pre><span class="lineno"><a href="#line_1361" id="line_1361"> 1361.</a></span><span class="count        ">     23</span><span>SELECT DOUBLEARRAY_JSONTO(DOUBLEARRAY_JSONFROM($valIn)) AS result;</span></pre>
 <pre><span class="lineno"><a href="#line_1362" id="line_1362"> 1362.</a></span><span class="count        ">     23</span><span>                        `)</span></pre>
 <pre><span class="lineno"><a href="#line_1363" id="line_1363"> 1363.</a></span><span class="count        ">      9</span><span>                    })</span></pre>
 <pre><span class="lineno"><a href="#line_1364" id="line_1364"> 1364.</a></span><span class="count        ">      9</span><span>                ).result;</span></pre>
@@ -2483,7 +2483,7 @@ body {
 <pre><span class="lineno"><a href="#line_2325" id="line_2325"> 2325.</a></span><span class="count        ">      4</span><span>                sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2326" id="line_2326"> 2326.</a></span><span class="count        ">      4</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2327" id="line_2327"> 2327.</a></span><span class="count        ">      4</span><span>        id2,</span></pre>
-<pre><span class="lineno"><a href="#line_2328" id="line_2328"> 2328.</a></span><span class="count        ">      4</span><span>        doublearray_jsonto(WIN_AVG2(</span></pre>
+<pre><span class="lineno"><a href="#line_2328" id="line_2328"> 2328.</a></span><span class="count        ">      4</span><span>        DOUBLEARRAY_JSONTO(WIN_AVG2(</span></pre>
 <pre><span class="lineno"><a href="#line_2329" id="line_2329"> 2329.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_2330" id="line_2330"> 2330.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_2331" id="line_2331"> 2331.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
@@ -2565,7 +2565,7 @@ body {
 <pre><span class="lineno"><a href="#line_2407" id="line_2407"> 2407.</a></span><span class="count        ">      1</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2408" id="line_2408"> 2408.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2409" id="line_2409"> 2409.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
-<pre><span class="lineno"><a href="#line_2410" id="line_2410"> 2410.</a></span><span class="count        ">      1</span><span>SELECT doublearray_jsonto(WIN_AVG2(1, 2, 3)) FROM __tmp1;</span></pre>
+<pre><span class="lineno"><a href="#line_2410" id="line_2410"> 2410.</a></span><span class="count        ">      1</span><span>SELECT DOUBLEARRAY_JSONTO(WIN_AVG2(1, 2, 3)) FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2411" id="line_2411"> 2411.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>
 <pre><span class="lineno"><a href="#line_2412" id="line_2412"> 2412.</a></span><span class="count        ">      1</span><span>                });</span></pre>
 <pre><span class="lineno"><a href="#line_2413" id="line_2413"> 2413.</a></span><span class="count        ">      1</span><span>                valActual = valActual.map(function ({val}) {</span></pre>
@@ -2667,7 +2667,7 @@ body {
 <pre><span class="lineno"><a href="#line_2509" id="line_2509"> 2509.</a></span><span class="count        ">      4</span><span>                sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2510" id="line_2510"> 2510.</a></span><span class="count        ">      4</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2511" id="line_2511"> 2511.</a></span><span class="count        ">      4</span><span>        id2,</span></pre>
-<pre><span class="lineno"><a href="#line_2512" id="line_2512"> 2512.</a></span><span class="count        ">      4</span><span>        doublearray_jsonto(WIN_EMA2(</span></pre>
+<pre><span class="lineno"><a href="#line_2512" id="line_2512"> 2512.</a></span><span class="count        ">      4</span><span>        DOUBLEARRAY_JSONTO(WIN_EMA2(</span></pre>
 <pre><span class="lineno"><a href="#line_2513" id="line_2513"> 2513.</a></span><span class="count        ">      4</span><span>            ${alpha},</span></pre>
 <pre><span class="lineno"><a href="#line_2514" id="line_2514"> 2514.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_2515" id="line_2515"> 2515.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
@@ -2758,7 +2758,7 @@ body {
 <pre><span class="lineno"><a href="#line_2600" id="line_2600"> 2600.</a></span><span class="count        ">      1</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2601" id="line_2601"> 2601.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2602" id="line_2602"> 2602.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
-<pre><span class="lineno"><a href="#line_2603" id="line_2603"> 2603.</a></span><span class="count        ">      1</span><span>SELECT doublearray_jsonto(WIN_EMA2(1, 2, 3)) FROM __tmp1;</span></pre>
+<pre><span class="lineno"><a href="#line_2603" id="line_2603"> 2603.</a></span><span class="count        ">      1</span><span>SELECT DOUBLEARRAY_JSONTO(WIN_EMA2(1, 2, 3)) FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2604" id="line_2604"> 2604.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>
 <pre><span class="lineno"><a href="#line_2605" id="line_2605"> 2605.</a></span><span class="count        ">      1</span><span>                });</span></pre>
 <pre><span class="lineno"><a href="#line_2606" id="line_2606"> 2606.</a></span><span class="count        ">      1</span><span>                valActual = valActual[0].map(function ({val}) {</span></pre>
@@ -2860,7 +2860,7 @@ body {
 <pre><span class="lineno"><a href="#line_2702" id="line_2702"> 2702.</a></span><span class="count        ">     14</span><span>                sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2703" id="line_2703"> 2703.</a></span><span class="count        ">     14</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2704" id="line_2704"> 2704.</a></span><span class="count        ">     14</span><span>        id2,</span></pre>
-<pre><span class="lineno"><a href="#line_2705" id="line_2705"> 2705.</a></span><span class="count        ">     14</span><span>        doublearray_jsonto(WIN_QUANTILE2(</span></pre>
+<pre><span class="lineno"><a href="#line_2705" id="line_2705"> 2705.</a></span><span class="count        ">     14</span><span>        DOUBLEARRAY_JSONTO(WIN_QUANTILE2(</span></pre>
 <pre><span class="lineno"><a href="#line_2706" id="line_2706"> 2706.</a></span><span class="count        ">     14</span><span>            ${quantile}, value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_2707" id="line_2707"> 2707.</a></span><span class="count        ">     14</span><span>            ${quantile}, value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_2708" id="line_2708"> 2708.</a></span><span class="count        ">     14</span><span>            ${quantile}, value-&gt;&gt;1,</span></pre>
@@ -2950,7 +2950,7 @@ body {
 <pre><span class="lineno"><a href="#line_2792" id="line_2792"> 2792.</a></span><span class="count        ">      1</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2793" id="line_2793"> 2793.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2794" id="line_2794"> 2794.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
-<pre><span class="lineno"><a href="#line_2795" id="line_2795"> 2795.</a></span><span class="count        ">      1</span><span>SELECT doublearray_jsonto(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;</span></pre>
+<pre><span class="lineno"><a href="#line_2795" id="line_2795"> 2795.</a></span><span class="count        ">      1</span><span>SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2796" id="line_2796"> 2796.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>
 <pre><span class="lineno"><a href="#line_2797" id="line_2797"> 2797.</a></span><span class="count        ">      1</span><span>                });</span></pre>
 <pre><span class="lineno"><a href="#line_2798" id="line_2798"> 2798.</a></span><span class="count        ">      1</span><span>                valActual = valActual.map(function ({val}) {</span></pre>
@@ -3547,7 +3547,7 @@ body {
 <pre><span class="lineno"><a href="#line_3389" id="line_3389"> 3389.</a></span><span class="count        ">      1</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_3390" id="line_3390"> 3390.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_3391" id="line_3391"> 3391.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
-<pre><span class="lineno"><a href="#line_3392" id="line_3392"> 3392.</a></span><span class="count        ">      1</span><span>SELECT doublearray_jsonto(WIN_SINEFIT2(1, 2, 3, 4)) FROM __tmp1;</span></pre>
+<pre><span class="lineno"><a href="#line_3392" id="line_3392"> 3392.</a></span><span class="count        ">      1</span><span>SELECT DOUBLEARRAY_JSONTO(WIN_SINEFIT2(1, 2, 3, 4)) FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_3393" id="line_3393"> 3393.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>
 <pre><span class="lineno"><a href="#line_3394" id="line_3394"> 3394.</a></span><span class="count        ">      1</span><span>                });</span></pre>
 <pre><span class="lineno"><a href="#line_3395" id="line_3395"> 3395.</a></span><span class="count        ">      1</span><span>                valActual = valActual.map(function ({val}) {</span></pre>
@@ -4092,7 +4092,7 @@ body {
 <pre><span class="lineno"><a href="#line_3934" id="line_3934"> 3934.</a></span><span class="count        ">      4</span><span>                sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_3935" id="line_3935"> 3935.</a></span><span class="count        ">      4</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3936" id="line_3936"> 3936.</a></span><span class="count        ">      4</span><span>        id2,</span></pre>
-<pre><span class="lineno"><a href="#line_3937" id="line_3937"> 3937.</a></span><span class="count        ">      4</span><span>        doublearray_jsonto(WIN_SUM2(</span></pre>
+<pre><span class="lineno"><a href="#line_3937" id="line_3937"> 3937.</a></span><span class="count        ">      4</span><span>        DOUBLEARRAY_JSONTO(WIN_SUM2(</span></pre>
 <pre><span class="lineno"><a href="#line_3938" id="line_3938"> 3938.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_3939" id="line_3939"> 3939.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_3940" id="line_3940"> 3940.</a></span><span class="count        ">      4</span><span>            value-&gt;&gt;1,</span></pre>
@@ -4174,7 +4174,7 @@ body {
 <pre><span class="lineno"><a href="#line_4016" id="line_4016"> 4016.</a></span><span class="count        ">      1</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_4017" id="line_4017"> 4017.</a></span><span class="count        ">      1</span><span>DROP TABLE IF EXISTS __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_4018" id="line_4018"> 4018.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
-<pre><span class="lineno"><a href="#line_4019" id="line_4019"> 4019.</a></span><span class="count        ">      1</span><span>SELECT doublearray_jsonto(WIN_SUM2(1, 2, 3)) FROM __tmp1;</span></pre>
+<pre><span class="lineno"><a href="#line_4019" id="line_4019"> 4019.</a></span><span class="count        ">      1</span><span>SELECT DOUBLEARRAY_JSONTO(WIN_SUM2(1, 2, 3)) FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_4020" id="line_4020"> 4020.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>
 <pre><span class="lineno"><a href="#line_4021" id="line_4021"> 4021.</a></span><span class="count        ">      1</span><span>                });</span></pre>
 <pre><span class="lineno"><a href="#line_4022" id="line_4022"> 4022.</a></span><span class="count        ">      1</span><span>                valActual = valActual.map(function ({val}) {</span></pre>
