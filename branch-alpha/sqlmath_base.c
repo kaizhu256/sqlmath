@@ -3018,9 +3018,9 @@ static double quickselect(
 // derived from https://www.stat.cmu.edu/~ryantibs/median/quickselect.c
 #define QUICKSELECT_SWAP(aa, bb) \
     do { \
-        double temp = (aa); \
+        double tmp = (aa); \
         (aa) = (bb); \
-        (bb) = temp; \
+        (bb) = tmp; \
     } while (0)
     if (nn <= 0 || kk < 0 || kk >= nn) {
         return NAN;             // Invalid input
