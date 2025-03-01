@@ -722,11 +722,14 @@ import moduleHttps from "https";
                 );
                 moduleAssert.ok(res.statusCode < 400);
             });
-            req.setTimeout(60000, function () {
-                throw new Error(
-                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
+            req.on("error", function (err) {
+                console.error(
+                    `shDirHttplinkValidate - ${file} - error - ${url}`
                 );
+                console.error(err);
+                process.exit(1);
             });
+            req.setTimeout(60000);
             req.end();
             return "";
         });
