@@ -2296,9 +2296,9 @@ body {
 <pre><span class="lineno"><a href="#line_2138" id="line_2138"> 2138.</a></span><span class="count        ">      1</span><span>CREATE TEMP TABLE __tmp1 (val REAL);</span></pre>
 <pre><span class="lineno"><a href="#line_2139" id="line_2139"> 2139.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2140" id="line_2140"> 2140.</a></span><span class="count        ">      1</span><span>        1 AS id,</span></pre>
-<pre><span class="lineno"><a href="#line_2141" id="line_2141"> 2141.</a></span><span class="count        ">      1</span><span>        median(val) AS mdn,</span></pre>
-<pre><span class="lineno"><a href="#line_2142" id="line_2142"> 2142.</a></span><span class="count        ">      1</span><span>        quantile(val, 0.5) AS qnt,</span></pre>
-<pre><span class="lineno"><a href="#line_2143" id="line_2143"> 2143.</a></span><span class="count        ">      1</span><span>        stdev(val) AS std</span></pre>
+<pre><span class="lineno"><a href="#line_2141" id="line_2141"> 2141.</a></span><span class="count        ">      1</span><span>        MEDIAN(val) AS mdn,</span></pre>
+<pre><span class="lineno"><a href="#line_2142" id="line_2142"> 2142.</a></span><span class="count        ">      1</span><span>        QUANTILE(val, 0.5) AS qnt,</span></pre>
+<pre><span class="lineno"><a href="#line_2143" id="line_2143"> 2143.</a></span><span class="count        ">      1</span><span>        STDEV(val) AS std</span></pre>
 <pre><span class="lineno"><a href="#line_2144" id="line_2144"> 2144.</a></span><span class="count        ">      1</span><span>    FROM __tmp1;</span></pre>
 <pre><span class="lineno"><a href="#line_2145" id="line_2145"> 2145.</a></span><span class="count        ">      1</span><span>                `)</span></pre>
 <pre><span class="lineno"><a href="#line_2146" id="line_2146"> 2146.</a></span><span class="count        ">      1</span><span>            });</span></pre>

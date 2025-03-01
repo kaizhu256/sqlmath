@@ -2138,9 +2138,9 @@ DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 (val REAL);
 SELECT
         1 AS id,
-        median(val) AS mdn,
-        quantile(val, 0.5) AS qnt,
-        stdev(val) AS std
+        MEDIAN(val) AS mdn,
+        QUANTILE(val, 0.5) AS qnt,
+        STDEV(val) AS std
     FROM __tmp1;
                 `)
             });
