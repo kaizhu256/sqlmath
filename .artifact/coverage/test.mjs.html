@@ -2350,7 +2350,7 @@ body {
 <pre><span class="lineno"><a href="#line_2192" id="line_2192"> 2192.</a></span><span class="count        ">      1</span><span>                [[8], 1, 8],</span></pre>
 <pre><span class="lineno"><a href="#line_2193" id="line_2193"> 2193.</a></span><span class="count        ">      1</span><span>                [[], 0, 1]</span></pre>
 <pre><span class="lineno"><a href="#line_2194" id="line_2194"> 2194.</a></span><span class="count        ">     30</span><span>            ].map(function ([</span></pre>
-<pre><span class="lineno"><a href="#line_2195" id="line_2195"> 2195.</a></span><span class="count        ">     30</span><span>                data, kk, valExpect</span></pre>
+<pre><span class="lineno"><a href="#line_2195" id="line_2195"> 2195.</a></span><span class="count        ">     30</span><span>                data, qq, valExpect</span></pre>
 <pre><span class="lineno"><a href="#line_2196" id="line_2196"> 2196.</a></span><span class="count        ">     30</span><span>            ]) {</span></pre>
 <pre><span class="lineno"><a href="#line_2197" id="line_2197"> 2197.</a></span><span class="count        ">     30</span><span>                return [</span></pre>
 <pre><span class="lineno"><a href="#line_2198" id="line_2198"> 2198.</a></span><span class="count        ">     30</span><span>                    data.concat([</span></pre>
@@ -2358,12 +2358,12 @@ body {
 <pre><span class="lineno"><a href="#line_2200" id="line_2200"> 2200.</a></span><span class="count        ">     30</span><span>                        "8", 7, 6, "5", "4", 3, 2, "1",</span></pre>
 <pre><span class="lineno"><a href="#line_2201" id="line_2201"> 2201.</a></span><span class="count        ">     30</span><span>                        undefined</span></pre>
 <pre><span class="lineno"><a href="#line_2202" id="line_2202"> 2202.</a></span><span class="count        ">     30</span><span>                    ]),</span></pre>
-<pre><span class="lineno"><a href="#line_2203" id="line_2203"> 2203.</a></span><span class="count        ">     30</span><span>                    kk,</span></pre>
+<pre><span class="lineno"><a href="#line_2203" id="line_2203"> 2203.</a></span><span class="count        ">     30</span><span>                    qq,</span></pre>
 <pre><span class="lineno"><a href="#line_2204" id="line_2204"> 2204.</a></span><span class="count        ">     30</span><span>                    valExpect</span></pre>
 <pre><span class="lineno"><a href="#line_2205" id="line_2205"> 2205.</a></span><span class="count        ">     30</span><span>                ];</span></pre>
 <pre><span class="lineno"><a href="#line_2206" id="line_2206"> 2206.</a></span><span class="count        ">     30</span><span>            })</span></pre>
 <pre><span class="lineno"><a href="#line_2207" id="line_2207"> 2207.</a></span><span class="count        ">     38</span><span>        ].flat().map(async function ([</span></pre>
-<pre><span class="lineno"><a href="#line_2208" id="line_2208"> 2208.</a></span><span class="count        ">     38</span><span>            data, kk, valExpect</span></pre>
+<pre><span class="lineno"><a href="#line_2208" id="line_2208"> 2208.</a></span><span class="count        ">     38</span><span>            data, qq, valExpect</span></pre>
 <pre><span class="lineno"><a href="#line_2209" id="line_2209"> 2209.</a></span><span class="count        ">     38</span><span>        ]) {</span></pre>
 <pre><span class="lineno"><a href="#line_2210" id="line_2210"> 2210.</a></span><span class="count        ">     38</span><span>            let avg = 0;</span></pre>
 <pre><span class="lineno"><a href="#line_2211" id="line_2211"> 2211.</a></span><span class="count        ">     38</span><span>            let data2;</span></pre>
@@ -2409,11 +2409,11 @@ body {
 <pre><span class="lineno"><a href="#line_2251" id="line_2251"> 2251.</a></span><span class="count        ">     76</span><span>                    db,</span></pre>
 <pre><span class="lineno"><a href="#line_2252" id="line_2252"> 2252.</a></span><span class="count        ">     76</span><span>                    sql: (`</span></pre>
 <pre><span class="lineno"><a href="#line_2253" id="line_2253"> 2253.</a></span><span class="count        ">     76</span><span>-- test null-case handling-behavior</span></pre>
-<pre><span class="lineno"><a href="#line_2254" id="line_2254"> 2254.</a></span><span class="count        ">     76</span><span>SELECT QUANTILE(value, ${kk}) AS qnt FROM JSON_EACH($tmp1) WHERE 0;</span></pre>
+<pre><span class="lineno"><a href="#line_2254" id="line_2254"> 2254.</a></span><span class="count        ">     76</span><span>SELECT QUANTILE(value, ${qq}) AS qnt FROM JSON_EACH($tmp1) WHERE 0;</span></pre>
 <pre><span class="lineno"><a href="#line_2255" id="line_2255"> 2255.</a></span><span class="count        ">     76</span><span>-- test last-row handling-behavior</span></pre>
 <pre><span class="lineno"><a href="#line_2256" id="line_2256"> 2256.</a></span><span class="count        ">     76</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_2257" id="line_2257"> 2257.</a></span><span class="count        ">     76</span><span>        MEDIAN2(value) AS mdn,</span></pre>
-<pre><span class="lineno"><a href="#line_2258" id="line_2258"> 2258.</a></span><span class="count        ">     76</span><span>        QUANTILE(value, ${kk}) AS qnt,</span></pre>
+<pre><span class="lineno"><a href="#line_2258" id="line_2258"> 2258.</a></span><span class="count        ">     76</span><span>        QUANTILE(value, ${qq}) AS qnt,</span></pre>
 <pre><span class="lineno"><a href="#line_2259" id="line_2259"> 2259.</a></span><span class="count        ">     76</span><span>        ROUND(stdev(value), 8) AS std</span></pre>
 <pre><span class="lineno"><a href="#line_2260" id="line_2260"> 2260.</a></span><span class="count        ">     76</span><span>    FROM JSON_EACH($tmp1);</span></pre>
 <pre><span class="lineno"><a href="#line_2261" id="line_2261"> 2261.</a></span><span class="count        ">     76</span><span>                    `)</span></pre>
@@ -2427,7 +2427,7 @@ body {
 <pre><span class="lineno"><a href="#line_2269" id="line_2269"> 2269.</a></span><span class="count        ">     76</span><span>                    },</span></pre>
 <pre><span class="lineno"><a href="#line_2270" id="line_2270"> 2270.</a></span><span class="count        ">     76</span><span>                    {</span></pre>
 <pre><span class="lineno"><a href="#line_2271" id="line_2271"> 2271.</a></span><span class="count        ">     76</span><span>                        data,</span></pre>
-<pre><span class="lineno"><a href="#line_2272" id="line_2272"> 2272.</a></span><span class="count        ">     76</span><span>                        kk,</span></pre>
+<pre><span class="lineno"><a href="#line_2272" id="line_2272"> 2272.</a></span><span class="count        ">     76</span><span>                        qq,</span></pre>
 <pre><span class="lineno"><a href="#line_2273" id="line_2273"> 2273.</a></span><span class="count        ">     76</span><span>                        valActual,</span></pre>
 <pre><span class="lineno"><a href="#line_2274" id="line_2274"> 2274.</a></span><span class="count        ">     76</span><span>                        valExpect,</span></pre>
 <pre><span class="lineno"><a href="#line_2275" id="line_2275"> 2275.</a></span><span class="count        ">     76</span><span>                        valExpectMdn,</span></pre>
