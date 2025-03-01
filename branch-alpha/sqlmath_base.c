@@ -3025,8 +3025,8 @@ static double quickselect(
     if (nn <= 0 || kk < 0 || kk >= nn) {
         return NAN;             // Invalid input
     }
-    int low = 0,
-        high = nn - 1;
+    int low = 0;
+    int high = nn - 1;
     while (low <= high) {
         if (low == high) {
             return arr[low];
@@ -3045,8 +3045,8 @@ static double quickselect(
         // Move pivot to end
         QUICKSELECT_SWAP(arr[mid], arr[high]);
         double pivot_val = arr[high];
-        int ii = low,
-            jj = high - 1;
+        int ii = low;
+        int jj = high - 1;
         // Hoare’s Partitioning
         while (1) {
             while (ii < high && arr[ii] < pivot_val) {
@@ -3085,6 +3085,7 @@ SQLMATH_API double quantile(
 // using median-of-three quickselect-algorithm.
 // derived from https://www.stat.cmu.edu/~ryantibs/median/quickselect.c
     if (nn < 1 || isnan(qq)) {
+        // if (nn < 1 || isnan(qq) || qq < 0 || qq > 1) {
         return NAN;             // Invalid input
     }
     if (qq == 0) {
