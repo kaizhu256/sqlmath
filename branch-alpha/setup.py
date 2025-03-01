@@ -65,7 +65,7 @@ async def build_ext_async(): # noqa: C901
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
             case "SRC_SQLITE_SHELL":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
-            case "SQLMATH_BASE":
+            case "SRC_SQLMATH_BASE":
                 file_src = pathlib.Path("sqlmath_base.c")
             case "SRC_SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
@@ -74,7 +74,7 @@ async def build_ext_async(): # noqa: C901
         match cdefine:
             case "SRC_SQLITE_SHELL":
                 pass
-            case "SQLMATH_BASE":
+            case "SRC_SQLMATH_BASE":
                 pass
             case "SRC_SQLMATH_CUSTOM":
                 pass
@@ -104,7 +104,7 @@ async def build_ext_async(): # noqa: C901
                 "/wd4996",
             ]
         elif cdefine in [
-            "SQLMATH_BASE",
+            "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
         ]:
             arg_list += ["-Wextra"]
@@ -171,7 +171,7 @@ async def build_ext_async(): # noqa: C901
             "build/SRC_SQLITE_BASE.obj",
             "build/SRC_ZLIB_BASE.obj",
             # ,
-            "build/SQLMATH_BASE.obj",
+            "build/SRC_SQLMATH_BASE.obj",
             "build/SRC_SQLMATH_CUSTOM.obj",
         ]
         export = "PyInit__sqlmath"
@@ -317,7 +317,7 @@ async def build_ext_async(): # noqa: C901
             "SRC_SQLITE_BASE",
             "SRC_ZLIB_BASE",
             # ,
-            "SQLMATH_BASE",
+            "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
         ]
     ])

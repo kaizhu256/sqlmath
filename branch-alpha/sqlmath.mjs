@@ -375,7 +375,7 @@ async function ciBuildExt1NodejsConfigure({
             },
             {
                 "defines": [
-                    "SQLMATH_NODEJS_C2"
+                    "SRC_SQLMATH_NODEJS_C2"
                 ],
                 "dependencies": [
                     "SRC_SQLMATH_CUSTOM",
