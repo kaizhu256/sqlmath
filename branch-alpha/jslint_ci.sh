@@ -385,7 +385,7 @@ shCiArtifactUpload() {(set -e
     (
     cd "branch-$GITHUB_BRANCH0"
     sleep 15
-    # !! shDirHttplinkValidate
+    shDirHttplinkValidate || true
     )
 )}
 
@@ -676,6 +676,11 @@ import moduleHttps from "https";
             /\bhttps?:\/\/.+?([\s")\]]|\W?$)/gm
         ), function (url, removeLast) {
             let req;
+            function onTimeout() {
+                throw new Error(
+                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
+                );
+            }
             if (removeLast && removeLast !== "/") {
                 url = url.slice(0, -1);
             }
@@ -715,6 +720,7 @@ import moduleHttps from "https";
                     "user-agent": "undefined"
                 }
             }, function (res) {
+                res.on("timeout", onTimeout);
                 console.error(
                     `shDirHttplinkValidate ${res.statusCode} ${url}`
                 );
@@ -723,11 +729,7 @@ import moduleHttps from "https";
                 res.destroy();
             });
             req.setTimeout(30000);
-            req.on("timeout", function () {
-                throw new Error(
-                    `shDirHttplinkValidate - ${file} - timeout - ${url}`
-                );
-            });
+            req.on("timeout", onTimeout);
             req.end();
             return "";
         });
