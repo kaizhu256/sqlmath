@@ -4006,8 +4006,36 @@ static void winSinefitSnr(
     }
     const double inva = 1.0 / saa;
     // guess snr - sww - using x-variance.p
-    if (1) {
+    if (0) {
         sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);       // window-period
+    }
+    if (1) {
+        const double ibb = 2 * MATH_PI * (wbb / (ncol * WIN_SINEFIT_STEP));
+        const double rr0 = isfinite(wsf->rr0) ? wsf->rr0 : 0;
+        const double rr1 = isfinite(wsf->rr1) ? wsf->rr1 : 0;
+        const double rr2 = wsf->wnn ? rr1 - rr0 : rr1;
+        double cfkmax = 0;
+        double tmp = 0;
+        int kk = 0;
+        for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
+            // rr   = yy - (laa + lbb*tt)
+            // dfkr = cos(2*pi/nnn*kk*ibb)*(rr1 - rr0)
+            // dfki = sin(2*pi/nnn*kk*ibb)*(rr1 - rr0)
+            // sfk = sfk + sum(dfkr)^2 + sum(dfki)^2
+            xxyy[ii + 3] += cos(kk * ibb) * rr2;
+            xxyy[ii + 4] += sin(kk * ibb) * rr2;
+            tmp = pow(xxyy[ii + 3], 2) + pow(xxyy[ii + 4], 2);
+            if (                //
+                1 <= kk         //
+                && kk <= 0.5 * nnn      //
+                && kk <= doubleMax(0.03125 * nnn, 4.0 / nnn)    //
+                && cfkmax < tmp) {
+                cfkmax = tmp;
+                sww = kk;
+            }
+            kk += 1;
+        }
+        sww *= 2 * MATH_PI / wtt0;
     }
     // guess snr - spp - using multivariate-linear-regression
     if (1) {
