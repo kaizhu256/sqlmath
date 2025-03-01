@@ -3990,8 +3990,8 @@ static void winSinefitSnr(
 //     yy = saa*sin(sww*xx + spp)
     UNUSED_PARAMETER(wbb);
     // declare var0
-    const double invn0 = 1.0 / nnn;
     const double nnn = nbody / (ncol * WIN_SINEFIT_STEP);
+    const double invn0 = 1.0 / nnn;
     const double wtt0 = sqrt(12.0 * invn0 * wsf->vxx);  // window-period
     double saa = 0;
     double spp = 0;
