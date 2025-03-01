@@ -726,7 +726,7 @@ import moduleHttps from "https";
             });
             req.on("error", function (err) {
                 console.error(
-                    `shDirHttplinkValidate - ${file} - error - ${url}`
+                    `\nshDirHttplinkValidate - ${file} - error - ${url}`
                     + ` - ${Date.now() - timeStart}ms`
                 );
                 throw err;
