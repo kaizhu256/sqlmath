@@ -3073,7 +3073,7 @@ SQLMATH_API double quantile(
     const int nn,
     const double qq
 ) {
-// This function will find <kk>-th element in <arr>,
+// This function will find <qq>-th-quantile element in <arr>,
 // using median-of-three quickselect-algorithm.
 // derived from https://www.stat.cmu.edu/~ryantibs/median/quickselect.c
     if (!(nn >= 1)) {
