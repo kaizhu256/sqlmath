@@ -321,8 +321,6 @@ async function ciBuildExt1NodejsConfigure({
         "-Wno-implicit-function-declaration",
         "-Wno-incompatible-pointer-types",
         "-Wno-int-conversion",
-        "-Wno-stringop-overflow",
-        "-Wno-stringop-overread",
         "-Wno-unreachable-code",
         "-Wno-unused-function",
         "-Wno-unused-parameter"
@@ -351,29 +349,14 @@ async function ciBuildExt1NodejsConfigure({
             {
                 "cflags": cflagsNowarning,
                 "defines": [
+                    "SRC_SQLITE_BASE_C2",
+                    "SRC_SQLMATH_BASE_C2",
                     "SRC_ZLIB_C2"
                 ],
                 "sources": [
-                    "sqlmath_external_zlib.c"
-                ],
-                "target_name": "SRC_ZLIB",
-                "type": "static_library",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagsNowarning
-                }
-            },
-            {
-                "cflags": cflagsNowarning,
-                "defines": [
-                    "SRC_SQLITE_BASE_C2",
-                    "SRC_SQLMATH_BASE_C2"
-                ],
-                "dependencies": [
-                    "SRC_ZLIB"
-                ],
-                "sources": [
                     "sqlmath_base.c",
-                    "sqlmath_external_sqlite.c"
+                    "sqlmath_external_sqlite.c",
+                    "sqlmath_external_zlib.c"
                 ],
                 "target_name": "SRC_SQLITE_BASE",
                 "type": "static_library",
