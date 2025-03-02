@@ -211,7 +211,6 @@ shCiBuildWasm() {(set -e
     # build wasm
     printf "shCiBuildWasm\n" 1>&2
     OPTION1="$OPTION1 -Wextra"
-    OPTION1="$OPTION1 -Wno-implicit-function-declaration"
     OPTION1="$OPTION1 -Wno-unused-parameter"
     OPTION1="$OPTION1 -flto"
     # debug

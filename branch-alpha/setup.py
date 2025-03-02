@@ -100,7 +100,6 @@ async def build_ext_async(): # noqa: C901
         elif is_win32:
             arg_list += [
                 "/W3",
-                "/wd4244",
             ]
         elif cdefine in [
             "SRC_SQLMATH_BASE",
@@ -112,7 +111,6 @@ async def build_ext_async(): # noqa: C901
                 "-Wno-all",
                 "-Wno-extra",
                 "-Wno-implicit-fallthrough",
-                "-Wno-implicit-function-declaration",
                 "-Wno-incompatible-pointer-types",
                 "-Wno-int-conversion",
                 "-Wno-unreachable-code",

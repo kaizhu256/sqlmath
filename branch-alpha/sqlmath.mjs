@@ -318,7 +318,6 @@ async function ciBuildExt1NodejsConfigure({
         "-Wno-all",
         "-Wno-extra",
         "-Wno-implicit-fallthrough",
-        "-Wno-implicit-function-declaration",
         "-Wno-incompatible-pointer-types",
         "-Wno-int-conversion",
         "-Wno-unreachable-code",
