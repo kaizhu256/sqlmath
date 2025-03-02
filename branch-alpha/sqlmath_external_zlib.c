@@ -10,7 +10,7 @@
 #   pragma warning(disable: 4996)
 #endif                          // _WIN32
 #if defined(__GNUC__)
-#   pragma GCC diagnostic ignored "-Wstringop-overread"
+#   pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #endif                          // __GNUC__
 #if defined(__clang__)
 #   pragma clang diagnostic push
