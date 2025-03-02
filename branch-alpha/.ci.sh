@@ -14,7 +14,6 @@ SQLMATH_CFLAG_WNO_LIST=" \
     -Wno-all \
     -Wno-extra \
     -Wno-implicit-fallthrough \
-    -Wno-incompatible-pointer-types \
     -Wno-int-conversion \
     -Wno-unreachable-code \
     -Wno-unused-function \
