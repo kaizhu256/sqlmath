@@ -13,7 +13,6 @@ SQLMATH_CFLAG_WNO_LIST=" \
     -Werror \
     -Wno-all \
     -Wno-extra \
-    -Wno-unused-parameter \
 "
 
 shCiArtifactUploadCustom() {(set -e
