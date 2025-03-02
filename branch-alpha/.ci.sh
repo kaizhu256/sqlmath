@@ -13,7 +13,6 @@ SQLMATH_CFLAG_WNO_LIST=" \
     -Werror \
     -Wno-all \
     -Wno-extra \
-    -Wno-int-conversion \
     -Wno-unreachable-code \
     -Wno-unused-function \
     -Wno-unused-parameter \
