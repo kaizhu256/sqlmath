@@ -11,6 +11,7 @@
 #endif                          // _WIN32
 #if defined(__GNUC__)
 #   pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#   pragma GCC diagnostic ignored "-Wunused-function"
 #endif                          // __GNUC__
 #if defined(__clang__)
 #   pragma clang diagnostic push

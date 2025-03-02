@@ -13,7 +13,6 @@ SQLMATH_CFLAG_WNO_LIST=" \
     -Werror \
     -Wno-all \
     -Wno-extra \
-    -Wno-unused-function \
     -Wno-unused-parameter \
 "
 
@@ -245,13 +244,13 @@ shCiBuildWasm() {(set -e
             OPTION1="$OPTION1 $SQLMATH_CFLAG_WALL_LIST"
             ;;
         *)
+            OPTION1="$OPTION1 $SQLMATH_CFLAG_WNO_LIST"
             # optimization - skip rebuild of rollup if possible
             if [ "$FILE2" -nt "$FILE" ]
             then
                 printf "shCiBuildWasm - skip $FILE\n" 1>&2
                 continue
             fi
-            OPTION1="$OPTION1 $SQLMATH_CFLAG_WNO_LIST"
         esac
         case "$FILE" in
         sqlmath_base.c)

@@ -344,6 +344,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
             "msvs_settings": {
                 "VCCLCompilerTool": {
+                    "WarnAsError": 1,
                     "WarningLevel": 3
                 }
             },
