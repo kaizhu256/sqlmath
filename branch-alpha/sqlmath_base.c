@@ -4223,7 +4223,8 @@ SQLMATH_FUNC static void sql3_win_sinefit2_value(
     doublearrayResult(context, dblwin_head,     //
         // If x-current == x-refit, then include extra data needed for refit.
         // This data is normally not included, due to memory performance.
-        wsf->xx2 == wsf->xx1 ? dblwin->nhead + dblwin->nbody : dblwin->nhead,
+        (int) (wsf->xx2 ==
+            wsf->xx1 ? dblwin->nhead + dblwin->nbody : dblwin->nhead),
         SQLITE_TRANSIENT);
 }
 
@@ -4284,8 +4285,8 @@ static void sql3_win_sinefit2_step(
     const int modeSnr = sqlite3_value_int(argv[0]);
     argv += argc0;
     WinSinefit *wsf = NULL;
-    const int waa = dblwin->waa;
-    const int wbb = dblwin->wnn ? dblwin->waa : dblwin->nbody;
+    const int waa = (int) dblwin->waa;
+    const int wbb = (int) (dblwin->wnn ? dblwin->waa : dblwin->nbody);
     double *xxyy = NULL;
     for (int ii = 0; ii < ncol; ii += 1) {
         // dblwin - init xx, yy, rr
@@ -4322,7 +4323,8 @@ static void sql3_win_sinefit2_step(
         winSinefitLnr(wsf, xxyy, wbb);
         // dblwin - calculate snr
         if (modeSnr) {
-            winSinefitSnr(wsf, xxyy, wbb, dblwin->nbody, dblwin->ncol);
+            winSinefitSnr(wsf, xxyy, wbb, (int) dblwin->nbody,
+                (int) dblwin->ncol);
         }
         // increment counter
         wsf += 1;
@@ -4509,7 +4511,7 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         return;
     }
     const WinSinefit *blob0 = sqlite3_value_blob(argv[0]);
-    const int nbody = blob0->nnn * ncol * WIN_SINEFIT_STEP;
+    const int nbody = (int) blob0->nnn * ncol * WIN_SINEFIT_STEP;
     if (blob0->nnn <= 0
         || bytes != (ncol * WIN_SINEFIT_N + nbody) * sizeof(double)) {
         sqlite3_result_error(context,
@@ -4529,7 +4531,7 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     WinSinefit *wsf = wsf0;
     argv += argc0;
     double *xxyy = (double *) (wsf0 + ncol);
-    const int wbb = wsf->wbb;
+    const int wbb = (int) wsf->wbb;
     if (!(0 <= wbb && wbb + ncol * WIN_SINEFIT_STEP <= nbody)) {
         goto catch_error;
     }
@@ -4615,8 +4617,8 @@ SQLMATH_FUNC static void sql3_win_sum2_value(
         return;
     }
     // dblwin - result
-    doublearrayResult(context, dblwin_head + (int) dblwin->ncol, dblwin->ncol,
-        SQLITE_TRANSIENT);
+    doublearrayResult(context, dblwin_head + (int) dblwin->ncol,
+        (int) dblwin->ncol, SQLITE_TRANSIENT);
 }
 
 SQLMATH_FUNC static void sql3_win_sum2_final(
