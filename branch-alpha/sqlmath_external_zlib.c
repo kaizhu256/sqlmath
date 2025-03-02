@@ -6,13 +6,11 @@
 #define SRC_ZLIB_C3
 
 
+#define DIST_CODE_LEN 512
+#define NO_GZIP
 #define ZEXTERN
-#ifdef SRC_ZLIB_C2
-#   define DIST_CODE_LEN 512
-#   define NO_GZIP
-#   define ZEXPORT
-#   define ZLIB_INTERNAL
-#endif                          // SRC_ZLIB_C2
+
+
 // *INDENT-OFF*
 /*jslint-disable*/
 /*
@@ -12125,6 +12123,8 @@ file none
 
 // *INDENT-ON*
 #else                           // SRC_ZLIB_C3
+
+
 #include <stddef.h>
 //
 #define Z_OK 0
