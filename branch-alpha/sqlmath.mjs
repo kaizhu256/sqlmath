@@ -318,8 +318,10 @@ async function ciBuildExt1NodejsConfigure({
     let cflagWnoList = [];
     String(
         await fsReadFileUnlessTest(".ci.sh", "utf8", (`
-SQLMATH_CFLAG_WALL_LIST=""
-SQLMATH_CFLAG_WNO_LIST=""
+SQLMATH_CFLAG_WALL_LIST=" \\
+"
+SQLMATH_CFLAG_WNO_LIST=" \\
+"
         `))
     ).replace((
         /(SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)=" \\([\S\s]*?)"/g

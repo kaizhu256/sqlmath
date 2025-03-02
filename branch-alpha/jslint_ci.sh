@@ -1856,6 +1856,8 @@ function replaceListReplace(replaceList, data) {
                 : ""
             );
         });
+        elem.flags = elem.flags || "";
+        elem.substr = elem.substr || "";
     });
     // replaceList - sort
     replaceList.sort(function (aa, bb) {
@@ -1984,25 +1986,26 @@ function replaceListReplace(replaceList, data) {
     await Promise.all(promiseList);
     // parse fetched data
     process.on("exit", function () {
-        let header;
         let result;
         let result0;
+        let rollupHeader;
         result = "";
-        fetchList.forEach(function ({
-            comment,
-            data,
-            dataUriType,
-            dateCommitted,
-            footer = "",
-            header = "",
-            prefix,
-            replaceList = [],
-            url
-        }, ii, list) {
+        fetchList.forEach(function (elem) {
+            let {
+                comment,
+                data,
+                dataUriType,
+                dateCommitted,
+                footer = "",
+                header = "",
+                prefix,
+                replaceList = [],
+                url
+            } = elem;
             if (!url) {
                 return;
             }
-            list[ii].exports = (
+            elem.exports = (
                 (
                     "exports_" + modulePath.dirname(url).replace(
                         "https://github.com/",
@@ -2026,6 +2029,7 @@ function replaceListReplace(replaceList, data) {
                     ), "_")
                 )
             );
+            elem.replaceList = replaceList;
             if (dataUriType) {
                 return;
             }
@@ -2087,8 +2091,8 @@ function replaceListReplace(replaceList, data) {
         ), "\n\n\n");
         // replace from replaceList
         result = replaceListReplace(matchObj[1].replaceList, result);
-        // init header
-        header = (
+        // init rollupHeader
+        rollupHeader = (
             matchObj.input.slice(0, matchObj.index)
             + "/*jslint-disable*/\n/*\nshRollupFetch\n"
             + JSON.stringify(
@@ -2106,8 +2110,8 @@ function replaceListReplace(replaceList, data) {
                 ), "/\\\\*") + "\n";
             }).sort().join("\n") + "*/\n\n"
         );
-        // replace from header-diff
-        header.replace((
+        // replace from rollupHeader-diff
+        rollupHeader.replace((
             /((?:^-.*?\n)+?)((?:^\+.*?\n)+)/gm
         ), function (ignore, aa, bb) {
             aa = "\n" + aa.replace((
@@ -2166,7 +2170,7 @@ function replaceListReplace(replaceList, data) {
             }
         });
         // init footer
-        result = header + result;
+        result = rollupHeader + result;
         matchObj.input.replace((
             /\n\/\*\nfile none\n\*\/\n\/\*jslint-enable\*\/\n([\S\s]+)/
         ), function (ignore, match1) {
