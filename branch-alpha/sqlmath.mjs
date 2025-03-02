@@ -317,7 +317,6 @@ async function ciBuildExt1NodejsConfigure({
     let cflagsNowarning = [
         "-Wno-all",
         "-Wno-extra",
-        "-Wno-implicit-fallthrough",
         "-Wno-incompatible-pointer-types",
         "-Wno-int-conversion",
         "-Wno-unreachable-code",
@@ -328,6 +327,7 @@ async function ciBuildExt1NodejsConfigure({
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
             "cflags": [
+                "-Wall",
                 "-Wextra",
                 "-std=c11"
             ],
@@ -339,6 +339,7 @@ async function ciBuildExt1NodejsConfigure({
             },
             "xcode_settings": {
                 "OTHER_CFLAGS": [
+                    "-Wall",
                     "-Wextra",
                     "-std=c11"
                 ]

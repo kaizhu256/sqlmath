@@ -210,8 +210,6 @@ shCiBuildWasm() {(set -e
     # cd ${EMSDK} && . ./emsdk_env.sh && cd ..
     # build wasm
     printf "shCiBuildWasm\n" 1>&2
-    OPTION1="$OPTION1 -Wextra"
-    OPTION1="$OPTION1 -Wno-unused-parameter"
     OPTION1="$OPTION1 -flto"
     # debug
     # OPTION1="$OPTION1 -O0"
@@ -228,8 +226,14 @@ shCiBuildWasm() {(set -e
         FILE2="build/$(basename "$FILE").wasm.o"
         case "$FILE" in
         sqlmath_base.c)
+            OPTION1="$OPTION1 -Wall"
+            OPTION1="$OPTION1 -Werror"
+            OPTION1="$OPTION1 -Wextra"
             ;;
         sqlmath_custom.c)
+            OPTION1="$OPTION1 -Wall"
+            OPTION1="$OPTION1 -Werror"
+            OPTION1="$OPTION1 -Wextra"
             ;;
         *)
             # optimization - skip rebuild of rollup if possible
@@ -238,6 +242,7 @@ shCiBuildWasm() {(set -e
                 printf "shCiBuildWasm - skip $FILE\n" 1>&2
                 continue
             fi
+            OPTION1="$OPTION1 -Wno-unused-parameter"
         esac
         case "$FILE" in
         sqlmath_base.c)
