@@ -50,6 +50,7 @@ CFLAG_WALL_LIST = [
     "-Wextra",
 ]
 CFLAG_WNO_LIST = [
+    "-Werror",
     "-Wno-all",
     "-Wno-extra",
     "-Wno-implicit-fallthrough",

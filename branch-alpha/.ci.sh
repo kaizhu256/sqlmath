@@ -204,6 +204,22 @@ shCiBaseCustomArtifactUpload() {(set -e
 
 shCiBuildWasm() {(set -e
 # This function will build binaries in wasm.
+    CFLAG_WALL_LIST=" \
+    -Wall \
+    -Werror \
+    -Wextra \
+    "
+    CFLAG_WNO_LIST=" \
+    -Werror \
+    -Wno-all \
+    -Wno-extra \
+    -Wno-implicit-fallthrough \
+    -Wno-incompatible-pointer-types \
+    -Wno-int-conversion \
+    -Wno-unreachable-code \
+    -Wno-unused-function \
+    -Wno-unused-parameter \
+    "
     shCiEmsdkExport
     # install emsdk
     shCiEmsdkInstall
@@ -226,14 +242,10 @@ shCiBuildWasm() {(set -e
         FILE2="build/$(basename "$FILE").wasm.o"
         case "$FILE" in
         sqlmath_base.c)
-            OPTION1="$OPTION1 -Wall"
-            OPTION1="$OPTION1 -Werror"
-            OPTION1="$OPTION1 -Wextra"
+            OPTION1="$OPTION1 $CFLAG_WALL_LIST"
             ;;
         sqlmath_custom.c)
-            OPTION1="$OPTION1 -Wall"
-            OPTION1="$OPTION1 -Werror"
-            OPTION1="$OPTION1 -Wextra"
+            OPTION1="$OPTION1 $CFLAG_WALL_LIST"
             ;;
         *)
             # optimization - skip rebuild of rollup if possible
@@ -242,7 +254,7 @@ shCiBuildWasm() {(set -e
                 printf "shCiBuildWasm - skip $FILE\n" 1>&2
                 continue
             fi
-            OPTION1="$OPTION1 -Wno-unused-parameter"
+            OPTION1="$OPTION1 $CFLAG_WNO_LIST"
         esac
         case "$FILE" in
         sqlmath_base.c)

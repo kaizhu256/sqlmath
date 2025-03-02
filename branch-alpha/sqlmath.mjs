@@ -25,7 +25,13 @@
 /*global FinalizationRegistry*/
 "use strict";
 
+const CFLAG_WALL_LIST = [
+    "-Wall",
+    "-Werror",
+    "-Wextra"
+];
 const CFLAG_WNO_LIST = [
+    "-Werror",
     "-Wno-all",
     "-Wno-extra",
     "-Wno-implicit-fallthrough",
@@ -327,11 +333,7 @@ async function ciBuildExt1NodejsConfigure({
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
-            "cflags": [
-                "-Wall",
-                "-Wextra",
-                "-std=c11"
-            ],
+            "cflags": CFLAG_WALL_LIST,
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
             "msvs_settings": {
                 "VCCLCompilerTool": {
@@ -339,11 +341,7 @@ async function ciBuildExt1NodejsConfigure({
                 }
             },
             "xcode_settings": {
-                "OTHER_CFLAGS": [
-                    "-Wall",
-                    "-Wextra",
-                    "-std=c11"
-                ]
+                "OTHER_CFLAGS": CFLAG_WALL_LIST
             }
         },
         "targets": [
