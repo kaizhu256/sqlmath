@@ -25,6 +25,16 @@
 /*global FinalizationRegistry*/
 "use strict";
 
+const CFLAG_WNO_LIST = [
+    "-Wno-all",
+    "-Wno-extra",
+    "-Wno-implicit-fallthrough",
+    "-Wno-incompatible-pointer-types",
+    "-Wno-int-conversion",
+    "-Wno-unreachable-code",
+    "-Wno-unused-function",
+    "-Wno-unused-parameter"
+];
 const JSBATON_ARGC = 8;
 const JSBATON_OFFSET_ALL = 256;
 const JSBATON_OFFSET_ARGV = 128;
@@ -314,15 +324,6 @@ async function ciBuildExt1NodejsConfigure({
 
 // This function will setup posix/win32 env for building c-extension.
 
-    let cflagsNowarning = [
-        "-Wno-all",
-        "-Wno-extra",
-        "-Wno-incompatible-pointer-types",
-        "-Wno-int-conversion",
-        "-Wno-unreachable-code",
-        "-Wno-unused-function",
-        "-Wno-unused-parameter"
-    ];
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
@@ -347,7 +348,7 @@ async function ciBuildExt1NodejsConfigure({
         },
         "targets": [
             {
-                "cflags": cflagsNowarning,
+                "cflags": CFLAG_WNO_LIST,
                 "defines": [
                     "SRC_SQLITE_BASE_C2",
                     "SRC_SQLMATH_BASE_C2",
@@ -361,7 +362,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "SRC_SQLITE_BASE",
                 "type": "static_library",
                 "xcode_settings": {
-                    "OTHER_CFLAGS": cflagsNowarning
+                    "OTHER_CFLAGS": CFLAG_WNO_LIST
                 }
             },
             {
@@ -388,7 +389,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "binding"
             },
             {
-                "cflags": cflagsNowarning,
+                "cflags": CFLAG_WNO_LIST,
                 "defines": [
                     "SRC_SQLITE_SHELL_C2"
                 ],
@@ -402,7 +403,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "shell",
                 "type": "executable",
                 "xcode_settings": {
-                    "OTHER_CFLAGS": cflagsNowarning
+                    "OTHER_CFLAGS": CFLAG_WNO_LIST
                 }
             }
         ]

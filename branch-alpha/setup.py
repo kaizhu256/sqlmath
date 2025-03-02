@@ -44,6 +44,22 @@ import sysconfig
 import tempfile
 import zipfile
 
+CFLAG_WALL_LIST = [
+    "-Wall",
+    "-Werror",
+    "-Wextra",
+]
+CFLAG_WNO_LIST = [
+    "-Wno-all",
+    "-Wno-extra",
+    "-Wno-implicit-fallthrough",
+    "-Wno-incompatible-pointer-types",
+    "-Wno-int-conversion",
+    "-Wno-unreachable-code",
+    "-Wno-unused-function",
+    "-Wno-unused-parameter",
+]
+
 
 def assert_or_throw(condition, message=None):
     """This function will throw <message> if <condition> is falsy."""
@@ -60,21 +76,6 @@ async def build_ext_async(): # noqa: C901
     """This function will build c-extension."""
 
     async def build_ext_obj(cdefine): # noqa: C901 PLR0912
-        warn_all_list = [
-            "-Wall",
-            "-Werror",
-            "-Wextra",
-        ]
-        warn_no_list = [
-            "-Wno-all",
-            "-Wno-extra",
-            "-Wno-implicit-fallthrough",
-            "-Wno-incompatible-pointer-types",
-            "-Wno-int-conversion",
-            "-Wno-unreachable-code",
-            "-Wno-unused-function",
-            "-Wno-unused-parameter",
-        ]
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:
             case "SRC_SQLITE_BASE":
@@ -111,7 +112,7 @@ async def build_ext_async(): # noqa: C901
         if npm_config_mode_debug and is_win32:
             arg_list += ["/W3"]
         elif npm_config_mode_debug:
-            arg_list += warn_all_list;
+            arg_list += CFLAG_WALL_LIST
         elif is_win32:
             arg_list += [
                 "/W3",
@@ -120,9 +121,9 @@ async def build_ext_async(): # noqa: C901
             "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
         ]:
-            arg_list += warn_all_list;
+            arg_list += CFLAG_WALL_LIST
         else:
-            arg_list += warn_no_list
+            arg_list += CFLAG_WNO_LIST
 # https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
         if is_win32:
             arg_list = [
