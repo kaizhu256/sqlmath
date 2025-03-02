@@ -25,22 +25,6 @@
 /*global FinalizationRegistry*/
 "use strict";
 
-const CFLAG_WALL_LIST = [
-    "-Wall",
-    "-Werror",
-    "-Wextra"
-];
-const CFLAG_WNO_LIST = [
-    "-Werror",
-    "-Wno-all",
-    "-Wno-extra",
-    "-Wno-implicit-fallthrough",
-    "-Wno-incompatible-pointer-types",
-    "-Wno-int-conversion",
-    "-Wno-unreachable-code",
-    "-Wno-unused-function",
-    "-Wno-unused-parameter"
-];
 const JSBATON_ARGC = 8;
 const JSBATON_OFFSET_ALL = 256;
 const JSBATON_OFFSET_ARGV = 128;
@@ -101,6 +85,13 @@ const SQLITE_OPEN_URI = 0x00000040;             /* Ok for sqlite3_open_v2() */
 const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let IS_BROWSER;
+let {
+    SQLMATH_CFLAG_WALL_LIST = "",
+    SQLMATH_CFLAG_WNO_LIST = "",
+    npm_config_mode_debug,
+    npm_config_mode_setup,
+    npm_config_mode_test
+} = typeof process === "object" && process?.env;
 let cModule;
 let cModulePath;
 let consoleError = console.error;
@@ -130,11 +121,6 @@ let moduleFs;
 let moduleFsInitResolveList;
 let modulePath;
 let moduleUrl;
-let {
-    npm_config_mode_debug,
-    npm_config_mode_setup,
-    npm_config_mode_test
-} = typeof process === "object" && process?.env;
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
@@ -330,10 +316,12 @@ async function ciBuildExt1NodejsConfigure({
 
 // This function will setup posix/win32 env for building c-extension.
 
+    let cflagWallList = SQLMATH_CFLAG_WALL_LIST.split(" ").filter(noop);
+    let cflagWnoList = SQLMATH_CFLAG_WNO_LIST.split(" ").filter(noop);
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
-            "cflags": CFLAG_WALL_LIST,
+            "cflags": cflagWallList,
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
             "msvs_settings": {
                 "VCCLCompilerTool": {
@@ -341,12 +329,12 @@ async function ciBuildExt1NodejsConfigure({
                 }
             },
             "xcode_settings": {
-                "OTHER_CFLAGS": CFLAG_WALL_LIST
+                "OTHER_CFLAGS": cflagWallList
             }
         },
         "targets": [
             {
-                "cflags": CFLAG_WNO_LIST,
+                "cflags": cflagWnoList,
                 "defines": [
                     "SRC_SQLITE_BASE_C2",
                     "SRC_SQLMATH_BASE_C2",
@@ -360,7 +348,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "SRC_SQLITE_BASE",
                 "type": "static_library",
                 "xcode_settings": {
-                    "OTHER_CFLAGS": CFLAG_WNO_LIST
+                    "OTHER_CFLAGS": cflagWnoList
                 }
             },
             {
@@ -387,7 +375,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "binding"
             },
             {
-                "cflags": CFLAG_WNO_LIST,
+                "cflags": cflagWnoList,
                 "defines": [
                     "SRC_SQLITE_SHELL_C2"
                 ],
@@ -401,7 +389,7 @@ async function ciBuildExt1NodejsConfigure({
                 "target_name": "shell",
                 "type": "executable",
                 "xcode_settings": {
-                    "OTHER_CFLAGS": CFLAG_WNO_LIST
+                    "OTHER_CFLAGS": cflagWnoList
                 }
             }
         ]

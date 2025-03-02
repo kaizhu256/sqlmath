@@ -4,6 +4,23 @@
 # sh jslint_ci.sh shCiBuildWasm
 # sh jslint_ci.sh shSqlmathUpdate
 
+SQLMATH_CFLAG_WALL_LIST=" \
+    -Wall \
+    -Werror \
+    -Wextra \
+"
+SQLMATH_CFLAG_WNO_LIST=" \
+    -Werror \
+    -Wno-all \
+    -Wno-extra \
+    -Wno-implicit-fallthrough \
+    -Wno-incompatible-pointer-types \
+    -Wno-int-conversion \
+    -Wno-unreachable-code \
+    -Wno-unused-function \
+    -Wno-unused-parameter \
+"
+
 shCiArtifactUploadCustom() {(set -e
 # This function will run custom-code to upload build-artifacts.
     git fetch origin artifact
@@ -204,22 +221,6 @@ shCiBaseCustomArtifactUpload() {(set -e
 
 shCiBuildWasm() {(set -e
 # This function will build binaries in wasm.
-    CFLAG_WALL_LIST=" \
-    -Wall \
-    -Werror \
-    -Wextra \
-    "
-    CFLAG_WNO_LIST=" \
-    -Werror \
-    -Wno-all \
-    -Wno-extra \
-    -Wno-implicit-fallthrough \
-    -Wno-incompatible-pointer-types \
-    -Wno-int-conversion \
-    -Wno-unreachable-code \
-    -Wno-unused-function \
-    -Wno-unused-parameter \
-    "
     shCiEmsdkExport
     # install emsdk
     shCiEmsdkInstall
@@ -242,10 +243,10 @@ shCiBuildWasm() {(set -e
         FILE2="build/$(basename "$FILE").wasm.o"
         case "$FILE" in
         sqlmath_base.c)
-            OPTION1="$OPTION1 $CFLAG_WALL_LIST"
+            OPTION1="$OPTION1 $SQLMATH_CFLAG_WALL_LIST"
             ;;
         sqlmath_custom.c)
-            OPTION1="$OPTION1 $CFLAG_WALL_LIST"
+            OPTION1="$OPTION1 $SQLMATH_CFLAG_WALL_LIST"
             ;;
         *)
             # optimization - skip rebuild of rollup if possible
@@ -254,7 +255,7 @@ shCiBuildWasm() {(set -e
                 printf "shCiBuildWasm - skip $FILE\n" 1>&2
                 continue
             fi
-            OPTION1="$OPTION1 $CFLAG_WNO_LIST"
+            OPTION1="$OPTION1 $SQLMATH_CFLAG_WNO_LIST"
         esac
         case "$FILE" in
         sqlmath_base.c)
@@ -480,7 +481,10 @@ shCiTestNodejs() {(set -e
         PID_LIST=""
         (
         unset npm_config_mode_test
-        npm_config_mode_setup=1 node --input-type=module -e '
+        SQLMATH_CFLAG_WALL_LIST="$SQLMATH_CFLAG_WALL_LIST" \
+        SQLMATH_CFLAG_WNO_LIST="$SQLMATH_CFLAG_WNO_LIST" \
+        npm_config_mode_setup=1 \
+            node --input-type=module -e '
 import {ciBuildExt} from "./sqlmath.mjs";
 ciBuildExt({process});
 ' "$@" # '
