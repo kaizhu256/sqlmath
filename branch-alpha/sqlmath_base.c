@@ -27,9 +27,8 @@
 /*
 file sqlmath_h - start
 */
-#define SQLMATH_H2
-#if defined(SQLMATH_H2) && !defined(SQLMATH_H3)
-#define SQLMATH_H3
+#if !defined(SRC_SQLMATH_H2)
+#define SRC_SQLMATH_H2
 
 
 #define NAPI_VERSION 6
@@ -514,7 +513,7 @@ SQLMATH_API double sqlite3_value_double_or_prev(
     sqlite3_value * arg,
     double *previous
 );
-#endif                          // SQLMATH_H3
+#endif                          // SRC_SQLMATH_H2
 /*
 file sqlmath_h - end
 */
