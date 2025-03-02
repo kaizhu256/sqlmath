@@ -481,10 +481,7 @@ shCiTestNodejs() {(set -e
         PID_LIST=""
         (
         unset npm_config_mode_test
-        SQLMATH_CFLAG_WALL_LIST="$SQLMATH_CFLAG_WALL_LIST" \
-        SQLMATH_CFLAG_WNO_LIST="$SQLMATH_CFLAG_WNO_LIST" \
-        npm_config_mode_setup=1 \
-            node --input-type=module -e '
+        npm_config_mode_setup=1 node --input-type=module -e '
 import {ciBuildExt} from "./sqlmath.mjs";
 ciBuildExt({process});
 ' "$@" # '

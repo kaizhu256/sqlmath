@@ -44,23 +44,6 @@ import sysconfig
 import tempfile
 import zipfile
 
-CFLAG_WALL_LIST = [
-    "-Wall",
-    "-Werror",
-    "-Wextra",
-]
-CFLAG_WNO_LIST = [
-    "-Werror",
-    "-Wno-all",
-    "-Wno-extra",
-    "-Wno-implicit-fallthrough",
-    "-Wno-incompatible-pointer-types",
-    "-Wno-int-conversion",
-    "-Wno-unreachable-code",
-    "-Wno-unused-function",
-    "-Wno-unused-parameter",
-]
-
 
 def assert_or_throw(condition, message=None):
     """This function will throw <message> if <condition> is falsy."""
@@ -113,7 +96,7 @@ async def build_ext_async(): # noqa: C901
         if npm_config_mode_debug and is_win32:
             arg_list += ["/W3"]
         elif npm_config_mode_debug:
-            arg_list += CFLAG_WALL_LIST
+            arg_list += cflag_wall_list
         elif is_win32:
             arg_list += [
                 "/W3",
@@ -122,9 +105,9 @@ async def build_ext_async(): # noqa: C901
             "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
         ]:
-            arg_list += CFLAG_WALL_LIST
+            arg_list += cflag_wall_list
         else:
-            arg_list += CFLAG_WNO_LIST
+            arg_list += cflag_wno_list
 # https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
         if is_win32:
             arg_list = [
@@ -215,6 +198,23 @@ async def build_ext_async(): # noqa: C901
         version = package_json["version"].split("-")[0]
     if package_json["name"] != "sqlmath":
         version = __version__
+    with pathlib.Path(".ci.sh").open() as file1: # noqa: ASYNC230
+        data = file1.read()
+        data = re.findall(
+            (
+                r"(?:SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)"
+                r'=" \\([\S\s]*?)"'
+            ),
+            data,
+        )
+        data = [
+            [cflag for cflag in re.split(r"[\s\\]", list1) if cflag != ""]
+            for list1 in data
+        ]
+        [
+            cflag_wall_list,
+            cflag_wno_list,
+        ] = data
     for filename in [
         "PKG-INFO",
         "README.md",

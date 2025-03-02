@@ -85,13 +85,6 @@ const SQLITE_OPEN_URI = 0x00000040;             /* Ok for sqlite3_open_v2() */
 const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let IS_BROWSER;
-let {
-    SQLMATH_CFLAG_WALL_LIST = "",
-    SQLMATH_CFLAG_WNO_LIST = "",
-    npm_config_mode_debug,
-    npm_config_mode_setup,
-    npm_config_mode_test
-} = typeof process === "object" && process?.env;
 let cModule;
 let cModulePath;
 let consoleError = console.error;
@@ -121,6 +114,11 @@ let moduleFs;
 let moduleFsInitResolveList;
 let modulePath;
 let moduleUrl;
+let {
+    npm_config_mode_debug,
+    npm_config_mode_setup,
+    npm_config_mode_test
+} = typeof process === "object" && process?.env;
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
@@ -316,8 +314,27 @@ async function ciBuildExt1NodejsConfigure({
 
 // This function will setup posix/win32 env for building c-extension.
 
-    let cflagWallList = SQLMATH_CFLAG_WALL_LIST.split(" ").filter(noop);
-    let cflagWnoList = SQLMATH_CFLAG_WNO_LIST.split(" ").filter(noop);
+    let cflagWallList = [];
+    let cflagWnoList = [];
+    String(
+        await fsReadFileUnlessTest(".ci.sh", "utf8", (`
+SQLMATH_CFLAG_WALL_LIST=""
+SQLMATH_CFLAG_WNO_LIST=""
+        `))
+    ).replace((
+        /(SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)=" \\([\S\s]*?)"/g
+    ), function (ignore, cflagType, cflagList) {
+        cflagList = cflagList.split(/[\s\\]/).filter(noop);
+        switch (cflagType) {
+        case "SQLMATH_CFLAG_WALL_LIST":
+            cflagWallList = cflagList;
+            break;
+        case "SQLMATH_CFLAG_WNO_LIST":
+            cflagWnoList = cflagList;
+            break;
+        }
+        return "";
+    });
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
