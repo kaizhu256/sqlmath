@@ -135,7 +135,7 @@ shRollupFetch
             "url": "https://github.com/intel/tinycrypt/blob/v0.2.8/lib/source/sha256.c"
         },
         {
-            "header": "\n#if defined(SRC_SQLMATH_BASE_C2) && !defined(SRC_SQLMATH_BASE_H4)\n#define SRC_SQLMATH_BASE_H4\n",
+            "header": "\n#if defined(SRC_SQLMATH_BASE_C2)\n",
             "replaceList": [
                 {
                     "aa": "\nLIGHTGBM_C_EXPORT ([^\\(]*?) (\\w*?)(\\([\\S\\s]*?\\));\n",
@@ -147,7 +147,7 @@ shRollupFetch
             "url": "https://github.com/microsoft/LightGBM/blob/v4.5.0/include/LightGBM/c_api.h"
         },
         {
-            "footer": "\n}\n#endif // SRC_SQLMATH_BASE_H4\n",
+            "footer": "\n}\n#endif // SRC_SQLMATH_BASE_C2\n",
             "header": "static void LGBM_dlsym() {\n",
             "replaceList": [
                 {
@@ -899,8 +899,7 @@ committed 2024-07-25T14:51:01Z
 file https://github.com/microsoft/LightGBM/blob/v4.5.0/include/LightGBM/c_api.h
 */
 
-#if defined(SRC_SQLMATH_BASE_C2) && !defined(SRC_SQLMATH_BASE_H4)
-#define SRC_SQLMATH_BASE_H4
+#if defined(SRC_SQLMATH_BASE_C2)
 /*!
  * \file c_api.h
  * \copyright Copyright (c) 2016 Microsoft Corporation. All rights reserved.
@@ -2758,7 +2757,7 @@ LGBM_DLSYM(LGBM_NetworkInitWithFunctions);
 LGBM_DLSYM(LGBM_SetMaxThreads);
 LGBM_DLSYM(LGBM_GetMaxThreads);
 }
-#endif // SRC_SQLMATH_BASE_H4
+#endif // SRC_SQLMATH_BASE_C2
 
 
 /*

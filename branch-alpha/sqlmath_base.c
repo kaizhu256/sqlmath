@@ -522,8 +522,7 @@ file sqlmath_h - end
 /*
 file sqlmath_base - start
 */
-#if defined(SRC_SQLMATH_BASE_C2) && !defined(SRC_SQLMATH_BASE_C3)
-#define SRC_SQLMATH_BASE_C3
+#if defined(SRC_SQLMATH_BASE_C2)
 
 
 // track how many sqlite-db open
@@ -4100,9 +4099,9 @@ SQLMATH_FUNC static void sql3_win_sinefit2_value(
     doublearrayResult(context, dblwin_head,     //
         // If x-current == x-refit, then include extra data needed for refit.
         // This data is normally not included, due to memory performance.
-        (int) (wsf->xx2 ==
-            wsf->xx1 ? dblwin->nhead + dblwin->nbody : dblwin->nhead),
-        SQLITE_TRANSIENT);
+        (int) (wsf->xx2 == wsf->xx1     //
+            ? dblwin->nhead + dblwin->nbody     //
+            : dblwin->nhead), SQLITE_TRANSIENT);
 }
 
 SQLMATH_FUNC static void sql3_win_sinefit2_final(
@@ -4620,7 +4619,7 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC3(win_sum2, -1, 0);
     return 0;
 }
-#endif                          // SRC_SQLMATH_BASE_C3
+#endif                          // SRC_SQLMATH_BASE_C2
 /*
 file sqlmath_base - end
 */
@@ -4629,8 +4628,7 @@ file sqlmath_base - end
 /*
 file sqlmath_nodejs - start
 */
-#if defined(SRC_SQLMATH_NODEJS_C2) && !defined(SQLMATH_NODEJS_C3)
-#define SQLMATH_NODEJS_C3
+#if defined(SRC_SQLMATH_NODEJS_C2)
 
 
 #if defined(UNDEFINED)          // cpplint-hack
@@ -4915,7 +4913,7 @@ napi_value napi_module_sqlmath_init(
 }
 
 NAPI_MODULE(NODE_GYP_MODULE_NAME, napi_module_sqlmath_init);
-#endif                          // SQLMATH_NODEJS_C3
+#endif                          // SQLMATH_NODEJS_C2
 /*
 file sqlmath_nodejs - end
 */
@@ -4924,8 +4922,7 @@ file sqlmath_nodejs - end
 /*
 file sqlmath_python - start
 */
-#if defined(SRC_SQLMATH_PYTHON_C2) && !defined(SRC_SQLMATH_PYTHON_C3)
-#define SRC_SQLMATH_PYTHON_C3
+#if defined(SRC_SQLMATH_PYTHON_C2)
 
 
 #include <Python.h>
@@ -5097,7 +5094,7 @@ PyMODINIT_FUNC PyInit__sqlmath(
     }
     return PyModule_Create(&_sqlmathmodule);
 }
-#endif                          // SRC_SQLMATH_PYTHON_C3
+#endif                          // SRC_SQLMATH_PYTHON_C2
 /*
 file sqlmath_python - end
 */
