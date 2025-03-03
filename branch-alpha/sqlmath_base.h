@@ -24,8 +24,11 @@
 // LINT_C_FILE
 
 
-#if defined(SRC_SQLMATH_BASE_C2) && !defined(SRC_SQLMATH_BASE_H3)
+#if !defined(SRC_SQLMATH_BASE_H3)
 #define SRC_SQLMATH_BASE_H3
+
+
+#if defined(SRC_SQLMATH_BASE_C2)
 
 
 #if defined(_WIN32)
@@ -80,6 +83,9 @@ typedef struct ArrowArray {
     void *private_data;
 } ArrowArray;
 static void *lgbm_library = NULL;
+
+
+#endif                          // SRC_SQLMATH_BASE_C2
 
 
 // *INDENT-OFF*

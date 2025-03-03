@@ -12295,7 +12295,5 @@ uLong ZEXPORT compressBound(uLong sourceLen);
 
 
 // *INDENT-ON*
-
-
 #endif                          // SRC_ZLIB_C2
 #endif                          // SRC_ZLIB_H2

@@ -24,11 +24,13 @@
 // LINT_C_FILE
 
 
+#if !defined(SRC_SQLMATH_H2)
+#define SRC_SQLMATH_H2
+
+
 /*
 file sqlmath_h - start
 */
-#if !defined(SRC_SQLMATH_H2)
-#define SRC_SQLMATH_H2
 
 
 #define NAPI_VERSION 6
