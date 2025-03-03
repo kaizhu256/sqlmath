@@ -340,36 +340,39 @@ SQLMATH_CFLAG_WNO_LIST=" \\
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
-            "cflags": cflagWallList,
+            "cflags": cflagWnoList,
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "WarnAsError": 1,
-                    "WarningLevel": 3
+                    "WarningLevel": 4
                 }
             },
             "xcode_settings": {
-                "OTHER_CFLAGS": cflagWallList
+                "OTHER_CFLAGS": cflagWnoList
             }
         },
         "targets": [
             {
-                "cflags": cflagWnoList,
                 "defines": [
                     "SRC_SQLITE_BASE_C2",
                     "SRC_ZLIB_C2"
                 ],
+                "msvs_settings": {
+                    "VCCLCompilerTool": {
+                        "WarnAsError": 1,
+                        "WarningLevel": 2
+                    }
+                },
                 "sources": [
                     "sqlmath_external_sqlite.c",
                     "sqlmath_external_zlib.c"
                 ],
                 "target_name": "SRC_SQLITE_BASE",
-                "type": "static_library",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagWnoList
-                }
+                "type": "static_library"
             },
             {
+                "cflags": cflagWallList,
                 "defines": [
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
@@ -379,9 +382,13 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     "sqlmath_custom.c"
                 ],
                 "target_name": "SRC_SQLMATH_CUSTOM",
-                "type": "static_library"
+                "type": "static_library",
+                "xcode_settings": {
+                    "OTHER_CFLAGS": cflagWallList
+                }
             },
             {
+                "cflags": cflagWallList,
                 "defines": [
                     "SRC_SQLMATH_NODEJS_C2"
                 ],
@@ -392,10 +399,12 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "sources": [
                     "sqlmath_base.c"
                 ],
-                "target_name": "binding"
+                "target_name": "binding",
+                "xcode_settings": {
+                    "OTHER_CFLAGS": cflagWallList
+                }
             },
             {
-                "cflags": cflagWnoList,
                 "defines": [
                     "SRC_SQLITE_SHELL_C2"
                 ],
@@ -407,10 +416,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     "sqlmath_external_sqlite.c"
                 ],
                 "target_name": "shell",
-                "type": "executable",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagWnoList
-                }
+                "type": "executable"
             }
         ]
     }, undefined, 4) + "\n");
