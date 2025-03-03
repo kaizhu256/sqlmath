@@ -122,7 +122,7 @@ let {
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
-let version = "v2025.2.1-beta";
+let version = "v2025.2.28";
 
 async function assertErrorThrownAsync(asyncFunc, regexp) {
 
@@ -345,7 +345,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "WarnAsError": 1,
-                    "WarningLevel": 4
+                    "WarningLevel": 2
                 }
             },
             "xcode_settings": {
@@ -358,12 +358,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     "SRC_SQLITE_BASE_C2",
                     "SRC_ZLIB_C2"
                 ],
-                "msvs_settings": {
-                    "VCCLCompilerTool": {
-                        "WarnAsError": 1,
-                        "WarningLevel": 2
-                    }
-                },
                 "sources": [
                     "sqlmath_external_sqlite.c",
                     "sqlmath_external_zlib.c"
@@ -377,6 +371,12 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
                 ],
+                "msvs_settings": {
+                    "VCCLCompilerTool": {
+                        "WarnAsError": 1,
+                        "WarningLevel": 4
+                    }
+                },
                 "sources": [
                     "sqlmath_base.c",
                     "sqlmath_custom.c"
@@ -396,6 +396,12 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     "SRC_SQLITE_BASE",
                     "SRC_SQLMATH_CUSTOM"
                 ],
+                "msvs_settings": {
+                    "VCCLCompilerTool": {
+                        "WarnAsError": 1,
+                        "WarningLevel": 4
+                    }
+                },
                 "sources": [
                     "sqlmath_base.c"
                 ],
