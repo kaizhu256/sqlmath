@@ -82,9 +82,6 @@ typedef struct ArrowArray {
 static void *lgbm_library = NULL;
 
 
-#endif                          // SRC_SQLMATH_BASE_H3
-
-
 // *INDENT-OFF*
 /*jslint-disable*/
 /*
@@ -173,14 +170,14 @@ shRollupFetch
         },
         {
             "comment": true,
-            "header": "\n#if defined(SRC_SQLMATH_NODEJS_C2) && !defined(SQLMATH_NODEJS_H3)\n#define SQLMATH_NODEJS_H3\n",
+            "header": "\n#if defined(SRC_SQLMATH_NODEJS_C2)\n",
             "url": "https://github.com/nodejs/node/blob/v10.22.1/LICENSE"
         },
         {
             "url": "https://github.com/nodejs/node/blob/v10.22.1/src/node_api_types.h"
         },
         {
-            "footer": "\n#endif // SQLMATH_NODEJS_H3\n",
+            "footer": "\n#endif // SRC_SQLMATH_NODEJS_C2\n",
             "replaceList": [
                 {
                     "aa": "^#include \"node_api_types.h\"",
@@ -2770,8 +2767,7 @@ committed 2020-09-08T23:55:04Z
 file https://github.com/nodejs/node/blob/v10.22.1/LICENSE
 */
 
-#if defined(SRC_SQLMATH_NODEJS_C2) && !defined(SQLMATH_NODEJS_H3)
-#define SQLMATH_NODEJS_H3
+#if defined(SRC_SQLMATH_NODEJS_C2)
 /*
 Node.js is licensed for use as follows:
 
@@ -5080,7 +5076,7 @@ napi_is_detached_arraybuffer(napi_env env,
 EXTERN_C_END
 
 #endif  // SRC_NODE_API_H_
-#endif // SQLMATH_NODEJS_H3
+#endif // SRC_SQLMATH_NODEJS_C2
 
 
 /*
@@ -5090,3 +5086,4 @@ file none
 
 
 // *INDENT-ON*
+#endif                          // SRC_SQLMATH_BASE_H3

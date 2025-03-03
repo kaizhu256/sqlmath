@@ -513,7 +513,6 @@ SQLMATH_API double sqlite3_value_double_or_prev(
     sqlite3_value * arg,
     double *previous
 );
-#endif                          // SRC_SQLMATH_H2
 /*
 file sqlmath_h - end
 */
@@ -5098,3 +5097,4 @@ PyMODINIT_FUNC PyInit__sqlmath(
 /*
 file sqlmath_python - end
 */
+#endif                          // SRC_SQLMATH_H2
