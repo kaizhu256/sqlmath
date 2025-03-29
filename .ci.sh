@@ -517,7 +517,7 @@ shSqlmathUpdate() {(set -e
         then
             for URL in \
 https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz \
-https://www.sqlite.org/2024/sqlite-autoconf-3470200.tar.gz
+https://www.sqlite.org/2025/sqlite-autoconf-3470200.tar.gz
             do
                 curl -L "$URL" | tar -xz
             done
