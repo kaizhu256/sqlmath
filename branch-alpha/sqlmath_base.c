@@ -314,7 +314,7 @@ typedef struct Doublewin {
     //
     double ncol;                // number of columns
     double waa;                 // window-position-left
-    double wnn;                 // number of window elements
+    double wnn;                 // window-mode
 } Doublewin;
 SQLMATH_API void doublewinAggfree(
     Doublewin ** dblwinAgg
@@ -3050,7 +3050,7 @@ SQLMATH_FUNC static void sql3_win_avg1_inverse(
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
     if (!dblwin->wnn) {
-        dblwin->wnn = dblwin->nbody;
+        dblwin->wnn = 1;
     }
 }
 
@@ -3262,7 +3262,7 @@ typedef struct AggStdev {
     double mxx;                 // x-average
     double nnn;                 // number of elements
     double vxx;                 // x-variance.p
-    double wnn;                 // number of window elements
+    double wnn;                 // window-mode
     double xx0;                 // x-trailing
 } AggStdev;
 
@@ -3299,7 +3299,7 @@ SQLMATH_FUNC static void sql3_stdev_inverse(
     SQLITE3_AGGREGATE_CONTEXT(AggStdev);
     // agg - welford - increment agg->vxx
     if (sqlite3_value_numeric_type(argv[0]) != SQLITE_NULL) {
-        agg->wnn = agg->nnn;
+        agg->wnn = 1;
         agg->xx0 = sqlite3_value_double(argv[0]);
     }
 }
@@ -3537,7 +3537,7 @@ SQLMATH_FUNC static void sql3_win_ema1_inverse(
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
     if (!dblwin->wnn) {
-        dblwin->wnn = dblwin->nbody;
+        dblwin->wnn = 1;
     }
 }
 
@@ -3671,7 +3671,7 @@ SQLMATH_FUNC static void sql3_win_quantile1_inverse(
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
     if (!dblwin->wnn) {
-        dblwin->wnn = dblwin->nbody;
+        dblwin->wnn = 1;
     }
     // dblwin - inverse
     const int ncol = argc / 2;
@@ -3821,7 +3821,7 @@ typedef struct WinSinefit {
     double vyy;                 // y-variance.p
     //
     double wbb;                 // window-position-right
-    double wnn;                 // number of window elements
+    double wnn;                 // window-mode
     //
     double xx0;                 // x-trailing
     double xx1;                 // x-current
@@ -3831,6 +3831,79 @@ typedef struct WinSinefit {
 } WinSinefit;
 static const int WIN_SINEFIT_N = sizeof(WinSinefit) / sizeof(double);
 static const int WIN_SINEFIT_STEP = 3 + 0;
+// static const int WIN_SINEFIT_STEP = 3 + 2;
+
+static void winSinefitDft(
+    WinSinefit * wsf,
+    double *xxyy,
+    const int wbb,
+    const int nbody,
+    const int ncol
+) {
+// This function will calculate running sliding-discrete-fourier-transform as:
+//     DFTn(tt+1) = (DFTn(tt) - dft(tt) + dft(tt+nnn)) * e
+    UNUSED_PARAMETER(wsf);
+    UNUSED_PARAMETER(xxyy);
+    UNUSED_PARAMETER(wbb);
+    UNUSED_PARAMETER(nbody);
+    UNUSED_PARAMETER(ncol);
+}
+
+static void winSinefitLnr(
+    WinSinefit * wsf,
+    double *xxyy,
+    const int wbb
+) {
+// This function will calculate running simple-linear-regression as:
+//     yy = laa + lbb*xx
+    const double invn0 = 1.0 / wsf->nnn;
+    const double xx = wsf->xx1;
+    const double yy = wsf->yy1;
+    double mxx = wsf->mxx;
+    double myy = wsf->myy;
+    double vxx = wsf->vxx;
+    double vxy = wsf->vxy;
+    double vyy = wsf->vyy;
+    if (wsf->wnn) {
+        // calculate running lnr - window
+        const double xx0 = wsf->xx0;
+        const double yy0 = wsf->yy0;
+        const double dx = xx - xx0;
+        const double dy = yy - yy0;
+        vxx += (xx * xx - xx0 * xx0) - dx * (dx * invn0 + 2 * mxx);
+        vyy += (yy * yy - yy0 * yy0) - dy * (dy * invn0 + 2 * myy);
+        vxy += (xx * yy - xx0 * yy0) - dx * myy - dy * (dx * invn0 + mxx);
+        mxx += dx * invn0;
+        myy += dy * invn0;
+    } else {
+        // calculate running lnr - welford
+        const double dx = xx - mxx;
+        const double dy = yy - myy;
+        // welford - increment vxx
+        mxx += dx * invn0;
+        vxx += dx * (xx - mxx);
+        // welford - increment vyy
+        myy += dy * invn0;
+        vyy += dy * (yy - myy);
+        // welford - increment vxy
+        vxy += dy * (xx - mxx);
+    }
+    // calculate lnr - laa, lbb
+    const double lbb = vxy / vxx;
+    const double laa = myy - lbb * mxx;
+    const double rr = yy - (laa + lbb * xx);
+    // wsf - save
+    wsf->laa = laa;
+    wsf->lbb = lbb;
+    wsf->mxx = mxx;
+    wsf->myy = myy;
+    wsf->rr1 = rr;
+    wsf->vxx = vxx;
+    wsf->vxy = vxy;
+    wsf->vyy = vyy;
+    // save rr1 in window
+    xxyy[wbb + 2] = isfinite(rr) ? rr : 0;
+}
 
 static void winSinefitSnr(
     WinSinefit * wsf,
@@ -4031,62 +4104,6 @@ static void winSinefitSnr(
     wsf->sww = sww;
 }
 
-static void winSinefitLnr(
-    WinSinefit * wsf,
-    double *xxyy,
-    const int wbb
-) {
-// This function will calculate running simple-linear-regression as:
-//     yy = laa + lbb*xx
-    const double invn0 = 1.0 / wsf->nnn;
-    const double xx = wsf->xx1;
-    const double yy = wsf->yy1;
-    double mxx = wsf->mxx;
-    double myy = wsf->myy;
-    double vxx = wsf->vxx;
-    double vxy = wsf->vxy;
-    double vyy = wsf->vyy;
-    if (wsf->wnn) {
-        // calculate running lnr - window
-        const double xx0 = wsf->xx0;
-        const double yy0 = wsf->yy0;
-        const double dx = xx - xx0;
-        const double dy = yy - yy0;
-        vxx += (xx * xx - xx0 * xx0) - dx * (dx * invn0 + 2 * mxx);
-        vyy += (yy * yy - yy0 * yy0) - dy * (dy * invn0 + 2 * myy);
-        vxy += (xx * yy - xx0 * yy0) - dx * myy - dy * (dx * invn0 + mxx);
-        mxx += dx * invn0;
-        myy += dy * invn0;
-    } else {
-        // calculate running lnr - welford
-        const double dx = xx - mxx;
-        const double dy = yy - myy;
-        // welford - increment vxx
-        mxx += dx * invn0;
-        vxx += dx * (xx - mxx);
-        // welford - increment vyy
-        myy += dy * invn0;
-        vyy += dy * (yy - myy);
-        // welford - increment vxy
-        vxy += dy * (xx - mxx);
-    }
-    // calculate lnr - laa, lbb
-    const double lbb = vxy / vxx;
-    const double laa = myy - lbb * mxx;
-    const double rr = yy - (laa + lbb * xx);
-    // wsf - save
-    wsf->laa = laa;
-    wsf->lbb = lbb;
-    wsf->mxx = mxx;
-    wsf->myy = myy;
-    wsf->rr1 = rr;
-    wsf->vxx = vxx;
-    wsf->vxy = vxy;
-    wsf->vyy = vyy;
-    // save rr1 in window
-    xxyy[wbb + 2] = isfinite(rr) ? rr : 0;
-}
-
 SQLMATH_FUNC static void sql3_win_sinefit2_value(
     sqlite3_context * context
 ) {
@@ -4132,7 +4149,7 @@ SQLMATH_FUNC static void sql3_win_sinefit2_inverse(
     // dblwin - init
     DOUBLEWIN_AGGREGATE_CONTEXT(0);
     if (!dblwin->wnn) {
-        dblwin->wnn = dblwin->nbody;
+        dblwin->wnn = 1;
     }
 }
 
@@ -4200,6 +4217,8 @@ static void sql3_win_sinefit2_step(
         winSinefitLnr(wsf, xxyy, wbb);
         // dblwin - calculate snr
         if (modeSnr) {
+            winSinefitDft(wsf, xxyy, wbb, (int) dblwin->nbody,
+                (int) dblwin->ncol);
             winSinefitSnr(wsf, xxyy, wbb, (int) dblwin->nbody,
                 (int) dblwin->ncol);
         }
@@ -4424,6 +4443,7 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         // dblwin - calculate lnr
         winSinefitLnr(wsf, xxyy, wbb);
         // dblwin - calculate snr
+        winSinefitDft(wsf, xxyy, wbb, nbody, ncol);
         winSinefitSnr(wsf, xxyy, wbb, nbody, ncol);
         // increment counter
         argv += 2;
