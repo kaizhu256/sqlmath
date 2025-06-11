@@ -625,6 +625,9 @@ jstestDescribe((
             filename: ":memory:"
         });
         // test null-case handling-behavior
+        dbExecAsync({
+            modeNoop: true
+        });
         assertErrorThrownAsync(function () {
             return dbExecAsync({
                 db,
