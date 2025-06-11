@@ -724,6 +724,7 @@ function dbExecAndReturnLastValue({
 async function dbExecAsync({
     bindList = [],
     db,
+    modeNoop,
     responseType,
     sql
 }) {
@@ -735,6 +736,9 @@ async function dbExecAsync({
     let bufi = [0];
     let referenceList = [];
     let result;
+    if (modeNoop) {
+        return;
+    }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
             baton = jsbatonSetValue(baton, undefined, `:${key}\u0000`);
