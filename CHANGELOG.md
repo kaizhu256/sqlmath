@@ -6,7 +6,7 @@
 - none
 
 # v2025.7.1-beta
-- sqlite - Upgrade to sqlite-v3.50.3.
+- sqlite - Upgrade to sqlite-v3.50.4.
 - python - Add support for PEP 703 – Making the Global Interpreter Lock Optional in CPython.
 
 # v2025.6.28
