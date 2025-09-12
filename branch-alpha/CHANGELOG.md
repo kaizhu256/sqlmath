@@ -5,6 +5,9 @@
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
 
+# v2025.9.1-beta
+- sqlmath - Update function win_sinefit() to allow outputting prm grr, mrr, vrr.
+
 # v2025.8.30
 - sqlite - Upgrade to sqlite-v3.50.4.
 - python - Add support for PEP 703 – Making the Global Interpreter Lock Optional in CPython.

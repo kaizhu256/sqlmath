@@ -4311,6 +4311,12 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
             return;
         }
     }
+    // gaussian-normalized r-value
+    if (strcmp(key, "grr") == 0) {
+        sqlite3_result_double_or_null(context,  //
+            (wsf->rr1 - wsf->mrr) * sqrt((wsf->nnn - 1) / wsf->vrr));
+        return;
+    }
     // gaussian-normalized y-value
     if (strcmp(key, "gyy") == 0) {
         sqlite3_result_double_or_null(context,  //
