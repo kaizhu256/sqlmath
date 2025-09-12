@@ -3824,6 +3824,7 @@ typedef struct WinSinefit {
     //
     double wbb;                 // window-position-right
     double wnn;                 // window-mode
+    double wrr;                 // window-mode-r
     //
     double xx0;                 // x-trailing
     double xx1;                 // x-current
@@ -3859,7 +3860,6 @@ static void winSinefitLnr(
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
     const double invn0 = 1.0 / wsf->nnn;
-    const double invn2 = 1.0 / (wsf->nnn - 1);
     const double xx = wsf->xx1;
     const double yy = wsf->yy1;
     double mrr = wsf->mrr;
@@ -3899,21 +3899,35 @@ static void winSinefitLnr(
     const double laa = myy - lbb * mxx;
     const double rr = yy - (laa + lbb * xx);
     // calculate lnr - mrr, vrr
-    if (wsf->nnn == 2) {
+    double invr = 0;
+    switch ((int) wsf->nnn) {
+    case 0:
+    case 1:
+    case 2:
+        invr = NAN;
+        break;
+    case 3:
         mrr = 0;
         vrr = 0;
+        invr = 1;
+        break;
+    default:
+        if (wsf->wnn && wsf->wrr <= 2) {
+            wsf->wrr += 1;
+        }
+        invr = 1.0 / (wsf->nnn - 2 + wsf->wrr);
     }
-    if (wsf->wnn) {
+    if (wsf->wnn && wsf->wrr == 2) {
         // calculate running lnr - window
         const double rr0 = wsf->rr0;
         const double dr = rr - rr0;
-        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn2 + 2 * mrr);
-        mrr += dr * invn2;
+        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn0 + 2 * mrr);
+        mrr += dr * invn0;
     } else {
         // calculate running lnr - welford
         const double dr = rr - mrr;
         // welford - increment vrr
-        mrr += dr * invn2;
+        mrr += dr * invr;
         vrr += dr * (rr - mrr);
     }
     // wsf - save
@@ -4304,6 +4318,7 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         //
         "wbb",
         "wnn",
+        "wrr",
         //
         "xx0",
         "xx1",
