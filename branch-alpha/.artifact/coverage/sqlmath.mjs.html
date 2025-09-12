@@ -1776,14 +1776,14 @@ body {
 <pre><span class="lineno"><a href="#line_1618" id="line_1618"> 1618.</a></span><span class="count        ">    264</span><span>    return val;</span></pre>
 <pre><span class="lineno"><a href="#line_1619" id="line_1619"> 1619.</a></span><span class="count        ">    264</span><span>}</span></pre>
 <pre><span class="lineno"><a href="#line_1620" id="line_1620"> 1620.</a></span><span class="count        ">      1</span><span></span></pre>
-<pre><span class="lineno"><a href="#line_1621" id="line_1621"> 1621.</a></span><span class="count        ">  42584</span><span>function objectDeepCopyWithKeysSorted(obj) {</span></pre>
-<pre><span class="lineno"><a href="#line_1622" id="line_1622"> 1622.</a></span><span class="count        ">  42584</span><span></span></pre>
-<pre><span class="lineno"><a href="#line_1623" id="line_1623"> 1623.</a></span><span class="count        ">  42584</span><span>// This function will recursively deep-copy &lt;obj&gt; with keys sorted.</span></pre>
-<pre><span class="lineno"><a href="#line_1624" id="line_1624"> 1624.</a></span><span class="count        ">  42584</span><span></span></pre>
-<pre><span class="lineno"><a href="#line_1625" id="line_1625"> 1625.</a></span><span class="count        ">  42584</span><span>    let sorted;</span></pre>
-<pre><span class="lineno"><a href="#line_1626" id="line_1626"> 1626.</a></span><span class="count        ">  28136</span><span>    if (typeof obj !== "object" || !obj) {</span></pre>
-<pre><span class="lineno"><a href="#line_1627" id="line_1627"> 1627.</a></span><span class="count        ">  28136</span><span>        return obj;</span></pre>
-<pre><span class="lineno"><a href="#line_1628" id="line_1628"> 1628.</a></span><span class="count        ">  28136</span><span>    }</span></pre>
+<pre><span class="lineno"><a href="#line_1621" id="line_1621"> 1621.</a></span><span class="count        ">  42644</span><span>function objectDeepCopyWithKeysSorted(obj) {</span></pre>
+<pre><span class="lineno"><a href="#line_1622" id="line_1622"> 1622.</a></span><span class="count        ">  42644</span><span></span></pre>
+<pre><span class="lineno"><a href="#line_1623" id="line_1623"> 1623.</a></span><span class="count        ">  42644</span><span>// This function will recursively deep-copy &lt;obj&gt; with keys sorted.</span></pre>
+<pre><span class="lineno"><a href="#line_1624" id="line_1624"> 1624.</a></span><span class="count        ">  42644</span><span></span></pre>
+<pre><span class="lineno"><a href="#line_1625" id="line_1625"> 1625.</a></span><span class="count        ">  42644</span><span>    let sorted;</span></pre>
+<pre><span class="lineno"><a href="#line_1626" id="line_1626"> 1626.</a></span><span class="count        ">  28196</span><span>    if (typeof obj !== "object" || !obj) {</span></pre>
+<pre><span class="lineno"><a href="#line_1627" id="line_1627"> 1627.</a></span><span class="count        ">  28196</span><span>        return obj;</span></pre>
+<pre><span class="lineno"><a href="#line_1628" id="line_1628"> 1628.</a></span><span class="count        ">  28196</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_1629" id="line_1629"> 1629.</a></span><span class="count        ">  14448</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_1630" id="line_1630"> 1630.</a></span><span class="count        ">  14448</span><span>// Recursively deep-copy list with child-keys sorted.</span></pre>
 <pre><span class="lineno"><a href="#line_1631" id="line_1631"> 1631.</a></span><span class="count        ">  14448</span><span></span></pre>
@@ -1794,9 +1794,9 @@ body {
 <pre><span class="lineno"><a href="#line_1636" id="line_1636"> 1636.</a></span><span class="count        ">  12246</span><span>// Recursively deep-copy obj with keys sorted.</span></pre>
 <pre><span class="lineno"><a href="#line_1637" id="line_1637"> 1637.</a></span><span class="count        ">  12246</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_1638" id="line_1638"> 1638.</a></span><span class="count        ">  12246</span><span>    sorted = Object.create(null);</span></pre>
-<pre><span class="lineno"><a href="#line_1639" id="line_1639"> 1639.</a></span><span class="count        ">  13526</span><span>    Object.keys(obj).sort().forEach(function (key) {</span></pre>
-<pre><span class="lineno"><a href="#line_1640" id="line_1640"> 1640.</a></span><span class="count        ">  13526</span><span>        sorted[key] = objectDeepCopyWithKeysSorted(obj[key]);</span></pre>
-<pre><span class="lineno"><a href="#line_1641" id="line_1641"> 1641.</a></span><span class="count        ">  13526</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_1639" id="line_1639"> 1639.</a></span><span class="count        ">  13586</span><span>    Object.keys(obj).sort().forEach(function (key) {</span></pre>
+<pre><span class="lineno"><a href="#line_1640" id="line_1640"> 1640.</a></span><span class="count        ">  13586</span><span>        sorted[key] = objectDeepCopyWithKeysSorted(obj[key]);</span></pre>
+<pre><span class="lineno"><a href="#line_1641" id="line_1641"> 1641.</a></span><span class="count        ">  13586</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_1642" id="line_1642"> 1642.</a></span><span class="count        ">  12246</span><span>    return sorted;</span></pre>
 <pre><span class="lineno"><a href="#line_1643" id="line_1643"> 1643.</a></span><span class="count        ">  12246</span><span>}</span></pre>
 <pre><span class="lineno"><a href="#line_1644" id="line_1644"> 1644.</a></span><span class="count        ">      1</span><span></span></pre>
