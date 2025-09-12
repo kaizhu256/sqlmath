@@ -3804,6 +3804,7 @@ typedef struct WinSinefit {
     double laa;                 // linest y-intercept
     double lbb;                 // linest slope
     //
+    double mrr;                 // r-average
     double mxx;                 // x-average
     double myy;                 // y-average
     double nnn;                 // number of elements
@@ -3816,6 +3817,7 @@ typedef struct WinSinefit {
     double spp;                 // sine phase
     double sww;                 // sine angular-frequency
     //
+    double vrr;                 // r-variance.p
     double vxx;                 // x-variance.p
     double vxy;                 // xy-covariance.p
     double vyy;                 // y-variance.p
@@ -3859,11 +3861,14 @@ static void winSinefitLnr(
     const double invn0 = 1.0 / wsf->nnn;
     const double xx = wsf->xx1;
     const double yy = wsf->yy1;
+    double mrr = wsf->mrr;
     double mxx = wsf->mxx;
     double myy = wsf->myy;
+    double vrr = wsf->vrr;
     double vxx = wsf->vxx;
     double vxy = wsf->vxy;
     double vyy = wsf->vyy;
+    // calculate lnr - myy, vyy
     if (wsf->wnn) {
         // calculate running lnr - window
         const double xx0 = wsf->xx0;
@@ -3888,16 +3893,32 @@ static void winSinefitLnr(
         // welford - increment vxy
         vxy += dy * (xx - mxx);
     }
-    // calculate lnr - laa, lbb
+    // calculate lnr - laa, lbb, rr
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
     const double rr = yy - (laa + lbb * xx);
+    // calculate lnr - mrr, vrr
+    if (wsf->wnn) {
+        // calculate running lnr - window
+        const double rr0 = wsf->rr0;
+        const double dr = rr - rr0;
+        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn0 + 2 * mrr);
+        mrr += dr * invn0;
+    } else {
+        // calculate running lnr - welford
+        const double dr = rr - mrr;
+        // welford - increment vrr
+        mrr += dr * invn0;
+        vrr += dr * (rr - mrr);
+    }
     // wsf - save
     wsf->laa = laa;
     wsf->lbb = lbb;
+    wsf->mrr = mrr;
     wsf->mxx = mxx;
     wsf->myy = myy;
     wsf->rr1 = rr;
+    wsf->vrr = vrr;
     wsf->vxx = vxx;
     wsf->vxy = vxy;
     wsf->vyy = vyy;
@@ -4257,6 +4278,7 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         "laa",
         "lbb",
         //
+        "mrr",
         "mxx",
         "myy",
         "nnn",
@@ -4269,6 +4291,7 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         "spp",
         "sww",
         //
+        "vrr",
         "vxx",
         "vxy",
         "vyy",
@@ -4287,6 +4310,12 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
             sqlite3_result_double_or_null(context, ((double *) wsf)[ii]);
             return;
         }
+    }
+    // gaussian-normalized r-value
+    if (strcmp(key, "grr") == 0) {
+        sqlite3_result_double_or_null(context,  //
+            (wsf->rr1 - wsf->mrr) * sqrt((wsf->nnn - 1) / wsf->vrr));
+        return;
     }
     // gaussian-normalized y-value
     if (strcmp(key, "gyy") == 0) {
