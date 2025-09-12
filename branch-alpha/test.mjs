@@ -2972,7 +2972,9 @@ SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;
     ROUND(sinefit_extract(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},
     ROUND(sinefit_extract(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},
     ROUND(sinefit_extract(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},
+    ROUND(sinefit_extract(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},
     ROUND(sinefit_extract(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},
+    ROUND(sinefit_extract(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},
     ROUND(sinefit_extract(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}
             `);
         }
@@ -3116,9 +3118,15 @@ SELECT
                 rr11,
                 rr12,
                 rr13,
+                xx01,
+                xx02,
+                xx03,
                 xx11,
                 xx12,
                 xx13,
+                yy01,
+                yy02,
+                yy03,
                 yy11,
                 yy12,
                 yy13
@@ -3141,7 +3149,9 @@ SELECT
                     "nnn": nnn1,
                     "rr0": rr01,
                     "rr1": rr11,
+                    "xx0": xx01,
                     "xx1": xx11,
+                    "yy0": yy01,
                     "yy1": yy11
                 };
                 obj2 = {
@@ -3159,7 +3169,9 @@ SELECT
                     "nnn": nnn2,
                     "rr0": rr02,
                     "rr1": rr12,
+                    "xx0": xx02,
                     "xx1": xx12,
+                    "yy0": yy02,
                     "yy1": yy12
                 };
                 obj3 = {
@@ -3177,7 +3189,9 @@ SELECT
                     "nnn": nnn3,
                     "rr0": rr03,
                     "rr1": rr13,
+                    "xx0": xx03,
                     "xx1": xx13,
+                    "yy0": yy03,
                     "yy1": yy13
                 };
                 switch (list.length - ii) {
@@ -3213,7 +3227,9 @@ SELECT
                 "nnn": 1,
                 "rr0": 0,
                 "rr1": null,
+                "xx0": 0,
                 "xx1": 2,
+                "yy0": 0,
                 "yy1": 0
             },
             {
@@ -3231,7 +3247,9 @@ SELECT
                 "nnn": 2,
                 "rr0": 0,
                 "rr1": null,
+                "xx0": 2,
                 "xx1": 2,
+                "yy0": 0,
                 "yy1": 1
             },
             {
@@ -3249,7 +3267,9 @@ SELECT
                 "nnn": 3,
                 "rr0": 0,
                 "rr1": 0,
+                "xx0": 2,
                 "xx1": 3,
+                "yy0": 0,
                 "yy1": 3
             },
             {
@@ -3267,7 +3287,9 @@ SELECT
                 "nnn": 4,
                 "rr0": 0,
                 "rr1": -0.27272727,
+                "xx0": 2,
                 "xx1": 4,
+                "yy0": 0,
                 "yy1": 4
             },
             {
@@ -3285,7 +3307,9 @@ SELECT
                 "nnn": 5,
                 "rr0": 0,
                 "rr1": -0.35294118,
+                "xx0": 2,
                 "xx1": 5,
+                "yy0": 0,
                 "yy1": 5
             },
             {
@@ -3303,7 +3327,9 @@ SELECT
                 "nnn": 6,
                 "rr0": 0,
                 "rr1": 0.38596491,
+                "xx0": 2,
                 "xx1": 5,
+                "yy0": 0,
                 "yy1": 6
             },
             {
@@ -3321,7 +3347,9 @@ SELECT
                 "nnn": 7,
                 "rr0": 0,
                 "rr1": 0.275,
+                "xx0": 2,
                 "xx1": 5,
+                "yy0": 0,
                 "yy1": 6
             },
             {
@@ -3339,7 +3367,9 @@ SELECT
                 "nnn": 8,
                 "rr0": 0,
                 "rr1": -0.25,
+                "xx0": 2,
                 "xx1": 6,
+                "yy0": 0,
                 "yy1": 7
             },
             {
@@ -3357,7 +3387,9 @@ SELECT
                 "nnn": 8,
                 "rr0": 0,
                 "rr1": -1.25,
+                "xx0": 2,
                 "xx1": 10,
+                "yy0": 0,
                 "yy1": 8
             },
             {
@@ -3375,7 +3407,9 @@ SELECT
                 "nnn": 8,
                 "rr0": -0.87387387,
                 "rr1": 1.15,
+                "xx0": 0,
                 "xx1": 2,
+                "yy0": 0,
                 "yy1": 5
             }
         ];
@@ -3458,7 +3492,9 @@ SELECT
                         "nnn": 10,
                         "rr0": 0,
                         "rr1": 2.52941176,
+                        "xx0": 2,
                         "xx1": 2,
+                        "yy0": 0,
                         "yy1": 5
                     }
                 );
@@ -3482,7 +3518,9 @@ SELECT
                     "nnn": 6,
                     "rr0": 0,
                     "rr1": -1.63694722,
+                    "xx0": 34,
                     "xx1": 51,
+                    "yy0": 5,
                     "yy1": 5
                 };
                 valActual = await dbExecAndReturnLastRow({
@@ -3526,7 +3564,9 @@ SELECT
                     "nnn": 8,
                     "rr0": 0,
                     "rr1": -3.5,
+                    "xx0": 2,
                     "xx1": 10,
+                    "yy0": 0,
                     "yy1": -1
                 },
                 valExpect3: {
@@ -3544,7 +3584,9 @@ SELECT
                     "nnn": 8,
                     "rr0": -3.79279279,
                     "rr1": -1.1,
+                    "xx0": 0,
                     "xx1": 2,
+                    "yy0": 0,
                     "yy1": 5
                 }
             }),
