@@ -3896,7 +3896,8 @@ static void winSinefitLnr(
     // calculate lnr - laa, lbb, rr
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
-    const double rr = yy - (laa + lbb * xx);
+    double rr = yy - (laa + lbb * xx);
+    rr = isfinite(rr) ? rr : 0;
     // calculate lnr - mrr, vrr
     if (wsf->wnn) {
         // calculate running lnr - window
@@ -3923,7 +3924,7 @@ static void winSinefitLnr(
     wsf->vxy = vxy;
     wsf->vyy = vyy;
     // save rr1 in window
-    xxyy[wbb + 2] = isfinite(rr) ? rr : 0;
+    xxyy[wbb + 2] = wsf->rr1;
 }
 
 static void winSinefitSnr(
