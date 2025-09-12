@@ -3897,27 +3897,10 @@ static void winSinefitLnr(
     // calculate lnr - laa, lbb, rr
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
-    const double rr = yy - (laa + lbb * xx);
+    double rr = yy - (laa + lbb * xx);
+    rr = isfinite(rr) ? rr : 0;
     // calculate lnr - mrr, vrr
-    double invr = 0;
-    switch ((int) wsf->nnn) {
-    case 0:
-    case 1:
-    case 2:
-        invr = NAN;
-        break;
-    case 3:
-        mrr = 0;
-        vrr = 0;
-        invr = 1;
-        break;
-    default:
-        if (wsf->wnn && wsf->wrr <= 2) {
-            wsf->wrr += 1;
-        }
-        invr = 1.0 / (wsf->nnn - 2 + wsf->wrr);
-    }
-    if (wsf->wnn && wsf->wrr == 2) {
+    if (wsf->wnn) {
         // calculate running lnr - window
         const double rr0 = wsf->rr0;
         const double dr = rr - rr0;
@@ -3927,7 +3910,7 @@ static void winSinefitLnr(
         // calculate running lnr - welford
         const double dr = rr - mrr;
         // welford - increment vrr
-        mrr += dr * invr;
+        mrr += dr * invn0;
         vrr += dr * (rr - mrr);
     }
     // wsf - save
@@ -3942,8 +3925,7 @@ static void winSinefitLnr(
     wsf->vxy = vxy;
     wsf->vyy = vyy;
     // save rr1 in window
-    //!! xxyy[wbb + 2] = rr;
-    xxyy[wbb + 2] = isfinite(rr) ? rr : 0;
+    xxyy[wbb + 2] = rr;
 }
 
 static void winSinefitSnr(
