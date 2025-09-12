@@ -3859,6 +3859,7 @@ static void winSinefitLnr(
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
     const double invn0 = 1.0 / wsf->nnn;
+    const double invn2 = 1.0 / (wsf->nnn - 1);
     const double xx = wsf->xx1;
     const double yy = wsf->yy1;
     double mrr = wsf->mrr;
@@ -3896,20 +3897,23 @@ static void winSinefitLnr(
     // calculate lnr - laa, lbb, rr
     const double lbb = vxy / vxx;
     const double laa = myy - lbb * mxx;
-    double rr = yy - (laa + lbb * xx);
-    rr = isfinite(rr) ? rr : 0;
+    const double rr = yy - (laa + lbb * xx);
     // calculate lnr - mrr, vrr
+    if (wsf->nnn == 2) {
+        mrr = 0;
+        vrr = 0;
+    }
     if (wsf->wnn) {
         // calculate running lnr - window
         const double rr0 = wsf->rr0;
         const double dr = rr - rr0;
-        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn0 + 2 * mrr);
-        mrr += dr * invn0;
+        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn2 + 2 * mrr);
+        mrr += dr * invn2;
     } else {
         // calculate running lnr - welford
         const double dr = rr - mrr;
         // welford - increment vrr
-        mrr += dr * invn0;
+        mrr += dr * invn2;
         vrr += dr * (rr - mrr);
     }
     // wsf - save
@@ -3924,7 +3928,8 @@ static void winSinefitLnr(
     wsf->vxy = vxy;
     wsf->vyy = vyy;
     // save rr1 in window
-    xxyy[wbb + 2] = wsf->rr1;
+    //!! xxyy[wbb + 2] = rr;
+    xxyy[wbb + 2] = isfinite(rr) ? rr : 0;
 }
 
 static void winSinefitSnr(
