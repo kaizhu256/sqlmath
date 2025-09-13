@@ -3800,6 +3800,10 @@ SQLMATH_FUNC static void sql3_win_quantile2_step(
 // SQLMATH_FUNC sql3_win_quantile2_func - end
 
 // SQLMATH_FUNC sql3_win_sinefit2_func - start
+#define WIN_SINEFIT_WSF_RR xxyy[wbb + 2]
+#define WIN_SINEFIT_WSF_XX xxyy[wbb + 0]
+#define WIN_SINEFIT_WSF_YY xxyy[wbb + 1]
+
 typedef struct WinSinefit {
     double laa;                 // linest y-intercept
     double lbb;                 // linest slope
@@ -4192,9 +4196,9 @@ static void sql3_win_sinefit2_step(
         // bugfix - Fix buffer-overlow, reading pointer past dblwin->nbody.
         if (dblwin->nbody) {
             xxyy = dblwin_body + ii * WIN_SINEFIT_STEP;
-            wsf->rr0 = xxyy[waa + 2];
             wsf->xx0 = xxyy[waa + 0];
             wsf->yy0 = xxyy[waa + 1];
+            wsf->rr0 = xxyy[waa + 2];
         }
         wsf->wbb = wbb;
         wsf->xx2 = xx2;
@@ -4217,7 +4221,7 @@ static void sql3_win_sinefit2_step(
         wsf->wnn = dblwin->wnn;
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        xxyy[wbb + 2] = wsf->rr1;
+        WIN_SINEFIT_WSF_RR = wsf->rr1;
         // dblwin - calculate snr
         if (modeSnr) {
             winSinefitSnr(wsf, xxyy, (int) dblwin->nbody, (int) dblwin->ncol);
@@ -4441,21 +4445,25 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     }
     for (int ii = 0; ii < ncol; ii += 1) {
         wsf->wnn = 1;
-        wsf->rr0 = xxyy[wbb + 2];
-        wsf->xx0 = xxyy[wbb + 0];
-        wsf->yy0 = xxyy[wbb + 1];
+        wsf->xx0 = WIN_SINEFIT_WSF_XX;
+        wsf->yy0 = WIN_SINEFIT_WSF_YY;
+        wsf->rr0 = WIN_SINEFIT_WSF_RR;
         sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
-        xxyy[wbb + 0] = wsf->xx1;
-        xxyy[wbb + 1] = wsf->yy1;
+        WIN_SINEFIT_WSF_XX = wsf->xx1;
+        WIN_SINEFIT_WSF_YY = wsf->yy1;
         // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xx1, wsf->yy1);
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        xxyy[wbb + 2] = wsf->rr1;
+        WIN_SINEFIT_WSF_RR = wsf->rr1;
         // dblwin - calculate snr
         if (1) {
             winSinefitSnr(wsf, xxyy, nbody, ncol);
         }
+        // restore state
+        WIN_SINEFIT_WSF_XX = wsf->xx0;
+        WIN_SINEFIT_WSF_YY = wsf->yy0;
+        WIN_SINEFIT_WSF_RR = wsf->rr0;
         // increment counter
         argv += 2;
         wsf += 1;
