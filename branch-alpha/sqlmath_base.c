@@ -4442,8 +4442,8 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     for (int ii = 0; ii < ncol; ii += 1) {
         wsf->wnn = 1;
         wsf->rr0 = xxyy[wbb + 2];
-        wsf->xx0 = wsf->xx1;
-        wsf->yy0 = wsf->yy1;
+        wsf->xx0 = xxyy[wbb + 0];
+        wsf->yy0 = xxyy[wbb + 1];
         sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
         xxyy[wbb + 0] = wsf->xx1;
