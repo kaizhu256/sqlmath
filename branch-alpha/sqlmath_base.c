@@ -4404,9 +4404,15 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
 ) {
 // This function will refit last datapoint.
     static const int argc0 = 1;
+    // copy argv[0]
+    sqlite3_value *blobCopy = sqlite3_value_dup(argv[0]);
+    if (blobCopy == NULL) {
+        sqlite3_result_error_nomem(context);
+        return;
+    }
     // validate argv
     const int ncol = (argc - argc0) / 2;
-    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(argv[0]);
+    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(blobCopy);
     if (argc < argc0 + 2 || argc != argc0 + ncol * 2) {
         goto catch_error;
     }
@@ -4416,9 +4422,10 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
             "sinefit_refitlast"
             " - 1st argument as sinefit-object does not have enough columns",
             -1);
+        sqlite3_value_free(blobCopy);
         return;
     }
-    const WinSinefit *blob0 = sqlite3_value_blob(argv[0]);
+    const WinSinefit *blob0 = sqlite3_value_blob(blobCopy);
     const int nbody = (int) blob0->nnn * ncol * WIN_SINEFIT_STEP;
     if (blob0->nnn <= 0
         || bytes != (ncol * WIN_SINEFIT_N + nbody) * sizeof(double)) {
@@ -4426,11 +4433,13 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
             "sinefit_refitlast"
             " - 1st argument as sinefit-object does not have enough columns",
             -1);
+        sqlite3_value_free(blobCopy);
         return;
     }
     // init wsf0
     WinSinefit *wsf0 = sqlite3_malloc(bytes);
     if (wsf0 == NULL) {
+        sqlite3_value_free(blobCopy);
         sqlite3_result_error_nomem(context);
         return;
     }
@@ -4460,10 +4469,6 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         if (1) {
             winSinefitSnr(wsf, xxyy, nbody, ncol);
         }
-        //!! // restore state
-        //!! WIN_SINEFIT_WSF_XX(wbb) = wsf->xx0;
-        //!! WIN_SINEFIT_WSF_YY(wbb) = wsf->yy0;
-        //!! WIN_SINEFIT_WSF_RR(wbb) = wsf->rr0;
         // increment counter
         argv += 2;
         wsf += 1;
@@ -4472,8 +4477,10 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     // dblwin - result
     doublearrayResult(context, (double *) wsf0, bytes / sizeof(double),
         sqlite3_free);
+    sqlite3_value_free(blobCopy);
     return;
   catch_error:
+    sqlite3_value_free(blobCopy);
     sqlite3_result_error(context, "sinefit_refitlast - invalid arguments",
         -1);
 }
