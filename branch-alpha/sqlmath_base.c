@@ -3800,9 +3800,9 @@ SQLMATH_FUNC static void sql3_win_quantile2_step(
 // SQLMATH_FUNC sql3_win_quantile2_func - end
 
 // SQLMATH_FUNC sql3_win_sinefit2_func - start
-#define WIN_SINEFIT_WSF_RR xxyy[wbb + 2]
-#define WIN_SINEFIT_WSF_XX xxyy[wbb + 0]
-#define WIN_SINEFIT_WSF_YY xxyy[wbb + 1]
+#define WIN_SINEFIT_WSF_RR(ii) (xxyy[ii + 2])
+#define WIN_SINEFIT_WSF_XX(ii) (xxyy[ii + 0])
+#define WIN_SINEFIT_WSF_YY(ii) (xxyy[ii + 1])
 
 typedef struct WinSinefit {
     double laa;                 // linest y-intercept
@@ -3963,11 +3963,11 @@ static void winSinefitSnr(
         // spp  = asin(sbb) = acos(scc)
         // spp  = atan(sbb/scc)
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = sww * xxyy[ii + 0];
+            tmp = sww * WIN_SINEFIT_WSF_XX(ii);
             const double sxx = cos(tmp);
             const double syy = sin(tmp);
             // Use de-trended residual.
-            const double szz = inva * xxyy[ii + 2];
+            const double szz = inva * WIN_SINEFIT_WSF_RR(ii);
             sumxx += sxx * sxx;
             sumxy += sxx * syy;
             sumxz += sxx * szz;
@@ -3991,14 +3991,14 @@ static void winSinefitSnr(
         double vrr1 = 0;        // r-variance.p
         double vrr2 = 0;        // r-variance.p
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = fmod(sww * xxyy[ii + 0], 2 * MATH_PI);
+            tmp = fmod(sww * WIN_SINEFIT_WSF_XX(ii), 2 * MATH_PI);
             // welford - increment vrr1
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp);
             dr = rr - mrr1;
             mrr1 += dr * invn0;
             vrr1 += dr * (rr - mrr1);
             // welford - increment vrr2
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp2);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp2);
             dr = rr - mrr2;
             mrr2 += dr * invn0;
             vrr2 += dr * (rr - mrr2);
@@ -4034,15 +4034,15 @@ static void winSinefitSnr(
         // hpw  = d^2/dpdw[y-sin(w*t+p)]^2 = 2*(cost*cost + sint*rr)*tt
         // hww  = d^2/dwdw[y-sin(w*t+p)]^2 = 2*(cost*cost + sint*rr)*tt*tt
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            const double tt = xxyy[ii + 0];
+            const double tt = WIN_SINEFIT_WSF_XX(ii);
             tmp = fmod(sww * tt, 2 * MATH_PI) + spp;
             const double cost = cos(tmp);
             const double sint = sin(tmp);
             // solve saa
             sxx += sint * sint;
-            sxy += sint * xxyy[ii + 2];
+            sxy += sint * WIN_SINEFIT_WSF_RR(ii);
             // solve spp, sww
-            const double rr = inva * xxyy[ii + 2] - sint;
+            const double rr = inva * WIN_SINEFIT_WSF_RR(ii) - sint;
             tmp = -cost * rr;
             gp += tmp;
             gw += tmp * tt;
@@ -4082,14 +4082,14 @@ static void winSinefitSnr(
         double vrr1 = 0;        // r-variance.p
         double vrr2 = 0;        // r-variance.p
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = fmod(sww * xxyy[ii + 0], 2 * MATH_PI);
+            tmp = fmod(sww * WIN_SINEFIT_WSF_XX(ii), 2 * MATH_PI);
             // welford - increment vrr1
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp);
             dr = rr - mrr1;
             mrr1 += dr * invn0;
             vrr1 += dr * (rr - mrr1);
             // welford - increment vrr2
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp2);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp2);
             dr = rr - mrr2;
             mrr2 += dr * invn0;
             vrr2 += dr * (rr - mrr2);
@@ -4196,9 +4196,9 @@ static void sql3_win_sinefit2_step(
         // bugfix - Fix buffer-overlow, reading pointer past dblwin->nbody.
         if (dblwin->nbody) {
             xxyy = dblwin_body + ii * WIN_SINEFIT_STEP;
-            wsf->xx0 = xxyy[waa + 0];
-            wsf->yy0 = xxyy[waa + 1];
-            wsf->rr0 = xxyy[waa + 2];
+            wsf->xx0 = WIN_SINEFIT_WSF_XX(waa);
+            wsf->yy0 = WIN_SINEFIT_WSF_YY(waa);
+            wsf->rr0 = WIN_SINEFIT_WSF_RR(waa);
         }
         wsf->wbb = wbb;
         wsf->xx2 = xx2;
@@ -4221,7 +4221,7 @@ static void sql3_win_sinefit2_step(
         wsf->wnn = dblwin->wnn;
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        WIN_SINEFIT_WSF_RR = wsf->rr1;
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
         // dblwin - calculate snr
         if (modeSnr) {
             winSinefitSnr(wsf, xxyy, (int) dblwin->nbody, (int) dblwin->ncol);
@@ -4445,25 +4445,25 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     }
     for (int ii = 0; ii < ncol; ii += 1) {
         wsf->wnn = 1;
-        wsf->xx0 = WIN_SINEFIT_WSF_XX;
-        wsf->yy0 = WIN_SINEFIT_WSF_YY;
-        wsf->rr0 = WIN_SINEFIT_WSF_RR;
+        wsf->xx0 = WIN_SINEFIT_WSF_XX(wbb);
+        wsf->yy0 = WIN_SINEFIT_WSF_YY(wbb);
+        wsf->rr0 = WIN_SINEFIT_WSF_RR(wbb);
         sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
-        WIN_SINEFIT_WSF_XX = wsf->xx1;
-        WIN_SINEFIT_WSF_YY = wsf->yy1;
+        WIN_SINEFIT_WSF_XX(wbb) = wsf->xx1;
+        WIN_SINEFIT_WSF_YY(wbb) = wsf->yy1;
         // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xx1, wsf->yy1);
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        WIN_SINEFIT_WSF_RR = wsf->rr1;
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
         // dblwin - calculate snr
         if (1) {
             winSinefitSnr(wsf, xxyy, nbody, ncol);
         }
-        // restore state
-        WIN_SINEFIT_WSF_XX = wsf->xx0;
-        WIN_SINEFIT_WSF_YY = wsf->yy0;
-        WIN_SINEFIT_WSF_RR = wsf->rr0;
+        //!! // restore state
+        //!! WIN_SINEFIT_WSF_XX(wbb) = wsf->xx0;
+        //!! WIN_SINEFIT_WSF_YY(wbb) = wsf->yy0;
+        //!! WIN_SINEFIT_WSF_RR(wbb) = wsf->rr0;
         // increment counter
         argv += 2;
         wsf += 1;
