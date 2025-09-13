@@ -2958,24 +2958,24 @@ SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;
         let valIn;
         function sqlSinefitExtractLnr(wsf, ii, suffix) {
             return (`
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'laa', 0), 8) AS laa${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'lbb', 0), 8) AS lbb${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'lee', 0), 8) AS lee${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'lxy', 0), 8) AS lxy${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'lyy', 0), 8) AS lyy${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'mee', 0), 8) AS mee${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'mrr', 0), 8) AS mrr${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'mxe', 0), 8) AS mxe${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},
-    ROUND(sinefit_extract(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'laa', 0), 8) AS laa${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lbb', 0), 8) AS lbb${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lee', 0), 8) AS lee${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lxy', 0), 8) AS lxy${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lyy', 0), 8) AS lyy${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mee', 0), 8) AS mee${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mrr', 0), 8) AS mrr${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxe', 0), 8) AS mxe${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}
             `);
         }
         async function test_win_sinefit2_aggregate({
@@ -3005,12 +3005,12 @@ CREATE TEMP TABLE __sinefit_win AS
     SELECT
         id2,
         __wsf,
-        sinefit_extract(__wsf, 0, 'xx1', 0) AS xx11,
-        sinefit_extract(__wsf, 0, 'yy1', 0) AS yy11,
-        sinefit_extract(__wsf, 8, 'xx1', 0) AS xx12,
-        sinefit_extract(__wsf, 8, 'yy1', 0) AS yy12,
-        sinefit_extract(__wsf, 9, 'xx1', 0) AS xx13,
-        sinefit_extract(__wsf, 9, 'yy1', 0) AS yy13
+        SINEFIT_EXTRACT(__wsf, 0, 'xx1', 0) AS xx11,
+        SINEFIT_EXTRACT(__wsf, 0, 'yy1', 0) AS yy11,
+        SINEFIT_EXTRACT(__wsf, 8, 'xx1', 0) AS xx12,
+        SINEFIT_EXTRACT(__wsf, 8, 'yy1', 0) AS yy12,
+        SINEFIT_EXTRACT(__wsf, 9, 'xx1', 0) AS xx13,
+        SINEFIT_EXTRACT(__wsf, 9, 'yy1', 0) AS yy13
     FROM (
         SELECT
             id2,
@@ -3039,7 +3039,7 @@ CREATE TEMP TABLE __sinefit_win AS
     );
 UPDATE __sinefit_win
     SET
-        __wsf = sinefit_refitlast(
+        __wsf = SINEFIT_REFITLAST(
             __wsf,
             0, 0,
             0, 0,
@@ -3055,7 +3055,7 @@ UPDATE __sinefit_win
     WHERE id2 = ${id4};
 UPDATE __sinefit_win
     SET
-        __wsf = sinefit_refitlast(
+        __wsf = SINEFIT_REFITLAST(
             __wsf,
             xx11, yy11,
             xx11, yy11,
@@ -3892,15 +3892,15 @@ UPDATE __sinefit_csv
     FROM (
         SELECT
             ii + 1 AS ii,
-            sinefit_extract(__wsf, 0, 'predict_lnr', ii + 1) AS predict_lnr
+            SINEFIT_EXTRACT(__wsf, 0, 'predict_lnr', ii + 1) AS predict_lnr
         FROM __sinefit_csv
     ) AS __join1
     WHERE __join1.ii = __sinefit_csv.ii;
 SELECT
         *,
-        sinefit_extract(__wsf, 0, 'saa', 0) AS saa,
-        sinefit_extract(__wsf, 0, 'spp', 0) AS spp,
-        sinefit_extract(__wsf, 0, 'sww', 0) AS sww,
+        SINEFIT_EXTRACT(__wsf, 0, 'saa', 0) AS saa,
+        SINEFIT_EXTRACT(__wsf, 0, 'spp', 0) AS spp,
+        SINEFIT_EXTRACT(__wsf, 0, 'sww', 0) AS sww,
         ${sqlSinefitExtractLnr("__wsf", 0, "")}
     FROM __sinefit_csv
     JOIN (
@@ -3912,7 +3912,7 @@ SELECT
     LEFT JOIN (
         SELECT
             ii + 1 AS ii,
-            sinefit_extract(__wsf, 0, 'predict_snr', ii + 1) AS predict_snr
+            SINEFIT_EXTRACT(__wsf, 0, 'predict_snr', ii + 1) AS predict_snr
         FROM __sinefit_csv
     ) USING (ii);
                     `)
