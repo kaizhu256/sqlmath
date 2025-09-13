@@ -3824,7 +3824,6 @@ typedef struct WinSinefit {
     //
     double wbb;                 // window-position-right
     double wnn;                 // window-mode
-    double wrr;                 // window-mode-r
     //
     double xx0;                 // x-trailing
     double xx1;                 // x-current
@@ -3906,6 +3905,8 @@ static void winSinefitLnr(
         const double dr = rr - rr0;
         vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn0 + 2 * mrr);
         mrr += dr * invn0;
+        // fprintf(stderr, "n=%d rr=%f r0=%f mr=%f\n", (int) wsf->nnn, rr, rr0,
+        //     mrr);
     } else {
         // calculate running lnr - welford
         const double dr = rr - mrr;
@@ -3926,6 +3927,7 @@ static void winSinefitLnr(
     wsf->vyy = vyy;
     // save rr1 in window
     xxyy[wbb + 2] = rr;
+    // fprintf(stderr, "wb=%d r=%f\n", (int) wbb, rr);
 }
 
 static void winSinefitSnr(
@@ -4300,7 +4302,6 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         //
         "wbb",
         "wnn",
-        "wrr",
         //
         "xx0",
         "xx1",
@@ -4472,6 +4473,7 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
         xxyy[wbb + 0] = wsf->xx1;
         xxyy[wbb + 1] = wsf->yy1;
+        // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xx1, wsf->yy1);
         // dblwin - calculate lnr
         winSinefitLnr(wsf, xxyy, wbb);
         // dblwin - calculate snr
