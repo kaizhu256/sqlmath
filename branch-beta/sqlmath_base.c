@@ -3800,6 +3800,10 @@ SQLMATH_FUNC static void sql3_win_quantile2_step(
 // SQLMATH_FUNC sql3_win_quantile2_func - end
 
 // SQLMATH_FUNC sql3_win_sinefit2_func - start
+#define WIN_SINEFIT_WSF_RR(ii) (xxyy[ii + 2])
+#define WIN_SINEFIT_WSF_XX(ii) (xxyy[ii + 0])
+#define WIN_SINEFIT_WSF_YY(ii) (xxyy[ii + 1])
+
 typedef struct WinSinefit {
     double laa;                 // linest y-intercept
     double lbb;                 // linest slope
@@ -3835,26 +3839,8 @@ static const int WIN_SINEFIT_N = sizeof(WinSinefit) / sizeof(double);
 static const int WIN_SINEFIT_STEP = 3 + 0;
 // static const int WIN_SINEFIT_STEP = 3 + 2;
 
-static void winSinefitDft(
-    WinSinefit * wsf,
-    double *xxyy,
-    const int wbb,
-    const int nbody,
-    const int ncol
-) {
-// This function will calculate running sliding-discrete-fourier-transform as:
-//     DFTn(tt+1) = (DFTn(tt) - dft(tt) + dft(tt+nnn)) * e
-    UNUSED_PARAMETER(wsf);
-    UNUSED_PARAMETER(xxyy);
-    UNUSED_PARAMETER(wbb);
-    UNUSED_PARAMETER(nbody);
-    UNUSED_PARAMETER(ncol);
-}
-
 static void winSinefitLnr(
-    WinSinefit * wsf,
-    double *xxyy,
-    const int wbb
+    WinSinefit * wsf
 ) {
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
@@ -3925,21 +3911,16 @@ static void winSinefitLnr(
     wsf->vxx = vxx;
     wsf->vxy = vxy;
     wsf->vyy = vyy;
-    // save rr1 in window
-    xxyy[wbb + 2] = rr;
-    // fprintf(stderr, "wb=%d r=%f\n", (int) wbb, rr);
 }
 
 static void winSinefitSnr(
     WinSinefit * wsf,
     double *xxyy,
-    const int wbb,
     const int nbody,
     const int ncol
 ) {
 // This function will calculate running sine-regression as:
 //     yy = saa*sin(sww*xx + spp)
-    UNUSED_PARAMETER(wbb);
     // declare var0
     const double nnn = nbody / (ncol * WIN_SINEFIT_STEP);
     const double invn0 = 1.0 / nnn;
@@ -3982,11 +3963,11 @@ static void winSinefitSnr(
         // spp  = asin(sbb) = acos(scc)
         // spp  = atan(sbb/scc)
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = sww * xxyy[ii + 0];
+            tmp = sww * WIN_SINEFIT_WSF_XX(ii);
             const double sxx = cos(tmp);
             const double syy = sin(tmp);
             // Use de-trended residual.
-            const double szz = inva * xxyy[ii + 2];
+            const double szz = inva * WIN_SINEFIT_WSF_RR(ii);
             sumxx += sxx * sxx;
             sumxy += sxx * syy;
             sumxz += sxx * szz;
@@ -4010,14 +3991,14 @@ static void winSinefitSnr(
         double vrr1 = 0;        // r-variance.p
         double vrr2 = 0;        // r-variance.p
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = fmod(sww * xxyy[ii + 0], 2 * MATH_PI);
+            tmp = fmod(sww * WIN_SINEFIT_WSF_XX(ii), 2 * MATH_PI);
             // welford - increment vrr1
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp);
             dr = rr - mrr1;
             mrr1 += dr * invn0;
             vrr1 += dr * (rr - mrr1);
             // welford - increment vrr2
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp2);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp2);
             dr = rr - mrr2;
             mrr2 += dr * invn0;
             vrr2 += dr * (rr - mrr2);
@@ -4053,15 +4034,15 @@ static void winSinefitSnr(
         // hpw  = d^2/dpdw[y-sin(w*t+p)]^2 = 2*(cost*cost + sint*rr)*tt
         // hww  = d^2/dwdw[y-sin(w*t+p)]^2 = 2*(cost*cost + sint*rr)*tt*tt
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            const double tt = xxyy[ii + 0];
+            const double tt = WIN_SINEFIT_WSF_XX(ii);
             tmp = fmod(sww * tt, 2 * MATH_PI) + spp;
             const double cost = cos(tmp);
             const double sint = sin(tmp);
             // solve saa
             sxx += sint * sint;
-            sxy += sint * xxyy[ii + 2];
+            sxy += sint * WIN_SINEFIT_WSF_RR(ii);
             // solve spp, sww
-            const double rr = inva * xxyy[ii + 2] - sint;
+            const double rr = inva * WIN_SINEFIT_WSF_RR(ii) - sint;
             tmp = -cost * rr;
             gp += tmp;
             gw += tmp * tt;
@@ -4101,14 +4082,14 @@ static void winSinefitSnr(
         double vrr1 = 0;        // r-variance.p
         double vrr2 = 0;        // r-variance.p
         for (int ii = 0; ii < nbody; ii += ncol * WIN_SINEFIT_STEP) {
-            tmp = fmod(sww * xxyy[ii + 0], 2 * MATH_PI);
+            tmp = fmod(sww * WIN_SINEFIT_WSF_XX(ii), 2 * MATH_PI);
             // welford - increment vrr1
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp);
             dr = rr - mrr1;
             mrr1 += dr * invn0;
             vrr1 += dr * (rr - mrr1);
             // welford - increment vrr2
-            rr = xxyy[ii + 2] - saa * sin(tmp + spp2);
+            rr = WIN_SINEFIT_WSF_RR(ii) - saa * sin(tmp + spp2);
             dr = rr - mrr2;
             mrr2 += dr * invn0;
             vrr2 += dr * (rr - mrr2);
@@ -4215,9 +4196,9 @@ static void sql3_win_sinefit2_step(
         // bugfix - Fix buffer-overlow, reading pointer past dblwin->nbody.
         if (dblwin->nbody) {
             xxyy = dblwin_body + ii * WIN_SINEFIT_STEP;
-            wsf->rr0 = xxyy[waa + 2];
-            wsf->xx0 = xxyy[waa + 0];
-            wsf->yy0 = xxyy[waa + 1];
+            wsf->xx0 = WIN_SINEFIT_WSF_XX(waa);
+            wsf->yy0 = WIN_SINEFIT_WSF_YY(waa);
+            wsf->rr0 = WIN_SINEFIT_WSF_RR(waa);
         }
         wsf->wbb = wbb;
         wsf->xx2 = xx2;
@@ -4239,13 +4220,11 @@ static void sql3_win_sinefit2_step(
         wsf->nnn = dblwin->nbody / (ncol * WIN_SINEFIT_STEP);
         wsf->wnn = dblwin->wnn;
         // dblwin - calculate lnr
-        winSinefitLnr(wsf, xxyy, wbb);
+        winSinefitLnr(wsf);
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
         // dblwin - calculate snr
         if (modeSnr) {
-            winSinefitDft(wsf, xxyy, wbb, (int) dblwin->nbody,
-                (int) dblwin->ncol);
-            winSinefitSnr(wsf, xxyy, wbb, (int) dblwin->nbody,
-                (int) dblwin->ncol);
+            winSinefitSnr(wsf, xxyy, (int) dblwin->nbody, (int) dblwin->ncol);
         }
         // increment counter
         wsf += 1;
@@ -4425,9 +4404,15 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
 ) {
 // This function will refit last datapoint.
     static const int argc0 = 1;
+    // copy argv[0]
+    sqlite3_value *blobCopy = sqlite3_value_dup(argv[0]);
+    if (blobCopy == NULL) {
+        sqlite3_result_error_nomem(context);
+        return;
+    }
     // validate argv
     const int ncol = (argc - argc0) / 2;
-    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(argv[0]);
+    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(blobCopy);
     if (argc < argc0 + 2 || argc != argc0 + ncol * 2) {
         goto catch_error;
     }
@@ -4437,9 +4422,10 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
             "sinefit_refitlast"
             " - 1st argument as sinefit-object does not have enough columns",
             -1);
+        sqlite3_value_free(blobCopy);
         return;
     }
-    const WinSinefit *blob0 = sqlite3_value_blob(argv[0]);
+    const WinSinefit *blob0 = sqlite3_value_blob(blobCopy);
     const int nbody = (int) blob0->nnn * ncol * WIN_SINEFIT_STEP;
     if (blob0->nnn <= 0
         || bytes != (ncol * WIN_SINEFIT_N + nbody) * sizeof(double)) {
@@ -4447,11 +4433,13 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
             "sinefit_refitlast"
             " - 1st argument as sinefit-object does not have enough columns",
             -1);
+        sqlite3_value_free(blobCopy);
         return;
     }
     // init wsf0
     WinSinefit *wsf0 = sqlite3_malloc(bytes);
     if (wsf0 == NULL) {
+        sqlite3_value_free(blobCopy);
         sqlite3_result_error_nomem(context);
         return;
     }
@@ -4466,19 +4454,21 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     }
     for (int ii = 0; ii < ncol; ii += 1) {
         wsf->wnn = 1;
-        wsf->rr0 = wsf->rr1;
-        wsf->xx0 = wsf->xx1;
-        wsf->yy0 = wsf->yy1;
+        wsf->xx0 = WIN_SINEFIT_WSF_XX(wbb);
+        wsf->yy0 = WIN_SINEFIT_WSF_YY(wbb);
+        wsf->rr0 = WIN_SINEFIT_WSF_RR(wbb);
         sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
         sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
-        xxyy[wbb + 0] = wsf->xx1;
-        xxyy[wbb + 1] = wsf->yy1;
+        WIN_SINEFIT_WSF_XX(wbb) = wsf->xx1;
+        WIN_SINEFIT_WSF_YY(wbb) = wsf->yy1;
         // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xx1, wsf->yy1);
         // dblwin - calculate lnr
-        winSinefitLnr(wsf, xxyy, wbb);
+        winSinefitLnr(wsf);
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
         // dblwin - calculate snr
-        winSinefitDft(wsf, xxyy, wbb, nbody, ncol);
-        winSinefitSnr(wsf, xxyy, wbb, nbody, ncol);
+        if (1) {
+            winSinefitSnr(wsf, xxyy, nbody, ncol);
+        }
         // increment counter
         argv += 2;
         wsf += 1;
@@ -4487,8 +4477,10 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     // dblwin - result
     doublearrayResult(context, (double *) wsf0, bytes / sizeof(double),
         sqlite3_free);
+    sqlite3_value_free(blobCopy);
     return;
   catch_error:
+    sqlite3_value_free(blobCopy);
     sqlite3_result_error(context, "sinefit_refitlast - invalid arguments",
         -1);
 }

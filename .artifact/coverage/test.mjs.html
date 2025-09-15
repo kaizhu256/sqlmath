@@ -3116,24 +3116,24 @@ body {
 <pre><span class="lineno"><a href="#line_2958" id="line_2958"> 2958.</a></span><span class="count        ">      1</span><span>        let valIn;</span></pre>
 <pre><span class="lineno"><a href="#line_2959" id="line_2959"> 2959.</a></span><span class="count        ">      6</span><span>        function sqlSinefitExtractLnr(wsf, ii, suffix) {</span></pre>
 <pre><span class="lineno"><a href="#line_2960" id="line_2960"> 2960.</a></span><span class="count        ">      6</span><span>            return (`</span></pre>
-<pre><span class="lineno"><a href="#line_2961" id="line_2961"> 2961.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2962" id="line_2962"> 2962.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'laa', 0), 8) AS laa${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2963" id="line_2963"> 2963.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'lbb', 0), 8) AS lbb${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2964" id="line_2964"> 2964.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'lee', 0), 8) AS lee${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2965" id="line_2965"> 2965.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'lxy', 0), 8) AS lxy${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2966" id="line_2966"> 2966.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'lyy', 0), 8) AS lyy${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2967" id="line_2967"> 2967.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'mee', 0), 8) AS mee${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2968" id="line_2968"> 2968.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'mrr', 0), 8) AS mrr${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2969" id="line_2969"> 2969.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'mxe', 0), 8) AS mxe${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2970" id="line_2970"> 2970.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2971" id="line_2971"> 2971.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2972" id="line_2972"> 2972.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2973" id="line_2973"> 2973.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2974" id="line_2974"> 2974.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2975" id="line_2975"> 2975.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2976" id="line_2976"> 2976.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2977" id="line_2977"> 2977.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2978" id="line_2978"> 2978.</a></span><span class="count        ">      6</span><span>    ROUND(sinefit_extract(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}</span></pre>
+<pre><span class="lineno"><a href="#line_2961" id="line_2961"> 2961.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2962" id="line_2962"> 2962.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'laa', 0), 8) AS laa${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2963" id="line_2963"> 2963.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lbb', 0), 8) AS lbb${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2964" id="line_2964"> 2964.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lee', 0), 8) AS lee${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2965" id="line_2965"> 2965.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lxy', 0), 8) AS lxy${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2966" id="line_2966"> 2966.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lyy', 0), 8) AS lyy${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2967" id="line_2967"> 2967.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mee', 0), 8) AS mee${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2968" id="line_2968"> 2968.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mrr', 0), 8) AS mrr${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2969" id="line_2969"> 2969.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxe', 0), 8) AS mxe${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2970" id="line_2970"> 2970.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2971" id="line_2971"> 2971.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2972" id="line_2972"> 2972.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2973" id="line_2973"> 2973.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2974" id="line_2974"> 2974.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2975" id="line_2975"> 2975.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2976" id="line_2976"> 2976.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2977" id="line_2977"> 2977.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2978" id="line_2978"> 2978.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}</span></pre>
 <pre><span class="lineno"><a href="#line_2979" id="line_2979"> 2979.</a></span><span class="count        ">      6</span><span>            `);</span></pre>
 <pre><span class="lineno"><a href="#line_2980" id="line_2980"> 2980.</a></span><span class="count        ">      6</span><span>        }</span></pre>
 <pre><span class="lineno"><a href="#line_2981" id="line_2981"> 2981.</a></span><span class="count        ">      1</span><span>        async function test_win_sinefit2_aggregate({</span></pre>
@@ -3163,12 +3163,12 @@ body {
 <pre><span class="lineno"><a href="#line_3005" id="line_3005"> 3005.</a></span><span class="count        ">      1</span><span>    SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3006" id="line_3006"> 3006.</a></span><span class="count        ">      1</span><span>        id2,</span></pre>
 <pre><span class="lineno"><a href="#line_3007" id="line_3007"> 3007.</a></span><span class="count        ">      1</span><span>        __wsf,</span></pre>
-<pre><span class="lineno"><a href="#line_3008" id="line_3008"> 3008.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 0, 'xx1', 0) AS xx11,</span></pre>
-<pre><span class="lineno"><a href="#line_3009" id="line_3009"> 3009.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 0, 'yy1', 0) AS yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3010" id="line_3010"> 3010.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 8, 'xx1', 0) AS xx12,</span></pre>
-<pre><span class="lineno"><a href="#line_3011" id="line_3011"> 3011.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 8, 'yy1', 0) AS yy12,</span></pre>
-<pre><span class="lineno"><a href="#line_3012" id="line_3012"> 3012.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 9, 'xx1', 0) AS xx13,</span></pre>
-<pre><span class="lineno"><a href="#line_3013" id="line_3013"> 3013.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 9, 'yy1', 0) AS yy13</span></pre>
+<pre><span class="lineno"><a href="#line_3008" id="line_3008"> 3008.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'xx1', 0) AS xx11,</span></pre>
+<pre><span class="lineno"><a href="#line_3009" id="line_3009"> 3009.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'yy1', 0) AS yy11,</span></pre>
+<pre><span class="lineno"><a href="#line_3010" id="line_3010"> 3010.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'xx1', 0) AS xx12,</span></pre>
+<pre><span class="lineno"><a href="#line_3011" id="line_3011"> 3011.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'yy1', 0) AS yy12,</span></pre>
+<pre><span class="lineno"><a href="#line_3012" id="line_3012"> 3012.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'xx1', 0) AS xx13,</span></pre>
+<pre><span class="lineno"><a href="#line_3013" id="line_3013"> 3013.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'yy1', 0) AS yy13</span></pre>
 <pre><span class="lineno"><a href="#line_3014" id="line_3014"> 3014.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_3015" id="line_3015"> 3015.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3016" id="line_3016"> 3016.</a></span><span class="count        ">      1</span><span>            id2,</span></pre>
@@ -3197,7 +3197,7 @@ body {
 <pre><span class="lineno"><a href="#line_3039" id="line_3039"> 3039.</a></span><span class="count        ">      1</span><span>    );</span></pre>
 <pre><span class="lineno"><a href="#line_3040" id="line_3040"> 3040.</a></span><span class="count        ">      1</span><span>UPDATE __sinefit_win</span></pre>
 <pre><span class="lineno"><a href="#line_3041" id="line_3041"> 3041.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
-<pre><span class="lineno"><a href="#line_3042" id="line_3042"> 3042.</a></span><span class="count        ">      1</span><span>        __wsf = sinefit_refitlast(</span></pre>
+<pre><span class="lineno"><a href="#line_3042" id="line_3042"> 3042.</a></span><span class="count        ">      1</span><span>        __wsf = SINEFIT_REFITLAST(</span></pre>
 <pre><span class="lineno"><a href="#line_3043" id="line_3043"> 3043.</a></span><span class="count        ">      1</span><span>            __wsf,</span></pre>
 <pre><span class="lineno"><a href="#line_3044" id="line_3044"> 3044.</a></span><span class="count        ">      1</span><span>            0, 0,</span></pre>
 <pre><span class="lineno"><a href="#line_3045" id="line_3045"> 3045.</a></span><span class="count        ">      1</span><span>            0, 0,</span></pre>
@@ -3213,7 +3213,7 @@ body {
 <pre><span class="lineno"><a href="#line_3055" id="line_3055"> 3055.</a></span><span class="count        ">      1</span><span>    WHERE id2 = ${id4};</span></pre>
 <pre><span class="lineno"><a href="#line_3056" id="line_3056"> 3056.</a></span><span class="count        ">      1</span><span>UPDATE __sinefit_win</span></pre>
 <pre><span class="lineno"><a href="#line_3057" id="line_3057"> 3057.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
-<pre><span class="lineno"><a href="#line_3058" id="line_3058"> 3058.</a></span><span class="count        ">      1</span><span>        __wsf = sinefit_refitlast(</span></pre>
+<pre><span class="lineno"><a href="#line_3058" id="line_3058"> 3058.</a></span><span class="count        ">      1</span><span>        __wsf = SINEFIT_REFITLAST(</span></pre>
 <pre><span class="lineno"><a href="#line_3059" id="line_3059"> 3059.</a></span><span class="count        ">      1</span><span>            __wsf,</span></pre>
 <pre><span class="lineno"><a href="#line_3060" id="line_3060"> 3060.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
 <pre><span class="lineno"><a href="#line_3061" id="line_3061"> 3061.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
@@ -4050,15 +4050,15 @@ body {
 <pre><span class="lineno"><a href="#line_3892" id="line_3892"> 3892.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_3893" id="line_3893"> 3893.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3894" id="line_3894"> 3894.</a></span><span class="count        ">      1</span><span>            ii + 1 AS ii,</span></pre>
-<pre><span class="lineno"><a href="#line_3895" id="line_3895"> 3895.</a></span><span class="count        ">      1</span><span>            sinefit_extract(__wsf, 0, 'predict_lnr', ii + 1) AS predict_lnr</span></pre>
+<pre><span class="lineno"><a href="#line_3895" id="line_3895"> 3895.</a></span><span class="count        ">      1</span><span>            SINEFIT_EXTRACT(__wsf, 0, 'predict_lnr', ii + 1) AS predict_lnr</span></pre>
 <pre><span class="lineno"><a href="#line_3896" id="line_3896"> 3896.</a></span><span class="count        ">      1</span><span>        FROM __sinefit_csv</span></pre>
 <pre><span class="lineno"><a href="#line_3897" id="line_3897"> 3897.</a></span><span class="count        ">      1</span><span>    ) AS __join1</span></pre>
 <pre><span class="lineno"><a href="#line_3898" id="line_3898"> 3898.</a></span><span class="count        ">      1</span><span>    WHERE __join1.ii = __sinefit_csv.ii;</span></pre>
 <pre><span class="lineno"><a href="#line_3899" id="line_3899"> 3899.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3900" id="line_3900"> 3900.</a></span><span class="count        ">      1</span><span>        *,</span></pre>
-<pre><span class="lineno"><a href="#line_3901" id="line_3901"> 3901.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 0, 'saa', 0) AS saa,</span></pre>
-<pre><span class="lineno"><a href="#line_3902" id="line_3902"> 3902.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 0, 'spp', 0) AS spp,</span></pre>
-<pre><span class="lineno"><a href="#line_3903" id="line_3903"> 3903.</a></span><span class="count        ">      1</span><span>        sinefit_extract(__wsf, 0, 'sww', 0) AS sww,</span></pre>
+<pre><span class="lineno"><a href="#line_3901" id="line_3901"> 3901.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'saa', 0) AS saa,</span></pre>
+<pre><span class="lineno"><a href="#line_3902" id="line_3902"> 3902.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'spp', 0) AS spp,</span></pre>
+<pre><span class="lineno"><a href="#line_3903" id="line_3903"> 3903.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'sww', 0) AS sww,</span></pre>
 <pre><span class="lineno"><a href="#line_3904" id="line_3904"> 3904.</a></span><span class="count        ">      1</span><span>        ${sqlSinefitExtractLnr("__wsf", 0, "")}</span></pre>
 <pre><span class="lineno"><a href="#line_3905" id="line_3905"> 3905.</a></span><span class="count        ">      1</span><span>    FROM __sinefit_csv</span></pre>
 <pre><span class="lineno"><a href="#line_3906" id="line_3906"> 3906.</a></span><span class="count        ">      1</span><span>    JOIN (</span></pre>
@@ -4070,7 +4070,7 @@ body {
 <pre><span class="lineno"><a href="#line_3912" id="line_3912"> 3912.</a></span><span class="count        ">      1</span><span>    LEFT JOIN (</span></pre>
 <pre><span class="lineno"><a href="#line_3913" id="line_3913"> 3913.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3914" id="line_3914"> 3914.</a></span><span class="count        ">      1</span><span>            ii + 1 AS ii,</span></pre>
-<pre><span class="lineno"><a href="#line_3915" id="line_3915"> 3915.</a></span><span class="count        ">      1</span><span>            sinefit_extract(__wsf, 0, 'predict_snr', ii + 1) AS predict_snr</span></pre>
+<pre><span class="lineno"><a href="#line_3915" id="line_3915"> 3915.</a></span><span class="count        ">      1</span><span>            SINEFIT_EXTRACT(__wsf, 0, 'predict_snr', ii + 1) AS predict_snr</span></pre>
 <pre><span class="lineno"><a href="#line_3916" id="line_3916"> 3916.</a></span><span class="count        ">      1</span><span>        FROM __sinefit_csv</span></pre>
 <pre><span class="lineno"><a href="#line_3917" id="line_3917"> 3917.</a></span><span class="count        ">      1</span><span>    ) USING (ii);</span></pre>
 <pre><span class="lineno"><a href="#line_3918" id="line_3918"> 3918.</a></span><span class="count        ">      1</span><span>                    `)</span></pre>

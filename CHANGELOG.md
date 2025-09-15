@@ -1,6 +1,7 @@
 # Changelog
 
 # Todo
+- sqlmath - Update sql-function SINEFIT_REFITLAST() to create copy of wsf-blob, so original argument is not mutated.
 - sqlmath - Re-introduce sliding-discrete-fourier-transform to improve initial guess in sql-function WIN_SINEFIT2().
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
