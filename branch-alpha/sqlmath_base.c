@@ -3263,7 +3263,7 @@ typedef struct AggStdev {
     double nnn;                 // number of elements
     double vxx;                 // x-variance.p
     double wnn;                 // window-mode
-    double xxa;                 // x-trailing
+    double xxa;                 // x-left
 } AggStdev;
 
 SQLMATH_FUNC static void sql3_stdev_value(
@@ -3813,7 +3813,7 @@ typedef struct WinSinefit {
     double myy;                 // y-average
     double nnn;                 // number of elements
     //
-    double rra;                 // r-trailing
+    double rra;                 // r-left
     double rrb;                 // r-current
     //
     double saa;                 // sine amplitude
@@ -3829,10 +3829,10 @@ typedef struct WinSinefit {
     double wbb;                 // window-position-right
     double wnn;                 // window-mode
     //
-    double xxa;                 // x-trailing
+    double xxa;                 // x-left
     double xxb;                 // x-current
-    double xx2;                 // x-refit
-    double yya;                 // y-trailing
+    double xxr;                 // x-refit
+    double yya;                 // y-left
     double yyb;                 // y-current
 } WinSinefit;
 static const int WIN_SINEFIT_N = sizeof(WinSinefit) / sizeof(double);
@@ -4123,7 +4123,7 @@ SQLMATH_FUNC static void sql3_win_sinefit2_value(
     doublearrayResult(context, dblwin_head,     //
         // If x-current == x-refit, then include extra data needed for refit.
         // This data is normally not included, due to memory performance.
-        (int) (wsf->xx2 == wsf->xxb     //
+        (int) (wsf->xxr == wsf->xxb     //
             ? dblwin->nhead + dblwin->nbody     //
             : dblwin->nhead), SQLITE_TRANSIENT);
 }
@@ -4181,7 +4181,7 @@ static void sql3_win_sinefit2_step(
         dblwin->ncol = ncol;
     }
     // dblwin - init argv
-    const double xx2 = sqlite3_value_double_or_nan(argv[1]);
+    const double xxr = sqlite3_value_double_or_nan(argv[1]);
     const int modeSnr = sqlite3_value_int(argv[0]);
     argv += argc0;
     WinSinefit *wsf = NULL;
@@ -4201,7 +4201,7 @@ static void sql3_win_sinefit2_step(
             wsf->rra = WIN_SINEFIT_WSF_RR(waa);
         }
         wsf->wbb = wbb;
-        wsf->xx2 = xx2;
+        wsf->xxr = xxr;
         const double xx = wsf->xxb;
         const double yy = wsf->yyb;
         // dblwin - push xx, yy, rr, sff
@@ -4284,7 +4284,7 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         //
         "xxa",
         "xxb",
-        "xx2",
+        "xxr",
         "yya",
         "yyb"
     };

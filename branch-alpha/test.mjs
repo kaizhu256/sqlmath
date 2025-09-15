@@ -2987,7 +2987,7 @@ SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;
         }) {
             let sqlBetween = "";
             let valActual;
-            let xxl = 2;
+            let xxr = 2;
             if (aa !== undefined) {
                 sqlBetween = (
                     `ROWS BETWEEN ${aa - 1} PRECEDING AND ${bb} FOLLOWING`
@@ -3015,7 +3015,7 @@ CREATE TEMP TABLE __sinefit_win AS
         SELECT
             id2,
             WIN_SINEFIT2(
-                1, ${xxl},
+                1, ${xxr},
                 value->>0, value->>1,
                 value->>0, value->>1,
                 value->>0, value->>1,
