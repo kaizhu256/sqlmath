@@ -3263,7 +3263,7 @@ typedef struct AggStdev {
     double nnn;                 // number of elements
     double vxx;                 // x-variance.p
     double wnn;                 // window-mode
-    double xx0;                 // x-trailing
+    double xxa;                 // x-left
 } AggStdev;
 
 SQLMATH_FUNC static void sql3_stdev_value(
@@ -3300,7 +3300,7 @@ SQLMATH_FUNC static void sql3_stdev_inverse(
     // agg - welford - increment agg->vxx
     if (sqlite3_value_numeric_type(argv[0]) != SQLITE_NULL) {
         agg->wnn = 1;
-        agg->xx0 = sqlite3_value_double(argv[0]);
+        agg->xxa = sqlite3_value_double(argv[0]);
     }
 }
 
@@ -3319,10 +3319,10 @@ static void sql3_stdev_step(
         if (agg->wnn) {
             // calculate vxx - window
             const double invn0 = 1.0 / agg->nnn;
-            const double xx0 = agg->xx0;
-            const double dx = xx - xx0;
+            const double xxa = agg->xxa;
+            const double dx = xx - xxa;
             agg->vxx +=
-                (xx * xx - xx0 * xx0) - dx * (dx * invn0 + 2 * agg->mxx);
+                (xx * xx - xxa * xxa) - dx * (dx * invn0 + 2 * agg->mxx);
             agg->mxx += dx * invn0;
         } else {
             // calculate vxx - welford
@@ -3576,7 +3576,7 @@ SQLMATH_FUNC static void sql3_win_ema1_step(
         sqlite3_value_double_or_prev(argv[0], &dblwin_head[ii]);
         double *row = dblwin_body + ii;
         // fprintf(stderr,         //
-        //     "win_ema2 - nbody=%.0f xx0=%f xx=%f arg_alpha=%f\n",        //
+        //     "win_ema2 - nbody=%.0f xxa=%f xx=%f arg_alpha=%f\n",        //
         //     dblwin->nbody, *row, dblwin_head[0], arg_alpha);
         for (int jj = 0; jj < nrow; jj += 1) {
             *row = arg_alpha * dblwin_head[ii] + (1 - arg_alpha) * *row;
@@ -3678,9 +3678,9 @@ SQLMATH_FUNC static void sql3_win_quantile1_inverse(
     const int nstep = ncol * 2;
     const int nn = (int) dblwin->nbody - nstep;
     double *arr = dblwin_body + 1;
-    double *xx0 = dblwin_body + 0 + (int) dblwin->waa;
+    double *xxa = dblwin_body + 0 + (int) dblwin->waa;
     for (int ii = 0; ii < ncol; ii += 1) {
-        const double xx = *xx0;
+        const double xx = *xxa;
         int jj = 0;
         for (; jj < nn && arr[jj] < xx; jj += nstep) {
         }
@@ -3689,7 +3689,7 @@ SQLMATH_FUNC static void sql3_win_quantile1_inverse(
         }
         arr[jj] = INFINITY;
         arr += 2;
-        xx0 += 2;
+        xxa += 2;
     }
 }
 
@@ -3813,8 +3813,8 @@ typedef struct WinSinefit {
     double myy;                 // y-average
     double nnn;                 // number of elements
     //
-    double rr0;                 // r-trailing
-    double rr1;                 // r-current
+    double rra;                 // r-left
+    double rrb;                 // r-current
     //
     double saa;                 // sine amplitude
     double see;                 // sine y-stdev
@@ -3829,11 +3829,11 @@ typedef struct WinSinefit {
     double wbb;                 // window-position-right
     double wnn;                 // window-mode
     //
-    double xx0;                 // x-trailing
-    double xx1;                 // x-current
-    double xx2;                 // x-refit
-    double yy0;                 // y-trailing
-    double yy1;                 // y-current
+    double xxa;                 // x-left
+    double xxb;                 // x-current
+    double xxr;                 // x-refit
+    double yya;                 // y-left
+    double yyb;                 // y-current
 } WinSinefit;
 static const int WIN_SINEFIT_N = sizeof(WinSinefit) / sizeof(double);
 static const int WIN_SINEFIT_STEP = 3 + 0;
@@ -3845,8 +3845,8 @@ static void winSinefitLnr(
 // This function will calculate running simple-linear-regression as:
 //     yy = laa + lbb*xx
     const double invn0 = 1.0 / wsf->nnn;
-    const double xx = wsf->xx1;
-    const double yy = wsf->yy1;
+    const double xx = wsf->xxb;
+    const double yy = wsf->yyb;
     double mrr = wsf->mrr;
     double mxx = wsf->mxx;
     double myy = wsf->myy;
@@ -3857,13 +3857,13 @@ static void winSinefitLnr(
     // calculate lnr - myy, vyy
     if (wsf->wnn) {
         // calculate running lnr - window
-        const double xx0 = wsf->xx0;
-        const double yy0 = wsf->yy0;
-        const double dx = xx - xx0;
-        const double dy = yy - yy0;
-        vxx += (xx * xx - xx0 * xx0) - dx * (dx * invn0 + 2 * mxx);
-        vyy += (yy * yy - yy0 * yy0) - dy * (dy * invn0 + 2 * myy);
-        vxy += (xx * yy - xx0 * yy0) - dx * myy - dy * (dx * invn0 + mxx);
+        const double xxa = wsf->xxa;
+        const double yya = wsf->yya;
+        const double dx = xx - xxa;
+        const double dy = yy - yya;
+        vxx += (xx * xx - xxa * xxa) - dx * (dx * invn0 + 2 * mxx);
+        vyy += (yy * yy - yya * yya) - dy * (dy * invn0 + 2 * myy);
+        vxy += (xx * yy - xxa * yya) - dx * myy - dy * (dx * invn0 + mxx);
         mxx += dx * invn0;
         myy += dy * invn0;
     } else {
@@ -3887,11 +3887,11 @@ static void winSinefitLnr(
     // calculate lnr - mrr, vrr
     if (wsf->wnn) {
         // calculate running lnr - window
-        const double rr0 = wsf->rr0;
-        const double dr = rr - rr0;
-        vrr += (rr * rr - rr0 * rr0) - dr * (dr * invn0 + 2 * mrr);
+        const double rra = wsf->rra;
+        const double dr = rr - rra;
+        vrr += (rr * rr - rra * rra) - dr * (dr * invn0 + 2 * mrr);
         mrr += dr * invn0;
-        // fprintf(stderr, "n=%d rr=%f r0=%f mr=%f\n", (int) wsf->nnn, rr, rr0,
+        // fprintf(stderr, "n=%d rr=%f r0=%f mr=%f\n", (int) wsf->nnn, rr, rra,
         //     mrr);
     } else {
         // calculate running lnr - welford
@@ -3906,7 +3906,7 @@ static void winSinefitLnr(
     wsf->mrr = mrr;
     wsf->mxx = mxx;
     wsf->myy = myy;
-    wsf->rr1 = rr;
+    wsf->rrb = rr;
     wsf->vrr = vrr;
     wsf->vxx = vxx;
     wsf->vxy = vxy;
@@ -4123,7 +4123,7 @@ SQLMATH_FUNC static void sql3_win_sinefit2_value(
     doublearrayResult(context, dblwin_head,     //
         // If x-current == x-refit, then include extra data needed for refit.
         // This data is normally not included, due to memory performance.
-        (int) (wsf->xx2 == wsf->xx1     //
+        (int) (wsf->xxr == wsf->xxb     //
             ? dblwin->nhead + dblwin->nbody     //
             : dblwin->nhead), SQLITE_TRANSIENT);
 }
@@ -4181,7 +4181,7 @@ static void sql3_win_sinefit2_step(
         dblwin->ncol = ncol;
     }
     // dblwin - init argv
-    const double xx2 = sqlite3_value_double_or_nan(argv[1]);
+    const double xxr = sqlite3_value_double_or_nan(argv[1]);
     const int modeSnr = sqlite3_value_int(argv[0]);
     argv += argc0;
     WinSinefit *wsf = NULL;
@@ -4191,19 +4191,19 @@ static void sql3_win_sinefit2_step(
     for (int ii = 0; ii < ncol; ii += 1) {
         // dblwin - init xx, yy, rr
         wsf = (WinSinefit *) dblwin_head + ii;
-        sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
-        sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
+        sqlite3_value_double_or_prev(argv[0], &wsf->xxb);
+        sqlite3_value_double_or_prev(argv[1], &wsf->yyb);
         // bugfix - Fix buffer-overlow, reading pointer past dblwin->nbody.
         if (dblwin->nbody) {
             xxyy = dblwin_body + ii * WIN_SINEFIT_STEP;
-            wsf->xx0 = WIN_SINEFIT_WSF_XX(waa);
-            wsf->yy0 = WIN_SINEFIT_WSF_YY(waa);
-            wsf->rr0 = WIN_SINEFIT_WSF_RR(waa);
+            wsf->xxa = WIN_SINEFIT_WSF_XX(waa);
+            wsf->yya = WIN_SINEFIT_WSF_YY(waa);
+            wsf->rra = WIN_SINEFIT_WSF_RR(waa);
         }
         wsf->wbb = wbb;
-        wsf->xx2 = xx2;
-        const double xx = wsf->xx1;
-        const double yy = wsf->yy1;
+        wsf->xxr = xxr;
+        const double xx = wsf->xxb;
+        const double yy = wsf->yyb;
         // dblwin - push xx, yy, rr, sff
         DOUBLEWIN_AGGREGATE_PUSH(xx);
         DOUBLEWIN_AGGREGATE_PUSH(yy);
@@ -4221,7 +4221,7 @@ static void sql3_win_sinefit2_step(
         wsf->wnn = dblwin->wnn;
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rrb;
         // dblwin - calculate snr
         if (modeSnr) {
             winSinefitSnr(wsf, xxyy, (int) dblwin->nbody, (int) dblwin->ncol);
@@ -4266,8 +4266,8 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         "myy",
         "nnn",
         //
-        "rr0",
-        "rr1",
+        "rra",
+        "rrb",
         //
         "saa",
         "see",
@@ -4282,11 +4282,11 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         "wbb",
         "wnn",
         //
-        "xx0",
-        "xx1",
-        "xx2",
-        "yy0",
-        "yy1"
+        "xxa",
+        "xxb",
+        "xxr",
+        "yya",
+        "yyb"
     };
     for (int ii = 0; ii < WIN_SINEFIT_N; ii += 1) {
         if (strcmp(key, keyList[ii]) == 0) {
@@ -4297,13 +4297,13 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
     // gaussian-normalized r-value
     if (strcmp(key, "grr") == 0) {
         sqlite3_result_double_or_null(context,  //
-            (wsf->rr1 - wsf->mrr) * sqrt((wsf->nnn - 1) / wsf->vrr));
+            (wsf->rrb - wsf->mrr) * sqrt((wsf->nnn - 1) / wsf->vrr));
         return;
     }
     // gaussian-normalized y-value
     if (strcmp(key, "gyy") == 0) {
         sqlite3_result_double_or_null(context,  //
-            (wsf->yy1 - wsf->myy) * sqrt((wsf->nnn - 1) / wsf->vyy));
+            (wsf->yyb - wsf->myy) * sqrt((wsf->nnn - 1) / wsf->vyy));
         return;
     }
     // linest y-stdev.s2
@@ -4322,7 +4322,7 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
     }
     // linest y-estimate
     if (strcmp(key, "lyy") == 0) {
-        sqlite3_result_double_or_null(context, wsf->yy1 - wsf->rr1);
+        sqlite3_result_double_or_null(context, wsf->yyb - wsf->rrb);
         return;
     }
     // y-stdev.s1
@@ -4388,8 +4388,8 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
     // sine y-estimate
     if (strcmp(key, "syy") == 0) {
         sqlite3_result_double_or_null(context, 0        //
-            + wsf->yy1 - wsf->rr1       //
-            + wsf->saa * sin(fmod(wsf->sww * wsf->xx1,
+            + wsf->yyb - wsf->rrb       //
+            + wsf->saa * sin(fmod(wsf->sww * wsf->xxb,
                     2 * MATH_PI) + wsf->spp));
         return;
     }
@@ -4454,17 +4454,17 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     }
     for (int ii = 0; ii < ncol; ii += 1) {
         wsf->wnn = 1;
-        wsf->xx0 = WIN_SINEFIT_WSF_XX(wbb);
-        wsf->yy0 = WIN_SINEFIT_WSF_YY(wbb);
-        wsf->rr0 = WIN_SINEFIT_WSF_RR(wbb);
-        sqlite3_value_double_or_prev(argv[0], &wsf->xx1);
-        sqlite3_value_double_or_prev(argv[1], &wsf->yy1);
-        WIN_SINEFIT_WSF_XX(wbb) = wsf->xx1;
-        WIN_SINEFIT_WSF_YY(wbb) = wsf->yy1;
-        // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xx1, wsf->yy1);
+        wsf->xxa = WIN_SINEFIT_WSF_XX(wbb);
+        wsf->yya = WIN_SINEFIT_WSF_YY(wbb);
+        wsf->rra = WIN_SINEFIT_WSF_RR(wbb);
+        sqlite3_value_double_or_prev(argv[0], &wsf->xxb);
+        sqlite3_value_double_or_prev(argv[1], &wsf->yyb);
+        WIN_SINEFIT_WSF_XX(wbb) = wsf->xxb;
+        WIN_SINEFIT_WSF_YY(wbb) = wsf->yyb;
+        // fprintf(stderr, "wb=%d x=%f y=%f\n", (int) wbb, wsf->xxb, wsf->yyb);
         // dblwin - calculate lnr
         winSinefitLnr(wsf);
-        WIN_SINEFIT_WSF_RR(wbb) = wsf->rr1;
+        WIN_SINEFIT_WSF_RR(wbb) = wsf->rrb;
         // dblwin - calculate snr
         if (1) {
             winSinefitSnr(wsf, xxyy, nbody, ncol);

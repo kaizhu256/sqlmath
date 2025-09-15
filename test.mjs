@@ -2970,12 +2970,12 @@ SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;
     ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},
     ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},
     ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rra', 0), 8) AS rra${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rrb', 0), 8) AS rrb${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxa', 0), 8) AS xxa${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxb', 0), 8) AS xxb${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yya', 0), 8) AS yya${suffix},
+    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yyb', 0), 8) AS yyb${suffix}
             `);
         }
         async function test_win_sinefit2_aggregate({
@@ -2987,7 +2987,7 @@ SELECT DOUBLEARRAY_JSONTO(WIN_QUANTILE2(1, 2, 3)) FROM __tmp1;
         }) {
             let sqlBetween = "";
             let valActual;
-            let xx2 = 2;
+            let xxr = 2;
             if (aa !== undefined) {
                 sqlBetween = (
                     `ROWS BETWEEN ${aa - 1} PRECEDING AND ${bb} FOLLOWING`
@@ -3005,17 +3005,17 @@ CREATE TEMP TABLE __sinefit_win AS
     SELECT
         id2,
         __wsf,
-        SINEFIT_EXTRACT(__wsf, 0, 'xx1', 0) AS xx11,
-        SINEFIT_EXTRACT(__wsf, 0, 'yy1', 0) AS yy11,
-        SINEFIT_EXTRACT(__wsf, 8, 'xx1', 0) AS xx12,
-        SINEFIT_EXTRACT(__wsf, 8, 'yy1', 0) AS yy12,
-        SINEFIT_EXTRACT(__wsf, 9, 'xx1', 0) AS xx13,
-        SINEFIT_EXTRACT(__wsf, 9, 'yy1', 0) AS yy13
+        SINEFIT_EXTRACT(__wsf, 0, 'xxb', 0) AS xxb1,
+        SINEFIT_EXTRACT(__wsf, 0, 'yyb', 0) AS yyb1,
+        SINEFIT_EXTRACT(__wsf, 8, 'xxb', 0) AS xxb2,
+        SINEFIT_EXTRACT(__wsf, 8, 'yyb', 0) AS yyb2,
+        SINEFIT_EXTRACT(__wsf, 9, 'xxb', 0) AS xxb3,
+        SINEFIT_EXTRACT(__wsf, 9, 'yyb', 0) AS yyb3
     FROM (
         SELECT
             id2,
             WIN_SINEFIT2(
-                1, ${xx2},
+                1, ${xxr},
                 value->>0, value->>1,
                 value->>0, value->>1,
                 value->>0, value->>1,
@@ -3057,16 +3057,16 @@ UPDATE __sinefit_win
     SET
         __wsf = SINEFIT_REFITLAST(
             __wsf,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx11, yy11,
-            xx12, yy12,
-            xx13, yy13
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb1, yyb1,
+            xxb2, yyb2,
+            xxb3, yyb3
         )
     WHERE id2 = ${id4};
 SELECT
@@ -3112,24 +3112,24 @@ SELECT
                 nnn1,
                 nnn2,
                 nnn3,
-                rr01,
-                rr02,
-                rr03,
-                rr11,
-                rr12,
-                rr13,
-                xx01,
-                xx02,
-                xx03,
-                xx11,
-                xx12,
-                xx13,
-                yy01,
-                yy02,
-                yy03,
-                yy11,
-                yy12,
-                yy13
+                rra1,
+                rra2,
+                rra3,
+                rrb1,
+                rrb2,
+                rrb3,
+                xxa1,
+                xxa2,
+                xxa3,
+                xxb1,
+                xxb2,
+                xxb3,
+                yya1,
+                yya2,
+                yya3,
+                yyb1,
+                yyb2,
+                yyb3
             }, ii, list) {
                 let obj1;
                 let obj2;
@@ -3147,12 +3147,12 @@ SELECT
                     "mxx": mxx1,
                     "myy": myy1,
                     "nnn": nnn1,
-                    "rr0": rr01,
-                    "rr1": rr11,
-                    "xx0": xx01,
-                    "xx1": xx11,
-                    "yy0": yy01,
-                    "yy1": yy11
+                    "rra": rra1,
+                    "rrb": rrb1,
+                    "xxa": xxa1,
+                    "xxb": xxb1,
+                    "yya": yya1,
+                    "yyb": yyb1
                 };
                 obj2 = {
                     id2,
@@ -3167,12 +3167,12 @@ SELECT
                     "mxx": mxx2,
                     "myy": myy2,
                     "nnn": nnn2,
-                    "rr0": rr02,
-                    "rr1": rr12,
-                    "xx0": xx02,
-                    "xx1": xx12,
-                    "yy0": yy02,
-                    "yy1": yy12
+                    "rra": rra2,
+                    "rrb": rrb2,
+                    "xxa": xxa2,
+                    "xxb": xxb2,
+                    "yya": yya2,
+                    "yyb": yyb2
                 };
                 obj3 = {
                     id2,
@@ -3187,12 +3187,12 @@ SELECT
                     "mxx": mxx3,
                     "myy": myy3,
                     "nnn": nnn3,
-                    "rr0": rr03,
-                    "rr1": rr13,
-                    "xx0": xx03,
-                    "xx1": xx13,
-                    "yy0": yy03,
-                    "yy1": yy13
+                    "rra": rra3,
+                    "rrb": rrb3,
+                    "xxa": xxa3,
+                    "xxb": xxb3,
+                    "yya": yya3,
+                    "yyb": yyb3
                 };
                 switch (list.length - ii) {
                 case 1:
@@ -3225,12 +3225,12 @@ SELECT
                 "mxx": 2,
                 "myy": 0,
                 "nnn": 1,
-                "rr0": 0,
-                "rr1": 0,
-                "xx0": 0,
-                "xx1": 2,
-                "yy0": 0,
-                "yy1": 0
+                "rra": 0,
+                "rrb": 0,
+                "xxa": 0,
+                "xxb": 2,
+                "yya": 0,
+                "yyb": 0
             },
             {
                 "id2": 2,
@@ -3245,12 +3245,12 @@ SELECT
                 "mxx": 2,
                 "myy": 0.5,
                 "nnn": 2,
-                "rr0": 0,
-                "rr1": 0,
-                "xx0": 2,
-                "xx1": 2,
-                "yy0": 0,
-                "yy1": 1
+                "rra": 0,
+                "rrb": 0,
+                "xxa": 2,
+                "xxb": 2,
+                "yya": 0,
+                "yyb": 1
             },
             {
                 "id2": 3,
@@ -3265,12 +3265,12 @@ SELECT
                 "mxx": 2.33333333,
                 "myy": 1.33333333,
                 "nnn": 3,
-                "rr0": 0,
-                "rr1": 0,
-                "xx0": 2,
-                "xx1": 3,
-                "yy0": 0,
-                "yy1": 3
+                "rra": 0,
+                "rrb": 0,
+                "xxa": 2,
+                "xxb": 3,
+                "yya": 0,
+                "yyb": 3
             },
             {
                 "id2": 4,
@@ -3285,12 +3285,12 @@ SELECT
                 "mxx": 2.75,
                 "myy": 2,
                 "nnn": 4,
-                "rr0": 0,
-                "rr1": -0.27272727,
-                "xx0": 2,
-                "xx1": 4,
-                "yy0": 0,
-                "yy1": 4
+                "rra": 0,
+                "rrb": -0.27272727,
+                "xxa": 2,
+                "xxb": 4,
+                "yya": 0,
+                "yyb": 4
             },
             {
                 "id2": 5,
@@ -3305,12 +3305,12 @@ SELECT
                 "mxx": 3.2,
                 "myy": 2.6,
                 "nnn": 5,
-                "rr0": 0,
-                "rr1": -0.35294118,
-                "xx0": 2,
-                "xx1": 5,
-                "yy0": 0,
-                "yy1": 5
+                "rra": 0,
+                "rrb": -0.35294118,
+                "xxa": 2,
+                "xxb": 5,
+                "yya": 0,
+                "yyb": 5
             },
             {
                 "id2": 6,
@@ -3325,12 +3325,12 @@ SELECT
                 "mxx": 3.5,
                 "myy": 3.16666667,
                 "nnn": 6,
-                "rr0": 0,
-                "rr1": 0.38596491,
-                "xx0": 2,
-                "xx1": 5,
-                "yy0": 0,
-                "yy1": 6
+                "rra": 0,
+                "rrb": 0.38596491,
+                "xxa": 2,
+                "xxb": 5,
+                "yya": 0,
+                "yyb": 6
             },
             {
                 "id2": 7,
@@ -3345,12 +3345,12 @@ SELECT
                 "mxx": 3.71428571,
                 "myy": 3.57142857,
                 "nnn": 7,
-                "rr0": 0,
-                "rr1": 0.275,
-                "xx0": 2,
-                "xx1": 5,
-                "yy0": 0,
-                "yy1": 6
+                "rra": 0,
+                "rrb": 0.275,
+                "xxa": 2,
+                "xxb": 5,
+                "yya": 0,
+                "yyb": 6
             },
             {
                 "id2": 8,
@@ -3365,12 +3365,12 @@ SELECT
                 "mxx": 4,
                 "myy": 4,
                 "nnn": 8,
-                "rr0": 0,
-                "rr1": -0.25,
-                "xx0": 2,
-                "xx1": 6,
-                "yy0": 0,
-                "yy1": 7
+                "rra": 0,
+                "rrb": -0.25,
+                "xxa": 2,
+                "xxb": 6,
+                "yya": 0,
+                "yyb": 7
             },
             {
                 "id2": 9,
@@ -3385,12 +3385,12 @@ SELECT
                 "mxx": 5,
                 "myy": 5,
                 "nnn": 8,
-                "rr0": 0,
-                "rr1": -1.25,
-                "xx0": 2,
-                "xx1": 10,
-                "yy0": 0,
-                "yy1": 8
+                "rra": 0,
+                "rrb": -1.25,
+                "xxa": 2,
+                "xxb": 10,
+                "yya": 0,
+                "yyb": 8
             },
             {
                 "id2": 10,
@@ -3405,12 +3405,12 @@ SELECT
                 "mxx": 5,
                 "myy": 5.5,
                 "nnn": 8,
-                "rr0": -0.87387387,
-                "rr1": 1.15,
-                "xx0": 0,
-                "xx1": 2,
-                "yy0": 0,
-                "yy1": 5
+                "rra": -0.87387387,
+                "rrb": 1.15,
+                "xxa": 0,
+                "xxb": 2,
+                "yya": 0,
+                "yyb": 5
             }
         ];
         valIn = [
@@ -3490,12 +3490,12 @@ SELECT
                         "mxx": 4.4,
                         "myy": 4.5,
                         "nnn": 10,
-                        "rr0": 0,
-                        "rr1": 2.52941176,
-                        "xx0": 2,
-                        "xx1": 2,
-                        "yy0": 0,
-                        "yy1": 5
+                        "rra": 0,
+                        "rrb": 2.52941176,
+                        "xxa": 2,
+                        "xxb": 2,
+                        "yya": 0,
+                        "yyb": 5
                     }
                 );
             }()),
@@ -3516,12 +3516,12 @@ SELECT
                     "mxx": 74,
                     "myy": 10,
                     "nnn": 6,
-                    "rr0": 0,
-                    "rr1": -1.63694722,
-                    "xx0": 34,
-                    "xx1": 51,
-                    "yy0": 5,
-                    "yy1": 5
+                    "rra": 0,
+                    "rrb": -1.63694722,
+                    "xxa": 34,
+                    "xxb": 51,
+                    "yya": 5,
+                    "yyb": 5
                 };
                 valActual = await dbExecAndReturnLastRow({
                     db,
@@ -3562,12 +3562,12 @@ SELECT
                     "mxx": 5,
                     "myy": 3.875,
                     "nnn": 8,
-                    "rr0": 0,
-                    "rr1": -3.5,
-                    "xx0": 2,
-                    "xx1": 10,
-                    "yy0": 0,
-                    "yy1": -1
+                    "rra": 0,
+                    "rrb": -3.5,
+                    "xxa": 2,
+                    "xxb": 10,
+                    "yya": 0,
+                    "yyb": -1
                 },
                 valExpect3: {
                     "id2": id4,
@@ -3582,12 +3582,12 @@ SELECT
                     "mxx": 5,
                     "myy": 4.375,
                     "nnn": 8,
-                    "rr0": -3.79279279,
-                    "rr1": -1.1,
-                    "xx0": 0,
-                    "xx1": 2,
-                    "yy0": 0,
-                    "yy1": 5
+                    "rra": -3.79279279,
+                    "rrb": -1.1,
+                    "xxa": 0,
+                    "xxb": 2,
+                    "yya": 0,
+                    "yyb": 5
                 }
             }),
             // test win_sinefit2-spx handling-behavior
