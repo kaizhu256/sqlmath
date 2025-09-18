@@ -1683,6 +1683,7 @@ SQLMATH_FUNC static void sql1_fmod_func(
             sqlite3_value_double_or_nan(argv[1])));
 }
 
+/*
 SQLMATH_FUNC static void sql1_gzip_compress_func(
     sqlite3_context * context,
     int argc,
@@ -1807,6 +1808,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     // Pass the uncompressed data to SQLite
     sqlite3_result_blob(context, original_data, total_out, free);
 }
+*/
 
 SQLMATH_FUNC static void sql1_idatefromto_func0(
 /*
@@ -4738,8 +4740,8 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(doublearray_jsonfrom, 1, 0);
     SQL_CREATE_FUNC1(doublearray_jsonto, 1, 0);
     SQL_CREATE_FUNC1(fmod, 2, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(gzip_compress, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(gzip_uncompress, 1, SQLITE_DETERMINISTIC);
+    //!! SQL_CREATE_FUNC1(gzip_compress, 1, SQLITE_DETERMINISTIC);
+    //!! SQL_CREATE_FUNC1(gzip_uncompress, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(idateadd, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatefrom, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatefromepoch, -1, SQLITE_FUNC_IDATE);

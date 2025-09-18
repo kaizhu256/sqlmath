@@ -19,7 +19,7 @@
 
 
 #define DIST_CODE_LEN 512
-#define NO_GZIP
+//!! #define NO_GZIP
 #define ZEXTERN
 
 
@@ -12188,12 +12188,12 @@ typedef z_stream *z_streamp;
 // gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode);
 int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
 // int ZEXPORT compress2(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen, int level);
-// int ZEXPORT deflate(z_streamp strm, int flush);
+int ZEXPORT deflate(z_streamp strm, int flush);
 // int ZEXPORT deflateCopy(z_streamp dest, z_streamp source);
-// int ZEXPORT deflateEnd(z_streamp strm);
+int ZEXPORT deflateEnd(z_streamp strm);
 // int ZEXPORT deflateGetDictionary(z_streamp strm, Bytef *dictionary, uInt *dictLength);
 // int ZEXPORT deflateInit(z_streamp strm, int level);
-// int ZEXPORT deflateInit2(z_streamp strm, int level, int method, int windowBits, int memLevel, int strategy);
+int ZEXPORT deflateInit2(z_streamp strm, int level, int method, int windowBits, int memLevel, int strategy);
 // int ZEXPORT deflateInit2_(z_streamp strm, int level, int method, int windowBits, int memLevel, int strategy, const char *version, int stream_size);
 // int ZEXPORT deflateInit_(z_streamp strm, int level, const char *version, int stream_size);
 // int ZEXPORT deflateParams(z_streamp strm, int level, int strategy);
@@ -12221,17 +12221,17 @@ int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong so
 // int ZEXPORT gzsetparams(gzFile file, int level, int strategy);
 // int ZEXPORT gzungetc(int c, gzFile file);
 // int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len);
-// int ZEXPORT inflate(z_streamp strm, int flush);
+int ZEXPORT inflate(z_streamp strm, int flush);
 // int ZEXPORT inflateBack(z_streamp strm, in_func in, void *in_desc, out_func out, void *out_desc);
 // int ZEXPORT inflateBackEnd(z_streamp strm);
 // int ZEXPORT inflateBackInit(z_streamp strm, int windowBits, unsigned char *window);
 // int ZEXPORT inflateBackInit_(z_streamp strm, int windowBits, unsigned char *window, const char *version, int stream_size);
 // int ZEXPORT inflateCopy(z_streamp dest, z_streamp source);
-// int ZEXPORT inflateEnd(z_streamp strm);
+int ZEXPORT inflateEnd(z_streamp strm);
 // int ZEXPORT inflateGetDictionary(z_streamp strm, Bytef *dictionary, uInt *dictLength);
 // int ZEXPORT inflateGetHeader(z_streamp strm, gz_headerp head);
 // int ZEXPORT inflateInit(z_streamp strm);
-// int ZEXPORT inflateInit2(z_streamp strm, int windowBits);
+int ZEXPORT inflateInit2(z_streamp strm, int windowBits);
 // int ZEXPORT inflateInit2_(z_streamp strm, int windowBits, const char *version, int stream_size);
 // int ZEXPORT inflateInit_(z_streamp strm, const char *version, int stream_size);
 // int ZEXPORT inflatePrime(z_streamp strm, int bits, int value);
