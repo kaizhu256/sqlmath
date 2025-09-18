@@ -19,7 +19,7 @@
 
 
 #define DIST_CODE_LEN 512
-//!! #define NO_GZIP
+#define GZIP
 #define ZEXTERN
 
 
@@ -49,6 +49,14 @@ shRollupFetch
         {
             "sh": "cat .zlib-1.3.1/adler32.c",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/adler32.c"
+        },
+        {
+            "sh": "cat .zlib-1.3.1/crc32.h",
+            "url": "https://github.com/madler/zlib/blob/v1.3.1/crc32.h"
+        },
+        {
+            "sh": "cat .zlib-1.3.1/crc32.c",
+            "url": "https://github.com/madler/zlib/blob/v1.3.1/crc32.c"
         },
         {
             "sh": "cat .zlib-1.3.1/deflate.h",
@@ -141,7 +149,7 @@ shRollupFetch
             "substr": ""
         },
         {
-            "aa": "^static (.*?\\bZEXPORT (?:compress|uncompress))",
+            "aa": "^static (.*?\\bZEXPORT (?:compress|crc32|deflate|deflateEnd|deflateInit2|inflate|inflateEnd|inflateInit2|uncompress))",
             "bb": "// hack-zlib - export\n$1",
             "flags": "gm",
             "substr": ""
@@ -12258,7 +12266,7 @@ int ZEXPORT uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong 
 // uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
 // uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf, z_size_t len);
 uLong ZEXPORT compressBound(uLong sourceLen);
-// uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
+uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
 // uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2);
 // uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
 // uLong ZEXPORT crc32_combine64(uLong, uLong, z_off64_t);
