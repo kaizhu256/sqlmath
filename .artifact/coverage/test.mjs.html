@@ -3128,12 +3128,12 @@ body {
 <pre><span class="lineno"><a href="#line_2970" id="line_2970"> 2970.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},</span></pre>
 <pre><span class="lineno"><a href="#line_2971" id="line_2971"> 2971.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},</span></pre>
 <pre><span class="lineno"><a href="#line_2972" id="line_2972"> 2972.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2973" id="line_2973"> 2973.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr0', 0), 8) AS rr0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2974" id="line_2974"> 2974.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rr1', 0), 8) AS rr1${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2975" id="line_2975"> 2975.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx0', 0), 8) AS xx0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2976" id="line_2976"> 2976.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xx1', 0), 8) AS xx1${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2977" id="line_2977"> 2977.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy0', 0), 8) AS yy0${suffix},</span></pre>
-<pre><span class="lineno"><a href="#line_2978" id="line_2978"> 2978.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yy1', 0), 8) AS yy1${suffix}</span></pre>
+<pre><span class="lineno"><a href="#line_2973" id="line_2973"> 2973.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rra', 0), 8) AS rra${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2974" id="line_2974"> 2974.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rrb', 0), 8) AS rrb${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2975" id="line_2975"> 2975.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxa', 0), 8) AS xxa${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2976" id="line_2976"> 2976.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxb', 0), 8) AS xxb${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2977" id="line_2977"> 2977.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yya', 0), 8) AS yya${suffix},</span></pre>
+<pre><span class="lineno"><a href="#line_2978" id="line_2978"> 2978.</a></span><span class="count        ">      6</span><span>    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yyb', 0), 8) AS yyb${suffix}</span></pre>
 <pre><span class="lineno"><a href="#line_2979" id="line_2979"> 2979.</a></span><span class="count        ">      6</span><span>            `);</span></pre>
 <pre><span class="lineno"><a href="#line_2980" id="line_2980"> 2980.</a></span><span class="count        ">      6</span><span>        }</span></pre>
 <pre><span class="lineno"><a href="#line_2981" id="line_2981"> 2981.</a></span><span class="count        ">      1</span><span>        async function test_win_sinefit2_aggregate({</span></pre>
@@ -3145,7 +3145,7 @@ body {
 <pre><span class="lineno"><a href="#line_2987" id="line_2987"> 2987.</a></span><span class="count        ">      1</span><span>        }) {</span></pre>
 <pre><span class="lineno"><a href="#line_2988" id="line_2988"> 2988.</a></span><span class="count        ">      1</span><span>            let sqlBetween = "";</span></pre>
 <pre><span class="lineno"><a href="#line_2989" id="line_2989"> 2989.</a></span><span class="count        ">      1</span><span>            let valActual;</span></pre>
-<pre><span class="lineno"><a href="#line_2990" id="line_2990"> 2990.</a></span><span class="count        ">      1</span><span>            let xx2 = 2;</span></pre>
+<pre><span class="lineno"><a href="#line_2990" id="line_2990"> 2990.</a></span><span class="count        ">      1</span><span>            let xxr = 2;</span></pre>
 <pre><span class="lineno"><a href="#line_2991" id="line_2991"> 2991.</a></span><span class="count        ">      1</span><span>            if (aa !== undefined) {</span></pre>
 <pre><span class="lineno"><a href="#line_2992" id="line_2992"> 2992.</a></span><span class="count        ">      1</span><span>                sqlBetween = (</span></pre>
 <pre><span class="lineno"><a href="#line_2993" id="line_2993"> 2993.</a></span><span class="count        ">      1</span><span>                    `ROWS BETWEEN ${aa - 1} PRECEDING AND ${bb} FOLLOWING`</span></pre>
@@ -3163,17 +3163,17 @@ body {
 <pre><span class="lineno"><a href="#line_3005" id="line_3005"> 3005.</a></span><span class="count        ">      1</span><span>    SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3006" id="line_3006"> 3006.</a></span><span class="count        ">      1</span><span>        id2,</span></pre>
 <pre><span class="lineno"><a href="#line_3007" id="line_3007"> 3007.</a></span><span class="count        ">      1</span><span>        __wsf,</span></pre>
-<pre><span class="lineno"><a href="#line_3008" id="line_3008"> 3008.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'xx1', 0) AS xx11,</span></pre>
-<pre><span class="lineno"><a href="#line_3009" id="line_3009"> 3009.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'yy1', 0) AS yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3010" id="line_3010"> 3010.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'xx1', 0) AS xx12,</span></pre>
-<pre><span class="lineno"><a href="#line_3011" id="line_3011"> 3011.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'yy1', 0) AS yy12,</span></pre>
-<pre><span class="lineno"><a href="#line_3012" id="line_3012"> 3012.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'xx1', 0) AS xx13,</span></pre>
-<pre><span class="lineno"><a href="#line_3013" id="line_3013"> 3013.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'yy1', 0) AS yy13</span></pre>
+<pre><span class="lineno"><a href="#line_3008" id="line_3008"> 3008.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'xxb', 0) AS xxb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3009" id="line_3009"> 3009.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 0, 'yyb', 0) AS yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3010" id="line_3010"> 3010.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'xxb', 0) AS xxb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3011" id="line_3011"> 3011.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 8, 'yyb', 0) AS yyb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3012" id="line_3012"> 3012.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'xxb', 0) AS xxb3,</span></pre>
+<pre><span class="lineno"><a href="#line_3013" id="line_3013"> 3013.</a></span><span class="count        ">      1</span><span>        SINEFIT_EXTRACT(__wsf, 9, 'yyb', 0) AS yyb3</span></pre>
 <pre><span class="lineno"><a href="#line_3014" id="line_3014"> 3014.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_3015" id="line_3015"> 3015.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_3016" id="line_3016"> 3016.</a></span><span class="count        ">      1</span><span>            id2,</span></pre>
 <pre><span class="lineno"><a href="#line_3017" id="line_3017"> 3017.</a></span><span class="count        ">      1</span><span>            WIN_SINEFIT2(</span></pre>
-<pre><span class="lineno"><a href="#line_3018" id="line_3018"> 3018.</a></span><span class="count        ">      1</span><span>                1, ${xx2},</span></pre>
+<pre><span class="lineno"><a href="#line_3018" id="line_3018"> 3018.</a></span><span class="count        ">      1</span><span>                1, ${xxr},</span></pre>
 <pre><span class="lineno"><a href="#line_3019" id="line_3019"> 3019.</a></span><span class="count        ">      1</span><span>                value-&gt;&gt;0, value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_3020" id="line_3020"> 3020.</a></span><span class="count        ">      1</span><span>                value-&gt;&gt;0, value-&gt;&gt;1,</span></pre>
 <pre><span class="lineno"><a href="#line_3021" id="line_3021"> 3021.</a></span><span class="count        ">      1</span><span>                value-&gt;&gt;0, value-&gt;&gt;1,</span></pre>
@@ -3215,16 +3215,16 @@ body {
 <pre><span class="lineno"><a href="#line_3057" id="line_3057"> 3057.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_3058" id="line_3058"> 3058.</a></span><span class="count        ">      1</span><span>        __wsf = SINEFIT_REFITLAST(</span></pre>
 <pre><span class="lineno"><a href="#line_3059" id="line_3059"> 3059.</a></span><span class="count        ">      1</span><span>            __wsf,</span></pre>
-<pre><span class="lineno"><a href="#line_3060" id="line_3060"> 3060.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3061" id="line_3061"> 3061.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3062" id="line_3062"> 3062.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3063" id="line_3063"> 3063.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3064" id="line_3064"> 3064.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3065" id="line_3065"> 3065.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3066" id="line_3066"> 3066.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3067" id="line_3067"> 3067.</a></span><span class="count        ">      1</span><span>            xx11, yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3068" id="line_3068"> 3068.</a></span><span class="count        ">      1</span><span>            xx12, yy12,</span></pre>
-<pre><span class="lineno"><a href="#line_3069" id="line_3069"> 3069.</a></span><span class="count        ">      1</span><span>            xx13, yy13</span></pre>
+<pre><span class="lineno"><a href="#line_3060" id="line_3060"> 3060.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3061" id="line_3061"> 3061.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3062" id="line_3062"> 3062.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3063" id="line_3063"> 3063.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3064" id="line_3064"> 3064.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3065" id="line_3065"> 3065.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3066" id="line_3066"> 3066.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3067" id="line_3067"> 3067.</a></span><span class="count        ">      1</span><span>            xxb1, yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3068" id="line_3068"> 3068.</a></span><span class="count        ">      1</span><span>            xxb2, yyb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3069" id="line_3069"> 3069.</a></span><span class="count        ">      1</span><span>            xxb3, yyb3</span></pre>
 <pre><span class="lineno"><a href="#line_3070" id="line_3070"> 3070.</a></span><span class="count        ">      1</span><span>        )</span></pre>
 <pre><span class="lineno"><a href="#line_3071" id="line_3071"> 3071.</a></span><span class="count        ">      1</span><span>    WHERE id2 = ${id4};</span></pre>
 <pre><span class="lineno"><a href="#line_3072" id="line_3072"> 3072.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
@@ -3270,24 +3270,24 @@ body {
 <pre><span class="lineno"><a href="#line_3112" id="line_3112"> 3112.</a></span><span class="count        ">     10</span><span>                nnn1,</span></pre>
 <pre><span class="lineno"><a href="#line_3113" id="line_3113"> 3113.</a></span><span class="count        ">     10</span><span>                nnn2,</span></pre>
 <pre><span class="lineno"><a href="#line_3114" id="line_3114"> 3114.</a></span><span class="count        ">     10</span><span>                nnn3,</span></pre>
-<pre><span class="lineno"><a href="#line_3115" id="line_3115"> 3115.</a></span><span class="count        ">     10</span><span>                rr01,</span></pre>
-<pre><span class="lineno"><a href="#line_3116" id="line_3116"> 3116.</a></span><span class="count        ">     10</span><span>                rr02,</span></pre>
-<pre><span class="lineno"><a href="#line_3117" id="line_3117"> 3117.</a></span><span class="count        ">     10</span><span>                rr03,</span></pre>
-<pre><span class="lineno"><a href="#line_3118" id="line_3118"> 3118.</a></span><span class="count        ">     10</span><span>                rr11,</span></pre>
-<pre><span class="lineno"><a href="#line_3119" id="line_3119"> 3119.</a></span><span class="count        ">     10</span><span>                rr12,</span></pre>
-<pre><span class="lineno"><a href="#line_3120" id="line_3120"> 3120.</a></span><span class="count        ">     10</span><span>                rr13,</span></pre>
-<pre><span class="lineno"><a href="#line_3121" id="line_3121"> 3121.</a></span><span class="count        ">     10</span><span>                xx01,</span></pre>
-<pre><span class="lineno"><a href="#line_3122" id="line_3122"> 3122.</a></span><span class="count        ">     10</span><span>                xx02,</span></pre>
-<pre><span class="lineno"><a href="#line_3123" id="line_3123"> 3123.</a></span><span class="count        ">     10</span><span>                xx03,</span></pre>
-<pre><span class="lineno"><a href="#line_3124" id="line_3124"> 3124.</a></span><span class="count        ">     10</span><span>                xx11,</span></pre>
-<pre><span class="lineno"><a href="#line_3125" id="line_3125"> 3125.</a></span><span class="count        ">     10</span><span>                xx12,</span></pre>
-<pre><span class="lineno"><a href="#line_3126" id="line_3126"> 3126.</a></span><span class="count        ">     10</span><span>                xx13,</span></pre>
-<pre><span class="lineno"><a href="#line_3127" id="line_3127"> 3127.</a></span><span class="count        ">     10</span><span>                yy01,</span></pre>
-<pre><span class="lineno"><a href="#line_3128" id="line_3128"> 3128.</a></span><span class="count        ">     10</span><span>                yy02,</span></pre>
-<pre><span class="lineno"><a href="#line_3129" id="line_3129"> 3129.</a></span><span class="count        ">     10</span><span>                yy03,</span></pre>
-<pre><span class="lineno"><a href="#line_3130" id="line_3130"> 3130.</a></span><span class="count        ">     10</span><span>                yy11,</span></pre>
-<pre><span class="lineno"><a href="#line_3131" id="line_3131"> 3131.</a></span><span class="count        ">     10</span><span>                yy12,</span></pre>
-<pre><span class="lineno"><a href="#line_3132" id="line_3132"> 3132.</a></span><span class="count        ">     10</span><span>                yy13</span></pre>
+<pre><span class="lineno"><a href="#line_3115" id="line_3115"> 3115.</a></span><span class="count        ">     10</span><span>                rra1,</span></pre>
+<pre><span class="lineno"><a href="#line_3116" id="line_3116"> 3116.</a></span><span class="count        ">     10</span><span>                rra2,</span></pre>
+<pre><span class="lineno"><a href="#line_3117" id="line_3117"> 3117.</a></span><span class="count        ">     10</span><span>                rra3,</span></pre>
+<pre><span class="lineno"><a href="#line_3118" id="line_3118"> 3118.</a></span><span class="count        ">     10</span><span>                rrb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3119" id="line_3119"> 3119.</a></span><span class="count        ">     10</span><span>                rrb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3120" id="line_3120"> 3120.</a></span><span class="count        ">     10</span><span>                rrb3,</span></pre>
+<pre><span class="lineno"><a href="#line_3121" id="line_3121"> 3121.</a></span><span class="count        ">     10</span><span>                xxa1,</span></pre>
+<pre><span class="lineno"><a href="#line_3122" id="line_3122"> 3122.</a></span><span class="count        ">     10</span><span>                xxa2,</span></pre>
+<pre><span class="lineno"><a href="#line_3123" id="line_3123"> 3123.</a></span><span class="count        ">     10</span><span>                xxa3,</span></pre>
+<pre><span class="lineno"><a href="#line_3124" id="line_3124"> 3124.</a></span><span class="count        ">     10</span><span>                xxb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3125" id="line_3125"> 3125.</a></span><span class="count        ">     10</span><span>                xxb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3126" id="line_3126"> 3126.</a></span><span class="count        ">     10</span><span>                xxb3,</span></pre>
+<pre><span class="lineno"><a href="#line_3127" id="line_3127"> 3127.</a></span><span class="count        ">     10</span><span>                yya1,</span></pre>
+<pre><span class="lineno"><a href="#line_3128" id="line_3128"> 3128.</a></span><span class="count        ">     10</span><span>                yya2,</span></pre>
+<pre><span class="lineno"><a href="#line_3129" id="line_3129"> 3129.</a></span><span class="count        ">     10</span><span>                yya3,</span></pre>
+<pre><span class="lineno"><a href="#line_3130" id="line_3130"> 3130.</a></span><span class="count        ">     10</span><span>                yyb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3131" id="line_3131"> 3131.</a></span><span class="count        ">     10</span><span>                yyb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3132" id="line_3132"> 3132.</a></span><span class="count        ">     10</span><span>                yyb3</span></pre>
 <pre><span class="lineno"><a href="#line_3133" id="line_3133"> 3133.</a></span><span class="count        ">     10</span><span>            }, ii, list) {</span></pre>
 <pre><span class="lineno"><a href="#line_3134" id="line_3134"> 3134.</a></span><span class="count        ">     10</span><span>                let obj1;</span></pre>
 <pre><span class="lineno"><a href="#line_3135" id="line_3135"> 3135.</a></span><span class="count        ">     10</span><span>                let obj2;</span></pre>
@@ -3305,12 +3305,12 @@ body {
 <pre><span class="lineno"><a href="#line_3147" id="line_3147"> 3147.</a></span><span class="count        ">     10</span><span>                    "mxx": mxx1,</span></pre>
 <pre><span class="lineno"><a href="#line_3148" id="line_3148"> 3148.</a></span><span class="count        ">     10</span><span>                    "myy": myy1,</span></pre>
 <pre><span class="lineno"><a href="#line_3149" id="line_3149"> 3149.</a></span><span class="count        ">     10</span><span>                    "nnn": nnn1,</span></pre>
-<pre><span class="lineno"><a href="#line_3150" id="line_3150"> 3150.</a></span><span class="count        ">     10</span><span>                    "rr0": rr01,</span></pre>
-<pre><span class="lineno"><a href="#line_3151" id="line_3151"> 3151.</a></span><span class="count        ">     10</span><span>                    "rr1": rr11,</span></pre>
-<pre><span class="lineno"><a href="#line_3152" id="line_3152"> 3152.</a></span><span class="count        ">     10</span><span>                    "xx0": xx01,</span></pre>
-<pre><span class="lineno"><a href="#line_3153" id="line_3153"> 3153.</a></span><span class="count        ">     10</span><span>                    "xx1": xx11,</span></pre>
-<pre><span class="lineno"><a href="#line_3154" id="line_3154"> 3154.</a></span><span class="count        ">     10</span><span>                    "yy0": yy01,</span></pre>
-<pre><span class="lineno"><a href="#line_3155" id="line_3155"> 3155.</a></span><span class="count        ">     10</span><span>                    "yy1": yy11</span></pre>
+<pre><span class="lineno"><a href="#line_3150" id="line_3150"> 3150.</a></span><span class="count        ">     10</span><span>                    "rra": rra1,</span></pre>
+<pre><span class="lineno"><a href="#line_3151" id="line_3151"> 3151.</a></span><span class="count        ">     10</span><span>                    "rrb": rrb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3152" id="line_3152"> 3152.</a></span><span class="count        ">     10</span><span>                    "xxa": xxa1,</span></pre>
+<pre><span class="lineno"><a href="#line_3153" id="line_3153"> 3153.</a></span><span class="count        ">     10</span><span>                    "xxb": xxb1,</span></pre>
+<pre><span class="lineno"><a href="#line_3154" id="line_3154"> 3154.</a></span><span class="count        ">     10</span><span>                    "yya": yya1,</span></pre>
+<pre><span class="lineno"><a href="#line_3155" id="line_3155"> 3155.</a></span><span class="count        ">     10</span><span>                    "yyb": yyb1</span></pre>
 <pre><span class="lineno"><a href="#line_3156" id="line_3156"> 3156.</a></span><span class="count        ">     10</span><span>                };</span></pre>
 <pre><span class="lineno"><a href="#line_3157" id="line_3157"> 3157.</a></span><span class="count        ">     10</span><span>                obj2 = {</span></pre>
 <pre><span class="lineno"><a href="#line_3158" id="line_3158"> 3158.</a></span><span class="count        ">     10</span><span>                    id2,</span></pre>
@@ -3325,12 +3325,12 @@ body {
 <pre><span class="lineno"><a href="#line_3167" id="line_3167"> 3167.</a></span><span class="count        ">     10</span><span>                    "mxx": mxx2,</span></pre>
 <pre><span class="lineno"><a href="#line_3168" id="line_3168"> 3168.</a></span><span class="count        ">     10</span><span>                    "myy": myy2,</span></pre>
 <pre><span class="lineno"><a href="#line_3169" id="line_3169"> 3169.</a></span><span class="count        ">     10</span><span>                    "nnn": nnn2,</span></pre>
-<pre><span class="lineno"><a href="#line_3170" id="line_3170"> 3170.</a></span><span class="count        ">     10</span><span>                    "rr0": rr02,</span></pre>
-<pre><span class="lineno"><a href="#line_3171" id="line_3171"> 3171.</a></span><span class="count        ">     10</span><span>                    "rr1": rr12,</span></pre>
-<pre><span class="lineno"><a href="#line_3172" id="line_3172"> 3172.</a></span><span class="count        ">     10</span><span>                    "xx0": xx02,</span></pre>
-<pre><span class="lineno"><a href="#line_3173" id="line_3173"> 3173.</a></span><span class="count        ">     10</span><span>                    "xx1": xx12,</span></pre>
-<pre><span class="lineno"><a href="#line_3174" id="line_3174"> 3174.</a></span><span class="count        ">     10</span><span>                    "yy0": yy02,</span></pre>
-<pre><span class="lineno"><a href="#line_3175" id="line_3175"> 3175.</a></span><span class="count        ">     10</span><span>                    "yy1": yy12</span></pre>
+<pre><span class="lineno"><a href="#line_3170" id="line_3170"> 3170.</a></span><span class="count        ">     10</span><span>                    "rra": rra2,</span></pre>
+<pre><span class="lineno"><a href="#line_3171" id="line_3171"> 3171.</a></span><span class="count        ">     10</span><span>                    "rrb": rrb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3172" id="line_3172"> 3172.</a></span><span class="count        ">     10</span><span>                    "xxa": xxa2,</span></pre>
+<pre><span class="lineno"><a href="#line_3173" id="line_3173"> 3173.</a></span><span class="count        ">     10</span><span>                    "xxb": xxb2,</span></pre>
+<pre><span class="lineno"><a href="#line_3174" id="line_3174"> 3174.</a></span><span class="count        ">     10</span><span>                    "yya": yya2,</span></pre>
+<pre><span class="lineno"><a href="#line_3175" id="line_3175"> 3175.</a></span><span class="count        ">     10</span><span>                    "yyb": yyb2</span></pre>
 <pre><span class="lineno"><a href="#line_3176" id="line_3176"> 3176.</a></span><span class="count        ">     10</span><span>                };</span></pre>
 <pre><span class="lineno"><a href="#line_3177" id="line_3177"> 3177.</a></span><span class="count        ">     10</span><span>                obj3 = {</span></pre>
 <pre><span class="lineno"><a href="#line_3178" id="line_3178"> 3178.</a></span><span class="count        ">     10</span><span>                    id2,</span></pre>
@@ -3345,12 +3345,12 @@ body {
 <pre><span class="lineno"><a href="#line_3187" id="line_3187"> 3187.</a></span><span class="count        ">     10</span><span>                    "mxx": mxx3,</span></pre>
 <pre><span class="lineno"><a href="#line_3188" id="line_3188"> 3188.</a></span><span class="count        ">     10</span><span>                    "myy": myy3,</span></pre>
 <pre><span class="lineno"><a href="#line_3189" id="line_3189"> 3189.</a></span><span class="count        ">     10</span><span>                    "nnn": nnn3,</span></pre>
-<pre><span class="lineno"><a href="#line_3190" id="line_3190"> 3190.</a></span><span class="count        ">     10</span><span>                    "rr0": rr03,</span></pre>
-<pre><span class="lineno"><a href="#line_3191" id="line_3191"> 3191.</a></span><span class="count        ">     10</span><span>                    "rr1": rr13,</span></pre>
-<pre><span class="lineno"><a href="#line_3192" id="line_3192"> 3192.</a></span><span class="count        ">     10</span><span>                    "xx0": xx03,</span></pre>
-<pre><span class="lineno"><a href="#line_3193" id="line_3193"> 3193.</a></span><span class="count        ">     10</span><span>                    "xx1": xx13,</span></pre>
-<pre><span class="lineno"><a href="#line_3194" id="line_3194"> 3194.</a></span><span class="count        ">     10</span><span>                    "yy0": yy03,</span></pre>
-<pre><span class="lineno"><a href="#line_3195" id="line_3195"> 3195.</a></span><span class="count        ">     10</span><span>                    "yy1": yy13</span></pre>
+<pre><span class="lineno"><a href="#line_3190" id="line_3190"> 3190.</a></span><span class="count        ">     10</span><span>                    "rra": rra3,</span></pre>
+<pre><span class="lineno"><a href="#line_3191" id="line_3191"> 3191.</a></span><span class="count        ">     10</span><span>                    "rrb": rrb3,</span></pre>
+<pre><span class="lineno"><a href="#line_3192" id="line_3192"> 3192.</a></span><span class="count        ">     10</span><span>                    "xxa": xxa3,</span></pre>
+<pre><span class="lineno"><a href="#line_3193" id="line_3193"> 3193.</a></span><span class="count        ">     10</span><span>                    "xxb": xxb3,</span></pre>
+<pre><span class="lineno"><a href="#line_3194" id="line_3194"> 3194.</a></span><span class="count        ">     10</span><span>                    "yya": yya3,</span></pre>
+<pre><span class="lineno"><a href="#line_3195" id="line_3195"> 3195.</a></span><span class="count        ">     10</span><span>                    "yyb": yyb3</span></pre>
 <pre><span class="lineno"><a href="#line_3196" id="line_3196"> 3196.</a></span><span class="count        ">     10</span><span>                };</span></pre>
 <pre><span class="lineno"><a href="#line_3197" id="line_3197"> 3197.</a></span><span class="count        ">     10</span><span>                switch (list.length - ii) {</span></pre>
 <pre><span class="lineno"><a href="#line_3198" id="line_3198"> 3198.</a></span><span class="count        ">      1</span><span>                case 1:</span></pre>
@@ -3383,12 +3383,12 @@ body {
 <pre><span class="lineno"><a href="#line_3225" id="line_3225"> 3225.</a></span><span class="count        ">      1</span><span>                "mxx": 2,</span></pre>
 <pre><span class="lineno"><a href="#line_3226" id="line_3226"> 3226.</a></span><span class="count        ">      1</span><span>                "myy": 0,</span></pre>
 <pre><span class="lineno"><a href="#line_3227" id="line_3227"> 3227.</a></span><span class="count        ">      1</span><span>                "nnn": 1,</span></pre>
-<pre><span class="lineno"><a href="#line_3228" id="line_3228"> 3228.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3229" id="line_3229"> 3229.</a></span><span class="count        ">      1</span><span>                "rr1": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3230" id="line_3230"> 3230.</a></span><span class="count        ">      1</span><span>                "xx0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3231" id="line_3231"> 3231.</a></span><span class="count        ">      1</span><span>                "xx1": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3232" id="line_3232"> 3232.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3233" id="line_3233"> 3233.</a></span><span class="count        ">      1</span><span>                "yy1": 0</span></pre>
+<pre><span class="lineno"><a href="#line_3228" id="line_3228"> 3228.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3229" id="line_3229"> 3229.</a></span><span class="count        ">      1</span><span>                "rrb": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3230" id="line_3230"> 3230.</a></span><span class="count        ">      1</span><span>                "xxa": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3231" id="line_3231"> 3231.</a></span><span class="count        ">      1</span><span>                "xxb": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3232" id="line_3232"> 3232.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3233" id="line_3233"> 3233.</a></span><span class="count        ">      1</span><span>                "yyb": 0</span></pre>
 <pre><span class="lineno"><a href="#line_3234" id="line_3234"> 3234.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3235" id="line_3235"> 3235.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3236" id="line_3236"> 3236.</a></span><span class="count        ">      1</span><span>                "id2": 2,</span></pre>
@@ -3403,12 +3403,12 @@ body {
 <pre><span class="lineno"><a href="#line_3245" id="line_3245"> 3245.</a></span><span class="count        ">      1</span><span>                "mxx": 2,</span></pre>
 <pre><span class="lineno"><a href="#line_3246" id="line_3246"> 3246.</a></span><span class="count        ">      1</span><span>                "myy": 0.5,</span></pre>
 <pre><span class="lineno"><a href="#line_3247" id="line_3247"> 3247.</a></span><span class="count        ">      1</span><span>                "nnn": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3248" id="line_3248"> 3248.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3249" id="line_3249"> 3249.</a></span><span class="count        ">      1</span><span>                "rr1": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3250" id="line_3250"> 3250.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3251" id="line_3251"> 3251.</a></span><span class="count        ">      1</span><span>                "xx1": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3252" id="line_3252"> 3252.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3253" id="line_3253"> 3253.</a></span><span class="count        ">      1</span><span>                "yy1": 1</span></pre>
+<pre><span class="lineno"><a href="#line_3248" id="line_3248"> 3248.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3249" id="line_3249"> 3249.</a></span><span class="count        ">      1</span><span>                "rrb": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3250" id="line_3250"> 3250.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3251" id="line_3251"> 3251.</a></span><span class="count        ">      1</span><span>                "xxb": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3252" id="line_3252"> 3252.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3253" id="line_3253"> 3253.</a></span><span class="count        ">      1</span><span>                "yyb": 1</span></pre>
 <pre><span class="lineno"><a href="#line_3254" id="line_3254"> 3254.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3255" id="line_3255"> 3255.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3256" id="line_3256"> 3256.</a></span><span class="count        ">      1</span><span>                "id2": 3,</span></pre>
@@ -3423,12 +3423,12 @@ body {
 <pre><span class="lineno"><a href="#line_3265" id="line_3265"> 3265.</a></span><span class="count        ">      1</span><span>                "mxx": 2.33333333,</span></pre>
 <pre><span class="lineno"><a href="#line_3266" id="line_3266"> 3266.</a></span><span class="count        ">      1</span><span>                "myy": 1.33333333,</span></pre>
 <pre><span class="lineno"><a href="#line_3267" id="line_3267"> 3267.</a></span><span class="count        ">      1</span><span>                "nnn": 3,</span></pre>
-<pre><span class="lineno"><a href="#line_3268" id="line_3268"> 3268.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3269" id="line_3269"> 3269.</a></span><span class="count        ">      1</span><span>                "rr1": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3270" id="line_3270"> 3270.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3271" id="line_3271"> 3271.</a></span><span class="count        ">      1</span><span>                "xx1": 3,</span></pre>
-<pre><span class="lineno"><a href="#line_3272" id="line_3272"> 3272.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3273" id="line_3273"> 3273.</a></span><span class="count        ">      1</span><span>                "yy1": 3</span></pre>
+<pre><span class="lineno"><a href="#line_3268" id="line_3268"> 3268.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3269" id="line_3269"> 3269.</a></span><span class="count        ">      1</span><span>                "rrb": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3270" id="line_3270"> 3270.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3271" id="line_3271"> 3271.</a></span><span class="count        ">      1</span><span>                "xxb": 3,</span></pre>
+<pre><span class="lineno"><a href="#line_3272" id="line_3272"> 3272.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3273" id="line_3273"> 3273.</a></span><span class="count        ">      1</span><span>                "yyb": 3</span></pre>
 <pre><span class="lineno"><a href="#line_3274" id="line_3274"> 3274.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3275" id="line_3275"> 3275.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3276" id="line_3276"> 3276.</a></span><span class="count        ">      1</span><span>                "id2": 4,</span></pre>
@@ -3443,12 +3443,12 @@ body {
 <pre><span class="lineno"><a href="#line_3285" id="line_3285"> 3285.</a></span><span class="count        ">      1</span><span>                "mxx": 2.75,</span></pre>
 <pre><span class="lineno"><a href="#line_3286" id="line_3286"> 3286.</a></span><span class="count        ">      1</span><span>                "myy": 2,</span></pre>
 <pre><span class="lineno"><a href="#line_3287" id="line_3287"> 3287.</a></span><span class="count        ">      1</span><span>                "nnn": 4,</span></pre>
-<pre><span class="lineno"><a href="#line_3288" id="line_3288"> 3288.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3289" id="line_3289"> 3289.</a></span><span class="count        ">      1</span><span>                "rr1": -0.27272727,</span></pre>
-<pre><span class="lineno"><a href="#line_3290" id="line_3290"> 3290.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3291" id="line_3291"> 3291.</a></span><span class="count        ">      1</span><span>                "xx1": 4,</span></pre>
-<pre><span class="lineno"><a href="#line_3292" id="line_3292"> 3292.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3293" id="line_3293"> 3293.</a></span><span class="count        ">      1</span><span>                "yy1": 4</span></pre>
+<pre><span class="lineno"><a href="#line_3288" id="line_3288"> 3288.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3289" id="line_3289"> 3289.</a></span><span class="count        ">      1</span><span>                "rrb": -0.27272727,</span></pre>
+<pre><span class="lineno"><a href="#line_3290" id="line_3290"> 3290.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3291" id="line_3291"> 3291.</a></span><span class="count        ">      1</span><span>                "xxb": 4,</span></pre>
+<pre><span class="lineno"><a href="#line_3292" id="line_3292"> 3292.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3293" id="line_3293"> 3293.</a></span><span class="count        ">      1</span><span>                "yyb": 4</span></pre>
 <pre><span class="lineno"><a href="#line_3294" id="line_3294"> 3294.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3295" id="line_3295"> 3295.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3296" id="line_3296"> 3296.</a></span><span class="count        ">      1</span><span>                "id2": 5,</span></pre>
@@ -3463,12 +3463,12 @@ body {
 <pre><span class="lineno"><a href="#line_3305" id="line_3305"> 3305.</a></span><span class="count        ">      1</span><span>                "mxx": 3.2,</span></pre>
 <pre><span class="lineno"><a href="#line_3306" id="line_3306"> 3306.</a></span><span class="count        ">      1</span><span>                "myy": 2.6,</span></pre>
 <pre><span class="lineno"><a href="#line_3307" id="line_3307"> 3307.</a></span><span class="count        ">      1</span><span>                "nnn": 5,</span></pre>
-<pre><span class="lineno"><a href="#line_3308" id="line_3308"> 3308.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3309" id="line_3309"> 3309.</a></span><span class="count        ">      1</span><span>                "rr1": -0.35294118,</span></pre>
-<pre><span class="lineno"><a href="#line_3310" id="line_3310"> 3310.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3311" id="line_3311"> 3311.</a></span><span class="count        ">      1</span><span>                "xx1": 5,</span></pre>
-<pre><span class="lineno"><a href="#line_3312" id="line_3312"> 3312.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3313" id="line_3313"> 3313.</a></span><span class="count        ">      1</span><span>                "yy1": 5</span></pre>
+<pre><span class="lineno"><a href="#line_3308" id="line_3308"> 3308.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3309" id="line_3309"> 3309.</a></span><span class="count        ">      1</span><span>                "rrb": -0.35294118,</span></pre>
+<pre><span class="lineno"><a href="#line_3310" id="line_3310"> 3310.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3311" id="line_3311"> 3311.</a></span><span class="count        ">      1</span><span>                "xxb": 5,</span></pre>
+<pre><span class="lineno"><a href="#line_3312" id="line_3312"> 3312.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3313" id="line_3313"> 3313.</a></span><span class="count        ">      1</span><span>                "yyb": 5</span></pre>
 <pre><span class="lineno"><a href="#line_3314" id="line_3314"> 3314.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3315" id="line_3315"> 3315.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3316" id="line_3316"> 3316.</a></span><span class="count        ">      1</span><span>                "id2": 6,</span></pre>
@@ -3483,12 +3483,12 @@ body {
 <pre><span class="lineno"><a href="#line_3325" id="line_3325"> 3325.</a></span><span class="count        ">      1</span><span>                "mxx": 3.5,</span></pre>
 <pre><span class="lineno"><a href="#line_3326" id="line_3326"> 3326.</a></span><span class="count        ">      1</span><span>                "myy": 3.16666667,</span></pre>
 <pre><span class="lineno"><a href="#line_3327" id="line_3327"> 3327.</a></span><span class="count        ">      1</span><span>                "nnn": 6,</span></pre>
-<pre><span class="lineno"><a href="#line_3328" id="line_3328"> 3328.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3329" id="line_3329"> 3329.</a></span><span class="count        ">      1</span><span>                "rr1": 0.38596491,</span></pre>
-<pre><span class="lineno"><a href="#line_3330" id="line_3330"> 3330.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3331" id="line_3331"> 3331.</a></span><span class="count        ">      1</span><span>                "xx1": 5,</span></pre>
-<pre><span class="lineno"><a href="#line_3332" id="line_3332"> 3332.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3333" id="line_3333"> 3333.</a></span><span class="count        ">      1</span><span>                "yy1": 6</span></pre>
+<pre><span class="lineno"><a href="#line_3328" id="line_3328"> 3328.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3329" id="line_3329"> 3329.</a></span><span class="count        ">      1</span><span>                "rrb": 0.38596491,</span></pre>
+<pre><span class="lineno"><a href="#line_3330" id="line_3330"> 3330.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3331" id="line_3331"> 3331.</a></span><span class="count        ">      1</span><span>                "xxb": 5,</span></pre>
+<pre><span class="lineno"><a href="#line_3332" id="line_3332"> 3332.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3333" id="line_3333"> 3333.</a></span><span class="count        ">      1</span><span>                "yyb": 6</span></pre>
 <pre><span class="lineno"><a href="#line_3334" id="line_3334"> 3334.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3335" id="line_3335"> 3335.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3336" id="line_3336"> 3336.</a></span><span class="count        ">      1</span><span>                "id2": 7,</span></pre>
@@ -3503,12 +3503,12 @@ body {
 <pre><span class="lineno"><a href="#line_3345" id="line_3345"> 3345.</a></span><span class="count        ">      1</span><span>                "mxx": 3.71428571,</span></pre>
 <pre><span class="lineno"><a href="#line_3346" id="line_3346"> 3346.</a></span><span class="count        ">      1</span><span>                "myy": 3.57142857,</span></pre>
 <pre><span class="lineno"><a href="#line_3347" id="line_3347"> 3347.</a></span><span class="count        ">      1</span><span>                "nnn": 7,</span></pre>
-<pre><span class="lineno"><a href="#line_3348" id="line_3348"> 3348.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3349" id="line_3349"> 3349.</a></span><span class="count        ">      1</span><span>                "rr1": 0.275,</span></pre>
-<pre><span class="lineno"><a href="#line_3350" id="line_3350"> 3350.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3351" id="line_3351"> 3351.</a></span><span class="count        ">      1</span><span>                "xx1": 5,</span></pre>
-<pre><span class="lineno"><a href="#line_3352" id="line_3352"> 3352.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3353" id="line_3353"> 3353.</a></span><span class="count        ">      1</span><span>                "yy1": 6</span></pre>
+<pre><span class="lineno"><a href="#line_3348" id="line_3348"> 3348.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3349" id="line_3349"> 3349.</a></span><span class="count        ">      1</span><span>                "rrb": 0.275,</span></pre>
+<pre><span class="lineno"><a href="#line_3350" id="line_3350"> 3350.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3351" id="line_3351"> 3351.</a></span><span class="count        ">      1</span><span>                "xxb": 5,</span></pre>
+<pre><span class="lineno"><a href="#line_3352" id="line_3352"> 3352.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3353" id="line_3353"> 3353.</a></span><span class="count        ">      1</span><span>                "yyb": 6</span></pre>
 <pre><span class="lineno"><a href="#line_3354" id="line_3354"> 3354.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3355" id="line_3355"> 3355.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3356" id="line_3356"> 3356.</a></span><span class="count        ">      1</span><span>                "id2": 8,</span></pre>
@@ -3523,12 +3523,12 @@ body {
 <pre><span class="lineno"><a href="#line_3365" id="line_3365"> 3365.</a></span><span class="count        ">      1</span><span>                "mxx": 4,</span></pre>
 <pre><span class="lineno"><a href="#line_3366" id="line_3366"> 3366.</a></span><span class="count        ">      1</span><span>                "myy": 4,</span></pre>
 <pre><span class="lineno"><a href="#line_3367" id="line_3367"> 3367.</a></span><span class="count        ">      1</span><span>                "nnn": 8,</span></pre>
-<pre><span class="lineno"><a href="#line_3368" id="line_3368"> 3368.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3369" id="line_3369"> 3369.</a></span><span class="count        ">      1</span><span>                "rr1": -0.25,</span></pre>
-<pre><span class="lineno"><a href="#line_3370" id="line_3370"> 3370.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3371" id="line_3371"> 3371.</a></span><span class="count        ">      1</span><span>                "xx1": 6,</span></pre>
-<pre><span class="lineno"><a href="#line_3372" id="line_3372"> 3372.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3373" id="line_3373"> 3373.</a></span><span class="count        ">      1</span><span>                "yy1": 7</span></pre>
+<pre><span class="lineno"><a href="#line_3368" id="line_3368"> 3368.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3369" id="line_3369"> 3369.</a></span><span class="count        ">      1</span><span>                "rrb": -0.25,</span></pre>
+<pre><span class="lineno"><a href="#line_3370" id="line_3370"> 3370.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3371" id="line_3371"> 3371.</a></span><span class="count        ">      1</span><span>                "xxb": 6,</span></pre>
+<pre><span class="lineno"><a href="#line_3372" id="line_3372"> 3372.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3373" id="line_3373"> 3373.</a></span><span class="count        ">      1</span><span>                "yyb": 7</span></pre>
 <pre><span class="lineno"><a href="#line_3374" id="line_3374"> 3374.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3375" id="line_3375"> 3375.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3376" id="line_3376"> 3376.</a></span><span class="count        ">      1</span><span>                "id2": 9,</span></pre>
@@ -3543,12 +3543,12 @@ body {
 <pre><span class="lineno"><a href="#line_3385" id="line_3385"> 3385.</a></span><span class="count        ">      1</span><span>                "mxx": 5,</span></pre>
 <pre><span class="lineno"><a href="#line_3386" id="line_3386"> 3386.</a></span><span class="count        ">      1</span><span>                "myy": 5,</span></pre>
 <pre><span class="lineno"><a href="#line_3387" id="line_3387"> 3387.</a></span><span class="count        ">      1</span><span>                "nnn": 8,</span></pre>
-<pre><span class="lineno"><a href="#line_3388" id="line_3388"> 3388.</a></span><span class="count        ">      1</span><span>                "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3389" id="line_3389"> 3389.</a></span><span class="count        ">      1</span><span>                "rr1": -1.25,</span></pre>
-<pre><span class="lineno"><a href="#line_3390" id="line_3390"> 3390.</a></span><span class="count        ">      1</span><span>                "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3391" id="line_3391"> 3391.</a></span><span class="count        ">      1</span><span>                "xx1": 10,</span></pre>
-<pre><span class="lineno"><a href="#line_3392" id="line_3392"> 3392.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3393" id="line_3393"> 3393.</a></span><span class="count        ">      1</span><span>                "yy1": 8</span></pre>
+<pre><span class="lineno"><a href="#line_3388" id="line_3388"> 3388.</a></span><span class="count        ">      1</span><span>                "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3389" id="line_3389"> 3389.</a></span><span class="count        ">      1</span><span>                "rrb": -1.25,</span></pre>
+<pre><span class="lineno"><a href="#line_3390" id="line_3390"> 3390.</a></span><span class="count        ">      1</span><span>                "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3391" id="line_3391"> 3391.</a></span><span class="count        ">      1</span><span>                "xxb": 10,</span></pre>
+<pre><span class="lineno"><a href="#line_3392" id="line_3392"> 3392.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3393" id="line_3393"> 3393.</a></span><span class="count        ">      1</span><span>                "yyb": 8</span></pre>
 <pre><span class="lineno"><a href="#line_3394" id="line_3394"> 3394.</a></span><span class="count        ">      1</span><span>            },</span></pre>
 <pre><span class="lineno"><a href="#line_3395" id="line_3395"> 3395.</a></span><span class="count        ">      1</span><span>            {</span></pre>
 <pre><span class="lineno"><a href="#line_3396" id="line_3396"> 3396.</a></span><span class="count        ">      1</span><span>                "id2": 10,</span></pre>
@@ -3563,12 +3563,12 @@ body {
 <pre><span class="lineno"><a href="#line_3405" id="line_3405"> 3405.</a></span><span class="count        ">      1</span><span>                "mxx": 5,</span></pre>
 <pre><span class="lineno"><a href="#line_3406" id="line_3406"> 3406.</a></span><span class="count        ">      1</span><span>                "myy": 5.5,</span></pre>
 <pre><span class="lineno"><a href="#line_3407" id="line_3407"> 3407.</a></span><span class="count        ">      1</span><span>                "nnn": 8,</span></pre>
-<pre><span class="lineno"><a href="#line_3408" id="line_3408"> 3408.</a></span><span class="count        ">      1</span><span>                "rr0": -0.87387387,</span></pre>
-<pre><span class="lineno"><a href="#line_3409" id="line_3409"> 3409.</a></span><span class="count        ">      1</span><span>                "rr1": 1.15,</span></pre>
-<pre><span class="lineno"><a href="#line_3410" id="line_3410"> 3410.</a></span><span class="count        ">      1</span><span>                "xx0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3411" id="line_3411"> 3411.</a></span><span class="count        ">      1</span><span>                "xx1": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3412" id="line_3412"> 3412.</a></span><span class="count        ">      1</span><span>                "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3413" id="line_3413"> 3413.</a></span><span class="count        ">      1</span><span>                "yy1": 5</span></pre>
+<pre><span class="lineno"><a href="#line_3408" id="line_3408"> 3408.</a></span><span class="count        ">      1</span><span>                "rra": -0.87387387,</span></pre>
+<pre><span class="lineno"><a href="#line_3409" id="line_3409"> 3409.</a></span><span class="count        ">      1</span><span>                "rrb": 1.15,</span></pre>
+<pre><span class="lineno"><a href="#line_3410" id="line_3410"> 3410.</a></span><span class="count        ">      1</span><span>                "xxa": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3411" id="line_3411"> 3411.</a></span><span class="count        ">      1</span><span>                "xxb": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3412" id="line_3412"> 3412.</a></span><span class="count        ">      1</span><span>                "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3413" id="line_3413"> 3413.</a></span><span class="count        ">      1</span><span>                "yyb": 5</span></pre>
 <pre><span class="lineno"><a href="#line_3414" id="line_3414"> 3414.</a></span><span class="count        ">      1</span><span>            }</span></pre>
 <pre><span class="lineno"><a href="#line_3415" id="line_3415"> 3415.</a></span><span class="count        ">      1</span><span>        ];</span></pre>
 <pre><span class="lineno"><a href="#line_3416" id="line_3416"> 3416.</a></span><span class="count        ">      1</span><span>        valIn = [</span></pre>
@@ -3648,12 +3648,12 @@ body {
 <pre><span class="lineno"><a href="#line_3490" id="line_3490"> 3490.</a></span><span class="count        ">      1</span><span>                        "mxx": 4.4,</span></pre>
 <pre><span class="lineno"><a href="#line_3491" id="line_3491"> 3491.</a></span><span class="count        ">      1</span><span>                        "myy": 4.5,</span></pre>
 <pre><span class="lineno"><a href="#line_3492" id="line_3492"> 3492.</a></span><span class="count        ">      1</span><span>                        "nnn": 10,</span></pre>
-<pre><span class="lineno"><a href="#line_3493" id="line_3493"> 3493.</a></span><span class="count        ">      1</span><span>                        "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3494" id="line_3494"> 3494.</a></span><span class="count        ">      1</span><span>                        "rr1": 2.52941176,</span></pre>
-<pre><span class="lineno"><a href="#line_3495" id="line_3495"> 3495.</a></span><span class="count        ">      1</span><span>                        "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3496" id="line_3496"> 3496.</a></span><span class="count        ">      1</span><span>                        "xx1": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3497" id="line_3497"> 3497.</a></span><span class="count        ">      1</span><span>                        "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3498" id="line_3498"> 3498.</a></span><span class="count        ">      1</span><span>                        "yy1": 5</span></pre>
+<pre><span class="lineno"><a href="#line_3493" id="line_3493"> 3493.</a></span><span class="count        ">      1</span><span>                        "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3494" id="line_3494"> 3494.</a></span><span class="count        ">      1</span><span>                        "rrb": 2.52941176,</span></pre>
+<pre><span class="lineno"><a href="#line_3495" id="line_3495"> 3495.</a></span><span class="count        ">      1</span><span>                        "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3496" id="line_3496"> 3496.</a></span><span class="count        ">      1</span><span>                        "xxb": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3497" id="line_3497"> 3497.</a></span><span class="count        ">      1</span><span>                        "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3498" id="line_3498"> 3498.</a></span><span class="count        ">      1</span><span>                        "yyb": 5</span></pre>
 <pre><span class="lineno"><a href="#line_3499" id="line_3499"> 3499.</a></span><span class="count        ">      1</span><span>                    }</span></pre>
 <pre><span class="lineno"><a href="#line_3500" id="line_3500"> 3500.</a></span><span class="count        ">      1</span><span>                );</span></pre>
 <pre><span class="lineno"><a href="#line_3501" id="line_3501"> 3501.</a></span><span class="count        ">      1</span><span>            }()),</span></pre>
@@ -3674,12 +3674,12 @@ body {
 <pre><span class="lineno"><a href="#line_3516" id="line_3516"> 3516.</a></span><span class="count        ">      1</span><span>                    "mxx": 74,</span></pre>
 <pre><span class="lineno"><a href="#line_3517" id="line_3517"> 3517.</a></span><span class="count        ">      1</span><span>                    "myy": 10,</span></pre>
 <pre><span class="lineno"><a href="#line_3518" id="line_3518"> 3518.</a></span><span class="count        ">      1</span><span>                    "nnn": 6,</span></pre>
-<pre><span class="lineno"><a href="#line_3519" id="line_3519"> 3519.</a></span><span class="count        ">      1</span><span>                    "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3520" id="line_3520"> 3520.</a></span><span class="count        ">      1</span><span>                    "rr1": -1.63694722,</span></pre>
-<pre><span class="lineno"><a href="#line_3521" id="line_3521"> 3521.</a></span><span class="count        ">      1</span><span>                    "xx0": 34,</span></pre>
-<pre><span class="lineno"><a href="#line_3522" id="line_3522"> 3522.</a></span><span class="count        ">      1</span><span>                    "xx1": 51,</span></pre>
-<pre><span class="lineno"><a href="#line_3523" id="line_3523"> 3523.</a></span><span class="count        ">      1</span><span>                    "yy0": 5,</span></pre>
-<pre><span class="lineno"><a href="#line_3524" id="line_3524"> 3524.</a></span><span class="count        ">      1</span><span>                    "yy1": 5</span></pre>
+<pre><span class="lineno"><a href="#line_3519" id="line_3519"> 3519.</a></span><span class="count        ">      1</span><span>                    "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3520" id="line_3520"> 3520.</a></span><span class="count        ">      1</span><span>                    "rrb": -1.63694722,</span></pre>
+<pre><span class="lineno"><a href="#line_3521" id="line_3521"> 3521.</a></span><span class="count        ">      1</span><span>                    "xxa": 34,</span></pre>
+<pre><span class="lineno"><a href="#line_3522" id="line_3522"> 3522.</a></span><span class="count        ">      1</span><span>                    "xxb": 51,</span></pre>
+<pre><span class="lineno"><a href="#line_3523" id="line_3523"> 3523.</a></span><span class="count        ">      1</span><span>                    "yya": 5,</span></pre>
+<pre><span class="lineno"><a href="#line_3524" id="line_3524"> 3524.</a></span><span class="count        ">      1</span><span>                    "yyb": 5</span></pre>
 <pre><span class="lineno"><a href="#line_3525" id="line_3525"> 3525.</a></span><span class="count        ">      1</span><span>                };</span></pre>
 <pre><span class="lineno"><a href="#line_3526" id="line_3526"> 3526.</a></span><span class="count        ">      1</span><span>                valActual = await dbExecAndReturnLastRow({</span></pre>
 <pre><span class="lineno"><a href="#line_3527" id="line_3527"> 3527.</a></span><span class="count        ">      1</span><span>                    db,</span></pre>
@@ -3720,12 +3720,12 @@ body {
 <pre><span class="lineno"><a href="#line_3562" id="line_3562"> 3562.</a></span><span class="count        ">      1</span><span>                    "mxx": 5,</span></pre>
 <pre><span class="lineno"><a href="#line_3563" id="line_3563"> 3563.</a></span><span class="count        ">      1</span><span>                    "myy": 3.875,</span></pre>
 <pre><span class="lineno"><a href="#line_3564" id="line_3564"> 3564.</a></span><span class="count        ">      1</span><span>                    "nnn": 8,</span></pre>
-<pre><span class="lineno"><a href="#line_3565" id="line_3565"> 3565.</a></span><span class="count        ">      1</span><span>                    "rr0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3566" id="line_3566"> 3566.</a></span><span class="count        ">      1</span><span>                    "rr1": -3.5,</span></pre>
-<pre><span class="lineno"><a href="#line_3567" id="line_3567"> 3567.</a></span><span class="count        ">      1</span><span>                    "xx0": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3568" id="line_3568"> 3568.</a></span><span class="count        ">      1</span><span>                    "xx1": 10,</span></pre>
-<pre><span class="lineno"><a href="#line_3569" id="line_3569"> 3569.</a></span><span class="count        ">      1</span><span>                    "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3570" id="line_3570"> 3570.</a></span><span class="count        ">      1</span><span>                    "yy1": -1</span></pre>
+<pre><span class="lineno"><a href="#line_3565" id="line_3565"> 3565.</a></span><span class="count        ">      1</span><span>                    "rra": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3566" id="line_3566"> 3566.</a></span><span class="count        ">      1</span><span>                    "rrb": -3.5,</span></pre>
+<pre><span class="lineno"><a href="#line_3567" id="line_3567"> 3567.</a></span><span class="count        ">      1</span><span>                    "xxa": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3568" id="line_3568"> 3568.</a></span><span class="count        ">      1</span><span>                    "xxb": 10,</span></pre>
+<pre><span class="lineno"><a href="#line_3569" id="line_3569"> 3569.</a></span><span class="count        ">      1</span><span>                    "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3570" id="line_3570"> 3570.</a></span><span class="count        ">      1</span><span>                    "yyb": -1</span></pre>
 <pre><span class="lineno"><a href="#line_3571" id="line_3571"> 3571.</a></span><span class="count        ">      1</span><span>                },</span></pre>
 <pre><span class="lineno"><a href="#line_3572" id="line_3572"> 3572.</a></span><span class="count        ">      1</span><span>                valExpect3: {</span></pre>
 <pre><span class="lineno"><a href="#line_3573" id="line_3573"> 3573.</a></span><span class="count        ">      1</span><span>                    "id2": id4,</span></pre>
@@ -3740,12 +3740,12 @@ body {
 <pre><span class="lineno"><a href="#line_3582" id="line_3582"> 3582.</a></span><span class="count        ">      1</span><span>                    "mxx": 5,</span></pre>
 <pre><span class="lineno"><a href="#line_3583" id="line_3583"> 3583.</a></span><span class="count        ">      1</span><span>                    "myy": 4.375,</span></pre>
 <pre><span class="lineno"><a href="#line_3584" id="line_3584"> 3584.</a></span><span class="count        ">      1</span><span>                    "nnn": 8,</span></pre>
-<pre><span class="lineno"><a href="#line_3585" id="line_3585"> 3585.</a></span><span class="count        ">      1</span><span>                    "rr0": -3.79279279,</span></pre>
-<pre><span class="lineno"><a href="#line_3586" id="line_3586"> 3586.</a></span><span class="count        ">      1</span><span>                    "rr1": -1.1,</span></pre>
-<pre><span class="lineno"><a href="#line_3587" id="line_3587"> 3587.</a></span><span class="count        ">      1</span><span>                    "xx0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3588" id="line_3588"> 3588.</a></span><span class="count        ">      1</span><span>                    "xx1": 2,</span></pre>
-<pre><span class="lineno"><a href="#line_3589" id="line_3589"> 3589.</a></span><span class="count        ">      1</span><span>                    "yy0": 0,</span></pre>
-<pre><span class="lineno"><a href="#line_3590" id="line_3590"> 3590.</a></span><span class="count        ">      1</span><span>                    "yy1": 5</span></pre>
+<pre><span class="lineno"><a href="#line_3585" id="line_3585"> 3585.</a></span><span class="count        ">      1</span><span>                    "rra": -3.79279279,</span></pre>
+<pre><span class="lineno"><a href="#line_3586" id="line_3586"> 3586.</a></span><span class="count        ">      1</span><span>                    "rrb": -1.1,</span></pre>
+<pre><span class="lineno"><a href="#line_3587" id="line_3587"> 3587.</a></span><span class="count        ">      1</span><span>                    "xxa": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3588" id="line_3588"> 3588.</a></span><span class="count        ">      1</span><span>                    "xxb": 2,</span></pre>
+<pre><span class="lineno"><a href="#line_3589" id="line_3589"> 3589.</a></span><span class="count        ">      1</span><span>                    "yya": 0,</span></pre>
+<pre><span class="lineno"><a href="#line_3590" id="line_3590"> 3590.</a></span><span class="count        ">      1</span><span>                    "yyb": 5</span></pre>
 <pre><span class="lineno"><a href="#line_3591" id="line_3591"> 3591.</a></span><span class="count        ">      1</span><span>                }</span></pre>
 <pre><span class="lineno"><a href="#line_3592" id="line_3592"> 3592.</a></span><span class="count        ">      1</span><span>            }),</span></pre>
 <pre><span class="lineno"><a href="#line_3593" id="line_3593"> 3593.</a></span><span class="count        ">      1</span><span>            // test win_sinefit2-spx handling-behavior</span></pre>

@@ -7,6 +7,7 @@
 - none
 
 # v2025.9.1-beta
+- sqlmath - Update function win_sinefit() to rename outputs from/to xx0/xxa, xx1/xxb, yy0/yya, yy1/yyb, rr0/rra, rr1/rrb.
 - sqlmath - Update function win_sinefit() to allow outputting prm grr, mrr, vrr.
 
 # v2025.8.30
