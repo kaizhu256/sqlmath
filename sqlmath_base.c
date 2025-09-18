@@ -1683,6 +1683,131 @@ SQLMATH_FUNC static void sql1_fmod_func(
             sqlite3_value_double_or_nan(argv[1])));
 }
 
+SQLMATH_FUNC static void sql1_gzip_compress_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will gzip_compress <argv[0]> using zlib's deflate() function.
+    UNUSED_PARAMETER(argc);
+    // init original_data
+    const void *original_data = sqlite3_value_blob(argv[0]);
+    if (original_data == NULL) {
+        sqlite3_result_error(context, "gzip_compress - cannot compress NULL",
+            -1);
+        return;
+    }
+    // init original_size
+    int original_size = sqlite3_value_bytes(argv[0]);
+    // Use a z_stream for the zlib compression process
+    z_stream zs;
+    memset(&zs, 0, sizeof(zs));
+    int z_result =
+        deflateInit2(&zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8,
+        Z_DEFAULT_STRATEGY);
+    if (z_result != Z_OK) {
+        sqlite3_result_error(context,
+            "gzip_compress - zlib initialization error", -1);
+        return;
+    }
+    // Allocate memory for the output buffer
+    uLongf compress_size_est = deflateBound(&zs, original_size);
+    void *compress_data = malloc(compress_size_est);
+    if (compress_data == NULL) {
+        deflateEnd(&zs);
+        sqlite3_result_error(context,
+            "gzip_compress - memory allocation failed", -1);
+        return;
+    }
+    zs.next_in = (Bytef *) original_data;
+    zs.avail_in = original_size;
+    zs.next_out = (Bytef *) compress_data;
+    zs.avail_out = compress_size_est;
+    // Perform compression
+    z_result = deflate(&zs, Z_FINISH);
+    if (z_result != Z_STREAM_END) {
+        deflateEnd(&zs);
+        free(compress_data);
+        sqlite3_result_error(context,
+            "gzip_compress - zlib compression error", -1);
+        return;
+    }
+    // Clean up zlib resources
+    deflateEnd(&zs);
+    // Resize the memory to the actual compressed size
+    void *final_data = realloc(compress_data, zs.total_out);
+    if (final_data == NULL) {
+        free(compress_data);
+        sqlite3_result_error(context,
+            "gzip_compress - memory reallocation failed", -1);
+        return;
+    }
+    // Pass the compressed data to SQLite
+    sqlite3_result_blob(context, final_data, zs.total_out, free);
+}
+
+SQLMATH_FUNC static void sql1_gzip_uncompress_func(
+    sqlite3_context * context,
+    int argc,
+    sqlite3_value ** argv
+) {
+// This function will gzip_uncompress <argv[0]> using zlib's inflate() function.
+    UNUSED_PARAMETER(argc);
+    // init compress_data
+    const unsigned char *compress_data = sqlite3_value_blob(argv[0]);
+    if (compress_data == NULL) {
+        sqlite3_result_error(context,
+            "gzip_uncompress - cannot uncompress NULL", -1);
+        return;
+    }
+    // Use a z_stream for the zlib decompression process
+    z_stream zs;
+    memset(&zs, 0, sizeof(zs));
+    // 15 for window bits, 32 for gzip header detection
+    int z_result = inflateInit2(&zs, 15 | 32);
+    if (z_result != Z_OK) {
+        sqlite3_result_error(context,
+            "gzip_uncompress - zlib initialization error", -1);
+        return;
+    }
+    zs.next_in = (Bytef *) compress_data;
+    zs.avail_in = sqlite3_value_bytes(argv[0]);
+    // Decompress in chunks, since we don't know the final size
+    void *original_data = NULL;
+    uLongf buffer_size = 1024;  // Initial buffer size
+    int total_out = 0;
+    do {
+        original_data = realloc(original_data, total_out + buffer_size);
+        if (original_data == NULL) {
+            inflateEnd(&zs);
+            sqlite3_result_error(context,
+                "gzip_uncompress - memory allocation failed", -1);
+            return;
+        }
+        zs.next_out = (Bytef *) original_data + total_out;
+        zs.avail_out = buffer_size;
+        z_result = inflate(&zs, Z_NO_FLUSH);
+        if (z_result == Z_STREAM_ERROR) {
+            inflateEnd(&zs);
+            free(original_data);
+            sqlite3_result_error(context,
+                "gzip_uncompress - zlib stream error", -1);
+            return;
+        }
+        total_out += buffer_size - zs.avail_out;
+    } while (z_result != Z_STREAM_END && zs.avail_in > 0);
+    // Clean up zlib resources
+    inflateEnd(&zs);
+    if (z_result != Z_STREAM_END) {
+        free(original_data);
+        sqlite3_result_error(context,
+            "gzip_uncompress - incomplete decompression", -1);
+        return;
+    }
+    // Pass the uncompressed data to SQLite
+    sqlite3_result_blob(context, original_data, total_out, free);
+}
+
 SQLMATH_FUNC static void sql1_idatefromto_func0(
 /*
 **    datetime( TIMESTRING, MOD, MOD, ...)
@@ -2206,8 +2331,8 @@ SQLMATH_FUNC static void sql1_lgbm_trainfromdataset_func0(
         booster,                // BoosterHandle handle,
         0,                      // int start_iteration,
         -1,                     // int num_iteration,
-        C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
-        // C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
+        // C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
+        C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
         0,                      // int64_t buffer_len,
         &model_len,             // int64_t *out_len,
         model_str);             // char *out_str
@@ -2221,8 +2346,8 @@ SQLMATH_FUNC static void sql1_lgbm_trainfromdataset_func0(
         booster,                // BoosterHandle handle,
         0,                      // int start_iteration,
         -1,                     // int num_iteration,
-        C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
-        // C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
+        // C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
+        C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
         model_len,              // int64_t buffer_len,
         &model_len,             // int64_t *out_len,
         model_str);             // char *out_str
@@ -4613,6 +4738,8 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(doublearray_jsonfrom, 1, 0);
     SQL_CREATE_FUNC1(doublearray_jsonto, 1, 0);
     SQL_CREATE_FUNC1(fmod, 2, SQLITE_DETERMINISTIC);
+    SQL_CREATE_FUNC1(gzip_compress, 1, SQLITE_DETERMINISTIC);
+    SQL_CREATE_FUNC1(gzip_uncompress, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(idateadd, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatefrom, -1, SQLITE_FUNC_IDATE);
     SQL_CREATE_FUNC1(idatefromepoch, -1, SQLITE_FUNC_IDATE);
