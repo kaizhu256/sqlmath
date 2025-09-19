@@ -858,7 +858,7 @@ UPDATE __lgbm_state
     SET
         data_train_handle = (
             SELECT
-                lgbm_datasetcreatefromfile(
+                LGBM_DATASETCREATEFROMFILE(
                     '${fileTrain}', -- filename
                     'max_bin=15', -- param_data
                     NULL -- reference
@@ -868,7 +868,7 @@ UPDATE __lgbm_state
     SET
         data_test_handle = (
             SELECT
-                lgbm_datasetcreatefromfile(
+                LGBM_DATASETCREATEFROMFILE(
                     '${fileTest}', -- filename
                     'max_bin=15', -- param_data
                     data_train_handle -- reference
@@ -880,7 +880,7 @@ UPDATE __lgbm_state
     SET
         data_train_handle = (
             SELECT
-                lgbm_datasetcreatefromtable(
+                LGBM_DATASETCREATEFROMTABLE(
                     'max_bin=15', -- param_data
                     NULL, -- reference
                     --
@@ -899,7 +899,7 @@ UPDATE __lgbm_state
     SET
         data_test_handle = (
             SELECT
-                lgbm_datasetcreatefromtable(
+                LGBM_DATASETCREATEFROMTABLE(
                     'max_bin=15', -- param_data
                     data_train_handle, -- reference
                     --
@@ -918,7 +918,7 @@ UPDATE __lgbm_state
         let sqlIi = 0;
         let sqlPredictFile = (`
 SELECT
-        lgbm_predictforfile(
+        LGBM_PREDICTFORFILE(
             model,                      -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
             0,                          -- start_iteration
@@ -931,7 +931,7 @@ SELECT
         )
     FROM __lgbm_state;
 SELECT
-        lgbm_predictforfile(
+        LGBM_PREDICTFORFILE(
             model,                      -- model
             ${LGBM_PREDICT_NORMAL},     -- predict_type
             10,                         -- start_iteration
@@ -951,7 +951,7 @@ CREATE TABLE __lgbm_table_preb AS
         DOUBLEARRAY_EXTRACT(__lgp, 0) AS prediction
     FROM (
         SELECT
-            lgbm_predictfortable(
+            LGBM_PREDICTFORTABLE(
                 (SELECT model FROM __lgbm_state),   -- model
                 ${LGBM_PREDICT_NORMAL},     -- predict_type
                 0,                          -- start_iteration
@@ -978,7 +978,7 @@ CREATE TABLE __lgbm_table_preb AS
         DOUBLEARRAY_EXTRACT(__lgp, 0) AS _1
     FROM (
         SELECT
-            lgbm_predictfortable(
+            LGBM_PREDICTFORTABLE(
                 (SELECT model FROM __lgbm_state),   -- model
                 ${LGBM_PREDICT_NORMAL},     -- predict_type
                 10,                         -- start_iteration
@@ -1003,7 +1003,7 @@ CREATE TABLE __lgbm_table_preb AS
         let sqlTrainData = (`
 UPDATE __lgbm_state
     SET
-        model = lgbm_trainfromdataset(
+        model = LGBM_TRAINFROMDATASET(
             -- param_train
             (
                 'objective=binary'
@@ -1025,7 +1025,7 @@ UPDATE __lgbm_state
         let sqlTrainFile = (`
 UPDATE __lgbm_state
     SET
-        model = lgbm_trainfromfile(
+        model = LGBM_TRAINFROMFILE(
             -- param_train
             (
                 'objective=binary'
@@ -1050,7 +1050,7 @@ UPDATE __lgbm_state
     SET
         model = (
             SELECT
-                lgbm_trainfromtable(
+                LGBM_TRAINFROMTABLE(
                     -- param_train
                     (
                         'objective=binary'
@@ -1127,10 +1127,10 @@ INSERT INTO __lgbm_state(rowid) SELECT 1;
 ${sqlDataXxx};
 UPDATE __lgbm_state
     SET
-        data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),
-        data_test_num_feature = lgbm_datasetgetnumfeature(data_test_handle),
-        data_train_num_data = lgbm_datasetgetnumdata(data_train_handle),
-        data_train_num_feature = lgbm_datasetgetnumfeature(data_train_handle);
+        data_test_num_data = LGBM_DATASETGETNUMDATA(data_test_handle),
+        data_test_num_feature = LGBM_DATASETGETNUMFEATURE(data_test_handle),
+        data_train_num_data = LGBM_DATASETGETNUMDATA(data_train_handle),
+        data_train_num_feature = LGBM_DATASETGETNUMFEATURE(data_train_handle);
 
 -- lgbm - train
 ${sqlTrainXxx};
@@ -1144,8 +1144,8 @@ ${sqlPredictXxx.replace(/fileActual/g, fileActual)};
 
 -- lgbm - cleanup
 SELECT
-        lgbm_datasetfree(data_test_handle),
-        lgbm_datasetfree(data_train_handle)
+        LGBM_DATASETFREE(data_test_handle),
+        LGBM_DATASETFREE(data_train_handle)
     FROM __lgbm_state;
                 `)
             });
