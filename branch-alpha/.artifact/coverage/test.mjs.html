@@ -1016,7 +1016,7 @@ body {
 <pre><span class="lineno"><a href="#line_858" id="line_858">  858.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_859" id="line_859">  859.</a></span><span class="count        ">      1</span><span>        data_train_handle = (</span></pre>
 <pre><span class="lineno"><a href="#line_860" id="line_860">  860.</a></span><span class="count        ">      1</span><span>            SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_861" id="line_861">  861.</a></span><span class="count        ">      1</span><span>                lgbm_datasetcreatefromfile(</span></pre>
+<pre><span class="lineno"><a href="#line_861" id="line_861">  861.</a></span><span class="count        ">      1</span><span>                LGBM_DATASETCREATEFROMFILE(</span></pre>
 <pre><span class="lineno"><a href="#line_862" id="line_862">  862.</a></span><span class="count        ">      1</span><span>                    '${fileTrain}', -- filename</span></pre>
 <pre><span class="lineno"><a href="#line_863" id="line_863">  863.</a></span><span class="count        ">      1</span><span>                    'max_bin=15', -- param_data</span></pre>
 <pre><span class="lineno"><a href="#line_864" id="line_864">  864.</a></span><span class="count        ">      1</span><span>                    NULL -- reference</span></pre>
@@ -1026,7 +1026,7 @@ body {
 <pre><span class="lineno"><a href="#line_868" id="line_868">  868.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_869" id="line_869">  869.</a></span><span class="count        ">      1</span><span>        data_test_handle = (</span></pre>
 <pre><span class="lineno"><a href="#line_870" id="line_870">  870.</a></span><span class="count        ">      1</span><span>            SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_871" id="line_871">  871.</a></span><span class="count        ">      1</span><span>                lgbm_datasetcreatefromfile(</span></pre>
+<pre><span class="lineno"><a href="#line_871" id="line_871">  871.</a></span><span class="count        ">      1</span><span>                LGBM_DATASETCREATEFROMFILE(</span></pre>
 <pre><span class="lineno"><a href="#line_872" id="line_872">  872.</a></span><span class="count        ">      1</span><span>                    '${fileTest}', -- filename</span></pre>
 <pre><span class="lineno"><a href="#line_873" id="line_873">  873.</a></span><span class="count        ">      1</span><span>                    'max_bin=15', -- param_data</span></pre>
 <pre><span class="lineno"><a href="#line_874" id="line_874">  874.</a></span><span class="count        ">      1</span><span>                    data_train_handle -- reference</span></pre>
@@ -1038,7 +1038,7 @@ body {
 <pre><span class="lineno"><a href="#line_880" id="line_880">  880.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_881" id="line_881">  881.</a></span><span class="count        ">      1</span><span>        data_train_handle = (</span></pre>
 <pre><span class="lineno"><a href="#line_882" id="line_882">  882.</a></span><span class="count        ">      1</span><span>            SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_883" id="line_883">  883.</a></span><span class="count        ">      1</span><span>                lgbm_datasetcreatefromtable(</span></pre>
+<pre><span class="lineno"><a href="#line_883" id="line_883">  883.</a></span><span class="count        ">      1</span><span>                LGBM_DATASETCREATEFROMTABLE(</span></pre>
 <pre><span class="lineno"><a href="#line_884" id="line_884">  884.</a></span><span class="count        ">      1</span><span>                    'max_bin=15', -- param_data</span></pre>
 <pre><span class="lineno"><a href="#line_885" id="line_885">  885.</a></span><span class="count        ">      1</span><span>                    NULL, -- reference</span></pre>
 <pre><span class="lineno"><a href="#line_886" id="line_886">  886.</a></span><span class="count        ">      1</span><span>                    --</span></pre>
@@ -1057,7 +1057,7 @@ body {
 <pre><span class="lineno"><a href="#line_899" id="line_899">  899.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_900" id="line_900">  900.</a></span><span class="count        ">      1</span><span>        data_test_handle = (</span></pre>
 <pre><span class="lineno"><a href="#line_901" id="line_901">  901.</a></span><span class="count        ">      1</span><span>            SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_902" id="line_902">  902.</a></span><span class="count        ">      1</span><span>                lgbm_datasetcreatefromtable(</span></pre>
+<pre><span class="lineno"><a href="#line_902" id="line_902">  902.</a></span><span class="count        ">      1</span><span>                LGBM_DATASETCREATEFROMTABLE(</span></pre>
 <pre><span class="lineno"><a href="#line_903" id="line_903">  903.</a></span><span class="count        ">      1</span><span>                    'max_bin=15', -- param_data</span></pre>
 <pre><span class="lineno"><a href="#line_904" id="line_904">  904.</a></span><span class="count        ">      1</span><span>                    data_train_handle, -- reference</span></pre>
 <pre><span class="lineno"><a href="#line_905" id="line_905">  905.</a></span><span class="count        ">      1</span><span>                    --</span></pre>
@@ -1076,7 +1076,7 @@ body {
 <pre><span class="lineno"><a href="#line_918" id="line_918">  918.</a></span><span class="count        ">      1</span><span>        let sqlIi = 0;</span></pre>
 <pre><span class="lineno"><a href="#line_919" id="line_919">  919.</a></span><span class="count        ">      1</span><span>        let sqlPredictFile = (`</span></pre>
 <pre><span class="lineno"><a href="#line_920" id="line_920">  920.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_921" id="line_921">  921.</a></span><span class="count        ">      1</span><span>        lgbm_predictforfile(</span></pre>
+<pre><span class="lineno"><a href="#line_921" id="line_921">  921.</a></span><span class="count        ">      1</span><span>        LGBM_PREDICTFORFILE(</span></pre>
 <pre><span class="lineno"><a href="#line_922" id="line_922">  922.</a></span><span class="count        ">      1</span><span>            model,                      -- model</span></pre>
 <pre><span class="lineno"><a href="#line_923" id="line_923">  923.</a></span><span class="count        ">      1</span><span>            ${LGBM_PREDICT_NORMAL},     -- predict_type</span></pre>
 <pre><span class="lineno"><a href="#line_924" id="line_924">  924.</a></span><span class="count        ">      1</span><span>            0,                          -- start_iteration</span></pre>
@@ -1089,7 +1089,7 @@ body {
 <pre><span class="lineno"><a href="#line_931" id="line_931">  931.</a></span><span class="count        ">      1</span><span>        )</span></pre>
 <pre><span class="lineno"><a href="#line_932" id="line_932">  932.</a></span><span class="count        ">      1</span><span>    FROM __lgbm_state;</span></pre>
 <pre><span class="lineno"><a href="#line_933" id="line_933">  933.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_934" id="line_934">  934.</a></span><span class="count        ">      1</span><span>        lgbm_predictforfile(</span></pre>
+<pre><span class="lineno"><a href="#line_934" id="line_934">  934.</a></span><span class="count        ">      1</span><span>        LGBM_PREDICTFORFILE(</span></pre>
 <pre><span class="lineno"><a href="#line_935" id="line_935">  935.</a></span><span class="count        ">      1</span><span>            model,                      -- model</span></pre>
 <pre><span class="lineno"><a href="#line_936" id="line_936">  936.</a></span><span class="count        ">      1</span><span>            ${LGBM_PREDICT_NORMAL},     -- predict_type</span></pre>
 <pre><span class="lineno"><a href="#line_937" id="line_937">  937.</a></span><span class="count        ">      1</span><span>            10,                         -- start_iteration</span></pre>
@@ -1109,7 +1109,7 @@ body {
 <pre><span class="lineno"><a href="#line_951" id="line_951">  951.</a></span><span class="count        ">      1</span><span>        DOUBLEARRAY_EXTRACT(__lgp, 0) AS prediction</span></pre>
 <pre><span class="lineno"><a href="#line_952" id="line_952">  952.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_953" id="line_953">  953.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_954" id="line_954">  954.</a></span><span class="count        ">      1</span><span>            lgbm_predictfortable(</span></pre>
+<pre><span class="lineno"><a href="#line_954" id="line_954">  954.</a></span><span class="count        ">      1</span><span>            LGBM_PREDICTFORTABLE(</span></pre>
 <pre><span class="lineno"><a href="#line_955" id="line_955">  955.</a></span><span class="count        ">      1</span><span>                (SELECT model FROM __lgbm_state),   -- model</span></pre>
 <pre><span class="lineno"><a href="#line_956" id="line_956">  956.</a></span><span class="count        ">      1</span><span>                ${LGBM_PREDICT_NORMAL},     -- predict_type</span></pre>
 <pre><span class="lineno"><a href="#line_957" id="line_957">  957.</a></span><span class="count        ">      1</span><span>                0,                          -- start_iteration</span></pre>
@@ -1136,7 +1136,7 @@ body {
 <pre><span class="lineno"><a href="#line_978" id="line_978">  978.</a></span><span class="count        ">      1</span><span>        DOUBLEARRAY_EXTRACT(__lgp, 0) AS _1</span></pre>
 <pre><span class="lineno"><a href="#line_979" id="line_979">  979.</a></span><span class="count        ">      1</span><span>    FROM (</span></pre>
 <pre><span class="lineno"><a href="#line_980" id="line_980">  980.</a></span><span class="count        ">      1</span><span>        SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_981" id="line_981">  981.</a></span><span class="count        ">      1</span><span>            lgbm_predictfortable(</span></pre>
+<pre><span class="lineno"><a href="#line_981" id="line_981">  981.</a></span><span class="count        ">      1</span><span>            LGBM_PREDICTFORTABLE(</span></pre>
 <pre><span class="lineno"><a href="#line_982" id="line_982">  982.</a></span><span class="count        ">      1</span><span>                (SELECT model FROM __lgbm_state),   -- model</span></pre>
 <pre><span class="lineno"><a href="#line_983" id="line_983">  983.</a></span><span class="count        ">      1</span><span>                ${LGBM_PREDICT_NORMAL},     -- predict_type</span></pre>
 <pre><span class="lineno"><a href="#line_984" id="line_984">  984.</a></span><span class="count        ">      1</span><span>                10,                         -- start_iteration</span></pre>
@@ -1161,7 +1161,7 @@ body {
 <pre><span class="lineno"><a href="#line_1003" id="line_1003"> 1003.</a></span><span class="count        ">      1</span><span>        let sqlTrainData = (`</span></pre>
 <pre><span class="lineno"><a href="#line_1004" id="line_1004"> 1004.</a></span><span class="count        ">      1</span><span>UPDATE __lgbm_state</span></pre>
 <pre><span class="lineno"><a href="#line_1005" id="line_1005"> 1005.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
-<pre><span class="lineno"><a href="#line_1006" id="line_1006"> 1006.</a></span><span class="count        ">      1</span><span>        model = lgbm_trainfromdataset(</span></pre>
+<pre><span class="lineno"><a href="#line_1006" id="line_1006"> 1006.</a></span><span class="count        ">      1</span><span>        model = LGBM_TRAINFROMDATASET(</span></pre>
 <pre><span class="lineno"><a href="#line_1007" id="line_1007"> 1007.</a></span><span class="count        ">      1</span><span>            -- param_train</span></pre>
 <pre><span class="lineno"><a href="#line_1008" id="line_1008"> 1008.</a></span><span class="count        ">      1</span><span>            (</span></pre>
 <pre><span class="lineno"><a href="#line_1009" id="line_1009"> 1009.</a></span><span class="count        ">      1</span><span>                'objective=binary'</span></pre>
@@ -1183,7 +1183,7 @@ body {
 <pre><span class="lineno"><a href="#line_1025" id="line_1025"> 1025.</a></span><span class="count        ">      1</span><span>        let sqlTrainFile = (`</span></pre>
 <pre><span class="lineno"><a href="#line_1026" id="line_1026"> 1026.</a></span><span class="count        ">      1</span><span>UPDATE __lgbm_state</span></pre>
 <pre><span class="lineno"><a href="#line_1027" id="line_1027"> 1027.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
-<pre><span class="lineno"><a href="#line_1028" id="line_1028"> 1028.</a></span><span class="count        ">      1</span><span>        model = lgbm_trainfromfile(</span></pre>
+<pre><span class="lineno"><a href="#line_1028" id="line_1028"> 1028.</a></span><span class="count        ">      1</span><span>        model = LGBM_TRAINFROMFILE(</span></pre>
 <pre><span class="lineno"><a href="#line_1029" id="line_1029"> 1029.</a></span><span class="count        ">      1</span><span>            -- param_train</span></pre>
 <pre><span class="lineno"><a href="#line_1030" id="line_1030"> 1030.</a></span><span class="count        ">      1</span><span>            (</span></pre>
 <pre><span class="lineno"><a href="#line_1031" id="line_1031"> 1031.</a></span><span class="count        ">      1</span><span>                'objective=binary'</span></pre>
@@ -1208,7 +1208,7 @@ body {
 <pre><span class="lineno"><a href="#line_1050" id="line_1050"> 1050.</a></span><span class="count        ">      1</span><span>    SET</span></pre>
 <pre><span class="lineno"><a href="#line_1051" id="line_1051"> 1051.</a></span><span class="count        ">      1</span><span>        model = (</span></pre>
 <pre><span class="lineno"><a href="#line_1052" id="line_1052"> 1052.</a></span><span class="count        ">      1</span><span>            SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_1053" id="line_1053"> 1053.</a></span><span class="count        ">      1</span><span>                lgbm_trainfromtable(</span></pre>
+<pre><span class="lineno"><a href="#line_1053" id="line_1053"> 1053.</a></span><span class="count        ">      1</span><span>                LGBM_TRAINFROMTABLE(</span></pre>
 <pre><span class="lineno"><a href="#line_1054" id="line_1054"> 1054.</a></span><span class="count        ">      1</span><span>                    -- param_train</span></pre>
 <pre><span class="lineno"><a href="#line_1055" id="line_1055"> 1055.</a></span><span class="count        ">      1</span><span>                    (</span></pre>
 <pre><span class="lineno"><a href="#line_1056" id="line_1056"> 1056.</a></span><span class="count        ">      1</span><span>                        'objective=binary'</span></pre>
@@ -1285,10 +1285,10 @@ body {
 <pre><span class="lineno"><a href="#line_1127" id="line_1127"> 1127.</a></span><span class="count        ">     12</span><span>${sqlDataXxx};</span></pre>
 <pre><span class="lineno"><a href="#line_1128" id="line_1128"> 1128.</a></span><span class="count        ">     12</span><span>UPDATE __lgbm_state</span></pre>
 <pre><span class="lineno"><a href="#line_1129" id="line_1129"> 1129.</a></span><span class="count        ">     12</span><span>    SET</span></pre>
-<pre><span class="lineno"><a href="#line_1130" id="line_1130"> 1130.</a></span><span class="count        ">     12</span><span>        data_test_num_data = lgbm_datasetgetnumdata(data_test_handle),</span></pre>
-<pre><span class="lineno"><a href="#line_1131" id="line_1131"> 1131.</a></span><span class="count        ">     12</span><span>        data_test_num_feature = lgbm_datasetgetnumfeature(data_test_handle),</span></pre>
-<pre><span class="lineno"><a href="#line_1132" id="line_1132"> 1132.</a></span><span class="count        ">     12</span><span>        data_train_num_data = lgbm_datasetgetnumdata(data_train_handle),</span></pre>
-<pre><span class="lineno"><a href="#line_1133" id="line_1133"> 1133.</a></span><span class="count        ">     12</span><span>        data_train_num_feature = lgbm_datasetgetnumfeature(data_train_handle);</span></pre>
+<pre><span class="lineno"><a href="#line_1130" id="line_1130"> 1130.</a></span><span class="count        ">     12</span><span>        data_test_num_data = LGBM_DATASETGETNUMDATA(data_test_handle),</span></pre>
+<pre><span class="lineno"><a href="#line_1131" id="line_1131"> 1131.</a></span><span class="count        ">     12</span><span>        data_test_num_feature = LGBM_DATASETGETNUMFEATURE(data_test_handle),</span></pre>
+<pre><span class="lineno"><a href="#line_1132" id="line_1132"> 1132.</a></span><span class="count        ">     12</span><span>        data_train_num_data = LGBM_DATASETGETNUMDATA(data_train_handle),</span></pre>
+<pre><span class="lineno"><a href="#line_1133" id="line_1133"> 1133.</a></span><span class="count        ">     12</span><span>        data_train_num_feature = LGBM_DATASETGETNUMFEATURE(data_train_handle);</span></pre>
 <pre><span class="lineno"><a href="#line_1134" id="line_1134"> 1134.</a></span><span class="count        ">     12</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_1135" id="line_1135"> 1135.</a></span><span class="count        ">     12</span><span>-- lgbm - train</span></pre>
 <pre><span class="lineno"><a href="#line_1136" id="line_1136"> 1136.</a></span><span class="count        ">     12</span><span>${sqlTrainXxx};</span></pre>
@@ -1302,8 +1302,8 @@ body {
 <pre><span class="lineno"><a href="#line_1144" id="line_1144"> 1144.</a></span><span class="count        ">     12</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_1145" id="line_1145"> 1145.</a></span><span class="count        ">     12</span><span>-- lgbm - cleanup</span></pre>
 <pre><span class="lineno"><a href="#line_1146" id="line_1146"> 1146.</a></span><span class="count        ">     12</span><span>SELECT</span></pre>
-<pre><span class="lineno"><a href="#line_1147" id="line_1147"> 1147.</a></span><span class="count        ">     12</span><span>        lgbm_datasetfree(data_test_handle),</span></pre>
-<pre><span class="lineno"><a href="#line_1148" id="line_1148"> 1148.</a></span><span class="count        ">     12</span><span>        lgbm_datasetfree(data_train_handle)</span></pre>
+<pre><span class="lineno"><a href="#line_1147" id="line_1147"> 1147.</a></span><span class="count        ">     12</span><span>        LGBM_DATASETFREE(data_test_handle),</span></pre>
+<pre><span class="lineno"><a href="#line_1148" id="line_1148"> 1148.</a></span><span class="count        ">     12</span><span>        LGBM_DATASETFREE(data_train_handle)</span></pre>
 <pre><span class="lineno"><a href="#line_1149" id="line_1149"> 1149.</a></span><span class="count        ">     12</span><span>    FROM __lgbm_state;</span></pre>
 <pre><span class="lineno"><a href="#line_1150" id="line_1150"> 1150.</a></span><span class="count        ">     12</span><span>                `)</span></pre>
 <pre><span class="lineno"><a href="#line_1151" id="line_1151"> 1151.</a></span><span class="count        ">     12</span><span>            });</span></pre>

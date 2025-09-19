@@ -2206,8 +2206,8 @@ SQLMATH_FUNC static void sql1_lgbm_trainfromdataset_func0(
         booster,                // BoosterHandle handle,
         0,                      // int start_iteration,
         -1,                     // int num_iteration,
-        C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
-        // C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
+        // C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
+        C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
         0,                      // int64_t buffer_len,
         &model_len,             // int64_t *out_len,
         model_str);             // char *out_str
@@ -2221,8 +2221,8 @@ SQLMATH_FUNC static void sql1_lgbm_trainfromdataset_func0(
         booster,                // BoosterHandle handle,
         0,                      // int start_iteration,
         -1,                     // int num_iteration,
-        C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
-        // C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
+        // C_API_FEATURE_IMPORTANCE_SPLIT, // int feature_importance_type,
+        C_API_FEATURE_IMPORTANCE_GAIN,  // int feature_importance_type,
         model_len,              // int64_t buffer_len,
         &model_len,             // int64_t *out_len,
         model_str);             // char *out_str
