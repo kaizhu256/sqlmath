@@ -120,7 +120,7 @@ jstestDescribe((
     ), async function () {
         await Promise.all([
             childProcessSpawn2(
-                "aa",
+                "undefined",
                 [],
                 {modeCapture: "utf8", modeDebug: true, stdio: []}
             )

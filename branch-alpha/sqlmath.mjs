@@ -283,7 +283,6 @@ async function childProcessSpawn2(command, args, option) {
             resolve({exitCode, stderr, stdout});
         });
     });
-
 }
 
 async function ciBuildExt({
