@@ -355,12 +355,20 @@ SQLMATH_CFLAG_WNO_LIST=" \\
         "targets": [
             {
                 "defines": [
-                    "SRC_SQLITE_BASE_C2",
                     "SRC_ZLIB_C2"
                 ],
                 "sources": [
-                    "sqlmath_external_sqlite.c",
                     "sqlmath_external_zlib.c"
+                ],
+                "target_name": "SRC_ZLIB",
+                "type": "static_library"
+            },
+            {
+                "defines": [
+                    "SRC_SQLITE_BASE_C2"
+                ],
+                "sources": [
+                    "sqlmath_external_sqlite.c"
                 ],
                 "target_name": "SRC_SQLITE_BASE",
                 "type": "static_library"
@@ -394,7 +402,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM"
+                    "SRC_SQLMATH_CUSTOM",
+                    "SRC_ZLIB"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
@@ -416,7 +425,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM"
+                    "SRC_SQLMATH_CUSTOM",
+                    "SRC_ZLIB"
                 ],
                 "sources": [
                     "sqlmath_external_sqlite.c"
