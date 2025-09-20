@@ -399,7 +399,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "cflags": cflagWallList,
                 "conditions": [
                     [
-                        "OS=='mac' or OS=='linux'",
+                        "OS=='win'",
+                        {},
                         {
                             "libraries": [
                                 "-lz"
@@ -432,7 +433,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             {
                 "conditions": [
                     [
-                        "OS=='mac' or OS=='linux'",
+                        "OS=='win'",
+                        {},
                         {
                             "libraries": [
                                 "-lz"

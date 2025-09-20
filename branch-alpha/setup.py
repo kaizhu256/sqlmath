@@ -195,6 +195,7 @@ async def build_ext_async(): # noqa: C901
                 # ,
                 *cc_ldflags.strip().split(" "),
                 # ,
+                "-lz",
                 "-o", f"build/{file_lib}",
             ]
         await create_subprocess_exec_and_check(*arg_list, env=env)
