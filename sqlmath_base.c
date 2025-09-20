@@ -2518,7 +2518,6 @@ SQLMATH_FUNC static void sql1_throwerror_func(
 }
 
 // SQLMATH_FUNC sql1_zlib_xxx_func - start
-typedef unsigned long z_ulong;  // NOLINT
 
 SQLMATH_FUNC static void sql1_zlib_compress_func(
     sqlite3_context * context,
@@ -2538,7 +2537,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
     // init original_size
     int original_size = sqlite3_value_bytes(argv[0]);
     // init compress_size
-    uLongf compress_size = compressBound(original_size);
+    uLong compress_size = compressBound(original_size);
     // init compress_data
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(4 + compress_size);
@@ -2584,7 +2583,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // init original_size
-    uLongf original_size = 0    //
+    uLong original_size = 0     //
         | (compress_data[0] << 0x18)    //
         | (compress_data[1] << 0x10)    //
         | (compress_data[2] << 0x08)    //
