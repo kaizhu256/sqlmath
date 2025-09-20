@@ -28,6 +28,9 @@
 #define SRC_SQLMATH_H2
 
 
+#include "sqlmath_external_zlib.c"
+
+
 /*
 file sqlmath_h - start
 */
