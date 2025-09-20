@@ -122,6 +122,7 @@ let {
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
+let sqlmathExe;
 let version = "v2025.9.1-beta";
 
 async function assertErrorThrownAsync(asyncFunc, regexp) {
@@ -283,7 +284,6 @@ async function childProcessSpawn2(command, args, option) {
             resolve({exitCode, stderr, stdout});
         });
     });
-
 }
 
 async function ciBuildExt({
@@ -479,14 +479,7 @@ async function ciBuildExt2NodejsBuild({
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
     node "${binNodegyp}" build --release
     mv build/Release/binding.node "${cModulePath}"
-    if [ "${process.platform}" = "win32" ]
-    then
-        mv build/Release/shell \
-            "_sqlmath.shell_${process.platform}_${process.arch}.exe"
-    else
-        mv build/Release/shell \
-            "_sqlmath.shell_${process.platform}_${process.arch}"
-    fi
+    mv build/Release/shell "${sqlmathExe}"
 )
             `)
         ],
@@ -1619,6 +1612,16 @@ async function moduleFsInit() {
     while (moduleFsInitResolveList.length > 0) {
         moduleFsInitResolveList.shift()();
     }
+    sqlmathExe = (
+        `_sqlmath.shell_${process.platform}_${process.arch}`
+        + process.platform.replace(
+            "win32",
+            ".exe"
+        ).replace(
+            process.platform,
+            ""
+        )
+    );
 }
 
 function noop(val) {
@@ -1850,6 +1853,7 @@ export {
     listOrEmptyList,
     noop,
     objectDeepCopyWithKeysSorted,
+    sqlmathExe,
     sqlmathWebworkerInit,
     version,
     waitAsync

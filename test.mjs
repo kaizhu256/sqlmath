@@ -26,6 +26,9 @@ npm_config_mode_test_save2=1 npm test
  */
 
 /*jslint beta, node*/
+import moduleChildProcess from "child_process";
+import modulePath from "path";
+import moduleUtil from "util";
 import jslint from "./jslint.mjs";
 import {
     LGBM_PREDICT_NORMAL,
@@ -55,6 +58,7 @@ import {
     jsbatonGetString,
     listOrEmptyList,
     noop,
+    sqlmathExe,
     sqlmathWebworkerInit,
     version,
     waitAsync
@@ -65,7 +69,7 @@ let {
 } = jslint;
 let {
     npm_config_mode_test_save
-} = typeof process === "object" && process?.env;
+} = process.env;
 noop(debugInline);
 
 jstestDescribe((
@@ -120,10 +124,38 @@ jstestDescribe((
     ), async function () {
         await Promise.all([
             childProcessSpawn2(
-                "aa",
+                "undefined",
                 [],
                 {modeCapture: "utf8", modeDebug: true, stdio: []}
+            ),
+            (async function () {
+                let result;
+                result = await moduleUtil.promisify(
+                    moduleChildProcess.execFile
+                )(
+                    (
+                        process.cwd()
+                        + modulePath.sep
+                        + sqlmathExe
+                    ),
+                    [
+                        ":memory:",
+                        (`
+SELECT
+        CAST(
+            ZLIB_UNCOMPRESS(
+                ZLIB_COMPRESS(
+                    CAST('abcd1234' AS BLOB)
+                )
             )
+            AS 'TEXT'
+        );
+                        `)
+                    ]
+                );
+                result = result.stdout.trim();
+                assertJsonEqual(result, "abcd1234");
+            }())
         ]);
     });
 });
@@ -665,9 +697,9 @@ VALUES
     (?1, ?2, ?3),
     (CAST(?1 AS TEXT), CAST(?2 AS TEXT), CAST(?3 AS TEXT)),
     (
-        CAST(zlib_uncompress(zlib_compress(?1)) AS TEXT),
-        CAST(zlib_uncompress(zlib_compress(?2)) AS TEXT),
-        CAST(zlib_uncompress(zlib_compress(?3)) AS TEXT)
+        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?1)) AS TEXT),
+        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?2)) AS TEXT),
+        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?3)) AS TEXT)
     );
 SELECT * FROM testDbExecAsync1;
 SELECT * FROM testDbExecAsync2;
