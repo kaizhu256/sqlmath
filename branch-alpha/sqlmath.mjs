@@ -397,6 +397,16 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "cflags": cflagWallList,
+                "conditions": [
+                    [
+                        "OS=='mac' or OS=='linux'",
+                        {
+                            "libraries": [
+                                "-lz"
+                            ]
+                        }
+                    ]
+                ],
                 "defines": [
                     "SRC_SQLMATH_NODEJS_C2"
                 ],
@@ -420,6 +430,16 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 }
             },
             {
+                "conditions": [
+                    [
+                        "OS=='mac' or OS=='linux'",
+                        {
+                            "libraries": [
+                                "-lz"
+                            ]
+                        }
+                    ]
+                ],
                 "defines": [
                     "SRC_SQLITE_SHELL_C2"
                 ],
