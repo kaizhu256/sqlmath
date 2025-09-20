@@ -572,7 +572,14 @@ number SQLITE_OPEN_WAL
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">64.
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
+string sqlmathExe
+</a>
+
+</li>
+<li>
+
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">65.
 string version
 </a>
 
@@ -864,20 +871,20 @@ SELECT DOUBLEARRAY_JSONTO(DOUBLEARRAY_JSONFROM($valIn)) AS result;
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 jstestDescribe((
-    "test_childProcessSpawn2"
+"test_childProcessSpawn2"
 ), function test_childProcessSpawn2() {
-    jstestIt((
-        "test childProcessSpawn2 handling-behavior"
-    ), async function () {
-        await Promise.all([
-            <span class="apidocCodeKeywordSpan">childProcessSpawn2</span>(
-                "undefined",
-                [],
-                {modeCapture: "utf8", modeDebug: true, stdio: []}
-            )
-        ]);
-    });
-});
+jstestIt((
+    "test childProcessSpawn2 handling-behavior"
+), async function () {
+    await Promise.all([
+        <span class="apidocCodeKeywordSpan">childProcessSpawn2</span>(
+            "undefined",
+            [],
+            {modeCapture: "utf8", modeDebug: true, stdio: []}
+        ),
+        (async function () {
+            let result;
+            result = await moduleUtil.promisify(
 ...</pre></li>
 
 <li>
@@ -2326,7 +2333,15 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">64.
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
+    string sqlmathExe
+    </a>
+    </h2>
+</li>
+
+<li>
+    <h2>
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">65.
     string version
     </a>
     </h2>
