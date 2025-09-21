@@ -386,6 +386,7 @@ shCiEmsdkInstall() {(set -e
     # download ports
     # touch "$EMSDK/.null.c"
     # emcc \
+    #     -s USE_LIBPNG=1 \
     #     -s USE_ZLIB=1 \
     #     "$EMSDK/.null.c" -o "$EMSDK/.null_wasm.js"
 )}
