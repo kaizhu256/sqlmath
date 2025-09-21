@@ -226,35 +226,18 @@ shCiBuildWasm() {(set -e
     # debug
     # OPTION1="$OPTION1 -O0"
     OPTION1="$OPTION1 -Os"
-    # OPTION2="$OPTION2 -Oz"
+    # OPTION1="$OPTION1 -Oz"
     # OPTION1="$OPTION1 -fsanitize=address"
+    OPTION1="$OPTION1 -s -DSQLITE_HAVE_ZLIB=1"
     for FILE in \
         sqlmath_base.c \
         sqlmath_custom.c \
-        sqlmath_external_sqlite.c \
-        sqlmath_external_zlib.c
+        sqlmath_external_sqlite.c
     do
         OPTION2=""
-        FILE2="build/$(basename "$FILE").wasm.o"
         case "$FILE" in
         sqlmath_base.c)
-            OPTION1="$OPTION1 $SQLMATH_CFLAG_WALL_LIST"
-            ;;
-        sqlmath_custom.c)
-            OPTION1="$OPTION1 $SQLMATH_CFLAG_WALL_LIST"
-            ;;
-        *)
-            OPTION1="$OPTION1 $SQLMATH_CFLAG_WNO_LIST"
-            # optimization - skip rebuild of rollup if possible
-            if [ "$FILE2" -nt "$FILE" ]
-            then
-                printf "shCiBuildWasm - skip $FILE\n" 1>&2
-                continue
-            fi
-        esac
-        case "$FILE" in
-        sqlmath_base.c)
-            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2= -s USE_ZLIB=1"
+            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2="
             ;;
         sqlmath_custom.c)
             OPTION2="$OPTION2 -DSRC_SQLMATH_CUSTOM_C2="
@@ -262,10 +245,18 @@ shCiBuildWasm() {(set -e
         sqlmath_external_sqlite.c)
             OPTION2="$OPTION2 -DSRC_SQLITE_BASE_C2="
             ;;
-        sqlmath_external_zlib.c)
-            OPTION2="$OPTION2 -DSRC_ZLIB_C2="
+        esac
+        FILE2="build/$(basename "$FILE").wasm.o"
+        OPTION2="$OPTION2 -c $FILE -o $FILE2"
+        case "$FILE" in
+        sqlmath_base.c)
+            OPTION2="$OPTION2 $SQLMATH_CFLAG_WALL_LIST"
+            ;;
+        sqlmath_custom.c)
+            OPTION2="$OPTION2 $SQLMATH_CFLAG_WALL_LIST"
             ;;
         *)
+            OPTION2="$OPTION2 $SQLMATH_CFLAG_WNO_LIST"
             # optimization - skip rebuild of rollup if possible
             if [ "$FILE2" -nt "$FILE" ]
             then
@@ -273,7 +264,6 @@ shCiBuildWasm() {(set -e
                 continue
             fi
         esac
-        OPTION2="$OPTION2 -c $FILE -o $FILE2"
         emcc $OPTION1 $OPTION2
     done
     OPTION2=""
@@ -315,7 +305,6 @@ shCiBuildWasm() {(set -e
         build/sqlmath_base.c.wasm.o \
         build/sqlmath_custom.c.wasm.o \
         build/sqlmath_external_sqlite.c.wasm.o \
-        build/sqlmath_external_zlib.c.wasm.o \
         #
     printf '' > sqlmath_wasm.js
     printf "/*jslint-disable*/
@@ -371,7 +360,9 @@ shCiEmsdkInstall() {(set -e
     chmod 777 ${EMSDK}/upstream/emscripten
     chmod -R 777 ${EMSDK}/upstream/emscripten/cache
     echo "int main() { return 0; }" > hello.c
-    ${EMSDK}/upstream/emscripten/emcc -c hello.c
+    ${EMSDK}/upstream/emscripten/emcc -c hello.c \
+        -s USE_LIBPNG=1 \
+        -s USE_ZLIB=1
     cat ${EMSDK}/upstream/emscripten/cache/sanity.txt
     echo "## Done"
     #

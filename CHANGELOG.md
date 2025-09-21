@@ -6,7 +6,7 @@
 - none
 
 # v2025.9.1-beta
-- sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c. - part2 - SQLITE_HAVE_ZLIB=1
+- sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c.
 - sqlmath - bugfix - Fix sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS() crashing sqlite-shell-executable.
 - ml - Update sql-function LGBM_TRAINFROMTABLE() to use C_API_FEATURE_IMPORTANCE_GAIN instead of C_API_FEATURE_IMPORTANCE_SPLIT.
 - sqlmath - Update function win_sinefit() to rename outputs from/to xx0/xxa, xx1/xxb, yy0/yya, yy1/yyb, rr0/rra, rr1/rrb.

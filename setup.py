@@ -342,10 +342,11 @@ async def build_ext_async(): # noqa: C901
         build_ext_obj(cdefine)
         for cdefine in [
             "SRC_SQLITE_BASE",
-            "SRC_ZLIB",
             # ,
             "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
+            # ,
+            "SRC_ZLIB",
         ]
     ])
     #

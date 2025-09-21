@@ -326,35 +326,14 @@ async function ciBuildExt({
 }
 
 async function ciBuildExt1NodejsConfigure({
-    binNodegyp,
-    process
+    binNodegyp
+    // process
 }) {
 
 // This function will setup posix/win32 env for building c-extension.
 
     let cflagWallList = [];
     let cflagWnoList = [];
-    let include_dirs = [];
-    let isWin32 = process.platform === "win32";
-    let libraries = ["-lz"];
-    if (isWin32 || npm_config_mode_test) {
-        include_dirs = [
-            modulePath.resolve(
-                String(process.env?.HOME),
-                "AppData/Local/node-gyp/Cache",
-                String(process.versions?.node),
-                "include/node"
-            )
-        ];
-        libraries = [
-            modulePath.resolve(
-                String(process.env?.HOME),
-                "AppData/Local/node-gyp/Cache",
-                String(process.versions?.node),
-                "x64/node.lib"
-            )
-        ];
-    }
     String(
         await fsReadFileUnlessTest(".ci.sh", "utf8", (`
 SQLMATH_CFLAG_WALL_LIST=" \\
@@ -379,98 +358,122 @@ SQLMATH_CFLAG_WNO_LIST=" \\
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
-            "cflags": cflagWnoList,
+            "cflags": cflagWallList,
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
-            include_dirs,
-            libraries,
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "WarnAsError": 1,
-                    "WarningLevel": 2
+                    "WarningLevel": 4
                 }
             },
             "xcode_settings": {
-                "OTHER_CFLAGS": cflagWnoList
+                "OTHER_CFLAGS": cflagWallList
             }
         },
         "targets": [
             {
+                "cflags": cflagWnoList,
                 "defines": [
                     "SRC_ZLIB_C2"
-                ],
-                "sources": [
-                    "sqlmath_external_zlib.c"
-                ],
-                "target_name": "SRC_ZLIB",
-                "type": "static_library"
-            },
-            {
-                "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
-                    "SRC_SQLITE_BASE_C2"
-                ],
-                "sources": [
-                    "sqlmath_external_sqlite.c"
-                ],
-                "target_name": "SRC_SQLITE_BASE",
-                "type": "static_library"
-            },
-            {
-                "cflags": cflagWallList,
-                "defines": [
-                    // "SQLITE_HAVE_ZLIB=1",
-                    "SRC_SQLMATH_BASE_C2",
-                    "SRC_SQLMATH_CUSTOM_C2"
-                ],
-                "dependencies": [
-                    "SRC_ZLIB"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
                         "WarnAsError": 1,
-                        "WarningLevel": 4
+                        "WarningLevel": 2
                     }
                 },
+                "sources": [
+                    "sqlmath_external_zlib.c"
+                ],
+                "target_name": "SRC_ZLIB",
+                "type": "static_library",
+                "xcode_settings": {
+                    "OTHER_CFLAGS": cflagWnoList
+                }
+            },
+            {
+                "cflags": cflagWnoList,
+                "defines": [
+                    "SQLITE_HAVE_ZLIB=1",
+                    "SRC_SQLITE_BASE_C2"
+                ],
+                "msvs_settings": {
+                    "VCCLCompilerTool": {
+                        "WarnAsError": 1,
+                        "WarningLevel": 2
+                    }
+                },
+                "sources": [
+                    "sqlmath_external_sqlite.c"
+                ],
+                "target_name": "SRC_SQLITE_BASE",
+                "type": "static_library",
+                "xcode_settings": {
+                    "OTHER_CFLAGS": cflagWnoList
+                }
+            },
+            {
+                "conditions": [
+                    [
+                        "OS==\"win\"",
+                        {
+                            "defines": [
+                                "SRC_SQLMATH_BASE_C2",
+                                "SRC_SQLMATH_CUSTOM_C2"
+                            ],
+                            "dependencies": [
+                                "SRC_SQLITE_BASE",
+                                "SRC_ZLIB"
+                            ]
+                        },
+                        {
+                            "defines": [
+                                "SQLITE_HAVE_ZLIB=1",
+                                "SRC_SQLMATH_BASE_C2",
+                                "SRC_SQLMATH_CUSTOM_C2"
+                            ],
+                            "dependencies": [
+                                "SRC_SQLITE_BASE"
+                            ]
+                        }
+                    ]
+                ],
                 "sources": [
                     "sqlmath_base.c",
                     "sqlmath_custom.c"
                 ],
                 "target_name": "SRC_SQLMATH_CUSTOM",
-                "type": "static_library",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagWallList
-                }
+                "type": "static_library"
             },
             {
-                "cflags": cflagWallList,
                 "defines": [
                     "SRC_SQLMATH_NODEJS_C2"
                 ],
                 "dependencies": [
-                    "SRC_SQLITE_BASE",
                     "SRC_SQLMATH_CUSTOM"
                 ],
-                "msvs_settings": {
-                    "VCCLCompilerTool": {
-                        "WarnAsError": 1,
-                        "WarningLevel": 4
-                    }
-                },
                 "sources": [
                     "sqlmath_base.c"
                 ],
-                "target_name": "binding",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagWallList
-                }
+                "target_name": "binding"
             },
             {
+                "conditions": [
+                    [
+                        "OS==\"win\"",
+                        {},
+                        {
+                            "libraries": [
+                                "-lz"
+                            ]
+                        }
+                    ]
+                ],
                 "defines": [
                     "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_SHELL_C2"
                 ],
                 "dependencies": [
-                    "SRC_SQLITE_BASE",
                     "SRC_SQLMATH_CUSTOM"
                 ],
                 "sources": [
