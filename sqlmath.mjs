@@ -406,8 +406,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SRC_SQLITE_BASE_C2",
-                    "SRC_ZLIB_H0"
+                    "SQLITE_HAVE_ZLIB=1",
+                    "SRC_SQLITE_BASE_C2"
                 ],
                 "sources": [
                     "sqlmath_external_sqlite.c"
@@ -418,6 +418,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             {
                 "cflags": cflagWallList,
                 "defines": [
+                    // "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
                 ],
@@ -465,8 +466,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SRC_SQLITE_SHELL_C2",
-                    "SRC_ZLIB_H0"
+                    "SQLITE_HAVE_ZLIB=1",
+                    "SRC_SQLITE_SHELL_C2"
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",

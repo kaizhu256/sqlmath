@@ -2,6 +2,26 @@
 #define SRC_ZLIB_H2
 
 
+#define Z_OK 0
+typedef unsigned char Byte;
+typedef unsigned long uLong;
+int compress3(
+    Byte * dest,
+    uLong * destLen,
+    const Byte * source,
+    uLong sourceLen
+);
+int uncompress3(
+    Byte * dest,
+    uLong * destLen,
+    const Byte * source,
+    uLong sourceLen
+);
+uLong compressBound3(
+    uLong sourceLen
+);
+
+
 #if defined(SRC_ZLIB_C2)
 
 
@@ -12130,34 +12150,8 @@ file none
 
 
 // *INDENT-ON*
-
-
 #ifdef __clang__
 #   pragma clang diagnostic pop
 #endif                          // __clang__
-
-
 #endif                          // SRC_ZLIB_C2
-
-
-#define Z_OK 0
-typedef unsigned char zlib_byte;
-typedef unsigned long zlib_ulong;
-int compress3(
-    zlib_byte * dest,
-    zlib_ulong * destLen,
-    const zlib_byte * source,
-    zlib_ulong sourceLen
-);
-int uncompress3(
-    zlib_byte * dest,
-    zlib_ulong * destLen,
-    const zlib_byte * source,
-    zlib_ulong sourceLen
-);
-zlib_ulong compressBound3(
-    zlib_ulong sourceLen
-);
-
-
 #endif                          // SRC_ZLIB_H2

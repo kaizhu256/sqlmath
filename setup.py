@@ -60,14 +60,34 @@ async def build_ext_async(): # noqa: C901
     """This function will build c-extension."""
 
     async def build_ext_obj(cdefine): # noqa: C901 PLR0912
+        arg_list = [
+            *[f"-I{path}" for path in path_include],
+            # ,
+            f"-D{cdefine}_C2=",
+        ]
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:
             case "SRC_SQLITE_BASE":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
+                if not is_win32:
+                    arg_list += [
+                        "-DSQLITE_HAVE_ZLIB=1",
+                    ]
             case "SRC_SQLMATH_BASE":
                 file_src = pathlib.Path("sqlmath_base.c")
+                if not is_win32:
+                    arg_list += [
+                        "-DSQLITE_HAVE_ZLIB=1",
+                    ]
             case "SRC_SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
+                if not is_win32:
+                    arg_list += [
+                        "-DSQLITE_HAVE_ZLIB=1",
+                    ]
+                arg_list += [
+                    "-DSRC_SQLMATH_PYTHON_C2=",
+                ]
             case "SRC_ZLIB":
                 file_src = pathlib.Path("sqlmath_external_zlib.c")
         match cdefine:
@@ -82,17 +102,6 @@ async def build_ext_async(): # noqa: C901
                 ):
                     print(f"build_ext - skip {file_src}")
                     return
-        arg_list = [
-            *[f"-I{path}" for path in path_include],
-            # ,
-            f"-D{cdefine}_C2=",
-            "-D_REENTRANT=1",
-            (
-                "-DSRC_SQLMATH_PYTHON_C2="
-                if cdefine == "SRC_SQLMATH_CUSTOM"
-                else ""
-            ),
-        ]
         if npm_config_mode_debug and is_win32:
             arg_list += ["/W3"]
         elif npm_config_mode_debug:
@@ -155,21 +164,25 @@ async def build_ext_async(): # noqa: C901
             *[arg for arg in args if arg],
             **kwds,
         )
-        await child.communicate()
+        stdout_data, stderr_data = await child.communicate()
         if child.returncode != 0:
             msg = f"returncode={child.returncode}"
             raise subprocess.SubprocessError(msg)
+        return (stdout_data, stderr_data)
 
     async def link_ext_obj(file_lib):
         arg_list = []
         arg_list += [
             # must be ordered first
             "build/SRC_SQLITE_BASE.obj",
-            "build/SRC_ZLIB.obj",
             # ,
             "build/SRC_SQLMATH_BASE.obj",
             "build/SRC_SQLMATH_CUSTOM.obj",
         ]
+        if is_win32:
+            arg_list += [
+                "build/SRC_ZLIB.obj",
+            ]
         export = "PyInit__sqlmath"
         if is_win32:
             arg_list = [

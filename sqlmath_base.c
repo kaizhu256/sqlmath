@@ -526,7 +526,34 @@ file sqlmath_base - start
 #if defined(SRC_SQLMATH_BASE_C2)
 
 
+#if defined(SQLITE_HAVE_ZLIB)
+#   include <zlib.h>
+int compress3(
+    Byte * dest,
+    uLong * destLen,
+    const Byte * source,
+    uLong sourceLen
+) {
+    return compress(dest, destLen, source, sourceLen);
+}
+
+int uncompress3(
+    Byte * dest,
+    uLong * destLen,
+    const Byte * source,
+    uLong sourceLen
+) {
+    return uncompress(dest, destLen, source, sourceLen);
+}
+
+uLong compressBound3(
+    uLong sourceLen
+) {
+    return compressBound(sourceLen);
+}
+#else                           // SQLITE_HAVE_ZLIB
 #   include "sqlmath_external_zlib.c"
+#endif                          // SQLITE_HAVE_ZLIB
 
 
 // track how many sqlite-db open
@@ -2540,7 +2567,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
     // init original_size
     int original_size = sqlite3_value_bytes(argv[0]);
     // init compress_size
-    zlib_ulong compress_size = compressBound3(original_size);
+    uLong compress_size = compressBound3(original_size);
     // init compress_data
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(4 + compress_size);
@@ -2586,7 +2613,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // init original_size
-    zlib_ulong original_size = 0        //
+    uLong original_size = 0     //
         | (compress_data[0] << 0x18)    //
         | (compress_data[1] << 0x10)    //
         | (compress_data[2] << 0x08)    //

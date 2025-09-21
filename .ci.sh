@@ -513,23 +513,32 @@ shSqlmathUpdate() {(set -e
     . "$HOME/myci2.sh" : && shMyciUpdate
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
+        DIR_SQLITE=sqlite-autoconf-3500400
+        DIR_ZLIB=zlib-1.3.1
+        URL_SQLITE=https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
+        URL_ZLIB=https://github.com/madler/zlib/releases/download/v1.3.1/\
+zlib-1.3.1.tar.gz
         # shRollupFetch
-        if [ ! -d .sqlite-autoconf-3500400 ]
-        then
-            for URL in \
-https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz \
-https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
-            do
+        for DIR in \
+            "$DIR_SQLITE" \
+            "$DIR_ZLIB"
+        do
+            if [ ! -d ".$DIR" ]
+            then
+                case "$DIR" in
+                "$DIR_SQLITE")
+                    URL="$URL_SQLITE"
+                    ;;
+                "$DIR_ZLIB")
+                    URL="$URL_ZLIB"
+                    ;;
+                esac
+                echo "$DIR" "$URL"
                 curl -L "$URL" | tar -xz
-            done
-            for DIR in \
-                sqlite-autoconf-3500400 \
-                zlib-1.3.1
-            do
                 rm -rf ".$DIR"
                 mv "$DIR" ".$DIR"
-            done
-        fi
+            fi
+        done
         shRollupFetch asset_sqlmath_external_rollup.js
         shRollupFetch index.html
         shRollupFetch sqlmath_base.h
