@@ -39,11 +39,9 @@ file sqlmath_h - start
 #endif                          // SRC_SQLITE_BASE_C2
 #if defined(_WIN32)
 #   include <windows.h>
-#   include "sqlmath_external_zlib.c"
 #else
 #   include <dlfcn.h>
 #   include <unistd.h>
-#   include <zlib.h>
 #endif                          // _WIN32
 
 
