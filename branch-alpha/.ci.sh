@@ -254,7 +254,7 @@ shCiBuildWasm() {(set -e
         esac
         case "$FILE" in
         sqlmath_base.c)
-            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2="
+            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2= -s USE_ZLIB=1"
             ;;
         sqlmath_custom.c)
             OPTION2="$OPTION2 -DSRC_SQLMATH_CUSTOM_C2="
@@ -309,6 +309,7 @@ shCiBuildWasm() {(set -e
         -s NODEJS_CATCH_REJECTION=0 \
         -s RESERVED_FUNCTION_POINTERS=64 \
         -s SINGLE_FILE=0 \
+        -s USE_ZLIB=1 \
         -s WASM=1 \
         -s WASM_BIGINT \
         build/sqlmath_base.c.wasm.o \
@@ -359,7 +360,9 @@ shCiEmsdkInstall() {(set -e
     cd ${EMSDK}
     ./emsdk install ${EMSCRIPTEN_VERSION}
     echo "## Done"
-    # This generates configuration that contains all valid paths according to installed SDK
+    #
+    # This generates configuration that contains all valid paths according to
+    # installed SDK
     # TODO(sbc): We should be able to use just emcc -v here but it doesn't
     # currently create the sanity file.
     cd ${EMSDK}
@@ -371,6 +374,7 @@ shCiEmsdkInstall() {(set -e
     ${EMSDK}/upstream/emscripten/emcc -c hello.c
     cat ${EMSDK}/upstream/emscripten/cache/sanity.txt
     echo "## Done"
+    #
     # Cleanup Emscripten installation and strip some symbols
     echo "## Aggressive optimization: Remove debug symbols"
     cd ${EMSDK} && . ./emsdk_env.sh
@@ -385,7 +389,8 @@ shCiEmsdkInstall() {(set -e
     # download ports
     # touch "$EMSDK/.null.c"
     # emcc \
-    #     -s USE_ZLIB \
+    #     -s USE_LIBPNG=1 \
+    #     -s USE_ZLIB=1 \
     #     "$EMSDK/.null.c" -o "$EMSDK/.null_wasm.js"
 )}
 

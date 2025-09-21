@@ -12149,26 +12149,26 @@ file none
 #define Z_OK 0
 #define ZEXPORT
 //
-typedef size_t z_size_t;
-typedef unsigned long z_crc_t;
-typedef void *voidp;
-typedef void *voidpf;
-typedef void const *voidpc;
+// typedef size_t z_size_t;
+// typedef unsigned long z_crc_t;
+// typedef void *voidp;
+// typedef void *voidpf;
+// typedef void const *voidpc;
 //
 typedef unsigned char Byte;
 typedef Byte Bytef;
 //
-typedef unsigned int uInt;
-typedef uInt uIntf;
+// typedef unsigned int uInt;
+// typedef uInt uIntf;
 //
 typedef unsigned long uLong;
 typedef uLong uLongf;
 //
-typedef struct gz_header_s gz_header;
-typedef gz_header *gz_headerp;
+// typedef struct gz_header_s gz_header;
+// typedef gz_header *gz_headerp;
 //
-typedef struct z_stream_s z_stream;
-typedef z_stream *z_streamp;
+// typedef struct z_stream_s z_stream;
+// typedef z_stream *z_streamp;
 
 
 // *INDENT-OFF*
