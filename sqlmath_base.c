@@ -28,9 +28,6 @@
 #define SRC_SQLMATH_H2
 
 
-#include "sqlmath_external_zlib.c"
-
-
 /*
 file sqlmath_h - start
 */
@@ -527,6 +524,9 @@ file sqlmath_h - end
 file sqlmath_base - start
 */
 #if defined(SRC_SQLMATH_BASE_C2)
+
+
+#   include "sqlmath_external_zlib.c"
 
 
 // track how many sqlite-db open
@@ -2540,7 +2540,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
     // init original_size
     int original_size = sqlite3_value_bytes(argv[0]);
     // init compress_size
-    uLongf compress_size = compressBound(original_size);
+    zlib_ulong compress_size = compressBound3(original_size);
     // init compress_data
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(4 + compress_size);
@@ -2549,7 +2549,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
         return;
     }
     // zlib_compress
-    if (compress(compress_data + 4, &compress_size, original_data,
+    if (compress3(compress_data + 4, &compress_size, original_data,
             original_size) != Z_OK) {
         sqlite3_free(compress_data);
         sqlite3_result_error(context, "zlib_compress - failed compress", -1);
@@ -2586,7 +2586,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // init original_size
-    uLongf original_size = 0    //
+    zlib_ulong original_size = 0        //
         | (compress_data[0] << 0x18)    //
         | (compress_data[1] << 0x10)    //
         | (compress_data[2] << 0x08)    //
@@ -2604,7 +2604,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // zlib_uncompress
-    if (uncompress(original_data, &original_size, compress_data + 4,
+    if (uncompress3(original_data, &original_size, compress_data + 4,
             compress_size) != Z_OK) {
         sqlite3_free(original_data);
         sqlite3_result_error(context, "zlib_uncompress - failed uncompress",

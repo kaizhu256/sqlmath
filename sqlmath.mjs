@@ -287,35 +287,74 @@ async function childProcessSpawn2(command, args, option) {
 }
 
 async function ciBuildExt({
-    modeSkip,
     process
 }) {
 
 // This function will build sqlmath from c.
 
-    let option;
-    option = {
-        binNodegyp: modulePath.resolve(
-            modulePath.dirname(process.execPath || ""),
-            "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
-        ).replace("/bin/node_modules/", "/lib/node_modules/"),
-        isWin32: process.platform === "win32",
-        modeDebug: npm_config_mode_debug,
-        modeSkip,
-        process
-    };
-    await ciBuildExt2NodejsBuild(option);
+    let binNodegyp = modulePath.resolve(
+        modulePath.dirname(process.execPath || ""),
+        "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
+    ).replace("/bin/node_modules/", "/lib/node_modules/");
+    if (!noop(
+        await fsExistsUnlessTest(cModulePath)
+    )) {
+        await ciBuildExt1NodejsConfigure({
+            binNodegyp,
+            process
+        });
+    }
+    consoleError(
+        `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
+    );
+    await childProcessSpawn2(
+        "sh",
+        [
+            "-c",
+            (`
+(set -e
+    # rebuild binding
+    rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
+    node "${binNodegyp}" build --release
+    mv build/Release/binding.node "${cModulePath}"
+    mv build/Release/shell "${sqlmathExe}"
+)
+            `)
+        ],
+        {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
+    );
 }
 
 async function ciBuildExt1NodejsConfigure({
     binNodegyp,
-    modeDebug
+    process
 }) {
 
 // This function will setup posix/win32 env for building c-extension.
 
     let cflagWallList = [];
     let cflagWnoList = [];
+    let include_dirs = [];
+    let isWin32 = process.platform === "win32";
+    let libraries = ["-lz"];
+    if (isWin32 || npm_config_mode_test) {
+        include_dirs = [
+            modulePath.resolve(
+                String(process.env?.HOME),
+                "AppData/Local/node-gyp/Cache",
+                String(process.versions?.node),
+                "include/node"
+            )
+        ];
+        libraries = [
+            modulePath.resolve(
+                String(process.env?.HOME),
+                "AppData/Local/node-gyp/Cache",
+                String(process.versions?.node),
+                "x64/node.lib"
+            )
+        ];
+    }
     String(
         await fsReadFileUnlessTest(".ci.sh", "utf8", (`
 SQLMATH_CFLAG_WALL_LIST=" \\
@@ -342,6 +381,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
         "target_defaults": {
             "cflags": cflagWnoList,
 // https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
+            include_dirs,
+            libraries,
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "WarnAsError": 1,
@@ -365,7 +406,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SRC_SQLITE_BASE_C2"
+                    "SRC_SQLITE_BASE_C2",
+                    "SRC_ZLIB_H0"
                 ],
                 "sources": [
                     "sqlmath_external_sqlite.c"
@@ -378,6 +420,9 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "defines": [
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
+                ],
+                "dependencies": [
+                    "SRC_ZLIB"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
@@ -402,8 +447,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM",
-                    "SRC_ZLIB"
+                    "SRC_SQLMATH_CUSTOM"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
@@ -421,12 +465,12 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SRC_SQLITE_SHELL_C2"
+                    "SRC_SQLITE_SHELL_C2",
+                    "SRC_ZLIB_H0"
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM",
-                    "SRC_ZLIB"
+                    "SRC_SQLMATH_CUSTOM"
                 ],
                 "sources": [
                     "sqlmath_external_sqlite.c"
@@ -447,43 +491,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
 )
             `)
         ],
-        {modeDebug, stdio: ["ignore", 1, 2]}
-    );
-}
-
-async function ciBuildExt2NodejsBuild({
-    binNodegyp,
-    modeDebug
-}) {
-
-// This function will archive <fileObj> into <fileLib>
-
-    if (!noop(
-        await fsExistsUnlessTest(cModulePath)
-    )) {
-        await ciBuildExt1NodejsConfigure({
-            binNodegyp,
-            modeDebug
-        });
-    }
-    consoleError(
-        `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
-    );
-    await childProcessSpawn2(
-        "sh",
-        [
-            "-c",
-            (`
-(set -e
-    # rebuild binding
-    rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release
-    mv build/Release/binding.node "${cModulePath}"
-    mv build/Release/shell "${sqlmathExe}"
-)
-            `)
-        ],
-        {modeDebug, stdio: ["ignore", 1, 2]}
+        {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
     );
 }
 
