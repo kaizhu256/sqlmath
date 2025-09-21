@@ -12155,14 +12155,14 @@ file none
 // typedef void *voidpf;
 // typedef void const *voidpc;
 //
-typedef unsigned char Byte;
-typedef Byte Bytef;
+// typedef unsigned char Byte;
+// typedef Byte Bytef;
 //
 // typedef unsigned int uInt;
 // typedef uInt uIntf;
 //
-typedef unsigned long uLong;
-typedef uLong uLongf;
+// typedef unsigned long uLong;
+// typedef uLong uLongf;
 //
 // typedef struct gz_header_s gz_header;
 // typedef gz_header *gz_headerp;
@@ -12186,7 +12186,7 @@ typedef uLong uLongf;
 // gzFile ZEXPORT gzopen64(const char *, const char *);
 // gzFile ZEXPORT gzopen64(const char *path, const char *mode);
 // gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode);
-int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
+int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
 // int ZEXPORT compress2(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen, int level);
 // int ZEXPORT deflate(z_streamp strm, int flush);
 // int ZEXPORT deflateCopy(z_streamp dest, z_streamp source);
@@ -12247,7 +12247,7 @@ int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong so
 // int ZEXPORT inflateUndermine(z_streamp, int);
 // int ZEXPORT inflateValidate(z_streamp strm, int check);
 // int ZEXPORT inflateValidate(z_streamp, int);
-int ZEXPORT uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
+int ZEXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
 // int ZEXPORT uncompress2(Bytef *dest, uLongf *destLen, const Bytef *source, uLong *sourceLen);
 // long ZEXPORT inflateMark(z_streamp strm);
 // uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len);
@@ -12257,7 +12257,7 @@ int ZEXPORT uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong 
 // uLong ZEXPORT adler32_combine64(uLong, uLong, z_off64_t);
 // uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
 // uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf, z_size_t len);
-uLong ZEXPORT compressBound(uLong sourceLen);
+unsigned long ZEXPORT compressBound(unsigned long sourceLen);
 // uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
 // uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2);
 // uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
