@@ -28,6 +28,9 @@
 #define SRC_SQLMATH_H2
 
 
+#include "sqlmath_external_zlib.c"
+
+
 /*
 file sqlmath_h - start
 */
@@ -39,11 +42,9 @@ file sqlmath_h - start
 #endif                          // SRC_SQLITE_BASE_C2
 #if defined(_WIN32)
 #   include <windows.h>
-#   include "sqlmath_external_zlib.c"
 #else
 #   include <dlfcn.h>
 #   include <unistd.h>
-#   include <zlib.h>
 #endif                          // _WIN32
 
 
@@ -2539,7 +2540,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
     // init original_size
     int original_size = sqlite3_value_bytes(argv[0]);
     // init compress_size
-    uLong compress_size = compressBound(original_size);
+    uLongf compress_size = compressBound(original_size);
     // init compress_data
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(4 + compress_size);
@@ -2585,7 +2586,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // init original_size
-    uLong original_size = 0     //
+    uLongf original_size = 0    //
         | (compress_data[0] << 0x18)    //
         | (compress_data[1] << 0x10)    //
         | (compress_data[2] << 0x08)    //

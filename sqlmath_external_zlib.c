@@ -11926,4 +11926,18 @@ file none
 /*jslint-enable*/
 
 
+// *INDENT-ON*
+
+
+#if defined(SRC_ZLIB_C2)
+
+
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#endif                          // __clang__
+
+
+#endif                          // SRC_ZLIB_C2
+
+
 #endif                          // SRC_ZLIB_H2
