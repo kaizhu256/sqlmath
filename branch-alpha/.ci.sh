@@ -352,16 +352,14 @@ shCiEmsdkInstall() {(set -e
     then
         exit
     fi
-    # https://github.com/emscripten-core/emsdk/blob/2.0.34/docker/Dockerfile
+    # https://github.com/emscripten-core/emsdk/blob/3.1.74/docker/Dockerfile
     git clone https://github.com/emscripten-core/emsdk.git $EMSDK
     #
     echo "## Install Emscripten"
     cd ${EMSDK}
     ./emsdk install ${EMSCRIPTEN_VERSION}
     echo "## Done"
-    #
-    # This generates configuration that contains all valid paths according to
-    # installed SDK
+    # This generates configuration that contains all valid paths according to installed SDK
     # TODO(sbc): We should be able to use just emcc -v here but it doesn't
     # currently create the sanity file.
     cd ${EMSDK}
@@ -373,16 +371,13 @@ shCiEmsdkInstall() {(set -e
     ${EMSDK}/upstream/emscripten/emcc -c hello.c
     cat ${EMSDK}/upstream/emscripten/cache/sanity.txt
     echo "## Done"
-    #
     # Cleanup Emscripten installation and strip some symbols
     echo "## Aggressive optimization: Remove debug symbols"
     cd ${EMSDK} && . ./emsdk_env.sh
     # Remove debugging symbols from embedded node (extra 7MB)
-    strip -s `which node`
+    # strip -s `which node`
     # Tests consume ~80MB disc space
     rm -fr ${EMSDK}/upstream/emscripten/tests
-    # Fastcomp is not supported
-    rm -fr ${EMSDK}/upstream/fastcomp
     # strip out symbols from clang (~extra 50MB disc space)
     find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true
     echo "## Done"
