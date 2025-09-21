@@ -402,7 +402,8 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "dependencies": [
                     "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM"
+                    "SRC_SQLMATH_CUSTOM",
+                    "SRC_ZLIB"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
