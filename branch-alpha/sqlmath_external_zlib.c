@@ -20,11 +20,9 @@
 
 #define DIST_CODE_LEN 512
 #define NO_GZIP
-#define ZEXTERN
 
 
 #endif                          // SRC_ZLIB_C2
-#if defined(SRC_ZLIB_C2)
 
 
 // *INDENT-OFF*
@@ -47,6 +45,7 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zlib.h"
         },
         {
+            "header": "\n#if defined(SRC_ZLIB_C2)\n",
             "sh": "cat .zlib-1.3.1/zutil.h",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zutil.h"
         },
@@ -127,26 +126,15 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/gzread.c"
         },
         {
+            "footer": "\n#endif // SRC_ZLIB_C2\n",
             "sh": "cat .zlib-1.3.1/gzwrite.c",
             "url": "https://github.com/madler/zlib/blob/v1.3.1/gzwrite.c"
         }
     ],
     "replaceList": [
         {
-            "aa": "^ *?\\w.*? ZEXPORT .*?\\(",
-            "bb": "// hack-zlib - optimization - static\nstatic $&",
-            "flags": "gm",
-            "substr": ""
-        },
-        {
             "aa": "^# *?include \"(?:zconf|zlib|zutil|crc32|deflate|inftrees|inflate|inffast|inffixed|trees|gzguts)\\.h\"",
             "bb": "// hack-zlib - inline header\n// $&",
-            "flags": "gm",
-            "substr": ""
-        },
-        {
-            "aa": "^static (.*?\\bZEXPORT (?:compress|uncompress))",
-            "bb": "// hack-zlib - export\n$1",
             "flags": "gm",
             "substr": ""
         }
@@ -961,8 +949,7 @@ typedef gz_header FAR *gz_headerp;
 
                         /* basic functions */
 
-// hack-zlib - optimization - static
-static ZEXTERN const char * ZEXPORT zlibVersion(void);
+ZEXTERN const char * ZEXPORT zlibVersion(void);
 /* The application can compare zlibVersion and ZLIB_VERSION for consistency.
    If the first character differs, the library code actually used is not
    compatible with the zlib.h header file used by the application.  This check
@@ -970,8 +957,7 @@ static ZEXTERN const char * ZEXPORT zlibVersion(void);
  */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateInit(z_streamp strm, int level);
+ZEXTERN int ZEXPORT deflateInit(z_streamp strm, int level);
 
      Initializes the internal stream state for compression.  The fields
    zalloc, zfree and opaque must be initialized before by the caller.  If
@@ -993,8 +979,7 @@ static ZEXTERN int ZEXPORT deflateInit(z_streamp strm, int level);
 */
 
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflate(z_streamp strm, int flush);
+ZEXTERN int ZEXPORT deflate(z_streamp strm, int flush);
 /*
     deflate compresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -1107,8 +1092,7 @@ static ZEXTERN int ZEXPORT deflate(z_streamp strm, int flush);
 */
 
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateEnd(z_streamp strm);
+ZEXTERN int ZEXPORT deflateEnd(z_streamp strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -1123,8 +1107,7 @@ static ZEXTERN int ZEXPORT deflateEnd(z_streamp strm);
 
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateInit(z_streamp strm);
+ZEXTERN int ZEXPORT inflateInit(z_streamp strm);
 
      Initializes the internal stream state for decompression.  The fields
    next_in, avail_in, zalloc, zfree and opaque must be initialized before by
@@ -1147,8 +1130,7 @@ static ZEXTERN int ZEXPORT inflateInit(z_streamp strm);
 */
 
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflate(z_streamp strm, int flush);
+ZEXTERN int ZEXPORT inflate(z_streamp strm, int flush);
 /*
     inflate decompresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -1268,8 +1250,7 @@ static ZEXTERN int ZEXPORT inflate(z_streamp strm, int flush);
 */
 
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateEnd(z_streamp strm);
+ZEXTERN int ZEXPORT inflateEnd(z_streamp strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -1287,8 +1268,7 @@ static ZEXTERN int ZEXPORT inflateEnd(z_streamp strm);
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateInit2(z_streamp strm,
+ZEXTERN int ZEXPORT deflateInit2(z_streamp strm,
                                  int level,
                                  int method,
                                  int windowBits,
@@ -1360,8 +1340,7 @@ static ZEXTERN int ZEXPORT deflateInit2(z_streamp strm,
    compression: this will be done by deflate().
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateSetDictionary(z_streamp strm,
+ZEXTERN int ZEXPORT deflateSetDictionary(z_streamp strm,
                                          const Bytef *dictionary,
                                          uInt  dictLength);
 /*
@@ -1405,8 +1384,7 @@ static ZEXTERN int ZEXPORT deflateSetDictionary(z_streamp strm,
    not perform any compression: this will be done by deflate().
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateGetDictionary(z_streamp strm,
+ZEXTERN int ZEXPORT deflateGetDictionary(z_streamp strm,
                                          Bytef *dictionary,
                                          uInt  *dictLength);
 /*
@@ -1428,8 +1406,7 @@ static ZEXTERN int ZEXPORT deflateGetDictionary(z_streamp strm,
    stream state is inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateCopy(z_streamp dest,
+ZEXTERN int ZEXPORT deflateCopy(z_streamp dest,
                                 z_streamp source);
 /*
      Sets the destination stream as a complete copy of the source stream.
@@ -1447,8 +1424,7 @@ static ZEXTERN int ZEXPORT deflateCopy(z_streamp dest,
    destination.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateReset(z_streamp strm);
+ZEXTERN int ZEXPORT deflateReset(z_streamp strm);
 /*
      This function is equivalent to deflateEnd followed by deflateInit, but
    does not free and reallocate the internal compression state.  The stream
@@ -1459,8 +1435,7 @@ static ZEXTERN int ZEXPORT deflateReset(z_streamp strm);
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateParams(z_streamp strm,
+ZEXTERN int ZEXPORT deflateParams(z_streamp strm,
                                   int level,
                                   int strategy);
 /*
@@ -1498,8 +1473,7 @@ static ZEXTERN int ZEXPORT deflateParams(z_streamp strm,
    retried with more output space.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateTune(z_streamp strm,
+ZEXTERN int ZEXPORT deflateTune(z_streamp strm,
                                 int good_length,
                                 int max_lazy,
                                 int nice_length,
@@ -1516,8 +1490,7 @@ static ZEXTERN int ZEXPORT deflateTune(z_streamp strm,
    returns Z_OK on success, or Z_STREAM_ERROR for an invalid deflate stream.
  */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm,
+ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm,
                                    uLong sourceLen);
 /*
      deflateBound() returns an upper bound on the compressed size after
@@ -1532,8 +1505,7 @@ static ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm,
    than Z_FINISH or Z_NO_FLUSH are used.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflatePending(z_streamp strm,
+ZEXTERN int ZEXPORT deflatePending(z_streamp strm,
                                    unsigned *pending,
                                    int *bits);
 /*
@@ -1548,8 +1520,7 @@ static ZEXTERN int ZEXPORT deflatePending(z_streamp strm,
    stream state was inconsistent.
  */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflatePrime(z_streamp strm,
+ZEXTERN int ZEXPORT deflatePrime(z_streamp strm,
                                  int bits,
                                  int value);
 /*
@@ -1566,8 +1537,7 @@ static ZEXTERN int ZEXPORT deflatePrime(z_streamp strm,
    source stream state was inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateSetHeader(z_streamp strm,
+ZEXTERN int ZEXPORT deflateSetHeader(z_streamp strm,
                                      gz_headerp head);
 /*
      deflateSetHeader() provides gzip header information for when a gzip
@@ -1593,8 +1563,7 @@ static ZEXTERN int ZEXPORT deflateSetHeader(z_streamp strm,
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateInit2(z_streamp strm,
+ZEXTERN int ZEXPORT inflateInit2(z_streamp strm,
                                  int windowBits);
 
      This is another version of inflateInit with an extra parameter.  The
@@ -1648,8 +1617,7 @@ static ZEXTERN int ZEXPORT inflateInit2(z_streamp strm,
    deferred until inflate() is called.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateSetDictionary(z_streamp strm,
+ZEXTERN int ZEXPORT inflateSetDictionary(z_streamp strm,
                                          const Bytef *dictionary,
                                          uInt  dictLength);
 /*
@@ -1672,8 +1640,7 @@ static ZEXTERN int ZEXPORT inflateSetDictionary(z_streamp strm,
    inflate().
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateGetDictionary(z_streamp strm,
+ZEXTERN int ZEXPORT inflateGetDictionary(z_streamp strm,
                                          Bytef *dictionary,
                                          uInt  *dictLength);
 /*
@@ -1688,8 +1655,7 @@ static ZEXTERN int ZEXPORT inflateGetDictionary(z_streamp strm,
    stream state is inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateSync(z_streamp strm);
+ZEXTERN int ZEXPORT inflateSync(z_streamp strm);
 /*
      Skips invalid compressed data until a possible full flush point (see above
    for the description of deflate with Z_FULL_FLUSH) can be found, or until all
@@ -1708,8 +1674,7 @@ static ZEXTERN int ZEXPORT inflateSync(z_streamp strm);
    time, until success or end of the input data.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateCopy(z_streamp dest,
+ZEXTERN int ZEXPORT inflateCopy(z_streamp dest,
                                 z_streamp source);
 /*
      Sets the destination stream as a complete copy of the source stream.
@@ -1725,8 +1690,7 @@ static ZEXTERN int ZEXPORT inflateCopy(z_streamp dest,
    destination.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateReset(z_streamp strm);
+ZEXTERN int ZEXPORT inflateReset(z_streamp strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,
    but does not free and reallocate the internal decompression state.  The
@@ -1737,8 +1701,7 @@ static ZEXTERN int ZEXPORT inflateReset(z_streamp strm);
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateReset2(z_streamp strm,
+ZEXTERN int ZEXPORT inflateReset2(z_streamp strm,
                                   int windowBits);
 /*
      This function is the same as inflateReset, but it also permits changing
@@ -1752,8 +1715,7 @@ static ZEXTERN int ZEXPORT inflateReset2(z_streamp strm,
    the windowBits parameter is invalid.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflatePrime(z_streamp strm,
+ZEXTERN int ZEXPORT inflatePrime(z_streamp strm,
                                  int bits,
                                  int value);
 /*
@@ -1774,8 +1736,7 @@ static ZEXTERN int ZEXPORT inflatePrime(z_streamp strm,
    stream state was inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN long ZEXPORT inflateMark(z_streamp strm);
+ZEXTERN long ZEXPORT inflateMark(z_streamp strm);
 /*
      This function returns two values, one in the lower 16 bits of the return
    value, and the other in the remaining upper bits, obtained by shifting the
@@ -1803,8 +1764,7 @@ static ZEXTERN long ZEXPORT inflateMark(z_streamp strm);
    source stream state was inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateGetHeader(z_streamp strm,
+ZEXTERN int ZEXPORT inflateGetHeader(z_streamp strm,
                                      gz_headerp head);
 /*
      inflateGetHeader() requests that gzip header information be stored in the
@@ -1845,8 +1805,7 @@ static ZEXTERN int ZEXPORT inflateGetHeader(z_streamp strm,
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateBackInit(z_streamp strm, int windowBits,
+ZEXTERN int ZEXPORT inflateBackInit(z_streamp strm, int windowBits,
                                     unsigned char FAR *window);
 
      Initialize the internal stream state for decompression using inflateBack()
@@ -1871,8 +1830,7 @@ typedef unsigned (*in_func)(void FAR *,
                             z_const unsigned char FAR * FAR *);
 typedef int (*out_func)(void FAR *, unsigned char FAR *, unsigned);
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateBack(z_streamp strm,
+ZEXTERN int ZEXPORT inflateBack(z_streamp strm,
                                 in_func in, void FAR *in_desc,
                                 out_func out, void FAR *out_desc);
 /*
@@ -1942,8 +1900,7 @@ static ZEXTERN int ZEXPORT inflateBack(z_streamp strm,
    cannot return Z_OK.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateBackEnd(z_streamp strm);
+ZEXTERN int ZEXPORT inflateBackEnd(z_streamp strm);
 /*
      All memory allocated by inflateBackInit() is freed.
 
@@ -1951,8 +1908,7 @@ static ZEXTERN int ZEXPORT inflateBackEnd(z_streamp strm);
    state was inconsistent.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT zlibCompileFlags(void);
+ZEXTERN uLong ZEXPORT zlibCompileFlags(void);
 /* Return flags indicating compile-time options.
 
     Type sizes, two bits each, 00 = 16 bits, 01 = 32, 10 = 64, 11 = other:
@@ -2005,8 +1961,6 @@ static ZEXTERN uLong ZEXPORT zlibCompileFlags(void);
    you need special options.
 */
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 ZEXTERN int ZEXPORT compress(Bytef *dest,   uLongf *destLen,
                              const Bytef *source, uLong sourceLen);
 /*
@@ -2022,8 +1976,6 @@ ZEXTERN int ZEXPORT compress(Bytef *dest,   uLongf *destLen,
    buffer.
 */
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 ZEXTERN int ZEXPORT compress2(Bytef *dest,   uLongf *destLen,
                               const Bytef *source, uLong sourceLen,
                               int level);
@@ -2040,8 +1992,6 @@ ZEXTERN int ZEXPORT compress2(Bytef *dest,   uLongf *destLen,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 ZEXTERN uLong ZEXPORT compressBound(uLong sourceLen);
 /*
      compressBound() returns an upper bound on the compressed size after
@@ -2049,8 +1999,6 @@ ZEXTERN uLong ZEXPORT compressBound(uLong sourceLen);
    compress() or compress2() call to allocate the destination buffer.
 */
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 ZEXTERN int ZEXPORT uncompress(Bytef *dest,   uLongf *destLen,
                                const Bytef *source, uLong sourceLen);
 /*
@@ -2069,8 +2017,6 @@ ZEXTERN int ZEXPORT uncompress(Bytef *dest,   uLongf *destLen,
    buffer with the uncompressed data up to that point.
 */
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 ZEXTERN int ZEXPORT uncompress2(Bytef *dest,   uLongf *destLen,
                                 const Bytef *source, uLong *sourceLen);
 /*
@@ -2091,8 +2037,7 @@ ZEXTERN int ZEXPORT uncompress2(Bytef *dest,   uLongf *destLen,
 typedef struct gzFile_s *gzFile;    /* semi-opaque gzip file descriptor */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN gzFile ZEXPORT gzopen(const char *path, const char *mode);
+ZEXTERN gzFile ZEXPORT gzopen(const char *path, const char *mode);
 
      Open the gzip (.gz) file at path for reading and decompressing, or
    compressing and writing.  The mode parameter is as in fopen ("rb" or "wb")
@@ -2129,8 +2074,7 @@ static ZEXTERN gzFile ZEXPORT gzopen(const char *path, const char *mode);
    file could not be opened.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN gzFile ZEXPORT gzdopen(int fd, const char *mode);
+ZEXTERN gzFile ZEXPORT gzdopen(int fd, const char *mode);
 /*
      Associate a gzFile with the file descriptor fd.  File descriptors are
    obtained from calls like open, dup, creat, pipe or fileno (if the file has
@@ -2153,8 +2097,7 @@ static ZEXTERN gzFile ZEXPORT gzdopen(int fd, const char *mode);
    will not detect if fd is invalid (unless fd is -1).
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzbuffer(gzFile file, unsigned size);
+ZEXTERN int ZEXPORT gzbuffer(gzFile file, unsigned size);
 /*
      Set the internal buffer size used by this library's functions for file to
    size.  The default buffer size is 8192 bytes.  This function must be called
@@ -2170,8 +2113,7 @@ static ZEXTERN int ZEXPORT gzbuffer(gzFile file, unsigned size);
    too late.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzsetparams(gzFile file, int level, int strategy);
+ZEXTERN int ZEXPORT gzsetparams(gzFile file, int level, int strategy);
 /*
      Dynamically update the compression level and strategy for file.  See the
    description of deflateInit2 for the meaning of these parameters. Previously
@@ -2182,8 +2124,7 @@ static ZEXTERN int ZEXPORT gzsetparams(gzFile file, int level, int strategy);
    or Z_MEM_ERROR if there is a memory allocation error.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzread(gzFile file, voidp buf, unsigned len);
+ZEXTERN int ZEXPORT gzread(gzFile file, voidp buf, unsigned len);
 /*
      Read and decompress up to len uncompressed bytes from file into buf.  If
    the input file is not in gzip format, gzread copies the given number of
@@ -2213,8 +2154,7 @@ static ZEXTERN int ZEXPORT gzread(gzFile file, voidp buf, unsigned len);
    Z_STREAM_ERROR.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems,
+ZEXTERN z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems,
                                  gzFile file);
 /*
      Read and decompress up to nitems items of size size from file into buf,
@@ -2240,15 +2180,13 @@ static ZEXTERN z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitem
    file, resetting and retrying on end-of-file, when size is not 1.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len);
+ZEXTERN int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len);
 /*
      Compress and write the len uncompressed bytes at buf to file. gzwrite
    returns the number of uncompressed bytes written or 0 in case of error.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size,
+ZEXTERN z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size,
                                   z_size_t nitems, gzFile file);
 /*
      Compress and write nitems items of size size from buf to file, duplicating
@@ -2277,8 +2215,7 @@ ZEXTERN int ZEXPORTVA gzprintf(gzFile file, const char *format, ...);
    This can be determined using zlibCompileFlags().
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzputs(gzFile file, const char *s);
+ZEXTERN int ZEXPORT gzputs(gzFile file, const char *s);
 /*
      Compress and write the given null-terminated string s to file, excluding
    the terminating null character.
@@ -2286,8 +2223,7 @@ static ZEXTERN int ZEXPORT gzputs(gzFile file, const char *s);
      gzputs returns the number of characters written, or -1 in case of error.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN char * ZEXPORT gzgets(gzFile file, char *buf, int len);
+ZEXTERN char * ZEXPORT gzgets(gzFile file, char *buf, int len);
 /*
      Read and decompress bytes from file into buf, until len-1 characters are
    read, or until a newline character is read and transferred to buf, or an
@@ -2301,15 +2237,13 @@ static ZEXTERN char * ZEXPORT gzgets(gzFile file, char *buf, int len);
    buf are indeterminate.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzputc(gzFile file, int c);
+ZEXTERN int ZEXPORT gzputc(gzFile file, int c);
 /*
      Compress and write c, converted to an unsigned char, into file.  gzputc
    returns the value that was written, or -1 in case of error.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzgetc(gzFile file);
+ZEXTERN int ZEXPORT gzgetc(gzFile file);
 /*
      Read and decompress one byte from file.  gzgetc returns this byte or -1
    in case of end of file or error.  This is implemented as a macro for speed.
@@ -2318,8 +2252,7 @@ static ZEXTERN int ZEXPORT gzgetc(gzFile file);
    points to has been clobbered or not.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzungetc(int c, gzFile file);
+ZEXTERN int ZEXPORT gzungetc(int c, gzFile file);
 /*
      Push c back onto the stream for file to be read as the first character on
    the next read.  At least one character of push-back is always allowed.
@@ -2331,8 +2264,7 @@ static ZEXTERN int ZEXPORT gzungetc(int c, gzFile file);
    gzseek() or gzrewind().
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzflush(gzFile file, int flush);
+ZEXTERN int ZEXPORT gzflush(gzFile file, int flush);
 /*
      Flush all pending output to file.  The parameter flush is as in the
    deflate() function.  The return value is the zlib error number (see function
@@ -2348,8 +2280,7 @@ static ZEXTERN int ZEXPORT gzflush(gzFile file, int flush);
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN z_off_t ZEXPORT gzseek(gzFile file,
+ZEXTERN z_off_t ZEXPORT gzseek(gzFile file,
                                z_off_t offset, int whence);
 
      Set the starting position to offset relative to whence for the next gzread
@@ -2368,8 +2299,7 @@ static ZEXTERN z_off_t ZEXPORT gzseek(gzFile file,
    would be before the current position.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT    gzrewind(gzFile file);
+ZEXTERN int ZEXPORT    gzrewind(gzFile file);
 /*
      Rewind file. This function is supported only for reading.
 
@@ -2377,8 +2307,7 @@ static ZEXTERN int ZEXPORT    gzrewind(gzFile file);
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN z_off_t ZEXPORT    gztell(gzFile file);
+ZEXTERN z_off_t ZEXPORT    gztell(gzFile file);
 
      Return the starting position for the next gzread or gzwrite on file.
    This position represents a number of bytes in the uncompressed data stream,
@@ -2389,8 +2318,7 @@ static ZEXTERN z_off_t ZEXPORT    gztell(gzFile file);
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN z_off_t ZEXPORT gzoffset(gzFile file);
+ZEXTERN z_off_t ZEXPORT gzoffset(gzFile file);
 
      Return the current compressed (actual) read or write offset of file.  This
    offset includes the count of bytes that precede the gzip stream, for example
@@ -2399,8 +2327,7 @@ static ZEXTERN z_off_t ZEXPORT gzoffset(gzFile file);
    be used for a progress indicator.  On error, gzoffset() returns -1.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzeof(gzFile file);
+ZEXTERN int ZEXPORT gzeof(gzFile file);
 /*
      Return true (1) if the end-of-file indicator for file has been set while
    reading, false (0) otherwise.  Note that the end-of-file indicator is set
@@ -2415,8 +2342,7 @@ static ZEXTERN int ZEXPORT gzeof(gzFile file);
    has grown since the previous end of file was detected.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzdirect(gzFile file);
+ZEXTERN int ZEXPORT gzdirect(gzFile file);
 /*
      Return true (1) if file is being copied directly while reading, or false
    (0) if file is a gzip stream being decompressed.
@@ -2437,8 +2363,7 @@ static ZEXTERN int ZEXPORT gzdirect(gzFile file);
    gzip file reading and decompression, which may not be desired.)
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT    gzclose(gzFile file);
+ZEXTERN int ZEXPORT    gzclose(gzFile file);
 /*
      Flush all pending output for file, if necessary, close file and
    deallocate the (de)compression state.  Note that once file is closed, you
@@ -2451,10 +2376,8 @@ static ZEXTERN int ZEXPORT    gzclose(gzFile file);
    last read ended in the middle of a gzip stream, or Z_OK on success.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzclose_r(gzFile file);
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzclose_w(gzFile file);
+ZEXTERN int ZEXPORT gzclose_r(gzFile file);
+ZEXTERN int ZEXPORT gzclose_w(gzFile file);
 /*
      Same as gzclose(), but gzclose_r() is only for use when reading, and
    gzclose_w() is only for use when writing or appending.  The advantage to
@@ -2465,8 +2388,7 @@ static ZEXTERN int ZEXPORT gzclose_w(gzFile file);
    zlib library.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN const char * ZEXPORT gzerror(gzFile file, int *errnum);
+ZEXTERN const char * ZEXPORT gzerror(gzFile file, int *errnum);
 /*
      Return the error message for the last error which occurred on file.
    errnum is set to zlib error number.  If an error occurred in the file system
@@ -2482,8 +2404,7 @@ static ZEXTERN const char * ZEXPORT gzerror(gzFile file, int *errnum);
    functions above that do not distinguish those cases in their return values.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN void ZEXPORT gzclearerr(gzFile file);
+ZEXTERN void ZEXPORT gzclearerr(gzFile file);
 /*
      Clear the error and end-of-file flags for file.  This is analogous to the
    clearerr() function in stdio.  This is useful for continuing to read a gzip
@@ -2500,8 +2421,7 @@ static ZEXTERN void ZEXPORT gzclearerr(gzFile file);
    library.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len);
+ZEXTERN uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len);
 /*
      Update a running Adler-32 checksum with the bytes buf[0..len-1] and
    return the updated checksum. An Adler-32 value is in the range of a 32-bit
@@ -2521,16 +2441,14 @@ static ZEXTERN uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len);
      if (adler != original_adler) error();
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf,
+ZEXTERN uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf,
                                 z_size_t len);
 /*
      Same as adler32(), but with a size_t length.
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT adler32_combine(uLong adler1, uLong adler2,
+ZEXTERN uLong ZEXPORT adler32_combine(uLong adler1, uLong adler2,
                                       z_off_t len2);
 
      Combine two Adler-32 checksums into one.  For two sequences of bytes, seq1
@@ -2541,8 +2459,7 @@ static ZEXTERN uLong ZEXPORT adler32_combine(uLong adler1, uLong adler2,
    negative, the result has no meaning or utility.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
+ZEXTERN uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
 /*
      Update a running CRC-32 with the bytes buf[0..len-1] and return the
    updated CRC-32. A CRC-32 value is in the range of a 32-bit unsigned integer.
@@ -2560,16 +2477,14 @@ static ZEXTERN uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
      if (crc != original_crc) error();
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT crc32_z(uLong crc, const Bytef *buf,
+ZEXTERN uLong ZEXPORT crc32_z(uLong crc, const Bytef *buf,
                               z_size_t len);
 /*
      Same as crc32(), but with a size_t length.
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2);
+ZEXTERN uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2);
 
      Combine two CRC-32 check values into one.  For two sequences of bytes,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
@@ -2579,15 +2494,13 @@ static ZEXTERN uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2)
 */
 
 /*
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t len2);
+ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t len2);
 
      Return the operator corresponding to length len2, to be used with
    crc32_combine_op(). len2 must be non-negative.
 */
 
-// hack-zlib - optimization - static
-static ZEXTERN uLong ZEXPORT crc32_combine_op(uLong crc1, uLong crc2, uLong op);
+ZEXTERN uLong ZEXPORT crc32_combine_op(uLong crc1, uLong crc2, uLong op);
 /*
      Give the same result as crc32_combine(), using op in place of len2. op is
    is generated from len2 by crc32_combine_gen(). This will be faster than
@@ -2600,22 +2513,17 @@ static ZEXTERN uLong ZEXPORT crc32_combine_op(uLong crc1, uLong crc2, uLong op);
 /* deflateInit and inflateInit are macros to allow checking the zlib version
  * and the compiler's view of z_stream:
  */
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateInit_(z_streamp strm, int level,
+ZEXTERN int ZEXPORT deflateInit_(z_streamp strm, int level,
                                  const char *version, int stream_size);
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateInit_(z_streamp strm,
+ZEXTERN int ZEXPORT inflateInit_(z_streamp strm,
                                  const char *version, int stream_size);
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT deflateInit2_(z_streamp strm, int  level, int  method,
+ZEXTERN int ZEXPORT deflateInit2_(z_streamp strm, int  level, int  method,
                                   int windowBits, int memLevel,
                                   int strategy, const char *version,
                                   int stream_size);
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateInit2_(z_streamp strm, int  windowBits,
+ZEXTERN int ZEXPORT inflateInit2_(z_streamp strm, int  windowBits,
                                   const char *version, int stream_size);
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT inflateBackInit_(z_streamp strm, int windowBits,
+ZEXTERN int ZEXPORT inflateBackInit_(z_streamp strm, int windowBits,
                                      unsigned char FAR *window,
                                      const char *version,
                                      int stream_size);
@@ -2663,8 +2571,7 @@ struct gzFile_s {
     unsigned char *next;
     z_off64_t pos;
 };
-// hack-zlib - optimization - static
-static ZEXTERN int ZEXPORT gzgetc_(gzFile file);       /* backward compatibility */
+ZEXTERN int ZEXPORT gzgetc_(gzFile file);       /* backward compatibility */
 #ifdef Z_PREFIX_SET
 #  undef z_gzgetc
 #  define z_gzgetc(g) \
@@ -2681,20 +2588,13 @@ static ZEXTERN int ZEXPORT gzgetc_(gzFile file);       /* backward compatibility
  * without large file support, _LFS64_LARGEFILE must also be true
  */
 #ifdef Z_LARGE64
-// hack-zlib - optimization - static
-static    ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off64_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off64_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off64_t);
+   ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
+   ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
+   ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
+   ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
+   ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off64_t);
+   ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off64_t);
+   ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off64_t);
 #endif
 
 #if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
@@ -2716,69 +2616,43 @@ static    ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off64_t);
 #    define crc32_combine_gen crc32_combine_gen64
 #  endif
 #  ifndef Z_LARGE64
-// hack-zlib - optimization - static
-static      ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
-// hack-zlib - optimization - static
-static      ZEXTERN z_off_t ZEXPORT gzseek64(gzFile, z_off_t, int);
-// hack-zlib - optimization - static
-static      ZEXTERN z_off_t ZEXPORT gztell64(gzFile);
-// hack-zlib - optimization - static
-static      ZEXTERN z_off_t ZEXPORT gzoffset64(gzFile);
-// hack-zlib - optimization - static
-static      ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static      ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static      ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
+     ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
+     ZEXTERN z_off_t ZEXPORT gzseek64(gzFile, z_off_t, int);
+     ZEXTERN z_off_t ZEXPORT gztell64(gzFile);
+     ZEXTERN z_off_t ZEXPORT gzoffset64(gzFile);
+     ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
+     ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off_t);
+     ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
 #  endif
 #else
-// hack-zlib - optimization - static
-static    ZEXTERN gzFile ZEXPORT gzopen(const char *, const char *);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off_t ZEXPORT gzseek(gzFile, z_off_t, int);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off_t ZEXPORT gztell(gzFile);
-// hack-zlib - optimization - static
-static    ZEXTERN z_off_t ZEXPORT gzoffset(gzFile);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT adler32_combine(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t);
+   ZEXTERN gzFile ZEXPORT gzopen(const char *, const char *);
+   ZEXTERN z_off_t ZEXPORT gzseek(gzFile, z_off_t, int);
+   ZEXTERN z_off_t ZEXPORT gztell(gzFile);
+   ZEXTERN z_off_t ZEXPORT gzoffset(gzFile);
+   ZEXTERN uLong ZEXPORT adler32_combine(uLong, uLong, z_off_t);
+   ZEXTERN uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
+   ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t);
 #endif
 
 #else /* Z_SOLO */
 
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT adler32_combine(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static    ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t);
+   ZEXTERN uLong ZEXPORT adler32_combine(uLong, uLong, z_off_t);
+   ZEXTERN uLong ZEXPORT crc32_combine(uLong, uLong, z_off_t);
+   ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t);
 
 #endif /* !Z_SOLO */
 
 /* undocumented functions */
-// hack-zlib - optimization - static
-static ZEXTERN const char   * ZEXPORT zError(int);
-// hack-zlib - optimization - static
-static ZEXTERN int            ZEXPORT inflateSyncPoint(z_streamp);
-// hack-zlib - optimization - static
-static ZEXTERN const z_crc_t FAR * ZEXPORT get_crc_table(void);
-// hack-zlib - optimization - static
-static ZEXTERN int            ZEXPORT inflateUndermine(z_streamp, int);
-// hack-zlib - optimization - static
-static ZEXTERN int            ZEXPORT inflateValidate(z_streamp, int);
-// hack-zlib - optimization - static
-static ZEXTERN unsigned long  ZEXPORT inflateCodesUsed(z_streamp);
-// hack-zlib - optimization - static
-static ZEXTERN int            ZEXPORT inflateResetKeep(z_streamp);
-// hack-zlib - optimization - static
-static ZEXTERN int            ZEXPORT deflateResetKeep(z_streamp);
+ZEXTERN const char   * ZEXPORT zError(int);
+ZEXTERN int            ZEXPORT inflateSyncPoint(z_streamp);
+ZEXTERN const z_crc_t FAR * ZEXPORT get_crc_table(void);
+ZEXTERN int            ZEXPORT inflateUndermine(z_streamp, int);
+ZEXTERN int            ZEXPORT inflateValidate(z_streamp, int);
+ZEXTERN unsigned long  ZEXPORT inflateCodesUsed(z_streamp);
+ZEXTERN int            ZEXPORT inflateResetKeep(z_streamp);
+ZEXTERN int            ZEXPORT deflateResetKeep(z_streamp);
 #if defined(_WIN32) && !defined(Z_SOLO)
-// hack-zlib - optimization - static
-static ZEXTERN gzFile         ZEXPORT gzopen_w(const wchar_t *path,
+ZEXTERN gzFile         ZEXPORT gzopen_w(const wchar_t *path,
                                         const char *mode);
 #endif
 #if defined(STDC) || defined(Z_HAVE_STDARG_H)
@@ -2799,6 +2673,8 @@ ZEXTERN int            ZEXPORTVA gzvprintf(gzFile file,
 /*
 file https://github.com/madler/zlib/blob/v1.3.1/zutil.h
 */
+
+#if defined(SRC_ZLIB_C2)
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -2972,12 +2848,9 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-// hack-zlib - optimization - static
-static     ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static     ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off_t);
-// hack-zlib - optimization - static
-static     ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
+    ZEXTERN uLong ZEXPORT adler32_combine64(uLong, uLong, z_off_t);
+    ZEXTERN uLong ZEXPORT crc32_combine64(uLong, uLong, z_off_t);
+    ZEXTERN uLong ZEXPORT crc32_combine_gen64(z_off_t);
 #endif
 
         /* common defaults */
@@ -3123,8 +2996,7 @@ file https://github.com/madler/zlib/blob/v1.3.1/adler32.c
 #endif
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf, z_size_t len) {
+uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf, z_size_t len) {
     unsigned long sum2;
     unsigned n;
 
@@ -3191,8 +3063,7 @@ static uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf, z_size_t len) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len) {
+uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len) {
     return adler32_z(adler, buf, len);
 }
 
@@ -3222,13 +3093,11 @@ local uLong adler32_combine_(uLong adler1, uLong adler2, z_off64_t len2) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static uLong ZEXPORT adler32_combine(uLong adler1, uLong adler2, z_off_t len2) {
+uLong ZEXPORT adler32_combine(uLong adler1, uLong adler2, z_off_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
 
-// hack-zlib - optimization - static
-static uLong ZEXPORT adler32_combine64(uLong adler1, uLong adler2, z_off64_t len2) {
+uLong ZEXPORT adler32_combine64(uLong adler1, uLong adler2, z_off64_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
 
@@ -3987,8 +3856,7 @@ local void fill_window(deflate_state *s) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateInit_(z_streamp strm, int level, const char *version,
+int ZEXPORT deflateInit_(z_streamp strm, int level, const char *version,
                          int stream_size) {
     return deflateInit2_(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY, version, stream_size);
@@ -3996,8 +3864,7 @@ static int ZEXPORT deflateInit_(z_streamp strm, int level, const char *version,
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
+int ZEXPORT deflateInit2_(z_streamp strm, int level, int method,
                           int windowBits, int memLevel, int strategy,
                           const char *version, int stream_size) {
     deflate_state *s;
@@ -4168,8 +4035,7 @@ local int deflateStateCheck(z_streamp strm) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateSetDictionary(z_streamp strm, const Bytef *dictionary,
+int ZEXPORT deflateSetDictionary(z_streamp strm, const Bytef *dictionary,
                                  uInt  dictLength) {
     deflate_state *s;
     uInt str, n;
@@ -4235,8 +4101,7 @@ static int ZEXPORT deflateSetDictionary(z_streamp strm, const Bytef *dictionary,
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateGetDictionary(z_streamp strm, Bytef *dictionary,
+int ZEXPORT deflateGetDictionary(z_streamp strm, Bytef *dictionary,
                                  uInt *dictLength) {
     deflate_state *s;
     uInt len;
@@ -4255,8 +4120,7 @@ static int ZEXPORT deflateGetDictionary(z_streamp strm, Bytef *dictionary,
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateResetKeep(z_streamp strm) {
+int ZEXPORT deflateResetKeep(z_streamp strm) {
     deflate_state *s;
 
     if (deflateStateCheck(strm)) {
@@ -4316,8 +4180,7 @@ local void lm_init(deflate_state *s) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateReset(z_streamp strm) {
+int ZEXPORT deflateReset(z_streamp strm) {
     int ret;
 
     ret = deflateResetKeep(strm);
@@ -4327,8 +4190,7 @@ static int ZEXPORT deflateReset(z_streamp strm) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateSetHeader(z_streamp strm, gz_headerp head) {
+int ZEXPORT deflateSetHeader(z_streamp strm, gz_headerp head) {
     if (deflateStateCheck(strm) || strm->state->wrap != 2)
         return Z_STREAM_ERROR;
     strm->state->gzhead = head;
@@ -4336,8 +4198,7 @@ static int ZEXPORT deflateSetHeader(z_streamp strm, gz_headerp head) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflatePending(z_streamp strm, unsigned *pending, int *bits) {
+int ZEXPORT deflatePending(z_streamp strm, unsigned *pending, int *bits) {
     if (deflateStateCheck(strm)) return Z_STREAM_ERROR;
     if (pending != Z_NULL)
         *pending = strm->state->pending;
@@ -4347,8 +4208,7 @@ static int ZEXPORT deflatePending(z_streamp strm, unsigned *pending, int *bits) 
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflatePrime(z_streamp strm, int bits, int value) {
+int ZEXPORT deflatePrime(z_streamp strm, int bits, int value) {
     deflate_state *s;
     int put;
 
@@ -4377,8 +4237,7 @@ static int ZEXPORT deflatePrime(z_streamp strm, int bits, int value) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateParams(z_streamp strm, int level, int strategy) {
+int ZEXPORT deflateParams(z_streamp strm, int level, int strategy) {
     deflate_state *s;
     compress_func func;
 
@@ -4423,8 +4282,7 @@ static int ZEXPORT deflateParams(z_streamp strm, int level, int strategy) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateTune(z_streamp strm, int good_length, int max_lazy,
+int ZEXPORT deflateTune(z_streamp strm, int good_length, int max_lazy,
                         int nice_length, int max_chain) {
     deflate_state *s;
 
@@ -4461,8 +4319,7 @@ static int ZEXPORT deflateTune(z_streamp strm, int good_length, int max_lazy,
  *
  * Shifts are used to approximate divisions, for speed.
  */
-// hack-zlib - optimization - static
-static uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
+uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
     deflate_state *s;
     uLong fixedlen, storelen, wraplen;
 
@@ -4574,8 +4431,7 @@ local void flush_pending(z_streamp strm) {
     } while (0)
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflate(z_streamp strm, int flush) {
+int ZEXPORT deflate(z_streamp strm, int flush) {
     int old_flush; /* value of flush param for previous deflate call */
     deflate_state *s;
 
@@ -4887,8 +4743,7 @@ static int ZEXPORT deflate(z_streamp strm, int flush) {
 }
 
 /* ========================================================================= */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateEnd(z_streamp strm) {
+int ZEXPORT deflateEnd(z_streamp strm) {
     int status;
 
     if (deflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -4912,8 +4767,7 @@ static int ZEXPORT deflateEnd(z_streamp strm) {
  * To simplify the source, this is not supported for 16-bit MSDOS (which
  * doesn't have enough memory anyway to duplicate compression states).
  */
-// hack-zlib - optimization - static
-static int ZEXPORT deflateCopy(z_streamp dest, z_streamp source) {
+int ZEXPORT deflateCopy(z_streamp dest, z_streamp source) {
 #ifdef MAXSEG_64K
     (void)dest;
     (void)source;
@@ -6526,8 +6380,7 @@ local int inflateStateCheck(z_streamp strm) {
     return 0;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateResetKeep(z_streamp strm) {
+int ZEXPORT inflateResetKeep(z_streamp strm) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -6551,8 +6404,7 @@ static int ZEXPORT inflateResetKeep(z_streamp strm) {
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateReset(z_streamp strm) {
+int ZEXPORT inflateReset(z_streamp strm) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -6563,8 +6415,7 @@ static int ZEXPORT inflateReset(z_streamp strm) {
     return inflateResetKeep(strm);
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateReset2(z_streamp strm, int windowBits) {
+int ZEXPORT inflateReset2(z_streamp strm, int windowBits) {
     int wrap;
     struct inflate_state FAR *state;
 
@@ -6601,8 +6452,7 @@ static int ZEXPORT inflateReset2(z_streamp strm, int windowBits) {
     return inflateReset(strm);
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateInit2_(z_streamp strm, int windowBits,
+int ZEXPORT inflateInit2_(z_streamp strm, int windowBits,
                           const char *version, int stream_size) {
     int ret;
     struct inflate_state FAR *state;
@@ -6642,14 +6492,12 @@ static int ZEXPORT inflateInit2_(z_streamp strm, int windowBits,
     return ret;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateInit_(z_streamp strm, const char *version,
+int ZEXPORT inflateInit_(z_streamp strm, const char *version,
                          int stream_size) {
     return inflateInit2_(strm, DEF_WBITS, version, stream_size);
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflatePrime(z_streamp strm, int bits, int value) {
+int ZEXPORT inflatePrime(z_streamp strm, int bits, int value) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -7017,8 +6865,7 @@ local int updatewindow(z_streamp strm, const Bytef *end, unsigned copy) {
    will return Z_BUF_ERROR if it has not reached the end of the stream.
  */
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflate(z_streamp strm, int flush) {
+int ZEXPORT inflate(z_streamp strm, int flush) {
     struct inflate_state FAR *state;
     z_const unsigned char FAR *next;    /* next input */
     unsigned char FAR *put;     /* next output */
@@ -7694,8 +7541,7 @@ static int ZEXPORT inflate(z_streamp strm, int flush) {
     return ret;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateEnd(z_streamp strm) {
+int ZEXPORT inflateEnd(z_streamp strm) {
     struct inflate_state FAR *state;
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
@@ -7707,8 +7553,7 @@ static int ZEXPORT inflateEnd(z_streamp strm) {
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateGetDictionary(z_streamp strm, Bytef *dictionary,
+int ZEXPORT inflateGetDictionary(z_streamp strm, Bytef *dictionary,
                                  uInt *dictLength) {
     struct inflate_state FAR *state;
 
@@ -7728,8 +7573,7 @@ static int ZEXPORT inflateGetDictionary(z_streamp strm, Bytef *dictionary,
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateSetDictionary(z_streamp strm, const Bytef *dictionary,
+int ZEXPORT inflateSetDictionary(z_streamp strm, const Bytef *dictionary,
                                  uInt dictLength) {
     struct inflate_state FAR *state;
     unsigned long dictid;
@@ -7761,8 +7605,7 @@ static int ZEXPORT inflateSetDictionary(z_streamp strm, const Bytef *dictionary,
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateGetHeader(z_streamp strm, gz_headerp head) {
+int ZEXPORT inflateGetHeader(z_streamp strm, gz_headerp head) {
     struct inflate_state FAR *state;
 
     /* check state */
@@ -7807,8 +7650,7 @@ local unsigned syncsearch(unsigned FAR *have, const unsigned char FAR *buf,
     return next;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateSync(z_streamp strm) {
+int ZEXPORT inflateSync(z_streamp strm) {
     unsigned len;               /* number of bytes to look at or looked at */
     int flags;                  /* temporary to save header status */
     unsigned long in, out;      /* temporary to save total_in and total_out */
@@ -7864,8 +7706,7 @@ static int ZEXPORT inflateSync(z_streamp strm) {
    block. When decompressing, PPP checks that at the end of input packet,
    inflate is waiting for these length bytes.
  */
-// hack-zlib - optimization - static
-static int ZEXPORT inflateSyncPoint(z_streamp strm) {
+int ZEXPORT inflateSyncPoint(z_streamp strm) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -7873,8 +7714,7 @@ static int ZEXPORT inflateSyncPoint(z_streamp strm) {
     return state->mode == STORED && state->bits == 0;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateCopy(z_streamp dest, z_streamp source) {
+int ZEXPORT inflateCopy(z_streamp dest, z_streamp source) {
     struct inflate_state FAR *state;
     struct inflate_state FAR *copy;
     unsigned char FAR *window;
@@ -7918,8 +7758,7 @@ static int ZEXPORT inflateCopy(z_streamp dest, z_streamp source) {
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateUndermine(z_streamp strm, int subvert) {
+int ZEXPORT inflateUndermine(z_streamp strm, int subvert) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -7934,8 +7773,7 @@ static int ZEXPORT inflateUndermine(z_streamp strm, int subvert) {
 #endif
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT inflateValidate(z_streamp strm, int check) {
+int ZEXPORT inflateValidate(z_streamp strm, int check) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm)) return Z_STREAM_ERROR;
@@ -7947,8 +7785,7 @@ static int ZEXPORT inflateValidate(z_streamp strm, int check) {
     return Z_OK;
 }
 
-// hack-zlib - optimization - static
-static long ZEXPORT inflateMark(z_streamp strm) {
+long ZEXPORT inflateMark(z_streamp strm) {
     struct inflate_state FAR *state;
 
     if (inflateStateCheck(strm))
@@ -7959,8 +7796,7 @@ static long ZEXPORT inflateMark(z_streamp strm) {
             (state->mode == MATCH ? state->was - state->length : 0));
 }
 
-// hack-zlib - optimization - static
-static unsigned long ZEXPORT inflateCodesUsed(z_streamp strm) {
+unsigned long ZEXPORT inflateCodesUsed(z_streamp strm) {
     struct inflate_state FAR *state;
     if (inflateStateCheck(strm)) return (unsigned long)-1;
     state = (struct inflate_state FAR *)strm->state;
@@ -9666,14 +9502,10 @@ file https://github.com/madler/zlib/blob/v1.3.1/gzguts.h
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0
-// hack-zlib - optimization - static
-static     ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
-// hack-zlib - optimization - static
-static     ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
-// hack-zlib - optimization - static
-static     ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
-// hack-zlib - optimization - static
-static     ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
+    ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
+    ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
+    ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
+    ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
 #endif
 
 /* default memLevel */
@@ -9778,13 +9610,11 @@ z_const char * const z_errmsg[10] = {
 };
 
 
-// hack-zlib - optimization - static
-static const char * ZEXPORT zlibVersion(void) {
+const char * ZEXPORT zlibVersion(void) {
     return ZLIB_VERSION;
 }
 
-// hack-zlib - optimization - static
-static uLong ZEXPORT zlibCompileFlags(void) {
+uLong ZEXPORT zlibCompileFlags(void) {
     uLong flags;
 
     flags = 0;
@@ -9884,8 +9714,7 @@ void ZLIB_INTERNAL z_error(char *m) {
 /* exported to allow conversion of error code to string for compress() and
  * uncompress()
  */
-// hack-zlib - optimization - static
-static const char * ZEXPORT zError(int err) {
+const char * ZEXPORT zError(int err) {
     return ERR_MSG(err);
 }
 
@@ -10081,8 +9910,6 @@ file https://github.com/madler/zlib/blob/v1.3.1/compress.c
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-// hack-zlib - optimization - static
-// hack-zlib - export
 int ZEXPORT compress2(Bytef *dest, uLongf *destLen, const Bytef *source,
                       uLong sourceLen, int level) {
     z_stream stream;
@@ -10124,8 +9951,6 @@ int ZEXPORT compress2(Bytef *dest, uLongf *destLen, const Bytef *source,
 
 /* ===========================================================================
  */
-// hack-zlib - optimization - static
-// hack-zlib - export
 int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source,
                      uLong sourceLen) {
     return compress2(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
@@ -10135,8 +9960,6 @@ int ZEXPORT compress(Bytef *dest, uLongf *destLen, const Bytef *source,
      If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-// hack-zlib - optimization - static
-// hack-zlib - export
 uLong ZEXPORT compressBound(uLong sourceLen) {
     return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) +
            (sourceLen >> 25) + 13;
@@ -10173,8 +9996,6 @@ file https://github.com/madler/zlib/blob/v1.3.1/uncompr.c
    Z_DATA_ERROR if the input data was corrupted, including if the input data is
    an incomplete zlib stream.
 */
-// hack-zlib - optimization - static
-// hack-zlib - export
 int ZEXPORT uncompress2(Bytef *dest, uLongf *destLen, const Bytef *source,
                         uLong *sourceLen) {
     z_stream stream;
@@ -10230,8 +10051,6 @@ int ZEXPORT uncompress2(Bytef *dest, uLongf *destLen, const Bytef *source,
            err;
 }
 
-// hack-zlib - optimization - static
-// hack-zlib - export
 int ZEXPORT uncompress(Bytef *dest, uLongf *destLen, const Bytef *source,
                        uLong sourceLen) {
     return uncompress2(dest, destLen, source, &sourceLen);
@@ -10252,8 +10071,7 @@ file https://github.com/madler/zlib/blob/v1.3.1/gzclose.c
 /* gzclose() is in a separate file so that it is linked in only if it is used.
    That way the other gzclose functions can be used instead to avoid linking in
    unneeded compression or decompression routines. */
-// hack-zlib - optimization - static
-static int ZEXPORT gzclose(gzFile file) {
+int ZEXPORT gzclose(gzFile file) {
 #ifndef NO_GZCOMPRESS
     gz_statep state;
 
@@ -10531,20 +10349,17 @@ local gzFile gz_open(const void *path, int fd, const char *mode) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static gzFile ZEXPORT gzopen(const char *path, const char *mode) {
+gzFile ZEXPORT gzopen(const char *path, const char *mode) {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static gzFile ZEXPORT gzopen64(const char *path, const char *mode) {
+gzFile ZEXPORT gzopen64(const char *path, const char *mode) {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static gzFile ZEXPORT gzdopen(int fd, const char *mode) {
+gzFile ZEXPORT gzdopen(int fd, const char *mode) {
     char *path;         /* identifier for error messages */
     gzFile gz;
 
@@ -10562,15 +10377,13 @@ static gzFile ZEXPORT gzdopen(int fd, const char *mode) {
 
 /* -- see zlib.h -- */
 #ifdef WIDECHAR
-// hack-zlib - optimization - static
-static gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode) {
+gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode) {
     return gz_open(path, -2, mode);
 }
 #endif
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzbuffer(gzFile file, unsigned size) {
+int ZEXPORT gzbuffer(gzFile file, unsigned size) {
     gz_statep state;
 
     /* get internal structure and check integrity */
@@ -10594,8 +10407,7 @@ static int ZEXPORT gzbuffer(gzFile file, unsigned size) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzrewind(gzFile file) {
+int ZEXPORT gzrewind(gzFile file) {
     gz_statep state;
 
     /* get internal structure */
@@ -10616,8 +10428,7 @@ static int ZEXPORT gzrewind(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
+z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
     unsigned n;
     z_off64_t ret;
     gz_statep state;
@@ -10690,8 +10501,7 @@ static z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence) {
+z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence) {
     z_off64_t ret;
 
     ret = gzseek64(file, (z_off64_t)offset, whence);
@@ -10699,8 +10509,7 @@ static z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off64_t ZEXPORT gztell64(gzFile file) {
+z_off64_t ZEXPORT gztell64(gzFile file) {
     gz_statep state;
 
     /* get internal structure and check integrity */
@@ -10715,8 +10524,7 @@ static z_off64_t ZEXPORT gztell64(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off_t ZEXPORT gztell(gzFile file) {
+z_off_t ZEXPORT gztell(gzFile file) {
     z_off64_t ret;
 
     ret = gztell64(file);
@@ -10724,8 +10532,7 @@ static z_off_t ZEXPORT gztell(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off64_t ZEXPORT gzoffset64(gzFile file) {
+z_off64_t ZEXPORT gzoffset64(gzFile file) {
     z_off64_t offset;
     gz_statep state;
 
@@ -10746,8 +10553,7 @@ static z_off64_t ZEXPORT gzoffset64(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_off_t ZEXPORT gzoffset(gzFile file) {
+z_off_t ZEXPORT gzoffset(gzFile file) {
     z_off64_t ret;
 
     ret = gzoffset64(file);
@@ -10755,8 +10561,7 @@ static z_off_t ZEXPORT gzoffset(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzeof(gzFile file) {
+int ZEXPORT gzeof(gzFile file) {
     gz_statep state;
 
     /* get internal structure and check integrity */
@@ -10771,8 +10576,7 @@ static int ZEXPORT gzeof(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static const char * ZEXPORT gzerror(gzFile file, int *errnum) {
+const char * ZEXPORT gzerror(gzFile file, int *errnum) {
     gz_statep state;
 
     /* get internal structure and check integrity */
@@ -10790,8 +10594,7 @@ static const char * ZEXPORT gzerror(gzFile file, int *errnum) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static void ZEXPORT gzclearerr(gzFile file) {
+void ZEXPORT gzclearerr(gzFile file) {
     gz_statep state;
 
     /* get internal structure and check integrity */
@@ -11219,8 +11022,7 @@ local z_size_t gz_read(gz_statep state, voidp buf, z_size_t len) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzread(gzFile file, voidp buf, unsigned len) {
+int ZEXPORT gzread(gzFile file, voidp buf, unsigned len) {
     gz_statep state;
 
     /* get internal structure */
@@ -11252,8 +11054,7 @@ static int ZEXPORT gzread(gzFile file, voidp buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems, gzFile file) {
+z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems, gzFile file) {
     z_size_t len;
     gz_statep state;
 
@@ -11284,8 +11085,7 @@ static z_size_t ZEXPORT gzfread(voidp buf, z_size_t size, z_size_t nitems, gzFil
 #else
 #  undef gzgetc
 #endif
-// hack-zlib - optimization - static
-static int ZEXPORT gzgetc(gzFile file) {
+int ZEXPORT gzgetc(gzFile file) {
     unsigned char buf[1];
     gz_statep state;
 
@@ -11310,14 +11110,12 @@ static int ZEXPORT gzgetc(gzFile file) {
     return gz_read(state, buf, 1) < 1 ? -1 : buf[0];
 }
 
-// hack-zlib - optimization - static
-static int ZEXPORT gzgetc_(gzFile file) {
+int ZEXPORT gzgetc_(gzFile file) {
     return gzgetc(file);
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzungetc(int c, gzFile file) {
+int ZEXPORT gzungetc(int c, gzFile file) {
     gz_statep state;
 
     /* get internal structure */
@@ -11378,8 +11176,7 @@ static int ZEXPORT gzungetc(int c, gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
+char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
     unsigned char *eol;
@@ -11439,8 +11236,7 @@ static char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzdirect(gzFile file) {
+int ZEXPORT gzdirect(gzFile file) {
     gz_statep state;
 
     /* get internal structure */
@@ -11458,8 +11254,7 @@ static int ZEXPORT gzdirect(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzclose_r(gzFile file) {
+int ZEXPORT gzclose_r(gzFile file) {
     int ret, err;
     gz_statep state;
 
@@ -11727,8 +11522,7 @@ local z_size_t gz_write(gz_statep state, voidpc buf, z_size_t len) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len) {
+int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len) {
     gz_statep state;
 
     /* get internal structure */
@@ -11752,8 +11546,7 @@ static int ZEXPORT gzwrite(gzFile file, voidpc buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size, z_size_t nitems,
+z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size, z_size_t nitems,
                           gzFile file) {
     z_size_t len;
     gz_statep state;
@@ -11779,8 +11572,7 @@ static z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size, z_size_t nitems,
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzputc(gzFile file, int c) {
+int ZEXPORT gzputc(gzFile file, int c) {
     unsigned have;
     unsigned char buf[1];
     gz_statep state;
@@ -11825,8 +11617,7 @@ static int ZEXPORT gzputc(gzFile file, int c) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzputs(gzFile file, const char *s) {
+int ZEXPORT gzputs(gzFile file, const char *s) {
     z_size_t len, put;
     gz_statep state;
 
@@ -12022,8 +11813,7 @@ int ZEXPORTVA gzprintf(gzFile file, const char *format, int a1, int a2, int a3,
 #endif
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzflush(gzFile file, int flush) {
+int ZEXPORT gzflush(gzFile file, int flush) {
     gz_statep state;
 
     /* get internal structure */
@@ -12052,8 +11842,7 @@ static int ZEXPORT gzflush(gzFile file, int flush) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
+int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
     gz_statep state;
     z_streamp strm;
 
@@ -12091,8 +11880,7 @@ static int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
 }
 
 /* -- see zlib.h -- */
-// hack-zlib - optimization - static
-static int ZEXPORT gzclose_w(gzFile file) {
+int ZEXPORT gzclose_w(gzFile file) {
     int ret = Z_OK;
     gz_statep state;
 
@@ -12129,6 +11917,7 @@ static int ZEXPORT gzclose_w(gzFile file) {
     free(state);
     return ret;
 }
+#endif // SRC_ZLIB_C2
 
 
 /*
@@ -12140,7 +11929,6 @@ file none
 // *INDENT-ON*
 
 
-#endif                          // SRC_ZLIB_C2
 #if defined(SRC_ZLIB_C2)
 
 
@@ -12150,4 +11938,6 @@ file none
 
 
 #endif                          // SRC_ZLIB_C2
+
+
 #endif                          // SRC_ZLIB_H2

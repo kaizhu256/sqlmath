@@ -28,7 +28,7 @@
 #define SRC_SQLMATH_H2
 
 
-//!! #include "sqlmath_external_zlib.c"
+#include "sqlmath_external_zlib.c"
 
 
 /*
@@ -2522,24 +2522,6 @@ SQLMATH_FUNC static void sql1_throwerror_func(
 
 // SQLMATH_FUNC sql1_zlib_xxx_func - start
 
-#define Z_OK 0
-typedef unsigned long ulong;    // NOLINT
-int compress(
-    unsigned char *dest,
-    ulong * destLen,
-    const unsigned char *source,
-    ulong sourceLen
-);
-int uncompress(
-    unsigned char *dest,
-    ulong * destLen,
-    const unsigned char *source,
-    ulong sourceLen
-);
-ulong compressBound(
-    ulong sourceLen
-);
-
 SQLMATH_FUNC static void sql1_zlib_compress_func(
     sqlite3_context * context,
     int argc,
@@ -2558,7 +2540,7 @@ SQLMATH_FUNC static void sql1_zlib_compress_func(
     // init original_size
     int original_size = sqlite3_value_bytes(argv[0]);
     // init compress_size
-    ulong compress_size = compressBound(original_size);
+    uLongf compress_size = compressBound(original_size);
     // init compress_data
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(4 + compress_size);
@@ -2604,7 +2586,7 @@ SQLMATH_FUNC static void sql1_zlib_uncompress_func(
         return;
     }
     // init original_size
-    ulong original_size = 0     //
+    uLongf original_size = 0    //
         | (compress_data[0] << 0x18)    //
         | (compress_data[1] << 0x10)    //
         | (compress_data[2] << 0x08)    //
