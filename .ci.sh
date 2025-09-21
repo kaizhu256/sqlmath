@@ -231,8 +231,7 @@ shCiBuildWasm() {(set -e
     for FILE in \
         sqlmath_base.c \
         sqlmath_custom.c \
-        sqlmath_external_sqlite.c \
-        sqlmath_external_zlib.c
+        sqlmath_external_sqlite.c
     do
         OPTION2=""
         FILE2="build/$(basename "$FILE").wasm.o"
@@ -254,16 +253,13 @@ shCiBuildWasm() {(set -e
         esac
         case "$FILE" in
         sqlmath_base.c)
-            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2="
+            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2= -s USE_ZLIB=1"
             ;;
         sqlmath_custom.c)
             OPTION2="$OPTION2 -DSRC_SQLMATH_CUSTOM_C2="
             ;;
         sqlmath_external_sqlite.c)
             OPTION2="$OPTION2 -DSRC_SQLITE_BASE_C2="
-            ;;
-        sqlmath_external_zlib.c)
-            OPTION2="$OPTION2 -DSRC_ZLIB_C2="
             ;;
         *)
             # optimization - skip rebuild of rollup if possible
@@ -309,12 +305,12 @@ shCiBuildWasm() {(set -e
         -s NODEJS_CATCH_REJECTION=0 \
         -s RESERVED_FUNCTION_POINTERS=64 \
         -s SINGLE_FILE=0 \
+        -s USE_ZLIB=1 \
         -s WASM=1 \
         -s WASM_BIGINT \
         build/sqlmath_base.c.wasm.o \
         build/sqlmath_custom.c.wasm.o \
-        build/sqlmath_external_sqlite.c.wasm.o \
-        build/sqlmath_external_zlib.c.wasm.o \
+        build/sqlmath_external_sqlite.c.wasm.o
         #
     printf '' > sqlmath_wasm.js
     printf "/*jslint-disable*/
@@ -378,19 +374,20 @@ shCiEmsdkInstall() {(set -e
     echo "## Aggressive optimization: Remove debug symbols"
     cd ${EMSDK} && . ./emsdk_env.sh
     # Remove debugging symbols from embedded node (extra 7MB)
-    strip -s `which node`
+    # strip -s `which node`
     # Tests consume ~80MB disc space
-    rm -fr ${EMSDK}/upstream/emscripten/tests
+    # rm -fr ${EMSDK}/upstream/emscripten/tests
     # Fastcomp is not supported
-    rm -fr ${EMSDK}/upstream/fastcomp
+    # rm -fr ${EMSDK}/upstream/fastcomp
     # strip out symbols from clang (~extra 50MB disc space)
-    find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true
+    # find ${EMSDK}/upstream/bin -type f -exec strip -s {} + || true
     echo "## Done"
     #
     # download ports
     # touch "$EMSDK/.null.c"
     # emcc \
-    #     -s USE_ZLIB \
+    #     -s USE_LIBPNG=1 \
+    #     -s USE_ZLIB=1 \
     #     "$EMSDK/.null.c" -o "$EMSDK/.null_wasm.js"
 )}
 

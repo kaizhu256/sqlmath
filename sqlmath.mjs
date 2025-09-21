@@ -397,13 +397,31 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "cflags": cflagWallList,
+                "conditions": [
+                    [
+                        "OS=='win'",
+                        {
+                            "dependencies": [
+                                "SRC_SQLITE_BASE",
+                                "SRC_SQLMATH_CUSTOM",
+                                "SRC_ZLIB"
+                            ],
+                            "libraries": [
+                            ]
+                        },
+                        {
+                            "dependencies": [
+                                "SRC_SQLITE_BASE",
+                                "SRC_SQLMATH_CUSTOM"
+                            ],
+                            "libraries": [
+                                "-lz"
+                            ]
+                        }
+                    ]
+                ],
                 "defines": [
                     "SRC_SQLMATH_NODEJS_C2"
-                ],
-                "dependencies": [
-                    "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM",
-                    "SRC_ZLIB"
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
@@ -420,13 +438,31 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 }
             },
             {
+                "conditions": [
+                    [
+                        "OS=='win'",
+                        {
+                            "dependencies": [
+                                "SRC_SQLITE_BASE",
+                                "SRC_SQLMATH_CUSTOM",
+                                "SRC_ZLIB"
+                            ],
+                            "libraries": [
+                            ]
+                        },
+                        {
+                            "dependencies": [
+                                "SRC_SQLITE_BASE",
+                                "SRC_SQLMATH_CUSTOM"
+                            ],
+                            "libraries": [
+                                "-lz"
+                            ]
+                        }
+                    ]
+                ],
                 "defines": [
                     "SRC_SQLITE_SHELL_C2"
-                ],
-                "dependencies": [
-                    "SRC_SQLITE_BASE",
-                    "SRC_SQLMATH_CUSTOM",
-                    "SRC_ZLIB"
                 ],
                 "sources": [
                     "sqlmath_external_sqlite.c"

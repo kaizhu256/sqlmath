@@ -165,7 +165,6 @@ async def build_ext_async(): # noqa: C901
         arg_list += [
             # must be ordered first
             "build/SRC_SQLITE_BASE.obj",
-            "build/SRC_ZLIB.obj",
             # ,
             "build/SRC_SQLMATH_BASE.obj",
             "build/SRC_SQLMATH_CUSTOM.obj",
@@ -176,6 +175,7 @@ async def build_ext_async(): # noqa: C901
                 exe_link,
                 *[f"/LIBPATH:{path}" for path in path_library],
                 *arg_list,
+                "build/SRC_ZLIB.obj",
                 # ,
                 "/INCREMENTAL:NO", # optimization - reduce filesize
                 "/LTCG", # from cl.exe /GL
@@ -195,6 +195,7 @@ async def build_ext_async(): # noqa: C901
                 # ,
                 *cc_ldflags.strip().split(" "),
                 # ,
+                "-lz",
                 "-o", f"build/{file_lib}",
             ]
         await create_subprocess_exec_and_check(*arg_list, env=env)
