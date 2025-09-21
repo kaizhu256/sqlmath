@@ -254,7 +254,7 @@ shCiBuildWasm() {(set -e
         esac
         case "$FILE" in
         sqlmath_base.c)
-            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2= -s USE_ZLIB=1"
+            OPTION2="$OPTION2 -DSRC_SQLMATH_BASE_C2="
             ;;
         sqlmath_custom.c)
             OPTION2="$OPTION2 -DSRC_SQLMATH_CUSTOM_C2="
@@ -309,7 +309,6 @@ shCiBuildWasm() {(set -e
         -s NODEJS_CATCH_REJECTION=0 \
         -s RESERVED_FUNCTION_POINTERS=64 \
         -s SINGLE_FILE=0 \
-        -s USE_ZLIB=1 \
         -s WASM=1 \
         -s WASM_BIGINT \
         build/sqlmath_base.c.wasm.o \
