@@ -1753,9 +1753,13 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     unsigned char *p_realloc_buffer = (unsigned char *) realloc(p_gzip_buffer, final_size);
     if (p_realloc_buffer) {
         p_gzip_buffer = p_realloc_buffer;
+        buffer_size = final_size; // Update buffer_size to the new size
     }
+    // Note: If realloc fails, p_gzip_buffer still points to the valid
+    // original buffer. We can now safely use buffer_size as the true size
+    // to pass to sqlite3_result_blob().
     // Return the final blob to SQLite
-    sqlite3_result_blob(context, p_gzip_buffer, (int) final_size, free);
+    sqlite3_result_blob(context, p_gzip_buffer, (int) buffer_size, free);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
