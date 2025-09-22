@@ -550,7 +550,6 @@ zlib-1.3.1.tar.gz
         shRollupFetch index.html
         shRollupFetch sqlmath_base.h
         shRollupFetch sqlmath_external_sqlite.c
-        shRollupFetch sqlmath_external_zlib.c
         # shIndentC
         if (uname | grep -q "MING\|MSYS")
         then
@@ -558,7 +557,6 @@ zlib-1.3.1.tar.gz
             shIndentC sqlmath_base.h
             shIndentC sqlmath_custom.c
             shIndentC sqlmath_external_sqlite.c
-            shIndentC sqlmath_external_zlib.c
         fi
         return
     fi
@@ -576,7 +574,6 @@ zlib-1.3.1.tar.gz
             sqlmath_base.h \
             sqlmath_browser.mjs \
             sqlmath_external_sqlite.c \
-            sqlmath_external_zlib.c \
             sqlmath_wrapper_wasm.js
         do
             ln -f "$HOME/Documents/sqlmath/$FILE" "$FILE"

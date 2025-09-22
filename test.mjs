@@ -142,6 +142,15 @@ jstestDescribe((
                         ":memory:",
                         (`
 SELECT
+        -- CAST(
+        --     SQLAR_UNCOMPRESS(
+        --         SQLAR_COMPRESS(
+        --             CAST('abcd1234' AS BLOB)
+        --         ),
+        --         1
+        --     )
+        --     AS 'TEXT'
+        -- ),
         CAST(
             GZIP_UNCOMPRESS(
                 GZIP_COMPRESS(
@@ -155,6 +164,7 @@ SELECT
                 );
                 result = result.stdout.trim();
                 assertJsonEqual(result, "abcd1234");
+                // assertJsonEqual(result, "abcd1234|abcd1234");
             }())
         ]);
     });
