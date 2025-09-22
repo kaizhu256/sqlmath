@@ -1711,15 +1711,13 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // Static gzip header bytes for a basic gzip file
     const unsigned char gzip_header[10] =
         { 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 };
-    // Define buffer pointers and initialize to NULL for clean error handling
-    unsigned char *p_gzip_buffer = NULL;
-    void *p_compressed_data = NULL;
     // Handle zero-length input separately to produce a valid 18-byte gzip file
     if (src_len == 0) {
         size_t total_size = 18;
-        p_gzip_buffer = (unsigned char *) malloc(total_size);
+        unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
         if (!p_gzip_buffer) {
-            goto catch_error;
+            sqlite3_result_error_nomem(context);
+            return;
         }
         memcpy(p_gzip_buffer, gzip_header, 10);
         memcpy(p_gzip_buffer + 10, &crc, 4);
@@ -1731,18 +1729,21 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
     // precisely what is needed for the gzip format.
     size_t compressed_len = 0;
-    p_compressed_data =
+    void *p_compressed_data =
         tdefl_compress_mem_to_heap(p_src, src_len, &compressed_len, 0);
     if (!p_compressed_data) {
-        goto catch_error;
+        sqlite3_result_error_nomem(context);
+        return;
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
     size_t total_size = 10 + compressed_len + 8;
     // Allocate memory for the final blob.
-    p_gzip_buffer = (unsigned char *) malloc(total_size);
+    unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
     if (!p_gzip_buffer) {
-        goto catch_error;
+        free(p_compressed_data);
+        sqlite3_result_error_nomem(context);
+        return;
     }
     // Copy the header, compressed data, and footer to the final buffer
     memcpy(p_gzip_buffer, gzip_header, 10);
@@ -1753,15 +1754,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     free(p_compressed_data);
     // Return the final blob to SQLite
     sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
-    return;
-  catch_error:
-    if (p_gzip_buffer) {
-        free(p_gzip_buffer);
-    }
-    if (p_compressed_data) {
-        free(p_compressed_data);
-    }
-    sqlite3_result_error_nomem(context);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
