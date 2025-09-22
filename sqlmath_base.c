@@ -1725,35 +1725,37 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
         return;
     }
-    // Part 2: Perform Deflate compression with miniz.
-    // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
-    // precisely what is needed for the gzip format.
-    size_t compressed_len = 0;
-    void *p_compressed_data =
-        tdefl_compress_mem_to_heap(p_src, src_len, &compressed_len, 0);
-    if (!p_compressed_data) {
-        sqlite3_result_error_nomem(context);
-        return;
-    }
-    // Part 3: Construct the full gzip buffer.
-    // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
-    size_t total_size = 10 + compressed_len + 8;
-    // Allocate memory for the final blob.
-    unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
+    // Part 2: Perform Deflate compression in a single buffer.
+    // This is more efficient as it avoids a second allocation and a memcpy.
+    // The final size will be 10 (header) + compressed data + 8 (footer)
+    size_t max_compressed_len = tdefl_compress_bound(src_len);
+    size_t buffer_size = 10 + max_compressed_len + 8;
+    unsigned char *p_gzip_buffer = (unsigned char *) malloc(buffer_size);
     if (!p_gzip_buffer) {
-        free(p_compressed_data);
         sqlite3_result_error_nomem(context);
         return;
     }
-    // Copy the header, compressed data, and footer to the final buffer
+    // Copy the header into the buffer
     memcpy(p_gzip_buffer, gzip_header, 10);
-    memcpy(p_gzip_buffer + 10, p_compressed_data, compressed_len);
+    // Compress data directly into the buffer, starting after the header
+    size_t compressed_len = tdefl_compress_buffer_to_buffer(p_gzip_buffer + 10,
+        max_compressed_len, p_src, src_len, TDEFL_DEFAULT_COMPRESSION_LEVEL);
+    if (compressed_len == 0) {
+        free(p_gzip_buffer);
+        sqlite3_result_error_nomem(context);
+        return;
+    }
+    // Copy the footer after the compressed data
     memcpy(p_gzip_buffer + 10 + compressed_len, &crc, 4);
     memcpy(p_gzip_buffer + 14 + compressed_len, &isize, 4);
-    // Free the intermediate compressed data
-    free(p_compressed_data);
+    // Resize the buffer to the final size to avoid wasted space
+    size_t final_size = 10 + compressed_len + 8;
+    unsigned char *p_realloc_buffer = (unsigned char *) realloc(p_gzip_buffer, final_size);
+    if (p_realloc_buffer) {
+        p_gzip_buffer = p_realloc_buffer;
+    }
     // Return the final blob to SQLite
-    sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+    sqlite3_result_blob(context, p_gzip_buffer, (int) final_size, free);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
