@@ -143,8 +143,8 @@ jstestDescribe((
                         (`
 SELECT
         CAST(
-            ZLIB_UNCOMPRESS(
-                ZLIB_COMPRESS(
+            GZIP_UNCOMPRESS(
+                GZIP_COMPRESS(
                     CAST('abcd1234' AS BLOB)
                 )
             )
@@ -697,9 +697,9 @@ VALUES
     (?1, ?2, ?3),
     (CAST(?1 AS TEXT), CAST(?2 AS TEXT), CAST(?3 AS TEXT)),
     (
-        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?1)) AS TEXT),
-        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?2)) AS TEXT),
-        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?3)) AS TEXT)
+        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?1)) AS TEXT),
+        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?2)) AS TEXT),
+        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?3)) AS TEXT)
     );
 SELECT * FROM testDbExecAsync1;
 SELECT * FROM testDbExecAsync2;
