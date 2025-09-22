@@ -301,8 +301,8 @@ body {
 <pre><span class="lineno"><a href="#line_143" id="line_143">  143.</a></span><span class="count        ">      1</span><span>                        (`</span></pre>
 <pre><span class="lineno"><a href="#line_144" id="line_144">  144.</a></span><span class="count        ">      1</span><span>SELECT</span></pre>
 <pre><span class="lineno"><a href="#line_145" id="line_145">  145.</a></span><span class="count        ">      1</span><span>        CAST(</span></pre>
-<pre><span class="lineno"><a href="#line_146" id="line_146">  146.</a></span><span class="count        ">      1</span><span>            ZLIB_UNCOMPRESS(</span></pre>
-<pre><span class="lineno"><a href="#line_147" id="line_147">  147.</a></span><span class="count        ">      1</span><span>                ZLIB_COMPRESS(</span></pre>
+<pre><span class="lineno"><a href="#line_146" id="line_146">  146.</a></span><span class="count        ">      1</span><span>            GZIP_UNCOMPRESS(</span></pre>
+<pre><span class="lineno"><a href="#line_147" id="line_147">  147.</a></span><span class="count        ">      1</span><span>                GZIP_COMPRESS(</span></pre>
 <pre><span class="lineno"><a href="#line_148" id="line_148">  148.</a></span><span class="count        ">      1</span><span>                    CAST('abcd1234' AS BLOB)</span></pre>
 <pre><span class="lineno"><a href="#line_149" id="line_149">  149.</a></span><span class="count        ">      1</span><span>                )</span></pre>
 <pre><span class="lineno"><a href="#line_150" id="line_150">  150.</a></span><span class="count        ">      1</span><span>            )</span></pre>
@@ -855,9 +855,9 @@ body {
 <pre><span class="lineno"><a href="#line_697" id="line_697">  697.</a></span><span class="count        ">      4</span><span>    (?1, ?2, ?3),</span></pre>
 <pre><span class="lineno"><a href="#line_698" id="line_698">  698.</a></span><span class="count        ">      4</span><span>    (CAST(?1 AS TEXT), CAST(?2 AS TEXT), CAST(?3 AS TEXT)),</span></pre>
 <pre><span class="lineno"><a href="#line_699" id="line_699">  699.</a></span><span class="count        ">      4</span><span>    (</span></pre>
-<pre><span class="lineno"><a href="#line_700" id="line_700">  700.</a></span><span class="count        ">      4</span><span>        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?1)) AS TEXT),</span></pre>
-<pre><span class="lineno"><a href="#line_701" id="line_701">  701.</a></span><span class="count        ">      4</span><span>        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?2)) AS TEXT),</span></pre>
-<pre><span class="lineno"><a href="#line_702" id="line_702">  702.</a></span><span class="count        ">      4</span><span>        CAST(ZLIB_UNCOMPRESS(ZLIB_COMPRESS(?3)) AS TEXT)</span></pre>
+<pre><span class="lineno"><a href="#line_700" id="line_700">  700.</a></span><span class="count        ">      4</span><span>        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?1)) AS TEXT),</span></pre>
+<pre><span class="lineno"><a href="#line_701" id="line_701">  701.</a></span><span class="count        ">      4</span><span>        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?2)) AS TEXT),</span></pre>
+<pre><span class="lineno"><a href="#line_702" id="line_702">  702.</a></span><span class="count        ">      4</span><span>        CAST(GZIP_UNCOMPRESS(GZIP_COMPRESS(?3)) AS TEXT)</span></pre>
 <pre><span class="lineno"><a href="#line_703" id="line_703">  703.</a></span><span class="count        ">      4</span><span>    );</span></pre>
 <pre><span class="lineno"><a href="#line_704" id="line_704">  704.</a></span><span class="count        ">      4</span><span>SELECT * FROM testDbExecAsync1;</span></pre>
 <pre><span class="lineno"><a href="#line_705" id="line_705">  705.</a></span><span class="count        ">      4</span><span>SELECT * FROM testDbExecAsync2;</span></pre>
