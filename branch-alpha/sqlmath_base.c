@@ -1701,7 +1701,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     static const char header[10] = {    //
         0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,     //
     };
-    const unsigned char *original_buf = sqlite3_value_blob(argv[0]);
+    const char *original_buf = sqlite3_value_blob(argv[0]);
     if (original_buf == NULL) {
         sqlite3_result_error(context, "gzip_compress: Input cannot be NULL",
             -1);
@@ -1709,7 +1709,13 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     }
     const uint32_t original_len = sqlite3_value_bytes(argv[0]);
     // Part 1: Compute CRC32 and store original size
-    const uint32_t crc = mz_crc32(MZ_CRC32_INIT, original_buf, original_len);
+    // mz_ulong mz_crc32(
+    //     mz_ulong crc,
+    //     const unsigned char *ptr,
+    //     size_t buf_len
+    // );
+    const uint32_t crc =
+        mz_crc32(MZ_CRC32_INIT, original_buf, (size_t) original_len);
     // Handle zero-length input separately to produce a valid 18-byte gzip file
     if (original_len == 0) {
         char gzip_buf[10 + 0 + 8] = {   //
@@ -1725,6 +1731,12 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
     // precisely what is needed for the gzip format.
     size_t compress_len = 0;
+    // void *tdefl_compress_mem_to_heap(
+    //     const void *pSrc_buf,
+    //     size_t src_buf_len,
+    //     size_t * pOut_len,
+    //     int flags
+    // );
     void *compress_buf =
         tdefl_compress_mem_to_heap(original_buf, (size_t) original_len,
         &compress_len,
