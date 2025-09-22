@@ -1695,20 +1695,16 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// Function to perform gzip compression as a SQLite C-extension.
-// Takes a blob and returns a new blob with the gzip-compressed data.
-    if (argc != 1 || sqlite3_value_type(argv[0]) != SQLITE_BLOB) {
-        sqlite3_result_error(context,
-            "gzip_compress() expects a single BLOB argument", -1);
-        return;
-    }
-    // Get the source blob data and size from the SQLite value
+// This function will gzip-compress <argv[0]> using miniz's compress() function.
+    UNUSED_PARAMETER(argc);
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
-    size_t src_len = sqlite3_value_bytes(argv[0]);
-    if (src_len == 0) {
-        sqlite3_result_blob(context, "", 0, SQLITE_TRANSIENT);
+    const void *p_src = sqlite3_value_blob(argv[0]);
+    if (original_data == NULL) {
+        sqlite3_result_error(context, "gzip_compress - cannot compress NULL",
+            -1);
         return;
     }
+    size_t src_len = sqlite3_value_bytes(argv[0]);
     // Part 1: Compute CRC32 and store original size (ISIZE)
     uint32_t crc = mz_crc32(MZ_CRC32_INIT, p_src, src_len);
     uint32_t isize = (uint32_t) src_len;
@@ -1764,7 +1760,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
 ) {
 // Function to perform gzip decompression as a SQLite C-extension.
 // Takes a gzipped blob and returns the original uncompressed blob.
-    if (argc != 1 || sqlite3_value_type(argv[0]) != SQLITE_BLOB) {
+    if (sqlite3_value_type(argv[0]) != SQLITE_BLOB) {
         sqlite3_result_error(context,
             "gzip_uncompress() expects a single BLOB argument", -1);
         return;
