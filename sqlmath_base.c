@@ -1765,8 +1765,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     UNUSED_PARAMETER(argc);
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
     if (p_src == NULL) {
-        sqlite3_result_error(context,
-            "gzip_uncompress: Input cannot be NULL", -1);
+        sqlite3_result_error(context, "gzip_uncompress: Input cannot be NULL",
+            -1);
         return;
     }
     size_t src_len = sqlite3_value_bytes(argv[0]);
@@ -1787,10 +1787,10 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     const unsigned char *p_compress_data = p_src + 10;
     size_t compress_len = src_len - 18;
     // Decompress the data
-    size_t decompressed_len = 0;
-    void *p_decompressed_data =
+    size_t original_len = 0;
+    void *p_original_data =
         tinfl_decompress_mem_to_heap(p_compress_data, compress_len,
-        &decompressed_len, 0);
+        &original_len, 0);
     if (p_compress_data == NULL) {
         sqlite3_result_error(context, "gzip_uncompress: Decompression failed",
             -1);
@@ -1802,11 +1802,11 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     memcpy(&expected_crc, p_src + src_len - 8, 4);
     memcpy(&expected_isize, p_src + src_len - 4, 4);
     uint32_t actual_crc =
-        mz_crc32(MZ_CRC32_INIT, (const unsigned char *) p_decompressed_data,
-        decompressed_len);
-    uint32_t actual_isize = (uint32_t) decompressed_len;
+        mz_crc32(MZ_CRC32_INIT, (const unsigned char *) p_original_data,
+        original_len);
+    uint32_t actual_isize = (uint32_t) original_len;
     if (actual_crc != expected_crc || actual_isize != expected_isize) {
-        free(p_decompressed_data);
+        free(p_original_data);
         sqlite3_result_error(context,
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
         return;
@@ -1814,7 +1814,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     // Return the final blob to SQLite
     // Note: The cast to `int` is necessary for the SQLite API, but it
     // may truncate extremely large blobs on 64-bit systems.
-    sqlite3_result_blob(context, p_decompressed_data, (int) decompressed_len,
+    sqlite3_result_blob(context, p_original_data, (int) original_len,
         sqlite3_free);
 }
 
