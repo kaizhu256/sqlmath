@@ -1738,7 +1738,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     unsigned char *compress_data =
         (unsigned char *) sqlite3_malloc(10 + (int) compress_len + 8);
     if (!compress_data) {
-        sqlite3_free(p_compressed_data);
+        free(p_compressed_data);
         goto catch_error;
     }
     // Copy the header, compressed data, and footer to the final buffer
@@ -1747,7 +1747,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memcpy(compress_data + 10 + compress_len, &crc, 4);
     memcpy(compress_data + 14 + compress_len, &original_len, 4);
     // Free the intermediate compressed data
-    sqlite3_free(p_compressed_data);
+    free(p_compressed_data);
     // Return the final blob to SQLite
     sqlite3_result_blob(context, compress_data, 10 + (int) compress_len + 8,
         sqlite3_free);
