@@ -1714,7 +1714,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // Handle zero-length input separately to produce a valid 18-byte gzip file
     if (src_len == 0) {
         size_t total_size = 18;
-        unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
+        unsigned char *p_gzip_buffer =
+            (unsigned char *) sqlite3_malloc(total_size);
         if (!p_gzip_buffer) {
             sqlite3_result_error_nomem(context);
             return;
@@ -1722,7 +1723,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         memcpy(p_gzip_buffer, gzip_header, 10);
         memcpy(p_gzip_buffer + 10, &crc, 4);
         memcpy(p_gzip_buffer + 14, &isize, 4);
-        sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+        sqlite3_result_blob(context, p_gzip_buffer, (int) total_size,
+            sqlite3_free);
         return;
     }
     // Part 2: Perform Deflate compression with miniz.
@@ -1739,9 +1741,10 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
     size_t total_size = 10 + compressed_len + 8;
     // Allocate memory for the final blob.
-    unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
+    unsigned char *p_gzip_buffer =
+        (unsigned char *) sqlite3_malloc(total_size);
     if (!p_gzip_buffer) {
-        free(p_compressed_data);
+        sqlite3_free(p_compressed_data);
         sqlite3_result_error_nomem(context);
         return;
     }
@@ -1751,9 +1754,10 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memcpy(p_gzip_buffer + 10 + compressed_len, &crc, 4);
     memcpy(p_gzip_buffer + 14 + compressed_len, &isize, 4);
     // Free the intermediate compressed data
-    free(p_compressed_data);
+    sqlite3_free(p_compressed_data);
     // Return the final blob to SQLite
-    sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+    sqlite3_result_blob(context, p_gzip_buffer, (int) total_size,
+        sqlite3_free);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
@@ -1807,7 +1811,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         decompressed_len);
     uint32_t actual_isize = (uint32_t) decompressed_len;
     if (actual_crc != expected_crc || actual_isize != expected_isize) {
-        free(p_decompressed_data);
+        sqlite3_free(p_decompressed_data);
         sqlite3_result_error(context,
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
         return;
@@ -1816,7 +1820,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     // Note: The cast to `int` is necessary for the SQLite API, but it
     // may truncate extremely large blobs on 64-bit systems.
     sqlite3_result_blob(context, p_decompressed_data, (int) decompressed_len,
-        free);
+        sqlite3_free);
 }
 
 // SQLMATH_FUNC sql1_gzip_xxx_func - end
