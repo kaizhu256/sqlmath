@@ -1802,15 +1802,10 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     // Validate the gzip header (magic numbers and compression method)
-    if (p_src[0] != 0x1F || p_src[1] != 0x8B || p_src[2] != 0x08) {
+    if (p_src[0] != 0x1F || p_src[1] != 0x8B || p_src[2] != 0x08
+        || p_src[3] != 0x00) {
         sqlite3_result_error(context,
-            "Invalid gzip magic numbers or compression method", -1);
-        return;
-    }
-    // We only support the simplest gzip format (no optional headers)
-    if (p_src[3] != 0x00) {
-        sqlite3_result_error(context,
-            "Unsupported gzip flags. Only standard format is supported.", -1);
+            "Invalid gzip header or unsupported flags", -1);
         return;
     }
     // Extract compressed data, CRC32, and original size from the buffer
@@ -1841,6 +1836,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     // Return the final blob to SQLite
+    // Note: The cast to `int` is necessary for the SQLite API, but it
+    // may truncate extremely large blobs on 64-bit systems.
     sqlite3_result_blob(context, p_decompressed_data, (int) decompressed_len,
         free);
 }
