@@ -170,6 +170,7 @@ jstestDescribe((
             ciBuildExt({process: {arch: "arm", env: {}, platform: "win32"}}),
             ciBuildExt({process: {arch: "arm64", env: {}, platform: "win32"}}),
             ciBuildExt({process: {arch: "ia32", env: {}, platform: "win32"}}),
+            ciBuildExt({process: {cwd: noop}}),
             ciBuildExt({process: {env: {}, platform: "darwin"}}),
             ciBuildExt({process: {env: {}, platform: "win32"}}),
             ciBuildExt({process: {versions: {}}})
