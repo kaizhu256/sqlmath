@@ -1701,28 +1701,28 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     static const char header[10] = {    //
         0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,     //
     };
-    const mz_uint8 *buf_orig = sqlite3_value_blob(argv[0]);
-    if (buf_orig == NULL) {
+    const mz_uint8 *buf_src = sqlite3_value_blob(argv[0]);
+    if (buf_src == NULL) {
         sqlite3_result_error(context,   //
             "gzip_compress: Input cannot be NULL", -1);
         return;
     }
-    const uint32_t len_orig = sqlite3_value_bytes(argv[0]);
+    const uint32_t len_src = sqlite3_value_bytes(argv[0]);
     // Part 1: Compute CRC32 and store original size
     // mz_ulong mz_crc32(
     //     mz_ulong crc,
     //     const mz_uint8 *ptr,
     //     size_t buf_len
     // );
-    const uint32_t crc = mz_crc32(MZ_CRC32_INIT, buf_orig, (size_t) len_orig);
+    const uint32_t crc = mz_crc32(MZ_CRC32_INIT, buf_src, (size_t) len_src);
     // Handle zero-length input separately to produce a valid 18-byte gzip file
-    if (len_orig == 0) {
+    if (len_src == 0) {
         char buf_gzip[10 + 0 + 8] = {   //
             0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, //
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         };
         memcpy(buf_gzip + 10, &crc, 4);
-        memcpy(buf_gzip + 14, &len_orig, 4);
+        memcpy(buf_gzip + 14, &len_src, 4);
         sqlite3_result_blob(context, buf_gzip, 10 + 0 + 8, SQLITE_TRANSIENT);
         return;
     }
@@ -1737,7 +1737,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     //     int flags
     // );
     char *buf_gzip =
-        tdefl_compress_mem_to_heap(buf_orig, (size_t) len_orig, &len_compress,
+        tdefl_compress_mem_to_heap(buf_src, (size_t) len_src, &len_compress,
         0);
     if (buf_gzip == NULL) {
         goto catch_error;
@@ -1752,7 +1752,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memmove(buf_gzip + 10, buf_gzip, len_compress);
     memcpy(buf_gzip + 0, header, 10);
     memcpy(buf_gzip + 10 + len_compress, &crc, 4);
-    memcpy(buf_gzip + 10 + len_compress + 4, &len_orig, 4);
+    memcpy(buf_gzip + 10 + len_compress + 4, &len_src, 4);
     sqlite3_result_blob(context, buf_gzip, 10 + (int) len_compress + 8, free);
     return;
   catch_error:
@@ -1789,17 +1789,17 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     }
     // Extract compressed data, CRC32, and original size from the buffer
     // Decompress the data
-    size_t len_orig = 0;
+    size_t len_src = 0;
     // void *tinfl_decompress_mem_to_heap(
     //     const void *pSrc_buf,
     //     size_t src_buf_len,
     //     size_t * pOut_len,
     //     int flags
     // );
-    mz_uint8 *buf_orig =
+    mz_uint8 *buf_src =
         tinfl_decompress_mem_to_heap(buf_gzip + 10, len_gzip - 18,
-        &len_orig, 0);
-    if (buf_orig == NULL) {
+        &len_src, 0);
+    if (buf_src == NULL) {
         sqlite3_result_error(context,   //
             "gzip_uncompress: Decompression failed", -1);
         return;
@@ -1814,14 +1814,14 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     //     const mz_uint8 *ptr,
     //     size_t buf_len
     // );
-    uint32_t crc_actual = mz_crc32(MZ_CRC32_INIT, buf_orig, len_orig);
-    if (!(crc_header == crc_actual && len_header == len_orig)) {
-        free(buf_orig);
+    uint32_t crc_actual = mz_crc32(MZ_CRC32_INIT, buf_src, len_src);
+    if (!(crc_header == crc_actual && len_header == len_src)) {
+        free(buf_src);
         sqlite3_result_error(context,   //
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
         return;
     }
-    sqlite3_result_blob(context, buf_orig, (int) len_orig, free);
+    sqlite3_result_blob(context, buf_src, (int) len_src, free);
 }
 
 // SQLMATH_FUNC sql1_gzip_xxx_func - end
