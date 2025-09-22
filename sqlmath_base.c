@@ -1705,9 +1705,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         return;
     }
     const uint32_t original_len = sqlite3_value_bytes(argv[0]);
-    // Part 1: Compute CRC32 and store original size (ISIZE)
+    // Part 1: Compute CRC32 and store original size
     uint32_t crc = mz_crc32(MZ_CRC32_INIT, original_data, original_len);
-    uint32_t isize = (uint32_t) original_len;
     // Static gzip header bytes for a basic gzip file
     const unsigned char gzip_header[10] =
         { 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 };
@@ -1721,7 +1720,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         }
         memcpy(p_gzip_buffer, gzip_header, 10);
         memcpy(p_gzip_buffer + 10, &crc, 4);
-        memcpy(p_gzip_buffer + 14, &isize, 4);
+        memcpy(p_gzip_buffer + 14, &original_len, 4);
         sqlite3_result_blob(context, p_gzip_buffer, total_size, sqlite3_free);
         return;
     }
@@ -1748,7 +1747,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memcpy(p_gzip_buffer, gzip_header, 10);
     memcpy(p_gzip_buffer + 10, p_compressed_data, compress_len);
     memcpy(p_gzip_buffer + 10 + compress_len, &crc, 4);
-    memcpy(p_gzip_buffer + 14 + compress_len, &isize, 4);
+    memcpy(p_gzip_buffer + 14 + compress_len, &original_len, 4);
     // Free the intermediate compressed data
     sqlite3_free(p_compressed_data);
     // Return the final blob to SQLite
