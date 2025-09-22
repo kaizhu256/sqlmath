@@ -1700,7 +1700,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     UNUSED_PARAMETER(argc);
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
     if (p_src == NULL) {
-        sqlite3_result_error(context, "gzip_compress - input cannot be NULL",
+        sqlite3_result_error(context, "gzip_compress: Input cannot be NULL",
             -1);
         return;
     }
@@ -1767,7 +1767,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
     if (p_src == NULL) {
         sqlite3_result_error(context,
-            "gzip_uncompress - input cannot be NULL", -1);
+            "gzip_uncompress: Input cannot be NULL", -1);
         return;
     }
     size_t src_len = sqlite3_value_bytes(argv[0]);
