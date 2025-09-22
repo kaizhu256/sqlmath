@@ -6,6 +6,7 @@
 - none
 
 # v2025.9.1-beta
+- sqlmath - Replace sql-functions ZLIB_COMPRESS() to GZIP_COMPRESS(), ZLIB_UNCOMPRESS() to GZIP_UNCOMPRESS().
 - sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c.
 - sqlmath - bugfix - Fix sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS() crashing sqlite-shell-executable.
 - ml - Update sql-function LGBM_TRAINFROMTABLE() to use C_API_FEATURE_IMPORTANCE_GAIN instead of C_API_FEATURE_IMPORTANCE_SPLIT.
