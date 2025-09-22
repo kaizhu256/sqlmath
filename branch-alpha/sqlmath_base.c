@@ -1748,8 +1748,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     if (buf_gzip == NULL) {
         goto catch_error;
     }
-    // Copy the header, compressed data, and footer to the final buffer
     memmove(buf_gzip + 10, buf_gzip, len_compress);
+    // Copy the header, compressed data, and footer to the final buffer
     memcpy(buf_gzip + 0, header, 10);
     memcpy(buf_gzip + 10 + len_compress, &crc, 4);
     memcpy(buf_gzip + 10 + len_compress + 4, &len_src, 4);
@@ -1797,8 +1797,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     //     int flags
     // );
     mz_uint8 *buf_src =
-        tinfl_decompress_mem_to_heap(buf_gzip + 10, len_gzip - 18,
-        &len_src, 0);
+        tinfl_decompress_mem_to_heap(buf_gzip + 10, len_gzip - 18, &len_src,
+        0);
     if (buf_src == NULL) {
         sqlite3_result_error(context,   //
             "gzip_uncompress: Decompression failed", -1);
