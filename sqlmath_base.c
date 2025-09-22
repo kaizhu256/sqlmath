@@ -1749,7 +1749,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
     size_t total_size = 10 + compressed_len + 8;
     // Allocate memory for the final blob.
-    // Use SQLITE_TRANSIENT to tell SQLite to make a copy.
     unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
     if (!p_gzip_buffer) {
         free(p_compressed_data);
