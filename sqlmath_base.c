@@ -1695,7 +1695,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will gzip-compress <argv[0]> using miniz's compress() function.
+// This function will gzip-compress <argv[0]>
+// using miniz's compress() function.
     UNUSED_PARAMETER(argc);
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
     if (p_src == NULL) {
@@ -1784,8 +1785,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// Function to perform gzip decompression as a SQLite C-extension.
-// Takes a gzipped blob and returns the original uncompressed blob.
+// This function will gzip-uncompress <argv[0]>
+// using miniz's compress() function.
     UNUSED_PARAMETER(argc);
     const unsigned char *p_src = sqlite3_value_blob(argv[0]);
     if (p_src == NULL) {
