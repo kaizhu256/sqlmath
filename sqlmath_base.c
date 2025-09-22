@@ -1713,7 +1713,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         { 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 };
     // Handle zero-length input separately to produce a valid 18-byte gzip file
     if (src_len == 0) {
-        size_t total_size = 18;
+        int total_size = 18;
         unsigned char *p_gzip_buffer =
             (unsigned char *) sqlite3_malloc(total_size);
         if (!p_gzip_buffer) {
@@ -1723,8 +1723,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         memcpy(p_gzip_buffer, gzip_header, 10);
         memcpy(p_gzip_buffer + 10, &crc, 4);
         memcpy(p_gzip_buffer + 14, &isize, 4);
-        sqlite3_result_blob(context, p_gzip_buffer, (int) total_size,
-            sqlite3_free);
+        sqlite3_result_blob(context, p_gzip_buffer, total_size, sqlite3_free);
         return;
     }
     // Part 2: Perform Deflate compression with miniz.
@@ -1739,7 +1738,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
-    size_t total_size = 10 + compressed_len + 8;
+    int total_size = 10 + compressed_len + 8;
     // Allocate memory for the final blob.
     unsigned char *p_gzip_buffer =
         (unsigned char *) sqlite3_malloc(total_size);
