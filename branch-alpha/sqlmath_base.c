@@ -1742,17 +1742,14 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         &compress_len,
         0);
     if (compress_buf == NULL) {
-        sqlite3_result_error_nomem(context);
-        return;
+        goto catch_error;
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
-    // Allocate memory for the final blob.
     char *gzip_buf = malloc(10 + (int) compress_len + 8);
     if (gzip_buf == NULL) {
         free(compress_buf);
-        sqlite3_result_error_nomem(context);
-        return;
+        goto catch_error;
     }
     // Copy the header, compressed data, and footer to the final buffer
     memcpy(gzip_buf, header, 10);
@@ -1761,6 +1758,9 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memcpy(gzip_buf + 14 + compress_len, &original_len, 4);
     free(compress_buf);
     sqlite3_result_blob(context, gzip_buf, 10 + (int) compress_len + 8, free);
+    return;
+  catch_error:
+    sqlite3_result_error_nomem(context);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
@@ -1808,9 +1808,11 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
             -1);
         return;
     }
-    // Check for CRC and ISIZE match
-    uint32_t header_crc = *((uint32_t *) (gzip_buf + gzip_len - 8));
-    uint32_t header_len = *((uint32_t *) (gzip_buf + gzip_len - 4));
+    // Check for CRC and LEN match
+    uint32_t header_crc;
+    uint32_t header_len;
+    memcpy(&header_crc, gzip_buf + gzip_len - 8, 4);
+    memcpy(&header_len, gzip_buf + gzip_len - 4, 4);
     // mz_ulong mz_crc32(
     //     mz_ulong crc,
     //     const mz_uint8 *ptr,
