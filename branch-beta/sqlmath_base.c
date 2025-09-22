@@ -528,31 +528,6 @@ file sqlmath_base - start
 
 #if defined(SQLITE_HAVE_ZLIB)
 #   include <zlib.h>
-int compress3(
-    Byte * dest,
-    uLong * destLen,
-    const Byte * source,
-    uLong sourceLen
-) {
-    return compress(dest, destLen, source, sourceLen);
-}
-
-int uncompress3(
-    Byte * dest,
-    uLong * destLen,
-    const Byte * source,
-    uLong sourceLen
-) {
-    return uncompress(dest, destLen, source, sourceLen);
-}
-
-uLong compressBound3(
-    uLong sourceLen
-) {
-    return compressBound(sourceLen);
-}
-#else                           // SQLITE_HAVE_ZLIB
-#   include "sqlmath_external_zlib.c"
 #endif                          // SQLITE_HAVE_ZLIB
 
 
@@ -2682,102 +2657,6 @@ SQLMATH_FUNC static void sql1_throwerror_func(
     sqlite3_result_error_code(context, SQLITE_INTERNAL);
 }
 
-// SQLMATH_FUNC sql1_zlib_xxx_func - start
-
-SQLMATH_FUNC static void sql1_zlib_compress_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will compress <argv[0]> using zlib's compress() function,
-// with a 4-byte header storing <original_size>.
-    UNUSED_PARAMETER(argc);
-    // init original_data
-    const void *original_data = sqlite3_value_blob(argv[0]);
-    if (original_data == NULL) {
-        sqlite3_result_error(context, "zlib_compress - cannot compress NULL",
-            -1);
-        return;
-    }
-    // init original_size
-    int original_size = sqlite3_value_bytes(argv[0]);
-    // init compress_size
-    uLong compress_size = compressBound3(original_size);
-    // init compress_data
-    unsigned char *compress_data =
-        (unsigned char *) sqlite3_malloc(4 + compress_size);
-    if (compress_data == NULL) {
-        sqlite3_result_error_nomem(context);
-        return;
-    }
-    // zlib_compress
-    if (compress3(compress_data + 4, &compress_size, original_data,
-            original_size) != Z_OK) {
-        sqlite3_free(compress_data);
-        sqlite3_result_error(context, "zlib_compress - failed compress", -1);
-        return;
-    }
-    // set 4-byte header storing <original_size> (big-endian)
-    compress_data[0] = (original_size >> 0x18) & 0xff;
-    compress_data[1] = (original_size >> 0x10) & 0xff;
-    compress_data[2] = (original_size >> 0x08) & 0xff;
-    compress_data[3] = (original_size >> 0x00) & 0xff;
-    sqlite3_result_blob(context, compress_data, 4 + compress_size,
-        sqlite3_free);
-}
-
-SQLMATH_FUNC static void sql1_zlib_uncompress_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will compress <argv[0]> using zlib's compress() function,
-// with a 4-byte header storing <original_size>.
-    UNUSED_PARAMETER(argc);
-    // init compress_data
-    const unsigned char *compress_data = sqlite3_value_blob(argv[0]);
-    if (compress_data == NULL) {
-        sqlite3_result_error(context,
-            "zlib_uncompress - cannot uncompress NULL", -1);
-        return;
-    }
-    // init compress_size
-    int compress_size = sqlite3_value_bytes(argv[0]) - 4;
-    if (compress_size < 0) {
-        sqlite3_result_error(context, "zlib_uncompress - invalid header", -1);
-        return;
-    }
-    // init original_size
-    uLong original_size = 0     //
-        | (compress_data[0] << 0x18)    //
-        | (compress_data[1] << 0x10)    //
-        | (compress_data[2] << 0x08)    //
-        | (compress_data[3] << 0x00);
-    if (original_size <= 0 || original_size > SIZEOF_BLOB_MAX) {
-        sqlite3_result_error(context,
-            "zlib_uncompress - invalid original_size", -1);
-        return;
-    }
-    // init original_data
-    unsigned char *original_data =
-        (unsigned char *) sqlite3_malloc(original_size);
-    if (original_data == NULL) {
-        sqlite3_result_error_nomem(context);
-        return;
-    }
-    // zlib_uncompress
-    if (uncompress3(original_data, &original_size, compress_data + 4,
-            compress_size) != Z_OK) {
-        sqlite3_free(original_data);
-        sqlite3_result_error(context, "zlib_uncompress - failed uncompress",
-            -1);
-        return;
-    }
-    sqlite3_result_blob(context, original_data, original_size, sqlite3_free);
-}
-
-// SQLMATH_FUNC sql1_zlib_xxx_func - end
-
 // SQLMATH_FUNC sql2_columntype_func - start
 typedef struct AggColumntype {
     int columntype;
@@ -4811,8 +4690,6 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(squaredwithsign, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(strtoll, 2, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(throwerror, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(zlib_compress, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(zlib_uncompress, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC2(columntype, 1, 0);
     SQL_CREATE_FUNC2(lgbm_datasetcreatefromtable, -1, 0);
     SQL_CREATE_FUNC2(lgbm_trainfromtable, -1, 0);

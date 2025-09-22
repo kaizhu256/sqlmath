@@ -375,26 +375,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             {
                 "cflags": cflagWnoList,
                 "defines": [
-                    "SRC_ZLIB_C2"
-                ],
-                "msvs_settings": {
-                    "VCCLCompilerTool": {
-                        "WarnAsError": 1,
-                        "WarningLevel": 2
-                    }
-                },
-                "sources": [
-                    "sqlmath_external_zlib.c"
-                ],
-                "target_name": "SRC_ZLIB",
-                "type": "static_library",
-                "xcode_settings": {
-                    "OTHER_CFLAGS": cflagWnoList
-                }
-            },
-            {
-                "cflags": cflagWnoList,
-                "defines": [
                     "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_BASE_C2"
                 ],
@@ -414,32 +394,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 }
             },
             {
-                "conditions": [
-                    [
-                        "OS==\"win\"",
-                        {
-                            "defines": [
-                                "SRC_SQLMATH_BASE_C2",
-                                "SRC_SQLMATH_CUSTOM_C2"
-                            ],
-                            "dependencies": [
-                                "SRC_SQLITE_BASE",
-                                "SRC_ZLIB"
-                            ]
-                        },
-                        {
-                            "defines": [
-                                "SQLITE_HAVE_ZLIB=1",
-                                "SRC_SQLMATH_BASE_C2",
-                                "SRC_SQLMATH_CUSTOM_C2"
-                            ],
-                            "dependencies": [
-                                "SRC_SQLITE_BASE"
-                            ]
-                        }
-                    ]
-                ],
-/*
                 "defines": [
                     "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLMATH_BASE_C2",
@@ -448,7 +402,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "dependencies": [
                     "SRC_SQLITE_BASE"
                 ],
-*/
                 "sources": [
                     "sqlmath_base.c",
                     "sqlmath_custom.c"
