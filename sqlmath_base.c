@@ -1726,28 +1726,27 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
     // precisely what is needed for the gzip format.
     size_t compress_len = 0;
-    void *p_compressed_data =
-        tdefl_compress_mem_to_heap(original_data, original_len,
-        &compress_len, 0);
-    if (p_compressed_data == NULL) {
+    void *p_compress_data =
+        tdefl_compress_mem_to_heap(original_data, original_len, &compress_len,
+        0);
+    if (p_compress_data == NULL) {
         goto catch_error;
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
     // Allocate memory for the final blob.
-    unsigned char *compress_data =
-        (unsigned char *) sqlite3_malloc(10 + (int) compress_len + 8);
+    char *compress_data = sqlite3_malloc(10 + (int) compress_len + 8);
     if (compress_data == NULL) {
-        free(p_compressed_data);
+        free(p_compress_data);
         goto catch_error;
     }
     // Copy the header, compressed data, and footer to the final buffer
     memcpy(compress_data, header, 10);
-    memcpy(compress_data + 10, p_compressed_data, compress_len);
+    memcpy(compress_data + 10, p_compress_data, compress_len);
     memcpy(compress_data + 10 + compress_len, &crc, 4);
     memcpy(compress_data + 14 + compress_len, &original_len, 4);
     // Free the intermediate compressed data
-    free(p_compressed_data);
+    free(p_compress_data);
     // Return the final blob to SQLite
     sqlite3_result_blob(context, compress_data, 10 + (int) compress_len + 8,
         sqlite3_free);
@@ -1785,14 +1784,14 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     // Extract compressed data, CRC32, and original size from the buffer
-    const unsigned char *p_compressed_data = p_src + 10;
+    const unsigned char *p_compress_data = p_src + 10;
     size_t compress_len = src_len - 18;
     // Decompress the data
     size_t decompressed_len = 0;
     void *p_decompressed_data =
-        tinfl_decompress_mem_to_heap(p_compressed_data, compress_len,
+        tinfl_decompress_mem_to_heap(p_compress_data, compress_len,
         &decompressed_len, 0);
-    if (p_compressed_data == NULL) {
+    if (p_compress_data == NULL) {
         sqlite3_result_error(context, "gzip_uncompress: Decompression failed",
             -1);
         return;
