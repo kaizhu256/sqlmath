@@ -64,32 +64,19 @@ async def build_ext_async(): # noqa: C901
             *[f"-I{path}" for path in path_include],
             # ,
             f"-D{cdefine}_C2=",
+            "-DSQLITE_HAVE_ZLIB=1",
         ]
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:
             case "SRC_SQLITE_BASE":
                 file_src = pathlib.Path("sqlmath_external_sqlite.c")
-                if not is_win32:
-                    arg_list += [
-                        "-DSQLITE_HAVE_ZLIB=1",
-                    ]
             case "SRC_SQLMATH_BASE":
                 file_src = pathlib.Path("sqlmath_base.c")
-                if not is_win32:
-                    arg_list += [
-                        "-DSQLITE_HAVE_ZLIB=1",
-                    ]
             case "SRC_SQLMATH_CUSTOM":
                 file_src = pathlib.Path("sqlmath_custom.c")
-                if not is_win32:
-                    arg_list += [
-                        "-DSQLITE_HAVE_ZLIB=1",
-                    ]
                 arg_list += [
                     "-DSRC_SQLMATH_PYTHON_C2=",
                 ]
-            case "SRC_ZLIB":
-                file_src = pathlib.Path("sqlmath_external_zlib.c")
         match cdefine:
             case "SRC_SQLMATH_BASE":
                 pass
@@ -153,11 +140,7 @@ async def build_ext_async(): # noqa: C901
                 "-o", file_obj,
             ]
         print(f"build_ext - compile {file_obj}")
-        await create_subprocess_exec_and_check(
-            *arg_list,
-            env=env,
-            stdout=subprocess.DEVNULL if npm_config_mode_debug else None,
-        )
+        await create_subprocess_exec_and_check(*arg_list, env=env)
 
     async def create_subprocess_exec_and_check(*args, **kwds):
         child = await asyncio.create_subprocess_exec(
@@ -179,16 +162,13 @@ async def build_ext_async(): # noqa: C901
             "build/SRC_SQLMATH_BASE.obj",
             "build/SRC_SQLMATH_CUSTOM.obj",
         ]
-        if is_win32:
-            arg_list += [
-                "build/SRC_ZLIB.obj",
-            ]
         export = "PyInit__sqlmath"
         if is_win32:
             arg_list = [
                 exe_link,
                 *[f"/LIBPATH:{path}" for path in path_library],
                 *arg_list,
+                lib_zlib,
                 # ,
                 "/INCREMENTAL:NO", # optimization - reduce filesize
                 "/LTCG", # from cl.exe /GL
@@ -325,7 +305,7 @@ async def build_ext_async(): # noqa: C901
                 ).stdout.readline(),
             )
         [exe_cl, exe_link] = [
-            str(exe.splitlines()[0], "utf8")
+            str(exe.splitlines()[0], "utf-8")
             for exe in await asyncio.gather(*await_list)
         ]
     #
@@ -337,6 +317,19 @@ async def build_ext_async(): # noqa: C901
                 if path2 not in arr:
                     arr.append(path2)
     #
+    # build_ext - zlib
+    if is_win32:
+        lib_zlib = (
+            await create_subprocess_exec_and_check(
+                "sh", "-c", ". ./.ci.sh && shCiBuildZlib",
+                env=env,
+                stdout=asyncio.subprocess.PIPE,
+            )
+        )[0].decode()
+        path_include += [
+            pathlib.Path(lib_zlib + "../../../include").resolve(),
+        ]
+    #
     # build_ext - compile .obj file
     await asyncio.gather(*[
         build_ext_obj(cdefine)
@@ -345,8 +338,6 @@ async def build_ext_async(): # noqa: C901
             # ,
             "SRC_SQLMATH_BASE",
             "SRC_SQLMATH_CUSTOM",
-            # ,
-            "SRC_ZLIB",
         ]
     ])
     #

@@ -214,7 +214,7 @@ async function childProcessSpawn2(command, args, option) {
         let {
             modeCapture,
             modeDebug,
-            stdio
+            stdio = []
         } = option;
         if (modeDebug) {
             consoleError(
@@ -281,7 +281,7 @@ async function childProcessSpawn2(command, args, option) {
                     : Buffer.concat(buf)
                 );
             });
-            resolve({exitCode, stderr, stdout});
+            resolve([exitCode, stdout, stderr]);
         });
     });
 }
@@ -292,7 +292,8 @@ async function ciBuildExt({
 
 // This function will build sqlmath from c.
 
-    let binNodegyp = modulePath.resolve(
+    let binNodegyp;
+    binNodegyp = modulePath.resolve(
         modulePath.dirname(process.execPath || ""),
         "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
     ).replace("/bin/node_modules/", "/lib/node_modules/");
@@ -438,6 +439,16 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                         }
                     ]
                 ],
+/*
+                "defines": [
+                    "SQLITE_HAVE_ZLIB=1",
+                    "SRC_SQLMATH_BASE_C2",
+                    "SRC_SQLMATH_CUSTOM_C2"
+                ],
+                "dependencies": [
+                    "SRC_SQLITE_BASE"
+                ],
+*/
                 "sources": [
                     "sqlmath_base.c",
                     "sqlmath_custom.c"

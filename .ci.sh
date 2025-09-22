@@ -2,6 +2,7 @@
 
 # sh one-liner
 # sh jslint_ci.sh shCiBuildWasm
+# sh jslint_ci.sh shCiBuildZlib
 # sh jslint_ci.sh shSqlmathUpdate
 
 SQLMATH_CFLAG_WALL_LIST=" \
@@ -321,6 +322,21 @@ shCiBuildWasm() {(set -e
 ' >> sqlmath_wasm.js
     cp build/sqlmath_wasm.wasm .
     ls -l sqlmath_wasm.*
+)}
+
+shCiBuildZlib() {(set -e
+# This function will build zlib.
+    if [ ! -d .vcpkg/ ]
+    then
+        git clone https://github.com/microsoft/vcpkg.git .vcpkg/ 1>&2
+    fi
+    (
+        cd .vcpkg/
+        ./bootstrap-vcpkg.sh 1>&2
+        ./vcpkg install zlib:x64-windows-static 1>&2
+    )
+    printf "%s/.vcpkg/packages/zlib_x64-windows-static/lib/zlib.lib" \
+        "$(pwd -W)" | sed "s|/|\\\\|g"
 )}
 
 shCiEmsdkExport() {
