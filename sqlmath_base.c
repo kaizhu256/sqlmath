@@ -1707,6 +1707,33 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     // Part 1: Compute CRC32 and store original size (ISIZE)
     uint32_t crc = mz_crc32(MZ_CRC32_INIT, p_src, src_len);
     uint32_t isize = (uint32_t) src_len;
+    // Handle zero-length input separately to produce a valid 18-byte gzip file
+    if (src_len == 0) {
+        size_t total_size = 18;
+        unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
+        if (!p_gzip_buffer) {
+            sqlite3_result_error_nomem(context);
+            return;
+        }
+        // Gzip Header (RFC 1952)
+        p_gzip_buffer[0] = 0x1F;        // ID1
+        p_gzip_buffer[1] = 0x8B;        // ID2
+        p_gzip_buffer[2] = 0x08;        // CM (Compression Method, 8=Deflate)
+        p_gzip_buffer[3] = 0x00;        // FLG (Flags)
+        p_gzip_buffer[4] = 0x00;        // MTIME
+        p_gzip_buffer[5] = 0x00;        // MTIME
+        p_gzip_buffer[6] = 0x00;        // MTIME
+        p_gzip_buffer[7] = 0x00;        // MTIME
+        p_gzip_buffer[8] = 0x00;        // XFL (Extra Flags)
+        p_gzip_buffer[9] = 0x03;        // OS (Operating System, 3=Unix)
+
+        // Gzip Footer (CRC32 and ISIZE) for empty data
+        memcpy(p_gzip_buffer + 10, &crc, 4);
+        memcpy(p_gzip_buffer + 14, &isize, 4);
+
+        sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+        return;
+    }
     // Part 2: Perform Deflate compression with miniz.
     // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
     // precisely what is needed for the gzip format.
