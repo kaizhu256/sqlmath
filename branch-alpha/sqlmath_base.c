@@ -1759,9 +1759,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     memcpy(gzip_buf + 10, compress_buf, compress_len);
     memcpy(gzip_buf + 10 + compress_len, &crc, 4);
     memcpy(gzip_buf + 14 + compress_len, &original_len, 4);
-    // Free the intermediate compressed data
     free(compress_buf);
-    // Return the final blob to SQLite
     sqlite3_result_blob(context, gzip_buf, 10 + (int) compress_len + 8, free);
 }
 
@@ -1811,26 +1809,20 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     // Check for CRC and ISIZE match
-    uint32_t header_crc;
-    uint32_t header_len;
-    memcpy(&header_crc, gzip_buf + gzip_len - 8, 4);
-    memcpy(&header_len, gzip_buf + gzip_len - 4, 4);
+    uint32_t header_crc = *((uint32_t *) (gzip_buf + gzip_len - 8));
+    uint32_t header_len = *((uint32_t *) (gzip_buf + gzip_len - 4));
     // mz_ulong mz_crc32(
     //     mz_ulong crc,
     //     const mz_uint8 *ptr,
     //     size_t buf_len
     // );
-    size_t actual_crc =
-        (size_t) mz_crc32(MZ_CRC32_INIT, original_buf, original_len);
-    if (actual_crc != header_crc || original_len != header_len) {
+    uint32_t actual_crc = mz_crc32(MZ_CRC32_INIT, original_buf, original_len);
+    if (!(header_crc == actual_crc && header_len == original_len)) {
         free(original_buf);
         sqlite3_result_error(context,
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
         return;
     }
-    // Return the final blob to SQLite
-    // Note: The cast to `int` is necessary for the SQLite API, but it
-    // may truncate extremely large blobs on 64-bit systems.
     sqlite3_result_blob(context, original_buf, (int) original_len, free);
 }
 
