@@ -1811,19 +1811,18 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     // Check for CRC and ISIZE match
-    uint32_t expected_crc;
-    uint32_t expected_isize;
-    memcpy(&expected_crc, gzip_buf + gzip_len - 8, 4);
-    memcpy(&expected_isize, gzip_buf + gzip_len - 4, 4);
+    uint32_t header_crc;
+    uint32_t header_len;
+    memcpy(&header_crc, gzip_buf + gzip_len - 8, 4);
+    memcpy(&header_len, gzip_buf + gzip_len - 4, 4);
     // mz_ulong mz_crc32(
     //     mz_ulong crc,
     //     const mz_uint8 *ptr,
     //     size_t buf_len
     // );
-    uint32_t actual_crc = mz_crc32(MZ_CRC32_INIT, original_buf,
-        original_len);
-    uint32_t actual_isize = (uint32_t) original_len;
-    if (actual_crc != expected_crc || actual_isize != expected_isize) {
+    size_t actual_crc =
+        (size_t) mz_crc32(MZ_CRC32_INIT, original_buf, original_len);
+    if (actual_crc != header_crc || original_len != header_len) {
         free(original_buf);
         sqlite3_result_error(context,
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
