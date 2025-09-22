@@ -1712,16 +1712,14 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         { 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 };
     // Handle zero-length input separately to produce a valid 18-byte gzip file
     if (original_len == 0) {
-        size_t total_size = 18;
-        unsigned char *compress_data = (unsigned char *) malloc(total_size);
+        char *compress_data = malloc(10 + 0 + 8);
         if (compress_data == NULL) {
-            sqlite3_result_error_nomem(context);
-            return;
+            goto catch_error;
         }
         memcpy(compress_data, header, 10);
         memcpy(compress_data + 10, &crc, 4);
         memcpy(compress_data + 14, &original_len, 4);
-        sqlite3_result_blob(context, compress_data, (int) total_size, free);
+        sqlite3_result_blob(context, compress_data, (int) 10 + 0 + 8, free);
         return;
     }
     // Part 2: Perform Deflate compression with miniz.
@@ -1732,8 +1730,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         tdefl_compress_mem_to_heap(original_data, original_len, &compress_len,
         0);
     if (p_compress_data == NULL) {
-        sqlite3_result_error_nomem(context);
-        return;
+        goto catch_error;
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
@@ -1742,8 +1739,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     unsigned char *compress_data = (unsigned char *) malloc(total_size);
     if (compress_data == NULL) {
         free(p_compress_data);
-        sqlite3_result_error_nomem(context);
-        return;
+        goto catch_error;
     }
     // Copy the header, compressed data, and footer to the final buffer
     memcpy(compress_data, header, 10);
@@ -1754,6 +1750,8 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     free(p_compress_data);
     // Return the final blob to SQLite
     sqlite3_result_blob(context, compress_data, (int) total_size, free);
+  catch_error:
+    sqlite3_result_error_nomem(context);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
