@@ -1716,11 +1716,9 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     size_t buffer_size = 10 + max_compressed_len + 8;
     unsigned char *p_gzip_buffer = NULL;
     size_t compressed_len = 0;
-    int error_code = 0;
     // Allocate a single buffer to hold the entire gzip file.
     p_gzip_buffer = (unsigned char *) malloc(buffer_size);
     if (!p_gzip_buffer) {
-        error_code = 1;
         goto catch_error;
     }
     // Copy the header into the buffer.
@@ -1730,7 +1728,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         max_compressed_len, p_src, src_len, TDEFL_DEFAULT_COMPRESSION_LEVEL);
     if (compressed_len == 0 && src_len > 0) {
         // Only return an error if compression fails for a non-empty buffer.
-        error_code = 1;
         goto catch_error;
     }
     // Copy the footer after the compressed data.
