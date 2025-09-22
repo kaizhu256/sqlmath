@@ -1698,62 +1698,62 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
 // This function will gzip-compress <argv[0]>
 // using miniz's compress() function.
     UNUSED_PARAMETER(argc);
-    const unsigned char *p_src = sqlite3_value_blob(argv[0]);
-    if (p_src == NULL) {
+    const unsigned char *original_data = sqlite3_value_blob(argv[0]);
+    if (original_data == NULL) {
         sqlite3_result_error(context, "gzip_compress: Input cannot be NULL",
             -1);
         return;
     }
-    size_t src_len = sqlite3_value_bytes(argv[0]);
+    size_t original_len = sqlite3_value_bytes(argv[0]);
     // Part 1: Compute CRC32 and store original size (ISIZE)
-    uint32_t crc = mz_crc32(MZ_CRC32_INIT, p_src, src_len);
-    uint32_t isize = (uint32_t) src_len;
+    uint32_t crc = mz_crc32(MZ_CRC32_INIT, original_data, original_len);
+    uint32_t isize = (uint32_t) original_len;
     // Static gzip header bytes for a basic gzip file
-    const unsigned char gzip_header[10] =
+    const unsigned char header[10] =
         { 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 };
     // Handle zero-length input separately to produce a valid 18-byte gzip file
-    if (src_len == 0) {
+    if (original_len == 0) {
         size_t total_size = 18;
-        unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
-        if (!p_gzip_buffer) {
+        unsigned char *compress_data = (unsigned char *) malloc(total_size);
+        if (compress_data == NULL) {
             sqlite3_result_error_nomem(context);
             return;
         }
-        memcpy(p_gzip_buffer, gzip_header, 10);
-        memcpy(p_gzip_buffer + 10, &crc, 4);
-        memcpy(p_gzip_buffer + 14, &isize, 4);
-        sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+        memcpy(compress_data, header, 10);
+        memcpy(compress_data + 10, &crc, 4);
+        memcpy(compress_data + 14, &isize, 4);
+        sqlite3_result_blob(context, compress_data, (int) total_size, free);
         return;
     }
     // Part 2: Perform Deflate compression with miniz.
     // tdefl_compress_mem_to_heap produces a raw Deflate stream, which is
     // precisely what is needed for the gzip format.
-    size_t compressed_len = 0;
-    void *p_compressed_data =
-        tdefl_compress_mem_to_heap(p_src, src_len, &compressed_len, 0);
-    if (!p_compressed_data) {
+    size_t compress_len = 0;
+    void *p_compress_data =
+        tdefl_compress_mem_to_heap(original_data, original_len, &compress_len, 0);
+    if (p_compress_data == NULL) {
         sqlite3_result_error_nomem(context);
         return;
     }
     // Part 3: Construct the full gzip buffer.
     // Gzip Header (10 bytes) + Compressed Data + Gzip Footer (8 bytes)
-    size_t total_size = 10 + compressed_len + 8;
+    size_t total_size = 10 + compress_len + 8;
     // Allocate memory for the final blob.
-    unsigned char *p_gzip_buffer = (unsigned char *) malloc(total_size);
-    if (!p_gzip_buffer) {
-        free(p_compressed_data);
+    unsigned char *compress_data = (unsigned char *) malloc(total_size);
+    if (compress_data == NULL) {
+        free(p_compress_data);
         sqlite3_result_error_nomem(context);
         return;
     }
     // Copy the header, compressed data, and footer to the final buffer
-    memcpy(p_gzip_buffer, gzip_header, 10);
-    memcpy(p_gzip_buffer + 10, p_compressed_data, compressed_len);
-    memcpy(p_gzip_buffer + 10 + compressed_len, &crc, 4);
-    memcpy(p_gzip_buffer + 14 + compressed_len, &isize, 4);
+    memcpy(compress_data, header, 10);
+    memcpy(compress_data + 10, p_compress_data, compress_len);
+    memcpy(compress_data + 10 + compress_len, &crc, 4);
+    memcpy(compress_data + 14 + compress_len, &isize, 4);
     // Free the intermediate compressed data
-    free(p_compressed_data);
+    free(p_compress_data);
     // Return the final blob to SQLite
-    sqlite3_result_blob(context, p_gzip_buffer, (int) total_size, free);
+    sqlite3_result_blob(context, compress_data, (int) total_size, free);
 }
 
 SQLMATH_FUNC static void sql1_gzip_uncompress_func(
@@ -1764,10 +1764,10 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
 // This function will gzip-uncompress <argv[0]>
 // using miniz's compress() function.
     UNUSED_PARAMETER(argc);
-    const unsigned char *p_src = sqlite3_value_blob(argv[0]);
-    if (p_src == NULL) {
-        sqlite3_result_error(context,
-            "gzip_uncompress: Input cannot be NULL", -1);
+    const unsigned char *compress_data = sqlite3_value_blob(argv[0]);
+    if (compress_data == NULL) {
+        sqlite3_result_error(context, "gzip_uncompress: Input cannot be NULL",
+            -1);
         return;
     }
     size_t src_len = sqlite3_value_bytes(argv[0]);
@@ -1779,20 +1779,20 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     }
     // Validate the gzip header
     const unsigned char valid_header[4] = { 0x1F, 0x8B, 0x08, 0x00 };
-    if (memcmp(p_src, valid_header, 4) != 0) {
+    if (memcmp(compress_data, valid_header, 4) != 0) {
         sqlite3_result_error(context,
             "gzip_uncompress: Invalid gzip header or unsupported flags", -1);
         return;
     }
     // Extract compressed data, CRC32, and original size from the buffer
-    const unsigned char *p_compressed_data = p_src + 10;
-    size_t compressed_len = src_len - 18;
+    const unsigned char *p_compress_data = compress_data + 10;
+    size_t compress_len = src_len - 18;
     // Decompress the data
-    size_t decompressed_len = 0;
-    void *p_decompressed_data =
-        tinfl_decompress_mem_to_heap(p_compressed_data, compressed_len,
-        &decompressed_len, 0);
-    if (!p_decompressed_data) {
+    size_t original_len = 0;
+    void *p_original_data =
+        tinfl_decompress_mem_to_heap(p_compress_data, compress_len,
+        &original_len, 0);
+    if (p_original_data == NULL) {
         sqlite3_result_error(context, "gzip_uncompress: Decompression failed",
             -1);
         return;
@@ -1800,14 +1800,14 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     // Check for CRC and ISIZE match
     uint32_t expected_crc;
     uint32_t expected_isize;
-    memcpy(&expected_crc, p_src + src_len - 8, 4);
-    memcpy(&expected_isize, p_src + src_len - 4, 4);
+    memcpy(&expected_crc, compress_data + src_len - 8, 4);
+    memcpy(&expected_isize, compress_data + src_len - 4, 4);
     uint32_t actual_crc =
-        mz_crc32(MZ_CRC32_INIT, (const unsigned char *) p_decompressed_data,
-        decompressed_len);
-    uint32_t actual_isize = (uint32_t) decompressed_len;
+        mz_crc32(MZ_CRC32_INIT, (const unsigned char *) p_original_data,
+        original_len);
+    uint32_t actual_isize = (uint32_t) original_len;
     if (actual_crc != expected_crc || actual_isize != expected_isize) {
-        free(p_decompressed_data);
+        free(p_original_data);
         sqlite3_result_error(context,
             "gzip_uncompress: CRC or uncompressed size mismatch", -1);
         return;
@@ -1815,8 +1815,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     // Return the final blob to SQLite
     // Note: The cast to `int` is necessary for the SQLite API, but it
     // may truncate extremely large blobs on 64-bit systems.
-    sqlite3_result_blob(context, p_decompressed_data, (int) decompressed_len,
-        free);
+    sqlite3_result_blob(context, p_original_data, (int) original_len, free);
 }
 
 // SQLMATH_FUNC sql1_gzip_xxx_func - end
