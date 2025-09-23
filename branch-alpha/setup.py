@@ -293,21 +293,8 @@ async def build_ext_async(): # noqa: C901
     env = os.environ
     if is_win32:
         env = env_vcvarsall()
-        await_list = []
-        for exe in ["cl.exe", "link.exe"]:
-            await_list.append( # noqa: PERF401
-                (
-                    await asyncio.create_subprocess_exec(
-                        *["where", exe],
-                        env=env,
-                        stdout=asyncio.subprocess.PIPE,
-                    )
-                ).stdout.readline(),
-            )
-        [exe_cl, exe_link] = [
-            str(exe.splitlines()[0], "utf-8")
-            for exe in await asyncio.gather(*await_list)
-        ]
+        exe_cl = env["exe_cl"]
+        exe_link = re.sub("cl.exe$", "link.exe", exe_cl, flags=re.IGNORECASE)
     #
     # build_ext - virtualenv
     for arr in [path_include, path_library]:
@@ -583,8 +570,11 @@ def env_vcvarsall():
             and not re.search("[\"'\n\r]", val)
         )
     }
-    # print(env)
-    return env # noqa: RET504
+    env["exe_cl"] = subprocess.check_output(
+        ["where.exe", "cl.exe"],
+        env=env,
+    ).decode(encoding="mbcs", errors="strict").splitlines()[0]
+    return env
 
 
 def noop(*args, **kwargs): # noqa: ARG001
@@ -601,8 +591,6 @@ class SetupError(Exception):
     """Setup error."""
 
 
-exe_cl = ""
-exe_link = ""
 FILE_LIB_LGBM = (
     "lib_lightgbm.dylib" if sys.platform == "darwin"
     else "lib_lightgbm.dll" if sys.platform == "win32"
