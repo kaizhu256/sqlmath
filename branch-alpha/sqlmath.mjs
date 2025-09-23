@@ -86,6 +86,7 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let IS_BROWSER;
 let SQLMATH_EXE;
+let SQLMATH_NODE;
 let cModule;
 let cModulePath;
 let consoleError = console.error;
@@ -1827,8 +1828,9 @@ async function moduleFsInit() {
     while (moduleFsInitResolveList.length > 0) {
         moduleFsInitResolveList.shift()();
     }
+    SQLMATH_NODE = `_sqlmath.napi6_${process.platform}_${process.arch}.node`;
     SQLMATH_EXE = (
-        `_sqlmath.shell_${process.platform}_${process.arch}`
+        SQLMATH_NODE.replace((/\.node$/), "")
         + process.platform.replace(
             "win32",
             ".exe"
@@ -2041,6 +2043,7 @@ export {
     SQLITE_OPEN_URI,
     SQLITE_OPEN_WAL,
     SQLMATH_EXE,
+    SQLMATH_NODE,
     assertErrorThrownAsync,
     assertInt64,
     assertJsonEqual,
