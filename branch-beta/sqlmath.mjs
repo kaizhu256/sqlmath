@@ -334,10 +334,10 @@ async function ciBuildExt({
     then
         rm -f ${SQLMATH_EXE}
         python setup.py exe_link \
-            .vcpkg/installed/x64-windows-static/lib/zlib.lib \
-            build/Release/SRC_SQLITE_BASE.lib \
-            build/Release/SRC_SQLMATH_CUSTOM.lib \
-            build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ./build/Release/SRC_SQLITE_BASE.lib \
+            ./build/Release/SRC_SQLMATH_CUSTOM.lib \
+            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ./zlib.lib \
             \
             -ltcg \
             -nologo \
@@ -401,7 +401,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             {
                 "cflags": cflagWnoList,
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_BASE_C2"
                 ],
                 "msvs_settings": {
@@ -421,7 +420,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
                 ],
@@ -460,7 +458,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     ]
                 ],
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_SHELL_C2"
                 ],
                 "dependencies": [

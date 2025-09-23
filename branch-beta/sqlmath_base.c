@@ -42,6 +42,7 @@ file sqlmath_h - start
 #else
 #   include <dlfcn.h>
 #   include <unistd.h>
+#   include <zlib.h>
 #endif                          // _WIN32
 
 
@@ -524,11 +525,6 @@ file sqlmath_h - end
 file sqlmath_base - start
 */
 #if defined(SRC_SQLMATH_BASE_C2)
-
-
-#if defined(SQLITE_HAVE_ZLIB)
-#   include <zlib.h>
-#endif                          // SQLITE_HAVE_ZLIB
 
 
 // track how many sqlite-db open

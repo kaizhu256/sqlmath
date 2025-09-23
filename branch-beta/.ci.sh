@@ -2,7 +2,6 @@
 
 # sh one-liner
 # sh jslint_ci.sh shCiBuildWasm
-# sh jslint_ci.sh shCiBuildZlib
 # sh jslint_ci.sh shSqlmathUpdate
 
 SQLMATH_CFLAG_WALL_LIST=" \
@@ -230,7 +229,6 @@ shCiBuildWasm() {(set -e
     OPTION1="$OPTION1 -Os"
     # OPTION1="$OPTION1 -Oz"
     # OPTION1="$OPTION1 -fsanitize=address"
-    OPTION1="$OPTION1 -s -DSQLITE_HAVE_ZLIB=1"
     for FILE in \
         sqlmath_base.c \
         sqlmath_custom.c \
@@ -323,21 +321,6 @@ shCiBuildWasm() {(set -e
 ' >> sqlmath_wasm.js
     cp build/sqlmath_wasm.wasm .
     ls -l sqlmath_wasm.*
-)}
-
-shCiBuildZlib() {(set -e
-# This function will build zlib.
-    if [ ! -d .vcpkg/ ]
-    then
-        git clone https://github.com/microsoft/vcpkg.git .vcpkg/ 1>&2
-    fi
-    (
-        cd .vcpkg/
-        ./bootstrap-vcpkg.sh 1>&2
-        ./vcpkg install zlib:x64-windows-static 1>&2
-    )
-    printf "%s/.vcpkg/installed/x64-windows-static/lib/zlib.lib" \
-        "$(pwd -W)" | sed "s|/|\\\\|g"
 )}
 
 shCiEmsdkExport() {
@@ -522,23 +505,16 @@ shSqlmathUpdate() {(set -e
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
         DIR_SQLITE=sqlite-autoconf-3500400
-        DIR_ZLIB=zlib-1.3.1
         URL_SQLITE=https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
-        URL_ZLIB=https://github.com/madler/zlib/releases/download/v1.3.1/\
-zlib-1.3.1.tar.gz
         # shRollupFetch
         for DIR in \
-            "$DIR_SQLITE" \
-            "$DIR_ZLIB"
+            "$DIR_SQLITE"
         do
             if [ ! -d ".$DIR" ]
             then
                 case "$DIR" in
                 "$DIR_SQLITE")
                     URL="$URL_SQLITE"
-                    ;;
-                "$DIR_ZLIB")
-                    URL="$URL_ZLIB"
                     ;;
                 esac
                 echo "$DIR" "$URL"
