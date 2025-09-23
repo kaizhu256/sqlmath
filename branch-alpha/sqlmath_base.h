@@ -193,7 +193,7 @@ shRollupFetch
             "url": "https://github.com/nodejs/node/blob/v10.22.1/LICENSE"
         },
         {
-            "url": "https://github.com/nodejs/node/blob/v10.22.1/src/node_api_types.h"
+            "url": "https://github.com/nodejs/node/blob/v10.24.1/src/node_api_types.h"
         },
         {
             "footer": "\n#endif // SRC_SQLMATH_NODEJS_C2\n",
@@ -205,7 +205,7 @@ shRollupFetch
                     "substr": ""
                 }
             ],
-            "url": "https://github.com/nodejs/node/blob/v10.22.1/src/node_api.h"
+            "url": "https://github.com/nodejs/node/blob/v10.24.1/src/node_api.h"
         }
     ],
     "replaceList": [
@@ -11174,7 +11174,13 @@ The externally maintained libraries used by Node.js are:
 
 
 /*
-file https://github.com/nodejs/node/blob/v10.22.1/src/node_api_types.h
+repo https://github.com/nodejs/node/tree/v10.24.1
+committed 2021-04-04T20:08:54Z
+*/
+
+
+/*
+file https://github.com/nodejs/node/blob/v10.24.1/src/node_api_types.h
 */
 #ifndef SRC_NODE_API_TYPES_H_
 #define SRC_NODE_API_TYPES_H_
@@ -11352,7 +11358,7 @@ typedef enum {
 
 
 /*
-file https://github.com/nodejs/node/blob/v10.22.1/src/node_api.h
+file https://github.com/nodejs/node/blob/v10.24.1/src/node_api.h
 */
 #ifndef SRC_NODE_API_H_
 #define SRC_NODE_API_H_
@@ -11365,8 +11371,13 @@ file https://github.com/nodejs/node/blob/v10.22.1/src/node_api.h
 // Use INT_MAX, this should only be consumed by the pre-processor anyway.
 #define NAPI_VERSION 2147483647
 #else
-// The baseline version for N-API
-#define NAPI_VERSION 6
+// The baseline version for N-API.
+// The NAPI_VERSION controls which version will be used by default when
+// compilling a native addon. If the addon developer specifically wants to use
+// functions available in a new version of N-API that is not yet ported in all
+// LTS versions, they can set NAPI_VERSION knowing that they have specifically
+// depended on that version.
+#define NAPI_VERSION 7
 #endif
 #endif
 
@@ -12104,7 +12115,7 @@ napi_get_all_property_names(napi_env env,
 
 #endif  // NAPI_VERSION >= 6
 
-#ifdef NAPI_EXPERIMENTAL
+#if NAPI_VERSION >= 7
 // ArrayBuffer detaching
 NAPI_EXTERN napi_status
 napi_detach_arraybuffer(napi_env env,
@@ -12114,7 +12125,7 @@ NAPI_EXTERN napi_status
 napi_is_detached_arraybuffer(napi_env env,
                              napi_value value,
                              bool* result);
-#endif  // NAPI_EXPERIMENTAL
+#endif  // NAPI_VERSION >= 7
 
 EXTERN_C_END
 
