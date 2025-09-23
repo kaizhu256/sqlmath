@@ -336,7 +336,7 @@ shCiBuildZlib() {(set -e
         ./bootstrap-vcpkg.sh 1>&2
         ./vcpkg install zlib:x64-windows-static 1>&2
     )
-    printf "%s/.vcpkg/packages/zlib_x64-windows-static/lib/zlib.lib" \
+    printf "%s/.vcpkg/installed/x64-windows-static/lib/zlib.lib" \
         "$(pwd -W)" | sed "s|/|\\\\|g"
 )}
 

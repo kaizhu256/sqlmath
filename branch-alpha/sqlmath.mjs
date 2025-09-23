@@ -294,6 +294,7 @@ async function ciBuildExt({
 // This function will build sqlmath from c.
 
     let binNodegyp;
+    let exitCode;
     binNodegyp = modulePath.resolve(
         modulePath.dirname(process.execPath || ""),
         "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
@@ -309,7 +310,7 @@ async function ciBuildExt({
     consoleError(
         `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
     );
-    await childProcessSpawn2(
+    [exitCode] = await childProcessSpawn2(
         "sh",
         [
             "-c",
@@ -321,17 +322,18 @@ async function ciBuildExt({
     # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${SQLMATH_EXE}"
-    if (uname | grep -q "MING\|MSYS")
+    if (uname | grep -q "MING\\|MSYS")
     then
+        rm -f ${SQLMATH_EXE}
         python setup.py exe_link \
+            .vcpkg/installed/x64-windows-static/lib/zlib.lib \
             build/Release/SRC_SQLITE_BASE.lib \
             build/Release/SRC_SQLMATH_CUSTOM.lib \
             build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ../../AppData/Local/node-gyp/Cache/20.15.0/x64/node.lib \
             \
             -ltcg \
             -nologo \
-            -out:.shell.exe \
+            -out:${SQLMATH_EXE} \
             -subsystem:console
     fi
 )
@@ -339,6 +341,7 @@ async function ciBuildExt({
         ],
         {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
     );
+    assertOrThrow(!exitCode, `ciBuildExt - exitCode=${exitCode}`);
 // C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
 //.35207\bin\HostX64\x64\Lib.exe \
 //     /OUT:"D:\a\sqlmath\sqlmath\build\Release\SRC_SQLITE_BASE.lib" \
@@ -1913,7 +1916,7 @@ async function sqlmathInit() {
     moduleChildProcessSpawn = moduleChildProcess.spawn;
     cModulePath = moduleUrl.fileURLToPath(import.meta.url).replace(
         (/\bsqlmath\.mjs$/),
-        `_sqlmath.napi6_${process.platform}_${process.arch}.node`
+        SQLMATH_NODE
     );
 
 // Import napi c-addon.
