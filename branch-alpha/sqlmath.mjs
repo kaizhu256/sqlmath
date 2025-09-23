@@ -316,7 +316,7 @@ async function ciBuildExt({
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release --loglevel=silly
+    node "${binNodegyp}" build --release # --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${sqlmathExe}"
 )
@@ -324,18 +324,197 @@ async function ciBuildExt({
         ],
         {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
     );
-// sh jslint_ci.sh node \
-//     'C:\Program Files\nodejs\node_modules\npm\node_modules\node-gyp\bin\'\
-// 'node-gyp.js' \
-//     build \
-//     --release \
-//     --loglevel=silly \
-//     | tee .build.log 2>&1
-// #
-// 'C:\Program Files (x86)\Microsoft Visual Studio\'\
-// '2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\link.exe \
+// C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
+//.35207\bin\HostX64\x64\Lib.exe \
+//     /OUT:"D:\a\sqlmath\sqlmath\build\Release\SRC_SQLITE_BASE.lib" \
+//     /NOLOGO \
+//     /MACHINE:X64 \
+//     /LTCG:INCREMENTAL \
+//     Release\obj\SRC_SQLITE_BASE\win_delay_load_hook.obj
+//
+// C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
+//.35207\bin\HostX64\x64\CL.exe \
+//     /c \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\include\nod\
+//e" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\src" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\config" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\openssl\include" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\uv\inc\
+//lude" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\zlib" \
+//\
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\v8\inc\
+//lude" \
+//     /Z7 \
+//     /nologo \
+//     /W3 \
+//     /WX- \
+//     /diagnostics:column \
+//     /MP \
+//     /Ox \
+//     /Ob2 \
+//     /Oi \
+//     /Ot \
+//     /Oy \
+//     /GL \
+//     /D \
+//     NODE_GYP_MODULE_NAME=shell \
+//     /D \
+//     USING_UV_SHARED=1 \
+//     /D \
+//     USING_V8_SHARED=1 \
+//     /D \
+//     V8_DEPRECATION_WARNINGS=1 \
+//     /D \
+//     _GLIBCXX_USE_CXX11_ABI=1 \
+//     /D \
+//     _FILE_OFFSET_BITS=64 \
+//     /D \
+//     WIN32 \
+//     /D \
+//     _CRT_SECURE_NO_DEPRECATE \
+//     /D \
+//     _CRT_NONSTDC_NO_DEPRECATE \
+//     /D \
+//     _HAS_EXCEPTIONS=0 \
+//     /D \
+//     NOMINMAX \
+//     /D \
+//     OPENSSL_NO_PINSHARED \
+//     /D \
+//     OPENSSL_THREADS \
+//     /D \
+//     SQLITE_HAVE_ZLIB=1 \
+//     /D \
+//     SRC_SQLITE_SHELL_C2 \
+//     /D \
+//     "HOST_BINARY=\"node.exe\"" \
+//     /GF \
+//     /Gm- \
+//     /MT \
+//     /GS \
+//     /Gy \
+//     /fp:precise \
+//     /Zc:wchar_t \
+//     /Zc:forScope \
+//     /Zc:inline \
+//     /GR- \
+//     /Fo"Release\obj\shell\\sqlmath_external_sqlite.obj" \
+//     /Fd"Release\obj\shell\vc143.pdb" \
+//     /external:W3 \
+//     /Gd \
+//     /TC \
+//     /wd4351 \
+//     /wd4355 \
+//     /wd4800 \
+//     /wd4251 \
+//     /wd4275 \
+//     /wd4244 \
+//     /wd4267 \
+//     /FC \
+//     /errorReport:queue \
+//     /Zc:__cplusplus \
+//     -std:c++20 \
+//     /Zm2000 \
+//     ..\sqlmath_external_sqlite.c
+//
+// C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
+//.35207\bin\HostX64\x64\CL.exe \
+//     /c \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\include\nod\
+//e" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\src" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\config" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\openssl\include" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\uv\inc\
+//lude" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\zlib" \
+//\
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\v8\inc\
+//lude" \
+//     /Z7 \
+//     /nologo \
+//     /W3 \
+//     /WX- \
+//     /diagnostics:column \
+//     /MP \
+//     /Ox \
+//     /Ob2 \
+//     /Oi \
+//     /Ot \
+//     /Oy \
+//     /GL \
+//     /D \
+//     NODE_GYP_MODULE_NAME=shell \
+//     /D \
+//     USING_UV_SHARED=1 \
+//     /D \
+//     USING_V8_SHARED=1 \
+//     /D \
+//     V8_DEPRECATION_WARNINGS=1 \
+//     /D \
+//     _GLIBCXX_USE_CXX11_ABI=1 \
+//     /D \
+//     _FILE_OFFSET_BITS=64 \
+//     /D \
+//     WIN32 \
+//     /D \
+//     _CRT_SECURE_NO_DEPRECATE \
+//     /D \
+//     _CRT_NONSTDC_NO_DEPRECATE \
+//     /D \
+//     _HAS_EXCEPTIONS=0 \
+//     /D \
+//     NOMINMAX \
+//     /D \
+//     OPENSSL_NO_PINSHARED \
+//     /D \
+//     OPENSSL_THREADS \
+//     /D \
+//     SQLITE_HAVE_ZLIB=1 \
+//     /D \
+//     SRC_SQLITE_SHELL_C2 \
+//     /D \
+//     "HOST_BINARY=\"node.exe\"" \
+//     /GF \
+//     /Gm- \
+//     /MT \
+//     /GS \
+//     /Gy \
+//     /fp:precise \
+//     /Zc:wchar_t \
+//     /Zc:forScope \
+//     /Zc:inline \
+//     /GR- \
+//     /Fo"Release\obj\shell\\" \
+//     /Fd"Release\obj\shell\vc143.pdb" \
+//     /external:W3 \
+//     /Gd \
+//     /TP \
+//     /wd4351 \
+//     /wd4355 \
+//     /wd4800 \
+//     /wd4251 \
+//     /wd4275 \
+//     /wd4244 \
+//     /wd4267 \
+//     /FC \
+//     /errorReport:queue \
+//     /Zc:__cplusplus \
+//     -std:c++20 \
+//     /Zm2000 \
+//     "C:\hostedtoolcache\windows\node\22.19.0\x64\node_modules\npm\node_modul\
+//es\node-gyp\src\win_delay_load_hook.cc"
+//
+// C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
+//.35207\bin\HostX64\x64\link.exe \
 //     /ERRORREPORT:QUEUE \
-//     /OUT:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.exe" \
+//     /OUT:"D:\a\sqlmath\sqlmath\build\Release\shell.exe" \
 //     /INCREMENTAL:NO \
 //     /NOLOGO \
 //     kernel32.lib \
@@ -350,22 +529,22 @@ async function ciBuildExt({
 //     uuid.lib \
 //     odbc32.lib \
 //     DelayImp.lib \
-//     "C:\\Users\\john.doe\\"\
-// "AppData\\Local\\node-gyp\\Cache\\22.19.0\\x64\\node.lib" \
+//     "C:\\Users\\runneradmin\\AppData\\Local\\node-gyp\\Cache\\22.19.0\\x64\\\
+//node.lib" \
 //     Delayimp.lib \
 //     /DELAYLOAD:node.exe \
 //     /MANIFEST \
 //     /MANIFESTUAC:"level='asInvoker' uiAccess='false'" \
 //     /manifest:embed \
 //     /DEBUG \
-//     /PDB:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.pdb" \
+//     /PDB:"D:\a\sqlmath\sqlmath\build\Release\shell.pdb" \
 //     /SUBSYSTEM:CONSOLE \
 //     /OPT:REF \
 //     /OPT:ICF \
 //     /TLBID:1 \
 //     /DYNAMICBASE \
 //     /NXCOMPAT \
-//     /IMPLIB:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.lib" \
+//     /IMPLIB:"D:\a\sqlmath\sqlmath\build\Release\shell.lib" \
 //     /MACHINE:X64 \
 //     /LTCG:INCREMENTAL \
 //     /ignore:4199 \

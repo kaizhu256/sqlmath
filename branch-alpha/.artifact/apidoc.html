@@ -901,6 +901,7 @@ jstestIt((
 // This function will build sqlmath from c.
 
 </span>    let binNodegyp;
+    let logLevel = "";
     binNodegyp = modulePath.resolve(
         modulePath.dirname(process.execPath || ""),
         "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
@@ -916,6 +917,9 @@ jstestIt((
     consoleError(
         `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
     );
+    if (process.env?.GITHUB_ACTION || npm_config_mode_test) {
+        logLevel = "--loglevel=verbose";
+    }
     await childProcessSpawn2(
         "sh",
         [
@@ -924,7 +928,7 @@ jstestIt((
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release --loglevel=silly
+    node "${binNodegyp}" build --release # ${logLevel}
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${sqlmathExe}"
 )
@@ -939,32 +943,20 @@ jstestIt((
 //     --release \
 //     --loglevel=silly \
 //     | tee .build.log 2&gt;&amp;1
-// #
-// 'C:\Program Files (x86)\Microsoft Visual Studio\'\
-// '2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\link.exe \
-//     /ERRORREPORT:QUEUE \
-//     /OUT:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.exe" \
-//     /INCREMENTAL:NO \
-//     /NOLOGO \
-//     kernel32.lib \
-//     user32.lib \
-//     gdi32.lib \
-//     winspool.lib \
-//     comdlg32.lib \
-//     advapi32.lib \
-//     shell32.lib \
-//     ole32.lib \
-//     oleaut32.lib \
-//     uuid.lib \
-//     odbc32.lib \
-//     DelayImp.lib \
-//     "C:\\Users\\john.doe\\"\
-// "AppData\\Local\\node-gyp\\Cache\\22.19.0\\x64\\node.lib" \
-//     Delayimp.lib \
-//     /DELAYLOAD:node.exe \
-//     /MANIFEST \
-//     /MANIFESTUAC:"level='asInvoker' uiAccess='false'" \
-//     /manif...
+//
+// C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
+//.35207\bin\HostX64\x64\CL.exe \
+//     /c \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\include\nod\
+//e" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\src" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\config" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
+//l\openssl\include" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\uv\inc\
+//lude" \
+//     /I"C:\Users\runneradmin\AppData\Local\node-gy...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
