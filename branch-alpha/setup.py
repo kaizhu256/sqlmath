@@ -294,7 +294,7 @@ async def build_ext_async(): # noqa: C901
     if is_win32:
         env = env_vcvarsall()
         exe_cl = env["exe_cl"]
-        exe_link = re.sub("cl.exe$", "link.exe", exe_cl, flags=re.IGNORECASE)
+        exe_link = env["exe_link"]
     #
     # build_ext - virtualenv
     for arr in [path_include, path_library]:
@@ -570,11 +570,48 @@ def env_vcvarsall():
             and not re.search("[\"'\n\r]", val)
         )
     }
-    env["exe_cl"] = subprocess.check_output(
+    exe_cl = subprocess.check_output(
         ["where.exe", "cl.exe"],
         env=env,
     ).decode(encoding="mbcs", errors="strict").splitlines()[0]
+    env["exe_cl"] = exe_cl
+    env["exe_link"] = re.sub(
+        "cl.exe$",
+        "link.exe",
+        exe_cl,
+        flags=re.IGNORECASE,
+    )
     return env
+
+
+def main():
+    """This function will run main-program."""
+    match sys.argv[1]:
+        case "bdist_wheel":
+            build_wheel("dist")
+        case "build_ext":
+            build_ext()
+        case "build_ext_async":
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            asyncio.get_event_loop().run_until_complete(build_ext_async())
+        case "build_pkg_info":
+            build_pkg_info()
+        case "env_vcvarsall":
+            env = env_vcvarsall()
+            print(json.dumps(env, indent=4))
+        case "exe_link":
+            env = env_vcvarsall()
+            subprocess.run(
+                [env["exe_link"], *sys.argv[2:]],
+                check=True,
+                env=env,
+            )
+        case "sdist":
+            build_sdist("dist")
+        case "test":
+            subprocess.run(["python", "test.py", "--verbose"], check=True)
+        case _:
+            raise_setup_error(sys.argv)
 
 
 def noop(*args, **kwargs): # noqa: ARG001
@@ -600,21 +637,4 @@ FILE_LIB_SQLMATH = f"_sqlmath{sysconfig.get_config_var('EXT_SUFFIX')}"
 
 
 if __name__ == "__main__":
-    match sys.argv[1]:
-        case "bdist_wheel":
-            build_wheel("dist")
-        case "build_ext":
-            build_ext()
-        case "build_ext_async":
-            asyncio.set_event_loop(asyncio.new_event_loop())
-            asyncio.get_event_loop().run_until_complete(build_ext_async())
-        case "build_pkg_info":
-            build_pkg_info()
-        case "env_vcvarsall":
-            print(json.dumps(env_vcvarsall(), indent=4))
-        case "sdist":
-            build_sdist("dist")
-        case "test":
-            subprocess.run(["python", "test.py", "--verbose"], check=True)
-        case _:
-            raise_setup_error(sys.argv)
+    main()

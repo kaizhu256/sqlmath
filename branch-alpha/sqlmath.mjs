@@ -316,8 +316,8 @@ async function ciBuildExt({
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release
-    # node "${binNodegyp}" build --release --loglevel=verbose
+    # node "${binNodegyp}" build --release
+    node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${sqlmathExe}"
 )
