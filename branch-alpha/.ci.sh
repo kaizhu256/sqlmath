@@ -505,23 +505,16 @@ shSqlmathUpdate() {(set -e
     if [ "$PWD/" = "$HOME/Documents/sqlmath/" ]
     then
         DIR_SQLITE=sqlite-autoconf-3500400
-        DIR_ZLIB=zlib-1.3.1
         URL_SQLITE=https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
-        URL_ZLIB=https://github.com/madler/zlib/releases/download/v1.3.1/\
-zlib-1.3.1.tar.gz
         # shRollupFetch
         for DIR in \
-            "$DIR_SQLITE" \
-            "$DIR_ZLIB"
+            "$DIR_SQLITE"
         do
             if [ ! -d ".$DIR" ]
             then
                 case "$DIR" in
                 "$DIR_SQLITE")
                     URL="$URL_SQLITE"
-                    ;;
-                "$DIR_ZLIB")
-                    URL="$URL_ZLIB"
                     ;;
                 esac
                 echo "$DIR" "$URL"
