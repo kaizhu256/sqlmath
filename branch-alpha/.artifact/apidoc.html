@@ -924,7 +924,9 @@ jstestIt((
     consoleError(
         `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
     );
-    [exitCode] = await childProcessSpawn2(
+    [
+        exitCode
+    ] = await childProcessSpawn2(
         "sh",
         [
             "-c",

@@ -275,14 +275,18 @@ async function childProcessSpawn2(command, args, option) {
             if (npm_config_mode_test) {
                 resolve = resolve0;
             }
-            [stdout, stderr] = bufList.slice(1).map(function (buf) {
+            [
+                stdout, stderr
+            ] = bufList.slice(1).map(function (buf) {
                 return (
                     typeof modeCapture === "string"
                     ? Buffer.concat(buf).toString(modeCapture)
                     : Buffer.concat(buf)
                 );
             });
-            resolve([exitCode, stdout, stderr]);
+            resolve([
+                exitCode, stdout, stderr
+            ]);
         });
     });
 }
@@ -310,7 +314,9 @@ async function ciBuildExt({
     consoleError(
         `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
     );
-    [exitCode] = await childProcessSpawn2(
+    [
+        exitCode
+    ] = await childProcessSpawn2(
         "sh",
         [
             "-c",
