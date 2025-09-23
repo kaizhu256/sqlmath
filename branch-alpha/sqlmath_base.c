@@ -1154,7 +1154,7 @@ SQLMATH_API int doublewinAggpush(
     uint32_t alloc = (uint32_t) dblwin->alloc;
     if (nn * sizeof(double) >= alloc) {
         // error - toobig
-        if (alloc <= 0 || SIZEOF_BLOB_MAX <= alloc) {
+        if (alloc <= 0 || SIZEOF_BLOB_MAX < alloc) {
             doublewinAggfree(dblwinAgg);
             return SQLITE_NOMEM;
         }
@@ -1708,6 +1708,9 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         return;
     }
     const uint32_t len_src = sqlite3_value_bytes(argv[0]);
+    if (SIZEOF_BLOB_MAX < len_src) {
+        goto catch_error;
+    }
     // Part 1: Compute CRC32 and store original size
     // mz_ulong mz_crc32(
     //     mz_ulong crc,
@@ -1775,6 +1778,10 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         return;
     }
     const size_t len_gzip = sqlite3_value_bytes(argv[0]);
+    if (SIZEOF_BLOB_MAX < len_gzip) {
+        sqlite3_result_error_nomem(context);
+        return;
+    }
     // Check for minimum gzip file size (10 byte header + 8 byte footer)
     if (len_gzip < 18) {
         sqlite3_result_error(context,   //
