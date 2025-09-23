@@ -571,8 +571,8 @@ number SQLITE_OPEN_WAL
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
-string sqlmathExe
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">64.
+string SQLMATH_EXE
 </a>
 
 </li>
@@ -924,10 +924,23 @@ jstestIt((
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    # node "${binNodegyp}" build --release
-    node "${binNodegyp}" build --release --loglevel=verbose
+    node "${binNodegyp}" build --release
+    # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
-    mv build/Release/shell "${sqlmathExe}"
+    mv build/Release/shell "${SQLMATH_EXE}"
+    if (uname | grep -q "MING\|MSYS")
+    then
+        python setup.py exe_link \
+            build/Release/SRC_SQLITE_BASE.lib \
+            build/Release/SRC_SQLMATH_CUSTOM.lib \
+            build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ../../AppData/Local/node-gyp/Cache/20.15.0/x64/node.lib \
+            \
+            -ltcg \
+            -nologo \
+            -out:.shell.exe \
+            -subsystem:console
+    fi
 )
             `)
         ],
@@ -944,16 +957,7 @@ jstestIt((
 // C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44\
 //.35207\bin\HostX64\x64\CL.exe \
 //     /c \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\include\nod\
-//e" \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\src" \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
-//l\config" \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\openss\
-//l\openssl\include" \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\uv\inc\
-//lude" \
-//     /I"C:\Users\runneradmin\AppData\Loca...
+//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -2372,8 +2376,8 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
-    string sqlmathExe
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">64.
+    string SQLMATH_EXE
     </a>
     </h2>
 </li>

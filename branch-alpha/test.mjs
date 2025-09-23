@@ -32,6 +32,7 @@ import moduleUtil from "util";
 import jslint from "./jslint.mjs";
 import {
     LGBM_PREDICT_NORMAL,
+    SQLMATH_EXE,
     assertErrorThrownAsync,
     assertJsonEqual,
     assertNumericalEqual,
@@ -58,7 +59,6 @@ import {
     jsbatonGetString,
     listOrEmptyList,
     noop,
-    sqlmathExe,
     sqlmathWebworkerInit,
     version,
     waitAsync
@@ -136,7 +136,7 @@ jstestDescribe((
                     (
                         process.cwd()
                         + modulePath.sep
-                        + sqlmathExe
+                        + SQLMATH_EXE
                     ),
                     [
                         ":memory:",

@@ -85,6 +85,7 @@ const SQLITE_OPEN_URI = 0x00000040;             /* Ok for sqlite3_open_v2() */
 const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let IS_BROWSER;
+let SQLMATH_EXE;
 let cModule;
 let cModulePath;
 let consoleError = console.error;
@@ -122,7 +123,6 @@ let {
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
-let sqlmathExe;
 let version = "v2025.9.1-beta";
 
 async function assertErrorThrownAsync(asyncFunc, regexp) {
@@ -316,10 +316,23 @@ async function ciBuildExt({
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    # node "${binNodegyp}" build --release
-    node "${binNodegyp}" build --release --loglevel=verbose
+    node "${binNodegyp}" build --release
+    # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
-    mv build/Release/shell "${sqlmathExe}"
+    mv build/Release/shell "${SQLMATH_EXE}"
+    if (uname | grep -q "MING\|MSYS")
+    then
+        python setup.py exe_link \
+            build/Release/SRC_SQLITE_BASE.lib \
+            build/Release/SRC_SQLMATH_CUSTOM.lib \
+            build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ../../AppData/Local/node-gyp/Cache/20.15.0/x64/node.lib \
+            \
+            -ltcg \
+            -nologo \
+            -out:.shell.exe \
+            -subsystem:console
+    fi
 )
             `)
         ],
@@ -1814,7 +1827,7 @@ async function moduleFsInit() {
     while (moduleFsInitResolveList.length > 0) {
         moduleFsInitResolveList.shift()();
     }
-    sqlmathExe = (
+    SQLMATH_EXE = (
         `_sqlmath.shell_${process.platform}_${process.arch}`
         + process.platform.replace(
             "win32",
@@ -2027,6 +2040,7 @@ export {
     SQLITE_OPEN_TRANSIENT_DB,
     SQLITE_OPEN_URI,
     SQLITE_OPEN_WAL,
+    SQLMATH_EXE,
     assertErrorThrownAsync,
     assertInt64,
     assertJsonEqual,
@@ -2055,7 +2069,6 @@ export {
     listOrEmptyList,
     noop,
     objectDeepCopyWithKeysSorted,
-    sqlmathExe,
     sqlmathWebworkerInit,
     version,
     waitAsync
