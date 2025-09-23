@@ -924,7 +924,8 @@ jstestIt((
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release # --loglevel=verbose
+    # node "${binNodegyp}" build --release
+    node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${sqlmathExe}"
 )
@@ -952,8 +953,7 @@ jstestIt((
 //l\openssl\include" \
 //     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\uv\inc\
 //lude" \
-//     /I"C:\Users\runneradmin\AppData\Local\node-gyp\Cache\22.19.0\deps\zlib" \
-//\...
+//     /I"C:\Users\runneradmin\AppData\Loca...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
