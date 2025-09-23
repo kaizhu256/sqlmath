@@ -117,7 +117,7 @@ process.stdout.write(
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
-        export GITHUB_UPLOAD_RETRY=0
+        GITHUB_UPLOAD_RETRY=0
         while true
         do
             GITHUB_UPLOAD_RETRY="$((GITHUB_UPLOAD_RETRY + 1))"
@@ -138,6 +138,7 @@ import moduleChildProcess from "child_process";
             then
                 break
             fi
+            sleep 5
         done
     fi
 )}
@@ -335,7 +336,7 @@ shCiBuildZlib() {(set -e
         ./bootstrap-vcpkg.sh 1>&2
         ./vcpkg install zlib:x64-windows-static 1>&2
     )
-    printf "%s/.vcpkg/packages/zlib_x64-windows-static/lib/zlib.lib" \
+    printf "%s/.vcpkg/installed/x64-windows-static/lib/zlib.lib" \
         "$(pwd -W)" | sed "s|/|\\\\|g"
 )}
 

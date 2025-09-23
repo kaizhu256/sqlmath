@@ -571,14 +571,21 @@ number SQLITE_OPEN_WAL
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
-string sqlmathExe
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">64.
+string SQLMATH_EXE
 </a>
 
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">65.
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">65.
+string SQLMATH_NODE
+</a>
+
+</li>
+<li>
+
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">66.
 string version
 </a>
 
@@ -901,6 +908,7 @@ jstestIt((
 // This function will build sqlmath from c.
 
 </span>    let binNodegyp;
+    let exitCode;
     binNodegyp = modulePath.resolve(
         modulePath.dirname(process.execPath || ""),
         "node_modules/npm/node_modules/node-gyp/bin/node-gyp.js"
@@ -916,7 +924,9 @@ jstestIt((
     consoleError(
         `ciBuildExt2Nodejs - linking lib ${modulePath.resolve(cModulePath)}`
     );
-    await childProcessSpawn2(
+    [
+        exitCode
+    ] = await childProcessSpawn2(
         "sh",
         [
             "-c",
@@ -925,13 +935,31 @@ jstestIt((
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
     node "${binNodegyp}" build --release
+    # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
-    mv build/Release/shell "${sqlmathExe}"
+    mv build/Release/shell "${SQLMATH_EXE}"
+    # ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib,
+    #             so link with external-zlib.
+    if (uname | grep -q "MING\\|MSYS")
+    then
+        rm -f ${SQLMATH_EXE}
+        python setup.py exe_link \
+            .vcpkg/installed/x64-windows-static/lib/zlib.lib \
+            build/Release/SRC_SQLITE_BASE.lib \
+            build/Release/SRC_SQLMATH_CUSTOM.lib \
+            build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            \
+            -ltcg \
+            -nologo \
+            -out:${SQLMATH_EXE} \
+            -subsystem:console
+    fi
 )
             `)
         ],
         {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
     );
+    assertOrThrow(!exitCode, `ciBuildExt - exitCode=${exitCode}`);
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 jstestDescribe((
@@ -2349,15 +2377,23 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.sqlmathExe">64.
-    string sqlmathExe
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">64.
+    string SQLMATH_EXE
     </a>
     </h2>
 </li>
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">65.
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">65.
+    string SQLMATH_NODE
+    </a>
+    </h2>
+</li>
+
+<li>
+    <h2>
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">66.
     string version
     </a>
     </h2>
