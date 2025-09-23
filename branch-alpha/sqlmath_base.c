@@ -526,11 +526,6 @@ file sqlmath_base - start
 #if defined(SRC_SQLMATH_BASE_C2)
 
 
-#if defined(SQLITE_HAVE_ZLIB)
-#   include <zlib.h>
-#endif                          // SQLITE_HAVE_ZLIB
-
-
 // track how many sqlite-db open
 static int dbCount = 0;
 

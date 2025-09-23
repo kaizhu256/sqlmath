@@ -1,5 +1,5 @@
-<svg height="1086" width="800" xmlns="http://www.w3.org/2000/svg">
-<rect height="1086" fill="#222" width="800"></rect>
+<svg height="1064" width="800" xmlns="http://www.w3.org/2000/svg">
+<rect height="1064" fill="#222" width="800"></rect>
 <text
     fill="#7f7"
     font-family="consolas, menlo, monospace"
@@ -11,7 +11,7 @@
     textLength="768"
     x="10"
     y="32"
-> 0.  755  2025-09-23T21:41:06Z  16531 KB  .                                                      </tspan>
+> 0.  755  2025-09-23T22:00:22Z  16531 KB  .                                                      </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -71,7 +71,7 @@
     textLength="768"
     x="10"
     y="252"
->10.  644  2025-09-23T21:39:01Z      2 KB  MANIFEST.in                                            </tspan>
+>10.  644  2025-09-23T22:00:22Z      2 KB  MANIFEST.in                                            </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -173,7 +173,7 @@
     textLength="768"
     x="10"
     y="626"
->27.  644  2025-09-23T21:41:06Z      1 KB  package.json                                           </tspan>
+>27.  644  2025-09-23T21:53:02Z      1 KB  package.json                                           </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -185,7 +185,7 @@
     textLength="768"
     x="10"
     y="670"
->29.  644  2025-09-23T21:37:48Z     21 KB  setup.py                                               </tspan>
+>29.  644  2025-09-23T22:00:22Z     21 KB  setup.py                                               </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -203,13 +203,13 @@
     textLength="768"
     x="10"
     y="736"
->32.  644  2025-09-23T00:22:22Z    161 KB  sqlmath_base.c                                         </tspan>
+>32.  644  2025-09-23T22:00:22Z    161 KB  sqlmath_base.c                                         </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="758"
->33.  644  2025-09-22T03:32:43Z    446 KB  sqlmath_base.h                                         </tspan>
+>33.  644  2025-09-23T21:53:02Z    557 KB  sqlmath_base.h                                         </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -233,7 +233,7 @@
     textLength="768"
     x="10"
     y="846"
->37.  644  2025-09-21T22:03:47Z  10810 KB  sqlmath_external_sqlite.c                              </tspan>
+>37.  644  2025-09-23T22:00:22Z  10810 KB  sqlmath_external_sqlite.c                              </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
@@ -287,13 +287,7 @@
     textLength="768"
     x="10"
     y="1044"
->46.  644  2025-09-23T21:21:52Z    112 KB  zlib.h                                                 </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1066"
->47.  644  2025-09-23T21:09:59Z    446 KB  zlib.lib                                               </tspan>
+>46.  644  2025-09-23T21:09:59Z    446 KB  zlib.lib                                               </tspan>
 
 </text>
 </svg>

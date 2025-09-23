@@ -295,9 +295,6 @@ async def build_ext_async(): # noqa: C901
         env = env_vcvarsall()
         exe_cl = env["exe_cl"]
         exe_link = env["exe_link"]
-        path_include += [
-            "./",
-        ]
     #
     # build_ext - virtualenv
     for arr in [path_include, path_library]:
