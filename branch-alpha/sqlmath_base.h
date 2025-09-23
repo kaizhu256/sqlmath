@@ -97,6 +97,14 @@ shRollupFetch
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zconf.h"
         },
         {
+            "replaceList": [
+                {
+                    "aa": "^#include \"zconf.h\"",
+                    "bb": "// hack-zlib - inline header\n// $&",
+                    "flags": "gm",
+                    "substr": ""
+                }
+            ],
             "url": "https://github.com/madler/zlib/blob/v1.3.1/zlib.h"
         },
         {
@@ -226,10 +234,6 @@ shRollupFetch
 -#define INLINE_FUNCTION inline
 +// hack-lightgbm - fix warning
 +#define INLINE_FUNCTION static inline
-
--#include "zconf.h"
-+// hack-zlib - inline header
-+// #include "zconf.h"
 
 -void _set(void *to, uint8_t val, unsigned int len)
 +void _set(void *to, uint8_t val, size_t len)
