@@ -42,6 +42,7 @@ file sqlmath_h - start
 #else
 #   include <dlfcn.h>
 #   include <unistd.h>
+#   include <zlib.h>
 #endif                          // _WIN32
 
 

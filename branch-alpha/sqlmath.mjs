@@ -401,7 +401,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             {
                 "cflags": cflagWnoList,
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_BASE_C2"
                 ],
                 "msvs_settings": {
@@ -421,7 +420,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
             },
             {
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLMATH_BASE_C2",
                     "SRC_SQLMATH_CUSTOM_C2"
                 ],
@@ -460,7 +458,6 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                     ]
                 ],
                 "defines": [
-                    "SQLITE_HAVE_ZLIB=1",
                     "SRC_SQLITE_SHELL_C2"
                 ],
                 "dependencies": [

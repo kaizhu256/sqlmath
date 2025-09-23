@@ -64,7 +64,6 @@ async def build_ext_async(): # noqa: C901
             *[f"-I{path}" for path in path_include],
             # ,
             f"-D{cdefine}_C2=",
-            "-DSQLITE_HAVE_ZLIB=1",
         ]
         file_obj = pathlib.Path(f"build/{cdefine}.obj")
         match cdefine:

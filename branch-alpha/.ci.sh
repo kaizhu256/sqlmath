@@ -229,7 +229,6 @@ shCiBuildWasm() {(set -e
     OPTION1="$OPTION1 -Os"
     # OPTION1="$OPTION1 -Oz"
     # OPTION1="$OPTION1 -fsanitize=address"
-    OPTION1="$OPTION1 -s -DSQLITE_HAVE_ZLIB=1"
     for FILE in \
         sqlmath_base.c \
         sqlmath_custom.c \
