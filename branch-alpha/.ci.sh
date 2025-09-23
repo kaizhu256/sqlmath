@@ -138,7 +138,7 @@ import moduleChildProcess from "child_process";
             then
                 break
             fi
-            sleep 15
+            sleep 5
         done
     fi
 )}
