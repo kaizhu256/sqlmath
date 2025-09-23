@@ -334,10 +334,10 @@ async function ciBuildExt({
     then
         rm -f ${SQLMATH_EXE}
         python setup.py exe_link \
-            .vcpkg/installed/x64-windows-static/lib/zlib.lib \
-            build/Release/SRC_SQLITE_BASE.lib \
-            build/Release/SRC_SQLMATH_CUSTOM.lib \
-            build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ./build/Release/SRC_SQLITE_BASE.lib \
+            ./build/Release/SRC_SQLMATH_CUSTOM.lib \
+            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
+            ./zlib.lib \
             \
             -ltcg \
             -nologo \

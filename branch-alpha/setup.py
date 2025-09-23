@@ -168,7 +168,7 @@ async def build_ext_async(): # noqa: C901
                 exe_link,
                 *[f"/LIBPATH:{path}" for path in path_library],
                 *arg_list,
-                lib_zlib,
+                "./zlib.lib",
                 # ,
                 "/INCREMENTAL:NO", # optimization - reduce filesize
                 "/LTCG", # from cl.exe /GL
@@ -295,6 +295,9 @@ async def build_ext_async(): # noqa: C901
         env = env_vcvarsall()
         exe_cl = env["exe_cl"]
         exe_link = env["exe_link"]
+        path_include += [
+            "./",
+        ]
     #
     # build_ext - virtualenv
     for arr in [path_include, path_library]:
@@ -303,20 +306,6 @@ async def build_ext_async(): # noqa: C901
                 path2 = path.replace(path_prefix, path_prefix_base)
                 if path2 not in arr:
                     arr.append(path2)
-    #
-    # build_ext - zlib
-    if is_win32:
-        lib_zlib = (
-            await create_subprocess_exec_and_check(
-                "sh", "-c", ". ./.ci.sh && shCiBuildZlib",
-                # env=env,
-                stdout=asyncio.subprocess.PIPE,
-            )
-        )[0].decode()
-        path_include += [
-            pathlib.Path(lib_zlib + "../../../include").resolve(),
-        ]
-    #
     # build_ext - compile .obj file
     await asyncio.gather(*[
         build_ext_obj(cdefine)
