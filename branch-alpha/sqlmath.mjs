@@ -316,7 +316,7 @@ async function ciBuildExt({
 (set -e
     # rebuild binding
     rm -rf build/Release/obj/SRC_SQLMATH_CUSTOM/
-    node "${binNodegyp}" build --release
+    node "${binNodegyp}" build --release --loglevel=silly
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${sqlmathExe}"
 )
@@ -324,6 +324,52 @@ async function ciBuildExt({
         ],
         {modeDebug: npm_config_mode_debug, stdio: ["ignore", 1, 2]}
     );
+// sh jslint_ci.sh node \
+//     'C:\Program Files\nodejs\node_modules\npm\node_modules\node-gyp\bin\'\
+// 'node-gyp.js' \
+//     build \
+//     --release \
+//     --loglevel=silly \
+//     | tee .build.log 2>&1
+// #
+// 'C:\Program Files (x86)\Microsoft Visual Studio\'\
+// '2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64\link.exe \
+//     /ERRORREPORT:QUEUE \
+//     /OUT:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.exe" \
+//     /INCREMENTAL:NO \
+//     /NOLOGO \
+//     kernel32.lib \
+//     user32.lib \
+//     gdi32.lib \
+//     winspool.lib \
+//     comdlg32.lib \
+//     advapi32.lib \
+//     shell32.lib \
+//     ole32.lib \
+//     oleaut32.lib \
+//     uuid.lib \
+//     odbc32.lib \
+//     DelayImp.lib \
+//     "C:\\Users\\john.doe\\"\
+// "AppData\\Local\\node-gyp\\Cache\\22.19.0\\x64\\node.lib" \
+//     Delayimp.lib \
+//     /DELAYLOAD:node.exe \
+//     /MANIFEST \
+//     /MANIFESTUAC:"level='asInvoker' uiAccess='false'" \
+//     /manifest:embed \
+//     /DEBUG \
+//     /PDB:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.pdb" \
+//     /SUBSYSTEM:CONSOLE \
+//     /OPT:REF \
+//     /OPT:ICF \
+//     /TLBID:1 \
+//     /DYNAMICBASE \
+//     /NXCOMPAT \
+//     /IMPLIB:"C:\Users\kaizhu256\Documents\sqlmath\build\Release\shell.lib" \
+//     /MACHINE:X64 \
+//     /LTCG:INCREMENTAL \
+//     /ignore:4199 \
+//     Release\obj\shell\win_delay_load_hook.obj
 }
 
 async function ciBuildExt1NodejsConfigure({
@@ -360,7 +406,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
             "cflags": cflagWallList,
-// https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
+// https://github.com/nodejs/node-gyp/blob/v10.3.1/gyp/pylib/gyp/MSVSSettings.py
             "msvs_settings": {
                 "VCCLCompilerTool": {
                     "WarnAsError": 1,
