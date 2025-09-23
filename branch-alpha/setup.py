@@ -113,7 +113,7 @@ async def build_ext_async(): # noqa: C901
             arg_list += cflag_wall_list
         else:
             arg_list += cflag_wno_list
-# https://github.com/nodejs/node-gyp/blob/v9.3.1/gyp/pylib/gyp/MSVSSettings.py
+# https://github.com/nodejs/node-gyp/blob/v10.3.1/gyp/pylib/gyp/MSVSSettings.py
         if is_win32:
             arg_list = [
                 exe_cl,
@@ -322,7 +322,7 @@ async def build_ext_async(): # noqa: C901
         lib_zlib = (
             await create_subprocess_exec_and_check(
                 "sh", "-c", ". ./.ci.sh && shCiBuildZlib",
-                env=env,
+                # env=env,
                 stdout=asyncio.subprocess.PIPE,
             )
         )[0].decode()
@@ -539,34 +539,38 @@ def debuginline(*argv):
 
 def env_vcvarsall():
     """This function will return vcvarsall <env>."""
-    env = subprocess.check_output(
-        [
+    env = [
+        (
             (
-                (
-                    os.getenv("PROGRAMFILES(X86)")
-                    or os.getenv("PROGRAMFILES")
-                )
-                + "\\Microsoft Visual Studio"
-                + "\\Installer"
-                + "\\vswhere.exe"
-            ),
-            "-latest", "-prerelease",
-            "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-            "-property", "installationPath",
-            "-products", "*",
-        ],
+                os.getenv("PROGRAMFILES(X86)")
+                or os.getenv("PROGRAMFILES")
+            )
+            + "\\Microsoft Visual Studio"
+            + "\\Installer"
+            + "\\vswhere.exe"
+        ),
+        "-latest", "-prerelease",
+        "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "-property", "installationPath",
+        "-products", "*",
+    ]
+    # print(" \\\n    ".join(env))
+    env = subprocess.check_output(
+        env,
         stderr=subprocess.STDOUT,
     ).decode(encoding="mbcs", errors="strict").strip()
+    env = 'cmd /u /c "{}" {} && set'.format(
+        f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+        {
+            "win-amd64": "x86_amd64",
+            "win-arm32": "x86_arm",
+            "win-arm64": "x86_arm64",
+            "win32": "x86",
+        }.get(sysconfig.get_platform()),
+    )
+    # print(env)
     env = subprocess.check_output(
-        'cmd /u /c "{}" {} && set'.format(
-            f"{env}\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-            {
-                "win-amd64": "x86_amd64",
-                "win-arm32": "x86_arm",
-                "win-arm64": "x86_arm64",
-                "win32": "x86",
-            }.get(sysconfig.get_platform()),
-        ),
+        env,
         stderr=subprocess.STDOUT,
     ).decode("utf-16le", errors="replace")
     env = {
@@ -579,11 +583,8 @@ def env_vcvarsall():
             and not re.search("[\"'\n\r]", val)
         )
     }
-    with pathlib.Path("build/vcvarsall.sh").open("w") as file1:
-        file1.write(
-            "".join(f"export {key}='{val}'\n" for key, val in env.items()),
-        )
-    return env
+    # print(env)
+    return env # noqa: RET504
 
 
 def noop(*args, **kwargs): # noqa: ARG001
@@ -600,6 +601,8 @@ class SetupError(Exception):
     """Setup error."""
 
 
+exe_cl = ""
+exe_link = ""
 FILE_LIB_LGBM = (
     "lib_lightgbm.dylib" if sys.platform == "darwin"
     else "lib_lightgbm.dll" if sys.platform == "win32"
@@ -620,9 +623,7 @@ if __name__ == "__main__":
         case "build_pkg_info":
             build_pkg_info()
         case "env_vcvarsall":
-            env_vcvarsall()
-            with pathlib.Path("build/vcvarsall.sh").open() as file1:
-                print(file1.read())
+            print(json.dumps(env_vcvarsall(), indent=4))
         case "sdist":
             build_sdist("dist")
         case "test":
