@@ -1713,7 +1713,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     //     uLong sourceLen
     // );
     const int gzip_len = (int) compressBound(src_len) + 18;
-    gzip_buf = (uint8_t *) sqlite3_malloc(gzip_len);
+    gzip_buf = sqlite3_malloc(gzip_len);
     if (!gzip_buf) {
         goto catch_error;
     }
@@ -1750,9 +1750,9 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
             errcode);
         goto cleanup;
     }
-    deflateEnd(&strm);
     sqlite3_result_blob(context, gzip_buf, gzip_len - (int) strm.avail_out,
         sqlite3_free);
+    deflateEnd(&strm);
     return;
   catch_error:
     sqlite3_result_error_nomem(context);
@@ -1775,66 +1775,79 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
 // using zlib's inflate-algorithm.
     UNUSED_PARAMETER(argc);
     // declare var
-    static const char header[4] = { 0x1f, 0x8b, 0x08, 0x00 };
+    z_stream strm = { 0 };
+    uint8_t *src_buf = NULL;
+    int src_len = 4096;
+    int errcode = Z_OK;
+
+
     // init argv
-    const char *gzip_buf = sqlite3_value_blob(argv[0]);
+    const uint8_t *gzip_buf = sqlite3_value_blob(argv[0]);
     if (gzip_buf == NULL) {
         sqlite3_result_error(context,   //
             "gzip_uncompress - Input cannot be NULL", -1);
         return;
     }
-    const size_t gzip_len = sqlite3_value_bytes(argv[0]);
+    const int gzip_len = sqlite3_value_bytes(argv[0]);
     if (SIZEOF_BLOB_MAX < gzip_len) {
         sqlite3_result_error_nomem(context);
         return;
     }
-    // Check for minimum gzip file size (10 byte header + 8 byte footer)
-    if (gzip_len < 18) {
-        sqlite3_result_error(context,   //
-            "gzip_uncompress - Invalid gzip format, buffer too small", -1);
-        return;
-    }
-    // Validate the gzip header
-    if (memcmp(gzip_buf, header, 4) != 0) {
-        sqlite3_result_error(context,   //
-            "gzip_uncompress - Invalid gzip header or unsupported flags", -1);
-        return;
-    }
-    // Extract compressed data, CRC32, and original size from the buffer
-    // Decompress the data
-    size_t src_len = 0;
-    // void *tinfl_decompress_mem_to_heap(
-    //     const void *pSrc_buf,
-    //     size_t src_buf_len,
-    //     size_t * pOut_len,
-    //     int flags
+    // int inflateInit2(
+    //     z_streamp strm,
+    //     int windowBits
     // );
-    mz_uint8 *src_buf =
-        tinfl_decompress_mem_to_heap(gzip_buf + 10, gzip_len - 18, &src_len,
-        0);
-    if (src_buf == NULL) {
-        sqlite3_result_error(context,   //
-            "gzip_uncompress - Decompression failed", -1);
-        return;
+    strm.avail_in = (uLong) gzip_len;
+    strm.next_in = gzip_buf;
+    errcode = inflateInit2(&strm, 15 + 16);
+
+
+    if (errcode != Z_OK) {
+        goto catch_error;
     }
-    // Check for CRC and LEN match
-    uint32_t crc_header;
-    uint32_t header_len;
-    memcpy(&crc_header, gzip_buf + gzip_len - 8, 4);
-    memcpy(&header_len, gzip_buf + gzip_len - 4, 4);
-    // mz_ulong mz_crc32(
-    //     mz_ulong crc,
-    //     const mz_uint8 *ptr,
-    //     size_t len_buf
+    // Allocate the initial output buffer
+    src_buf = sqlite3_malloc(src_len);
+    if (!src_buf) {
+        goto catch_error;
+    }
+    do {
+        // Set up the output buffer for the next decompression step.
+        // `total_out` is the total bytes decompressed so far.
+        strm.avail_out = (uLong) src_len - strm.total_out;
+        strm.next_out = src_buf + strm.total_out;
+        errcode = inflate(&strm, Z_NO_FLUSH);
+        if (errcode < 0 && errcode != Z_STREAM_END) {
+            fprintf(stderr, "Decompression failed with error code: %d\n",
+                errcode);
+            goto cleanup;
+        }
+        // If the output buffer is full, reallocate to double its capacity.
+        if (strm.avail_out == 0 && errcode != Z_STREAM_END) {
+            src_len = src_len * 2;
+            if (SIZEOF_BLOB_MAX < src_len) {    // Check for overflow
+                goto catch_error;
+            }
+            src_buf = sqlite3_realloc(src_buf, src_len);
+            if (!src_buf) {
+                goto catch_error;
+            }
+        }
+    } while (errcode != Z_STREAM_END);
+
+
+    sqlite3_result_blob(context, src_buf, (int) strm.total_out, sqlite3_free);
+    inflateEnd(&strm);
+    return;
+  catch_error:
+    sqlite3_result_error_nomem(context);
+  cleanup:
+    // int inflateEnd(
+    //     z_streamp strm
     // );
-    uint32_t crc_actual = mz_crc32(MZ_CRC32_INIT, src_buf, src_len);
-    if (!(crc_header == crc_actual && header_len == src_len)) {
-        free(src_buf);
-        sqlite3_result_error(context,   //
-            "gzip_uncompress - CRC or uncompressed size mismatch", -1);
-        return;
+    inflateEnd(&strm);
+    if (src_buf) {
+        sqlite3_free(src_buf);
     }
-    sqlite3_result_blob(context, src_buf, (int) src_len, free);
 }
 
 // SQLMATH_FUNC sql1_gzip_xxx_func - end

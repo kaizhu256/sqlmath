@@ -44,7 +44,6 @@ int compress_string_to_file(
         fprintf(stderr, "Error initializing deflate stream: %d\n", errcode);
         return errcode;
     }
-
     // uLong compressBound(
     //     uLong sourceLen
     // );
@@ -125,14 +124,23 @@ uint8_t *decompress_buffer(
     uint8_t *src_buf = NULL;
     int src_len = 4096;
     int errcode = Z_OK;
+
+
+    // int inflateInit2(
+    //     z_streamp strm,
+    //     int windowBits
+    // );
     strm.avail_in = (uLong) gzip_len;
     strm.next_in = gzip_buf;
-    errcode = inflateInit2(&strm, 15 + 16);
 
+
+    errcode = inflateInit2(&strm, 15 + 16);
     if (errcode != Z_OK) {
         fprintf(stderr, "Error initializing inflate stream: %d\n", errcode);
         return NULL;
     }
+
+
     // Allocate the initial output buffer
     src_buf = (uint8_t *) malloc(src_len);
     if (!src_buf) {
