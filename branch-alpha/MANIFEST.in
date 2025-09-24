@@ -1,4 +1,3 @@
-include .a00.c
 include .ci.sh
 include .gitconfig
 include .github/workflows/ci.yml

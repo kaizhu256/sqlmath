@@ -1746,8 +1746,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     errcode = deflate(&strm, Z_FINISH);
     if (errcode != Z_STREAM_END) {
         sqlite3_result_error2(context,  //
-            "gzip_compress - Compression failed with error code: %d\n",
-            errcode);
+            "gzip_compress - deflate() failed - %d\n", errcode);
         goto cleanup;
     }
     sqlite3_result_blob(context, gzip_buf, gzip_len - (int) strm.avail_out,
@@ -1814,8 +1813,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         errcode = inflate(&strm, Z_NO_FLUSH);
         if (errcode < 0 && errcode != Z_STREAM_END) {
             sqlite3_result_error2(context,      //
-                "gzip_uncompress - Decompression failed with error code: %d\n",
-                errcode);
+                "gzip_uncompress - inflate() failed - %d\n", errcode);
             goto cleanup;
         }
         // If the output buffer is full, reallocate to double its capacity.
