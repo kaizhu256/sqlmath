@@ -83,9 +83,6 @@ static void *lgbm_library = NULL;
 #endif                          // SRC_SQLMATH_BASE_C2
 
 
-#define ZLIB_CONST
-
-
 // *INDENT-OFF*
 /*jslint-disable*/
 /*

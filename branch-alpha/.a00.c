@@ -132,9 +132,9 @@ uint8_t *decompress_buffer(
     // );
     strm.avail_in = (uLong) gzip_len;
     strm.next_in = gzip_buf;
-
-
     errcode = inflateInit2(&strm, 15 + 16);
+
+
     if (errcode != Z_OK) {
         fprintf(stderr, "Error initializing inflate stream: %d\n", errcode);
         return NULL;

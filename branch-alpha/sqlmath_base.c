@@ -1779,8 +1779,6 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     uint8_t *src_buf = NULL;
     int src_len = 4096;
     int errcode = Z_OK;
-
-
     // init argv
     const uint8_t *gzip_buf = sqlite3_value_blob(argv[0]);
     if (gzip_buf == NULL) {
@@ -1798,10 +1796,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     //     int windowBits
     // );
     strm.avail_in = (uLong) gzip_len;
-    strm.next_in = gzip_buf;
+    strm.next_in = (uint8_t *) gzip_buf;
     errcode = inflateInit2(&strm, 15 + 16);
-
-
     if (errcode != Z_OK) {
         goto catch_error;
     }
@@ -1817,7 +1813,8 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
         strm.next_out = src_buf + strm.total_out;
         errcode = inflate(&strm, Z_NO_FLUSH);
         if (errcode < 0 && errcode != Z_STREAM_END) {
-            fprintf(stderr, "Decompression failed with error code: %d\n",
+            sqlite3_result_error2(context,      //
+                "gzip_uncompress - Decompression failed with error code: %d\n",
                 errcode);
             goto cleanup;
         }
@@ -1833,8 +1830,6 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
             }
         }
     } while (errcode != Z_STREAM_END);
-
-
     sqlite3_result_blob(context, src_buf, (int) strm.total_out, sqlite3_free);
     inflateEnd(&strm);
     return;
