@@ -1692,7 +1692,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     sqlite3_value ** argv
 ) {
 // This function will gzip-compress <argv[0]>
-// using miniz's deflate-algorithm.
+// using zlib's deflate-algorithm.
     UNUSED_PARAMETER(argc);
     // declare var
     z_stream strm = { 0 };
@@ -1707,6 +1707,14 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     }
     const int src_len = sqlite3_value_bytes(argv[0]);
     if (SIZEOF_BLOB_MAX < src_len) {
+        goto catch_error;
+    }
+    // uLong compressBound(
+    //     uLong sourceLen
+    // );
+    const int gzip_len = (int) compressBound(src_len) + 18;
+    gzip_buf = (uint8_t *) sqlite3_malloc(gzip_len);
+    if (!gzip_buf) {
         goto catch_error;
     }
     // int deflateInit2_(
@@ -1725,14 +1733,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
         8,                      //
         Z_DEFAULT_STRATEGY);
     if (errcode != Z_OK) {
-        goto catch_error;
-    }
-    // uLong compressBound(
-    //     uLong sourceLen
-    // );
-    const int gzip_len = (int) compressBound(src_len) + 18;
-    gzip_buf = (uint8_t *) sqlite3_malloc(gzip_len);
-    if (!gzip_buf) {
         goto catch_error;
     }
     strm.avail_in = (uLong) src_len;
@@ -1772,9 +1772,11 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     sqlite3_value ** argv
 ) {
 // This function will gzip-uncompress <argv[0]>
-// using miniz's inflate-algorithm.
+// using zlib's inflate-algorithm.
     UNUSED_PARAMETER(argc);
+    // declare var
     static const char header[4] = { 0x1f, 0x8b, 0x08, 0x00 };
+    // init argv
     const char *gzip_buf = sqlite3_value_blob(argv[0]);
     if (gzip_buf == NULL) {
         sqlite3_result_error(context,   //

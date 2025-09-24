@@ -44,6 +44,7 @@ int compress_string_to_file(
         fprintf(stderr, "Error initializing deflate stream: %d\n", errcode);
         return errcode;
     }
+
     // uLong compressBound(
     //     uLong sourceLen
     // );
@@ -104,6 +105,10 @@ int compress_string_to_file(
     return errcode;
 }
 
+
+
+
+
 /**
  * @brief Decompresses a gzipped buffer and returns the decompressed data.
  * @param gzip_buf The gzip_buf buffer.
@@ -116,13 +121,10 @@ uint8_t *decompress_buffer(
     size_t gzip_len,
     size_t * output_size
 ) {
-    z_stream strm;
+    z_stream strm = { 0 };
     uint8_t *src_buf = NULL;
     int src_len = 4096;
     int errcode = Z_OK;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
     strm.avail_in = (uLong) gzip_len;
     strm.next_in = gzip_buf;
     errcode = inflateInit2(&strm, 15 + 16);
@@ -190,6 +192,9 @@ uint8_t *decompress_buffer(
     //!! }
     return src_buf;
 }
+
+
+
 
 /**
  * @brief The main function, which serves as the program's entry point.

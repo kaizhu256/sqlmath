@@ -1613,7 +1613,7 @@ async function moduleFsInit() {
     }
     SQLMATH_NODE = `_sqlmath.napi6_${process.platform}_${process.arch}.node`;
     SQLMATH_EXE = (
-        SQLMATH_NODE.replace((/\.node$/), "")
+        `_sqlmath.shell_${process.platform}_${process.arch}`
         + process.platform.replace(
             "win32",
             ".exe"

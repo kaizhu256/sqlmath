@@ -1771,7 +1771,7 @@ body {
 <pre><span class="lineno"><a href="#line_1613" id="line_1613"> 1613.</a></span><span class="count        ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_1614" id="line_1614"> 1614.</a></span><span class="count        ">      1</span><span>    SQLMATH_NODE = `_sqlmath.napi6_${process.platform}_${process.arch}.node`;</span></pre>
 <pre><span class="lineno"><a href="#line_1615" id="line_1615"> 1615.</a></span><span class="count        ">      1</span><span>    SQLMATH_EXE = (</span></pre>
-<pre><span class="lineno"><a href="#line_1616" id="line_1616"> 1616.</a></span><span class="count        ">      1</span><span>        SQLMATH_NODE.replace((/\.node$/), "")</span></pre>
+<pre><span class="lineno"><a href="#line_1616" id="line_1616"> 1616.</a></span><span class="count        ">      1</span><span>        `_sqlmath.shell_${process.platform}_${process.arch}`</span></pre>
 <pre><span class="lineno"><a href="#line_1617" id="line_1617"> 1617.</a></span><span class="count        ">      1</span><span>        + process.platform.replace(</span></pre>
 <pre><span class="lineno"><a href="#line_1618" id="line_1618"> 1618.</a></span><span class="count        ">      1</span><span>            "win32",</span></pre>
 <pre><span class="lineno"><a href="#line_1619" id="line_1619"> 1619.</a></span><span class="count        ">      1</span><span>            ".exe"</span></pre>
