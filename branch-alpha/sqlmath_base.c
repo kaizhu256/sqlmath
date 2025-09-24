@@ -1691,8 +1691,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will gzip-compress <argv[0]>
-// using zlib's deflate-algorithm.
+// This function will gzip-compress <argv[0]> using zlib's deflate-algorithm.
     UNUSED_PARAMETER(argc);
     // declare var
     z_stream strm = { 0 };
@@ -1717,7 +1716,7 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     if (!gzip_buf) {
         goto catch_error;
     }
-    // int deflateInit2_(
+    // int deflateInit2(
     //     z_streamp strm,
     //     int level,
     //     int method,
@@ -1770,8 +1769,7 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     int argc,
     sqlite3_value ** argv
 ) {
-// This function will gzip-uncompress <argv[0]>
-// using zlib's inflate-algorithm.
+// This function will gzip-uncompress <argv[0]> using zlib's inflate-algorithm.
     UNUSED_PARAMETER(argc);
     // declare var
     z_stream strm = { 0 };
@@ -1794,12 +1792,12 @@ SQLMATH_FUNC static void sql1_gzip_uncompress_func(
     //     z_streamp strm,
     //     int windowBits
     // );
-    strm.avail_in = (uLong) gzip_len;
-    strm.next_in = (uint8_t *) gzip_buf;
     errcode = inflateInit2(&strm, 15 + 16);
     if (errcode != Z_OK) {
         goto catch_error;
     }
+    strm.avail_in = (uLong) gzip_len;
+    strm.next_in = (uint8_t *) gzip_buf;
     // Allocate the initial output buffer
     src_buf = sqlite3_malloc(src_len);
     if (!src_buf) {
