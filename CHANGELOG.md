@@ -6,6 +6,7 @@
 - none
 
 # v2025.9.1-beta
+- sqlmath - Replace miniz-library with native-zib-library.
 - sqlmath - ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib, so link with external-zlib.
 - sqlmath - Replace sql-functions ZLIB_COMPRESS() to GZIP_COMPRESS(), ZLIB_UNCOMPRESS() to GZIP_UNCOMPRESS().
 - sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c.

@@ -551,7 +551,8 @@ shSqlmathUpdate() {(set -e
             sqlmath_base.h \
             sqlmath_browser.mjs \
             sqlmath_external_sqlite.c \
-            sqlmath_wrapper_wasm.js
+            sqlmath_wrapper_wasm.js \
+            zlib.lib
         do
             ln -f "$HOME/Documents/sqlmath/$FILE" "$FILE"
         done
