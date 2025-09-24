@@ -1694,15 +1694,11 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
 // This function will gzip-compress <argv[0]>
 // using miniz's deflate-algorithm.
     UNUSED_PARAMETER(argc);
-
-
     // declare var
     z_stream strm = { 0 };
     int errcode = Z_OK;
     uint8_t *gzip_buf = NULL;
     // init argv
-
-
     const uint8_t *src_buf = sqlite3_value_blob(argv[0]);
     if (src_buf == NULL) {
         sqlite3_result_error(context,   //
@@ -1713,6 +1709,24 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     if (SIZEOF_BLOB_MAX < src_len) {
         goto catch_error;
     }
+    // int deflateInit2_(
+    //     z_streamp strm,
+    //     int level,
+    //     int method,
+    //     int windowBits,
+    //     int memLevel,
+    //     int strategy
+    // );
+    errcode = deflateInit2(     //
+        &strm,                  //
+        Z_DEFAULT_COMPRESSION,  //
+        Z_DEFLATED,             //
+        15 + 16,                //
+        8,                      //
+        Z_DEFAULT_STRATEGY);
+    if (errcode != Z_OK) {
+        goto catch_error;
+    }
     // uLong compressBound(
     //     uLong sourceLen
     // );
@@ -1721,27 +1735,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     if (!gzip_buf) {
         goto catch_error;
     }
-    // int deflateInit2_(
-    //     z_streamp strm,
-    //     int level,
-    //     int method,
-    //     int windowBits,
-    //     int memLevel,
-    //     int strategy,
-    //     const char *version,
-    //     int stream_size
-    // );
-    errcode =
-        deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 + 16, 8,
-        Z_DEFAULT_STRATEGY);
-    if (errcode != Z_OK) {
-        sqlite3_result_error2(context,  //
-            "gzip_compress - Error initializing deflate stream: %d\n",
-            errcode);
-        goto cleanup;
-    }
-
-
     strm.avail_in = (uLong) src_len;
     strm.next_in = (uint8_t *) src_buf;
     strm.avail_out = (uLong) gzip_len;
@@ -1751,8 +1744,6 @@ SQLMATH_FUNC static void sql1_gzip_compress_func(
     //     int flush
     // );
     errcode = deflate(&strm, Z_FINISH);
-
-
     if (errcode != Z_STREAM_END) {
         sqlite3_result_error2(context,  //
             "gzip_compress - Compression failed with error code: %d\n",
