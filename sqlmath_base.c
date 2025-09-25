@@ -4744,8 +4744,8 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(lgbm_datasetsavebinary, 1, 0);
     SQL_CREATE_FUNC1(lgbm_dlopen, 1, 0);
     SQL_CREATE_FUNC1(lgbm_extract, 2, 0);
-    SQL_CREATE_FUNC1(lgbm_predictforfile, 8, 0);
     SQL_CREATE_FUNC1(lgbm_featureimportance, 1, SQLITE_DETERMINISTIC);
+    SQL_CREATE_FUNC1(lgbm_predictforfile, 8, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromdataset, 5, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromfile, 6, 0);
     SQL_CREATE_FUNC1(marginoferror95, 2, SQLITE_DETERMINISTIC);
