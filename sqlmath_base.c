@@ -2255,6 +2255,10 @@ SQLMATH_FUNC static void sql1_lgbm_featureimportance_func(
 ) {
 // This function will get model feature importance.
     UNUSED_PARAMETER(argc);
+    // declare var
+    double *featureBuf = NULL;
+    int featureNum = 0;
+    // init argv
     const char *model_str = (char *) sqlite3_value_text(argv[0]);
     if (model_str == NULL) {
         sqlite3_result_error(context,
@@ -2271,12 +2275,11 @@ SQLMATH_FUNC static void sql1_lgbm_featureimportance_func(
         &booster);              // BoosterHandle *out
     LGBM_ASSERT_OK();
     // booster - features
-    int featureNum = 0;
     errcode = LGBM_DatasetGetNumFeature(        //
         booster,                // BoosterHandle handle,
         &featureNum);           // int *out
     LGBM_ASSERT_OK();
-    double *featureBuf = sqlite3_malloc(featureNum * sizeof(double));
+    featureBuf = sqlite3_malloc(featureNum * sizeof(double));
     if (featureBuf == NULL) {
         errcode = 1;
         goto catch_error;
