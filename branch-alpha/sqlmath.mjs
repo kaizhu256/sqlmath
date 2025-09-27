@@ -640,7 +640,7 @@ async function dbCallAsync(baton, argList, mode) {
     } catch (err) {
         // debug db.filename
         if (mode?.filename2 || mode?.filename) {
-            err.message += ` - db - ${mode?.filename2 || mode?.filename}`;
+            err.message += ` (from ${mode?.filename2 || mode?.filename})`;
         }
         err.stack += errStack;
         assertOrThrow(undefined, err);

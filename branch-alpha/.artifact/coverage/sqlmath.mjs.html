@@ -798,7 +798,7 @@ body {
 <pre><span class="lineno"><a href="#line_640" id="line_640">  640.</a></span><span class="count        ">     55</span><span>    } catch (err) {</span></pre>
 <pre><span class="lineno"><a href="#line_641" id="line_641">  641.</a></span><span class="count        ">     55</span><span>        // debug db.filename</span></pre>
 <pre><span class="lineno"><a href="#line_642" id="line_642">  642.</a></span><span class="count        ">     55</span><span>        if (mode?.filename2 || mode?.filename) {</span></pre>
-<pre><span class="lineno"><a href="#line_643" id="line_643">  643.</a></span><span class="count        ">     55</span><span>            err.message += ` - db - ${mode?.filename2 || mode?.filename}`;</span></pre>
+<pre><span class="lineno"><a href="#line_643" id="line_643">  643.</a></span><span class="count        ">     55</span><span>            err.message += ` (from ${mode?.filename2 || mode?.filename})`;</span></pre>
 <pre><span class="lineno"><a href="#line_644" id="line_644">  644.</a></span><span class="count        ">     55</span><span>        }</span></pre>
 <pre><span class="lineno"><a href="#line_645" id="line_645">  645.</a></span><span class="count        ">     55</span><span>        err.stack += errStack;</span></pre>
 <pre><span class="lineno"><a href="#line_646" id="line_646">  646.</a></span><span class="count        ">     55</span><span>        assertOrThrow(undefined, err);</span></pre>
