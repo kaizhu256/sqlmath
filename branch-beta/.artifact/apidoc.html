@@ -138,44 +138,28 @@ function dbCloseAsync<span class="apidocSignatureSpan">(db)</span>
 <li>
 
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob">9.
-function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">(option)</span>
 </a>
 
 </li>
 <li>
 
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow">10.
-function dbExecAndReturnLastRow<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+function dbExecAndReturnLastRow<span class="apidocSignatureSpan">(option)</span>
 </a>
 
 </li>
 <li>
 
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable">11.
-function dbExecAndReturnLastTable<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+function dbExecAndReturnLastTable<span class="apidocSignatureSpan">(option)</span>
 </a>
 
 </li>
 <li>
 
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastValue">12.
-function dbExecAndReturnLastValue<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+function dbExecAndReturnLastValue<span class="apidocSignatureSpan">(option)</span>
 </a>
 
 </li>
@@ -1023,29 +1007,18 @@ jstestIt((
 <li>
     <h2>
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastBlob">9.
-    function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+    function dbExecAndReturnLastBlob<span class="apidocSignatureSpan">(option)</span>
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastBlob({
-    bindList = [],
-    db,
-    sql
-}) {
+<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastBlob(option) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt;,
 // and return last-value retrieved from execution as raw blob/buffer.
 
-</span>    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastblob",
-        sql
-    });
+</span>    return dbExecAsync(Object.assign({
+        responseType: "lastblob"
+    }, option));
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
         })
@@ -1068,24 +1041,16 @@ assertJsonEqual(
 <li>
     <h2>
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastRow">10.
-    function dbExecAndReturnLastRow<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+    function dbExecAndReturnLastRow<span class="apidocSignatureSpan">(option)</span>
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastRow({
-    bindList = [],
-    db,
-    sql
-}) {
+<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastRow(option) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt;,
 // and return last-row or empty-object.
 
-</span>    let result = await dbExecAsync({bindList, db, sql});
+</span>    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     result = result[result.length - 1] || {};
     return result;
@@ -1111,24 +1076,16 @@ FROM (
 <li>
     <h2>
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastTable">11.
-    function dbExecAndReturnLastTable<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+    function dbExecAndReturnLastTable<span class="apidocSignatureSpan">(option)</span>
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastTable({
-    bindList = [],
-    db,
-    sql
-}) {
+<li>Description and source-code:<pre class="apidocCodePre">async function dbExecAndReturnLastTable(option) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt;,
 // and return last-table or empty-list.
 
-</span>    let result = await dbExecAsync({bindList, db, sql});
+</span>    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     return result;
 }</pre></li>
@@ -1153,29 +1110,18 @@ SELECT WIN_SUM1(1) FROM __tmp1;
 <li>
     <h2>
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastValue" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecAndReturnLastValue">12.
-    function dbExecAndReturnLastValue<span class="apidocSignatureSpan">({
-    bindList = [],
-    db,
-    sql
-})</span>
+    function dbExecAndReturnLastValue<span class="apidocSignatureSpan">(option)</span>
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastValue({
-    bindList = [],
-    db,
-    sql
-}) {
+<li>Description and source-code:<pre class="apidocCodePre">function dbExecAndReturnLastValue(option) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt;,
 // and return last-json-value.
 
-</span>    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastvalue",
-        sql
-    });
+</span>    return dbExecAsync(Object.assign({
+        responseType: "lastvalue"
+    }, option));
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 let valActual;
@@ -1248,7 +1194,9 @@ assertJsonEqual(valActual, valExpect, {
             );
         });
     }
-    [baton, ...result] = await dbCallAsync(
+    [
+        baton, ...result
+    ] = await dbCallAsync(
         baton,
         [
             // 0. db
@@ -1286,7 +1234,7 @@ assertJsonEqual(valActual, valExpect, {
     }
     switch (responseType) {
     case "arraybuffer":
-    case "lastbl...
+  ...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1359,6 +1307,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
         typeof filename === "string" &amp;&amp; filename,
         `invalid filename ${filename}`
     );
+    db.filename2 = filename;
     // Save to tmpfile and then atomically-rename to actual-filename.
     if (moduleFs &amp;&amp; modeSave) {
         filename2 = filename;

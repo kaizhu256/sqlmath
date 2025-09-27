@@ -510,7 +510,7 @@ async function dbCallAsync(baton, argList, mode) {
         // increment db.busy
         db.busy += 1;
         try {
-            return await dbCallAsync(baton, [db.ptr, ...argList.slice(1)]);
+            return await dbCallAsync(baton, [db.ptr, ...argList.slice(1)], db);
         } finally {
             // decrement db.busy
             db.busy -= 1;
@@ -638,6 +638,10 @@ async function dbCallAsync(baton, argList, mode) {
         // prepend baton to argList
         return [result.baton, ...result.argList];
     } catch (err) {
+        // debug db.filename
+        if (mode?.filename2 || mode?.filename) {
+            err.message += ` (from ${mode?.filename2 || mode?.filename})`;
+        }
         err.stack += errStack;
         assertOrThrow(undefined, err);
     }
@@ -660,67 +664,45 @@ async function dbCloseAsync(db) {
     }));
 }
 
-function dbExecAndReturnLastBlob({
-    bindList = [],
-    db,
-    sql
-}) {
+function dbExecAndReturnLastBlob(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-value retrieved from execution as raw blob/buffer.
 
-    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastblob",
-        sql
-    });
+    return dbExecAsync(Object.assign({
+        responseType: "lastblob"
+    }, option));
 }
 
-async function dbExecAndReturnLastRow({
-    bindList = [],
-    db,
-    sql
-}) {
+async function dbExecAndReturnLastRow(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-row or empty-object.
 
-    let result = await dbExecAsync({bindList, db, sql});
+    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     result = result[result.length - 1] || {};
     return result;
 }
 
-async function dbExecAndReturnLastTable({
-    bindList = [],
-    db,
-    sql
-}) {
+async function dbExecAndReturnLastTable(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-table or empty-list.
 
-    let result = await dbExecAsync({bindList, db, sql});
+    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     return result;
 }
 
-function dbExecAndReturnLastValue({
-    bindList = [],
-    db,
-    sql
-}) {
+function dbExecAndReturnLastValue(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-json-value.
 
-    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastvalue",
-        sql
-    });
+    return dbExecAsync(Object.assign({
+        responseType: "lastvalue"
+    }, option));
 }
 
 async function dbExecAsync({
@@ -763,7 +745,9 @@ async function dbExecAsync({
             );
         });
     }
-    [baton, ...result] = await dbCallAsync(
+    [
+        baton, ...result
+    ] = await dbCallAsync(
         baton,
         [
             // 0. db
@@ -859,6 +843,7 @@ async function dbFileLoadAsync({
         typeof filename === "string" && filename,
         `invalid filename ${filename}`
     );
+    db.filename2 = filename;
     // Save to tmpfile and then atomically-rename to actual-filename.
     if (moduleFs && modeSave) {
         filename2 = filename;
