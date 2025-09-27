@@ -510,7 +510,7 @@ async function dbCallAsync(baton, argList, mode) {
         // increment db.busy
         db.busy += 1;
         try {
-            return await dbCallAsync(baton, [db.ptr, ...argList.slice(1)]);
+            return await dbCallAsync(baton, [db.ptr, ...argList.slice(1)], db);
         } finally {
             // decrement db.busy
             db.busy -= 1;
@@ -638,6 +638,10 @@ async function dbCallAsync(baton, argList, mode) {
         // prepend baton to argList
         return [result.baton, ...result.argList];
     } catch (err) {
+        // debug db.filename
+        if (mode?.filename2 || mode?.filename) {
+            err.message += ` - db - ${mode?.filename2 || mode?.filename}`;
+        }
         err.stack += errStack;
         assertOrThrow(undefined, err);
     }
@@ -741,7 +745,9 @@ async function dbExecAsync({
             );
         });
     }
-    [baton, ...result] = await dbCallAsync(
+    [
+        baton, ...result
+    ] = await dbCallAsync(
         baton,
         [
             // 0. db
@@ -837,6 +843,7 @@ async function dbFileLoadAsync({
         typeof filename === "string" && filename,
         `invalid filename ${filename}`
     );
+    db.filename2 = filename;
     // Save to tmpfile and then atomically-rename to actual-filename.
     if (moduleFs && modeSave) {
         filename2 = filename;

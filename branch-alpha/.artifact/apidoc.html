@@ -1194,7 +1194,9 @@ assertJsonEqual(valActual, valExpect, {
             );
         });
     }
-    [baton, ...result] = await dbCallAsync(
+    [
+        baton, ...result
+    ] = await dbCallAsync(
         baton,
         [
             // 0. db
@@ -1232,7 +1234,7 @@ assertJsonEqual(valActual, valExpect, {
     }
     switch (responseType) {
     case "arraybuffer":
-    case "lastbl...
+  ...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1305,6 +1307,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
         typeof filename === "string" &amp;&amp; filename,
         `invalid filename ${filename}`
     );
+    db.filename2 = filename;
     // Save to tmpfile and then atomically-rename to actual-filename.
     if (moduleFs &amp;&amp; modeSave) {
         filename2 = filename;
