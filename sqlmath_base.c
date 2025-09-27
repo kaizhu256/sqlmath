@@ -113,7 +113,7 @@ file sqlmath_h - start
 
 
 #if !defined(SQLITE_MAX_FUNCTION_ARG)
-#   define SQLITE_MAX_FUNCTION_ARG 127
+#   define SQLITE_MAX_FUNCTION_ARG 1000
 #endif                          // SQLITE_MAX_FUNCTION_ARG
 
 
@@ -2254,13 +2254,13 @@ SQLMATH_FUNC static void sql1_lgbm_predictforfile_func(
     sqlite3_value ** argv
 ) {
 // This function will make prediction for file from <model_str>.
+    UNUSED_PARAMETER(argc);
     const char *model_str = (char *) sqlite3_value_text(argv[0]);
     if (model_str == NULL) {
         sqlite3_result_error(context,
             "lgbm_predictforfile - model_str cannot be NULL", -1);
         return;
     }
-    UNUSED_PARAMETER(argc);
     int errcode = 0;
     // booster - init
     BoosterHandle booster = NULL;
