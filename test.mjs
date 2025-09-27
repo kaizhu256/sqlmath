@@ -1177,6 +1177,14 @@ UPDATE __lgbm_state
 ${sqlTrainXxx};
                 `)
             });
+            debugInline((/(feature_importances:\n.*\n.*\n)/).exec(Buffer.from(
+                await dbExecAndReturnLastBlob({
+                    db,
+                    sql: (`
+SELECT model FROM __lgbm_state;
+                    `)
+                })
+            ).toString())[1]);
             await dbExecAsync({
                 db,
                 sql: (`

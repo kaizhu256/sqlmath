@@ -2248,59 +2248,6 @@ SQLMATH_FUNC static void sql1_lgbm_extract_func(
         "lgbm_extract - 2nd argument is invalid key", -1);
 }
 
-SQLMATH_FUNC static void sql1_lgbm_featureimportance_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will get model feature importance.
-    UNUSED_PARAMETER(argc);
-    // declare var
-    double *featureBuf = NULL;
-    int featureNum = 0;
-    // init argv
-    const char *model_str = (char *) sqlite3_value_text(argv[0]);
-    if (model_str == NULL) {
-        sqlite3_result_error(context,
-            "lgbm_featureimportance - model_str cannot be NULL", -1);
-        return;
-    }
-    int errcode = 0;
-    // booster - init
-    BoosterHandle booster = NULL;
-    int out_num_iteration = 0;
-    errcode = LGBM_BoosterLoadModelFromString(  //
-        model_str,              // const char *model_str,
-        &out_num_iteration,     // int *out_num_iteration,
-        &booster);              // BoosterHandle *out
-    LGBM_ASSERT_OK();
-    // booster - features
-    errcode = LGBM_DatasetGetNumFeature(        //
-        booster,                // BoosterHandle handle,
-        &featureNum);           // int *out
-    LGBM_ASSERT_OK();
-    featureBuf = sqlite3_malloc(featureNum * sizeof(double));
-    if (featureBuf == NULL) {
-        errcode = 1;
-        goto catch_error;
-    }
-    errcode = LGBM_BoosterFeatureImportance(    //
-        booster,                // BoosterHandle handle,
-        0,                      // int num_iteration,
-        C_API_FEATURE_IMPORTANCE_GAIN,  // int importance_type,
-        featureBuf);            // double *featureBuf
-    LGBM_ASSERT_OK();
-    doublearrayResult(context, featureBuf, featureNum, sqlite3_free);
-  catch_error:
-    LGBM_BoosterFree(booster);
-    if (errcode && featureBuf != NULL) {
-        sqlite3_free(featureBuf);
-    }
-    if (errcode) {
-        sqlite3_result_error_nomem(context);
-    }
-}
-
 SQLMATH_FUNC static void sql1_lgbm_predictforfile_func(
     sqlite3_context * context,
     int argc,
@@ -4747,7 +4694,6 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(lgbm_datasetsavebinary, 1, 0);
     SQL_CREATE_FUNC1(lgbm_dlopen, 1, 0);
     SQL_CREATE_FUNC1(lgbm_extract, 2, 0);
-    SQL_CREATE_FUNC1(lgbm_featureimportance, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(lgbm_predictforfile, 8, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromdataset, 5, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromfile, 6, 0);
