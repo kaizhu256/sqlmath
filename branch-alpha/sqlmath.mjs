@@ -660,67 +660,45 @@ async function dbCloseAsync(db) {
     }));
 }
 
-function dbExecAndReturnLastBlob({
-    bindList = [],
-    db,
-    sql
-}) {
+function dbExecAndReturnLastBlob(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-value retrieved from execution as raw blob/buffer.
 
-    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastblob",
-        sql
-    });
+    return dbExecAsync(Object.assign({
+        responseType: "lastblob"
+    }, option));
 }
 
-async function dbExecAndReturnLastRow({
-    bindList = [],
-    db,
-    sql
-}) {
+async function dbExecAndReturnLastRow(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-row or empty-object.
 
-    let result = await dbExecAsync({bindList, db, sql});
+    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     result = result[result.length - 1] || {};
     return result;
 }
 
-async function dbExecAndReturnLastTable({
-    bindList = [],
-    db,
-    sql
-}) {
+async function dbExecAndReturnLastTable(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-table or empty-list.
 
-    let result = await dbExecAsync({bindList, db, sql});
+    let result = await dbExecAsync(option);
     result = result[result.length - 1] || [];
     return result;
 }
 
-function dbExecAndReturnLastValue({
-    bindList = [],
-    db,
-    sql
-}) {
+function dbExecAndReturnLastValue(option) {
 
 // This function will exec <sql> in <db>,
 // and return last-json-value.
 
-    return dbExecAsync({
-        bindList,
-        db,
-        responseType: "lastvalue",
-        sql
-    });
+    return dbExecAsync(Object.assign({
+        responseType: "lastvalue"
+    }, option));
 }
 
 async function dbExecAsync({
