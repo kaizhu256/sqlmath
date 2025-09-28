@@ -502,7 +502,7 @@ async function dbCallAsync(baton, argList, mode, db) {
     let sql;
     let timeElapsed;
     // If argList contains <db>, then mark it as busy.
-    if (mode === "modeDb" || mode === "modeDbExec") {
+    if (mode === "modeDbExec" || mode === "modeDbFile") {
         // init db
         db = argList[0];
         assertOrThrow(
@@ -917,7 +917,7 @@ async function dbFileLoadAsync({
                 // 4. dbData - same position as dbOpenAsync
                 dbData
             ],
-            "modeDb"
+            "modeDbFile"
         );
     }
     if (modeNoop) {

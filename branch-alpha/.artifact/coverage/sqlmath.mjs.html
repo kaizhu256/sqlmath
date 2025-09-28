@@ -660,7 +660,7 @@ body {
 <pre><span class="lineno"><a href="#line_502" id="line_502">  502.</a></span><span class="count        ">   3979</span><span>    let sql;</span></pre>
 <pre><span class="lineno"><a href="#line_503" id="line_503">  503.</a></span><span class="count        ">   3979</span><span>    let timeElapsed;</span></pre>
 <pre><span class="lineno"><a href="#line_504" id="line_504">  504.</a></span><span class="count        ">   3979</span><span>    // If argList contains &lt;db&gt;, then mark it as busy.</span></pre>
-<pre><span class="lineno"><a href="#line_505" id="line_505">  505.</a></span><span class="count        ">   3964</span><span>    if (mode === "modeDb" || mode === "modeDbExec") {</span></pre>
+<pre><span class="lineno"><a href="#line_505" id="line_505">  505.</a></span><span class="count        ">   2063</span><span>    if (mode === "modeDbExec" || mode === "modeDbFile") {</span></pre>
 <pre><span class="lineno"><a href="#line_506" id="line_506">  506.</a></span><span class="count        ">   1931</span><span>        // init db</span></pre>
 <pre><span class="lineno"><a href="#line_507" id="line_507">  507.</a></span><span class="count        ">   1931</span><span>        db = argList[0];</span></pre>
 <pre><span class="lineno"><a href="#line_508" id="line_508">  508.</a></span><span class="count        ">   1931</span><span>        assertOrThrow(</span></pre>
@@ -1026,9 +1026,9 @@ body {
 <pre><span class="lineno"><a href="#line_868" id="line_868">  868.</a></span><span class="count        ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_869" id="line_869">  869.</a></span><span class="count        ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_870" id="line_870">  870.</a></span><span class="count        ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_871" id="line_871">  871.</a></span><span class="count        ">   1315</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_872" id="line_872">  872.</a></span><span class="count        ">    461</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
-<pre><span class="lineno"><a href="#line_873" id="line_873">  873.</a></span><span class="count        ">   1315</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_871" id="line_871">  871.</a></span><span class="count        ">   1365</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_872" id="line_872">  872.</a></span><span class="count        ">    443</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
+<pre><span class="lineno"><a href="#line_873" id="line_873">  873.</a></span><span class="count        ">   1365</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_874" id="line_874">  874.</a></span><span class="count        ">     20</span><span>    result = result.slice(0, limit).map(function ({</span></pre>
 <pre><span class="lineno"><a href="#line_875" id="line_875">  875.</a></span><span class="count        ">     20</span><span>        count,</span></pre>
 <pre><span class="lineno"><a href="#line_876" id="line_876">  876.</a></span><span class="count        ">     20</span><span>        sql,</span></pre>
@@ -1075,7 +1075,7 @@ body {
 <pre><span class="lineno"><a href="#line_917" id="line_917">  917.</a></span><span class="count        ">     15</span><span>                // 4. dbData - same position as dbOpenAsync</span></pre>
 <pre><span class="lineno"><a href="#line_918" id="line_918">  918.</a></span><span class="count        ">     15</span><span>                dbData</span></pre>
 <pre><span class="lineno"><a href="#line_919" id="line_919">  919.</a></span><span class="count        ">     15</span><span>            ],</span></pre>
-<pre><span class="lineno"><a href="#line_920" id="line_920">  920.</a></span><span class="count        ">     15</span><span>            "modeDb"</span></pre>
+<pre><span class="lineno"><a href="#line_920" id="line_920">  920.</a></span><span class="count        ">     15</span><span>            "modeDbFile"</span></pre>
 <pre><span class="lineno"><a href="#line_921" id="line_921">  921.</a></span><span class="count        ">     15</span><span>        );</span></pre>
 <pre><span class="lineno"><a href="#line_922" id="line_922">  922.</a></span><span class="count        ">     15</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_923" id="line_923">  923.</a></span><span class="count        ">      1</span><span>    if (modeNoop) {</span></pre>
