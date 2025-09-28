@@ -513,7 +513,7 @@ async function dbCallAsync(baton, argList, mode, db) {
         db.ptr = db.connPool[db.ii][0];
         // increment db.busy
         db.busy += 1;
-        //
+        // init profileObj
         if (DB_EXEC_PROFILE_MODE && mode === "modeDbExec") {
             profileStart = Date.now();
             sql = String(argList[1]).trim().slice(0, 4096);
@@ -524,6 +524,7 @@ async function dbCallAsync(baton, argList, mode, db) {
                 timeElapsed: 0
             };
             profileObj = DB_EXEC_PROFILE_DICT[sql];
+            // increment profileObj.busy
             profileObj.busy += 1;
             profileObj.count += 1;
         }
@@ -538,7 +539,15 @@ async function dbCallAsync(baton, argList, mode, db) {
                 db
             );
         } finally {
+            // decrement db.busy
+            db.busy -= 1;
+            assertOrThrow(
+                db.busy >= 0,
+                `dbCallAsync - invalid db.busy = ${db.busy}`
+            );
+            // update profileObj
             if (profileObj) {
+                // decrement profileObj.busy
                 profileObj.busy -= 1;
                 assertOrThrow(
                     profileObj.busy >= 0,
@@ -548,12 +557,6 @@ async function dbCallAsync(baton, argList, mode, db) {
                     profileObj.timeElapsed += Date.now() - profileStart;
                 }
             }
-            // decrement db.busy
-            db.busy -= 1;
-            assertOrThrow(
-                db.busy >= 0,
-                `dbCallAsync - invalid db.busy = ${db.busy}`
-            );
         }
     }
     // copy argList to avoid side-effect
