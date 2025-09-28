@@ -822,13 +822,13 @@ async function dbExecAsync({
 function dbExecProfile({
     limit = 20,
     lineWidth = 80,
-    modeOnExit
+    modeInit
 }) {
 
 // This function will exec <sql> in <db> and return <result>.
 
     let result;
-    if (modeOnExit && !DB_EXEC_PROFILE_MODE) {
+    if (modeInit && !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = true;
         process.on("exit", function () {
             console.error(dbExecProfile({

@@ -182,7 +182,7 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
-    modeOnExit
+    modeInit
 })</span>
 </a>
 
@@ -1277,7 +1277,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
-    modeOnExit
+    modeInit
 })</span>
     </a>
     </h2>
@@ -1285,13 +1285,13 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 <li>Description and source-code:<pre class="apidocCodePre">function dbExecProfile({
     limit = 20,
     lineWidth = 80,
-    modeOnExit
+    modeInit
 }) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt; and return &lt;result&gt;.
 
 </span>    let result;
-    if (modeOnExit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
+    if (modeInit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = true;
         process.on("exit", function () {
             console.error(dbExecProfile({
@@ -1331,7 +1331,7 @@ npm_config_mode_test_save
 } = process.env;
 
 <span class="apidocCodeKeywordSpan">dbExecProfile</span>({
-modeOnExit: true
+modeInit: true
 });
 
 jstestDescribe((

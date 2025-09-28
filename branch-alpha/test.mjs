@@ -73,7 +73,7 @@ let {
 } = process.env;
 
 dbExecProfile({
-    modeOnExit: true
+    modeInit: true
 });
 
 jstestDescribe((
