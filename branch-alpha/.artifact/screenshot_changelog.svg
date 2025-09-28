@@ -1,5 +1,5 @@
-<svg height="1328" width="800" xmlns="http://www.w3.org/2000/svg">
-<rect height="1328" fill="#222" width="800"></rect>
+<svg height="1350" width="800" xmlns="http://www.w3.org/2000/svg">
+<rect height="1350" fill="#222" width="800"></rect>
 <text
     fill="#7f7"
     font-family="consolas, menlo, monospace"
@@ -71,295 +71,301 @@
     textLength="768"
     x="10"
     y="252"
->- sqlmath - Add function dbExecProfile() to profile sql-queries.                                 </tspan>
+>- coverage - Add coverage-directives '/*coverage-disable*/', '/*coverage-enable*/'. '//coverage-\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="274"
->- sqlmath - Update function dbCallAsync() to include db.filename in error-message.               </tspan>
+>  ignore-line'.                                                                                  </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="296"
->- sqlmath - Replace miniz-library with native-zib-library.                                       </tspan>
+>- sqlmath - Add function dbExecProfile() to profile sql-queries.                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="318"
->- sqlmath - ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib, so link with extern\</tspan>
+>- sqlmath - Update function dbCallAsync() to include db.filename in error-message.               </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="340"
->  al-zlib.                                                                                       </tspan>
+>- sqlmath - Replace miniz-library with native-zib-library.                                       </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="362"
->- sqlmath - Replace sql-functions ZLIB_COMPRESS() to GZIP_COMPRESS(), ZLIB_UNCOMPRESS() to GZIP_\</tspan>
+>- sqlmath - ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib, so link with extern\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="384"
->  UNCOMPRESS().                                                                                  </tspan>
+>  al-zlib.                                                                                       </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="406"
->- sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c.                          </tspan>
+>- sqlmath - Replace sql-functions ZLIB_COMPRESS() to GZIP_COMPRESS(), ZLIB_UNCOMPRESS() to GZIP_\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="428"
->- sqlmath - bugfix - Fix sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS() crashing sqlite-shell-\</tspan>
+>  UNCOMPRESS().                                                                                  </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="450"
->  executable.                                                                                    </tspan>
+>- sqlmath - Prefer platform-native zlib over sqlmath_external_sqlite.c.                          </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="472"
->- ml - Update sql-function LGBM_TRAINFROMTABLE() to use C_API_FEATURE_IMPORTANCE_GAIN instead of\</tspan>
+>- sqlmath - bugfix - Fix sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS() crashing sqlite-shell-\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="494"
->   C_API_FEATURE_IMPORTANCE_SPLIT.                                                               </tspan>
+>  executable.                                                                                    </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="516"
->- sqlmath - Update function win_sinefit() to rename outputs from/to xx0/xxa, xx1/xxb, yy0/yya, y\</tspan>
+>- ml - Update sql-function LGBM_TRAINFROMTABLE() to use C_API_FEATURE_IMPORTANCE_GAIN instead of\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="538"
->  y1/yyb, rr0/rra, rr1/rrb.                                                                      </tspan>
+>   C_API_FEATURE_IMPORTANCE_SPLIT.                                                               </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="560"
->- sqlmath - Update sql-function SINEFIT_REFITLAST() to create copy of wsf-blob, so original argu\</tspan>
+>- sqlmath - Update function win_sinefit() to rename outputs from/to xx0/xxa, xx1/xxb, yy0/yya, y\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="582"
->  ment is not mutated.                                                                           </tspan>
+>  y1/yyb, rr0/rra, rr1/rrb.                                                                      </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="604"
->- sqlmath - Update function win_sinefit() to allow outputting prm grr, mrr, vrr.                 </tspan>
+>- sqlmath - Update sql-function SINEFIT_REFITLAST() to create copy of wsf-blob, so original argu\</tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="626"
->                                                                                                 </tspan>
+>  ment is not mutated.                                                                           </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="648"
-># v2025.8.30                                                                                     </tspan>
+>- sqlmath - Update function win_sinefit() to allow outputting prm grr, mrr, vrr.                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="670"
->- sqlite - Upgrade to sqlite-v3.50.4.                                                            </tspan>
+>                                                                                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="692"
->- python - Add support for PEP 703 – Making the Global Interpreter Lock Optional in CPython.     </tspan>
+># v2025.8.30                                                                                     </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="714"
->                                                                                                 </tspan>
+>- sqlite - Upgrade to sqlite-v3.50.4.                                                            </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="736"
-># v2025.6.28                                                                                     </tspan>
+>- python - Add support for PEP 703 – Making the Global Interpreter Lock Optional in CPython.     </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="758"
->- sqlite - Upgrade to sqlite-v3.50.2.                                                            </tspan>
+>                                                                                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="780"
->- sqlmath - Update function dbExecAsync() with extra param modeNoop, used in mock-code-coverage. </tspan>
+># v2025.6.28                                                                                     </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="802"
->                                                                                                 </tspan>
+>- sqlite - Upgrade to sqlite-v3.50.2.                                                            </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="824"
-># v2025.5.31                                                                                     </tspan>
+>- sqlmath - Update function dbExecAsync() with extra param modeNoop, used in mock-code-coverage. </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="846"
->- sqlite - Upgrade to sqlite-v3.49.2.                                                            </tspan>
+>                                                                                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="868"
->- betadog - Add table a_lgbm_intra, and prm a_state.zcis_spx.                                    </tspan>
+># v2025.5.31                                                                                     </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="890"
->- lgbm - Upgrade to lightgbm-v4.6.0.                                                             </tspan>
+>- sqlite - Upgrade to sqlite-v3.49.2.                                                            </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="912"
->- jslint - Upgrade to jslint-v2025.3.31.                                                         </tspan>
+>- betadog - Add table a_lgbm_intra, and prm a_state.zcis_spx.                                    </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="934"
->                                                                                                 </tspan>
+>- lgbm - Upgrade to lightgbm-v4.6.0.                                                             </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="956"
-># v2025.3.31                                                                                     </tspan>
+>- jslint - Upgrade to jslint-v2025.3.31.                                                         </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="978"
->- ubuntu-ci - bugfix - Fix out-of-date apt-list when installing graphicsmagick.                  </tspan>
+>                                                                                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1000"
->- sqlite - Upgrade to sqlite-v3.49.1.                                                            </tspan>
+># v2025.3.31                                                                                     </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1022"
->- Cleanup sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS().                                      </tspan>
+>- ubuntu-ci - bugfix - Fix out-of-date apt-list when installing graphicsmagick.                  </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1044"
->                                                                                                 </tspan>
+>- sqlite - Upgrade to sqlite-v3.49.1.                                                            </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1066"
-># v2025.2.28                                                                                     </tspan>
+>- Cleanup sql-functions ZLIB_COMPRESS(), ZLIB_UNCOMPRESS().                                      </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1088"
->- sqlmath - Update sql-function SHA256() to use tinycrypt.                                       </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1110"
->- jslint - Update shell-function shDirHttplinkValidate() with pragma &lt;\!!--novalidate--\&gt;.       </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1132"
->- ci - Upgrade cpplint.py used in ci to v2.0.0.                                                  </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1154"
->- sqlite - Rename custom-sql-function MEDIAN() to MEDIAN2().                                     </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1176"
->- sqlite - Enable builtin-sql-functions MEDIAN(), PERCENTILE(), PERCENTILE_CONT(), PERCENTILE_DI\</tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1198"
->  SC().                                                                                          </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1220"
->- sqlite - Upgrade to sqlite-v3.47.2.                                                            </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1242"
->- ci - Upgrade nodejs used in ci to v22.                                                         </tspan>
-<tspan
-    lengthAdjust="spacingAndGlyphs"
-    textLength="768"
-    x="10"
-    y="1264"
 >                                                                                                 </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
+    y="1110"
+># v2025.2.28                                                                                     </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1132"
+>- sqlmath - Update sql-function SHA256() to use tinycrypt.                                       </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1154"
+>- jslint - Update shell-function shDirHttplinkValidate() with pragma &lt;\!!--novalidate--\&gt;.       </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1176"
+>- ci - Upgrade cpplint.py used in ci to v2.0.0.                                                  </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1198"
+>- sqlite - Rename custom-sql-function MEDIAN() to MEDIAN2().                                     </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1220"
+>- sqlite - Enable builtin-sql-functions MEDIAN(), PERCENTILE(), PERCENTILE_CONT(), PERCENTILE_DI\</tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1242"
+>  SC().                                                                                          </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1264"
+>- sqlite - Upgrade to sqlite-v3.47.2.                                                            </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
     y="1286"
-># v2025.1.31                                                                                     </tspan>
+>- ci - Upgrade nodejs used in ci to v22.                                                         </tspan>
 <tspan
     lengthAdjust="spacingAndGlyphs"
     textLength="768"
     x="10"
     y="1308"
->- webdemo - Update coloring to highlight tqq/sqq stocks.                                         </tspan>
+>                                                                                                 </tspan>
+<tspan
+    lengthAdjust="spacingAndGlyphs"
+    textLength="768"
+    x="10"
+    y="1330"
+># v2025.1.31                                                                                     </tspan>
 
 </text>
 </svg>
