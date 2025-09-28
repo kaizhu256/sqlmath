@@ -731,7 +731,9 @@ async function dbExecAsync({
         DB_EXEC_PROFILE_MODE = true;
         return;
     }
-    timeElapsed = Date.now();
+    if (DB_EXEC_PROFILE_MODE) {
+        timeElapsed = Date.now();
+    }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
             baton = jsbatonSetValue(baton, undefined, `:${key}\u0000`);
@@ -825,13 +827,29 @@ async function dbExecAsync({
 }
 
 function dbExecProfileResult({
+    consoleError,
     limit = 20,
-    lineWidth = 80
+    lineWidth = 80,
+    modeOnExit
 }) {
 
 // This function will exec <sql> in <db> and return <result>.
 
     let result;
+    if (modeOnExit && !DB_EXEC_PROFILE_MODE) {
+        dbExecAsync({
+            modeProfile: true
+        });
+        process.on("exit", function () {
+            noop(consoleError || console.error)(
+                dbExecProfileResult({
+                    limit,
+                    lineWidth
+                })
+            );
+        });
+        return;
+    }
     result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
         return ((bb[0] - aa[0]) || (bb[1] - aa[1]));

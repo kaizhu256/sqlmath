@@ -72,14 +72,9 @@ let {
     npm_config_mode_test_save
 } = process.env;
 
-(function () {
-    dbExecAsync({
-        modeProfile: true
-    });
-    process.on("exit", function () {
-        console.error(dbExecProfileResult({}));
-    });
-}());
+dbExecProfileResult({
+    modeOnExit: true
+});
 
 jstestDescribe((
     "test_apidoc"

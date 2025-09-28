@@ -181,8 +181,10 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult">14.
 function dbExecProfileResult<span class="apidocSignatureSpan">({
+    consoleError,
     limit = 20,
-    lineWidth = 80
+    lineWidth = 80,
+    modeOnExit
 })</span>
 </a>
 
@@ -1279,20 +1281,38 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     <h2>
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult">14.
     function dbExecProfileResult<span class="apidocSignatureSpan">({
+    consoleError,
     limit = 20,
-    lineWidth = 80
+    lineWidth = 80,
+    modeOnExit
 })</span>
     </a>
     </h2>
 </li>
 <li>Description and source-code:<pre class="apidocCodePre">function dbExecProfileResult({
+    consoleError,
     limit = 20,
-    lineWidth = 80
+    lineWidth = 80,
+    modeOnExit
 }) {
 <span class="apidocCodeCommentSpan">
 // This function will exec &lt;sql&gt; in &lt;db&gt; and return &lt;result&gt;.
 
 </span>    let result;
+    if (modeOnExit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
+        dbExecAsync({
+            modeProfile: true
+        });
+        process.on("exit", function () {
+            noop(consoleError || console.error)(
+                dbExecProfileResult({
+                    limit,
+                    lineWidth
+                })
+            );
+        });
+        return;
+    }
     result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
         return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
@@ -1315,16 +1335,16 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     return result;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+jstestDescribe,
+jstestIt
+} = jslint;
+let {
+npm_config_mode_test_save
 } = process.env;
 
-(function () {
-dbExecAsync({
-    modeProfile: true
+<span class="apidocCodeKeywordSpan">dbExecProfileResult</span>({
+modeOnExit: true
 });
-process.on("exit", function () {
-    console.error(<span class="apidocCodeKeywordSpan">dbExecProfileResult</span>({}));
-});
-}());
 
 jstestDescribe((
 "test_apidoc"
