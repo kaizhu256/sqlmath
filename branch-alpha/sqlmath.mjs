@@ -841,12 +841,16 @@ function dbExecProfileResult({
     ], ii) {
         return String(
             `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
-            + ` ${timeElapsed.toFixed(0).padStart(4)}ms`
-            + ` - ${count.toFixed(0).padStart(3)}`
-            + " - " + JSON.stringify(sql)
+            + ` ${timeElapsed.toFixed(0).padStart(5)}`
+            + ` ${count.toFixed(0).padStart(3)}`
+            + " " + JSON.stringify(sql)
         ).slice(0, lineWidth);
     }).join("\n");
-    result = `\ndbExecProfileResult:\n${result}\n`;
+    result = (
+        `\ndbExecProfileResult:\n`
+        + ` #   time cnt sql\n`
+        + `${result}\n`
+    );
     return result;
 }
 
