@@ -1001,7 +1001,11 @@ jstestIt((
     await Promise.all(db.connPool.map(async function (ptr) {
         let val = ptr[0];
         ptr[0] = 0n;
-        await dbCallAsync(jsbatonCreate("_dbClose"), [val, db.filename]);
+        await dbCallAsync(
+            "_dbClose",
+            jsbatonCreate("_dbClose"),
+            [val, db.filename]
+        );
     }));
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1215,6 +1219,7 @@ assertJsonEqual(valActual, valExpect, {
     [
         baton, ...result
     ] = await dbCallAsync(
+        "_dbExec",
         baton,
         [
             // 0. db
@@ -1251,7 +1256,7 @@ assertJsonEqual(valActual, valExpect, {
         );
     }
     switch (responseType) {
-    case "arraybuffer"...
+   ...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1369,6 +1374,7 @@ jstestIt((
 </span>    let filename2;
     async function _dbFileLoad() {
         dbData = await dbCallAsync(
+            "_dbFileLoad",
             jsbatonCreate("_dbFileLoad"),
             [
                 // 0. sqlite3 * pInMemory
@@ -1490,7 +1496,11 @@ assertJsonEqual(
 <span class="apidocCodeCommentSpan">
 // This function will do nothing except return &lt;argList&gt;.
 
-</span>    return await dbCallAsync(jsbatonCreate("_dbNoop"), argList);
+</span>    return await dbCallAsync(
+        "_dbNoop",
+        jsbatonCreate("_dbNoop"),
+        argList
+    );
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
     // 8. undefined
@@ -1551,6 +1561,7 @@ assertJsonEqual(
         threadCount
     ), async function () {
         let [ptr] = await dbCallAsync(
+            "_dbOpen",
             jsbatonCreate("_dbOpen"),
             [
                 // 0. const char *filename,   Database filename (UTF-8)
@@ -1578,7 +1589,7 @@ assertJsonEqual(
         fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
         fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
         fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        fileLgbm = `${import.meta...
+        fi...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -2090,7 +2101,11 @@ async function sqlmathInit() {
             });
         };
         // test dbCallAsync handling-behavior
-        dbCallAsync(jsbatonCreate("testTimeElapsed"), [true]);
+        dbCallAsync(
+            "testTimeElapsed",
+            jsbatonCreate("testTimeElapsed"),
+            [true]
+        );
         // test dbFileLoadAsync handling-behavior
         dbFileLoadAsync({db, filename: "aa", modeTest});
         // test jsonParseArraybuffer handling-behavior
