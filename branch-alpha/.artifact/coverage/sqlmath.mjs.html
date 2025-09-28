@@ -654,8 +654,8 @@ body {
 <pre><span class="lineno"><a href="#line_496" id="line_496">  496.</a></span><span class="count        ">   3979</span><span>    let errStack;</span></pre>
 <pre><span class="lineno"><a href="#line_497" id="line_497">  497.</a></span><span class="count        ">   3979</span><span>    let funcname;</span></pre>
 <pre><span class="lineno"><a href="#line_498" id="line_498">  498.</a></span><span class="count        ">   3979</span><span>    let id;</span></pre>
-<pre><span class="lineno"><a href="#line_499" id="line_499">  499.</a></span><span class="count        ">   3979</span><span>    let profileBegin;</span></pre>
-<pre><span class="lineno"><a href="#line_500" id="line_500">  500.</a></span><span class="count        ">   3979</span><span>    let profileObj;</span></pre>
+<pre><span class="lineno"><a href="#line_499" id="line_499">  499.</a></span><span class="count        ">   3979</span><span>    let profileObj;</span></pre>
+<pre><span class="lineno"><a href="#line_500" id="line_500">  500.</a></span><span class="count        ">   3979</span><span>    let profileStart;</span></pre>
 <pre><span class="lineno"><a href="#line_501" id="line_501">  501.</a></span><span class="count        ">   3979</span><span>    let result;</span></pre>
 <pre><span class="lineno"><a href="#line_502" id="line_502">  502.</a></span><span class="count        ">   3979</span><span>    let sql;</span></pre>
 <pre><span class="lineno"><a href="#line_503" id="line_503">  503.</a></span><span class="count        ">   3979</span><span>    let timeElapsed;</span></pre>
@@ -673,7 +673,7 @@ body {
 <pre><span class="lineno"><a href="#line_515" id="line_515">  515.</a></span><span class="count        ">   1931</span><span>        db.busy += 1;</span></pre>
 <pre><span class="lineno"><a href="#line_516" id="line_516">  516.</a></span><span class="count        ">   1931</span><span>        //</span></pre>
 <pre><span class="lineno"><a href="#line_517" id="line_517">  517.</a></span><span class="count        ">   1931</span><span>        if (DB_EXEC_PROFILE_MODE &amp;&amp; mode === "modeDbExec") {</span></pre>
-<pre><span class="lineno"><a href="#line_518" id="line_518">  518.</a></span><span class="count        ">   1931</span><span>            profileBegin = Date.now();</span></pre>
+<pre><span class="lineno"><a href="#line_518" id="line_518">  518.</a></span><span class="count        ">   1931</span><span>            profileStart = Date.now();</span></pre>
 <pre><span class="lineno"><a href="#line_519" id="line_519">  519.</a></span><span class="count        ">   1931</span><span>            sql = String(argList[1]).trim().slice(0, 4096);</span></pre>
 <pre><span class="lineno"><a href="#line_520" id="line_520">  520.</a></span><span class="count        ">   1931</span><span>            DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || {</span></pre>
 <pre><span class="lineno"><a href="#line_521" id="line_521">  521.</a></span><span class="count        ">   1931</span><span>                busy: 0,</span></pre>
@@ -700,7 +700,7 @@ body {
 <pre><span class="lineno"><a href="#line_542" id="line_542">  542.</a></span><span class="count        ">   1931</span><span>                    `dbCallAsync - invalid profileObj.busy = ${profileObj.busy}`</span></pre>
 <pre><span class="lineno"><a href="#line_543" id="line_543">  543.</a></span><span class="count        ">   1931</span><span>                );</span></pre>
 <pre><span class="lineno"><a href="#line_544" id="line_544">  544.</a></span><span class="count        ">   1931</span><span>                if (profileObj.busy === 0) {</span></pre>
-<pre><span class="lineno"><a href="#line_545" id="line_545">  545.</a></span><span class="count        ">   1931</span><span>                    profileObj.timeElapsed += Date.now() - profileBegin;</span></pre>
+<pre><span class="lineno"><a href="#line_545" id="line_545">  545.</a></span><span class="count        ">   1931</span><span>                    profileObj.timeElapsed += Date.now() - profileStart;</span></pre>
 <pre><span class="lineno"><a href="#line_546" id="line_546">  546.</a></span><span class="count        ">   1931</span><span>                }</span></pre>
 <pre><span class="lineno"><a href="#line_547" id="line_547">  547.</a></span><span class="count        ">   1931</span><span>            }</span></pre>
 <pre><span class="lineno"><a href="#line_548" id="line_548">  548.</a></span><span class="count        ">   1931</span><span>            // decrement db.busy</span></pre>
@@ -1017,9 +1017,9 @@ body {
 <pre><span class="lineno"><a href="#line_859" id="line_859">  859.</a></span><span class="count        ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_860" id="line_860">  860.</a></span><span class="count        ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_861" id="line_861">  861.</a></span><span class="count        ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_862" id="line_862">  862.</a></span><span class="count        ">   1330</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_863" id="line_863">  863.</a></span><span class="count        ">    436</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
-<pre><span class="lineno"><a href="#line_864" id="line_864">  864.</a></span><span class="count        ">   1330</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_862" id="line_862">  862.</a></span><span class="count        ">   1345</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_863" id="line_863">  863.</a></span><span class="count        ">    449</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
+<pre><span class="lineno"><a href="#line_864" id="line_864">  864.</a></span><span class="count        ">   1345</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_865" id="line_865">  865.</a></span><span class="count        ">     20</span><span>    result = result.slice(0, limit).map(function ({</span></pre>
 <pre><span class="lineno"><a href="#line_866" id="line_866">  866.</a></span><span class="count        ">     20</span><span>        count,</span></pre>
 <pre><span class="lineno"><a href="#line_867" id="line_867">  867.</a></span><span class="count        ">     20</span><span>        sql,</span></pre>
