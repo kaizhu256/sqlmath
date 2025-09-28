@@ -45,7 +45,7 @@ import {
     dbExecAndReturnLastTable,
     dbExecAndReturnLastValue,
     dbExecAsync,
-    dbExecProfileResult,
+    dbExecProfile,
     dbFileLoadAsync,
     dbFileSaveAsync,
     dbNoopAsync,
@@ -72,7 +72,7 @@ let {
     npm_config_mode_test_save
 } = process.env;
 
-dbExecProfileResult({
+dbExecProfile({
     modeOnExit: true
 });
 

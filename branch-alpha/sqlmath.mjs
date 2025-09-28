@@ -711,7 +711,6 @@ async function dbExecAsync({
     bindList = [],
     db,
     modeNoop,
-    modeProfile,
     responseType,
     sql
 }) {
@@ -725,10 +724,6 @@ async function dbExecAsync({
     let result;
     let timeElapsed;
     if (modeNoop) {
-        return;
-    }
-    if (modeProfile) {
-        DB_EXEC_PROFILE_MODE = true;
         return;
     }
     if (DB_EXEC_PROFILE_MODE) {
@@ -794,7 +789,6 @@ async function dbExecAsync({
             )
         );
     }
-    // responseType
     switch (responseType) {
     case "arraybuffer":
     case "lastblob":
@@ -815,7 +809,6 @@ async function dbExecAsync({
             });
         });
     }
-    // DB_EXEC_PROFILE_MODE
     if (DB_EXEC_PROFILE_MODE) {
         timeElapsed = Date.now() - timeElapsed;
         sql = String(sql).trim().slice(0, 4096);
@@ -826,8 +819,7 @@ async function dbExecAsync({
     return result;
 }
 
-function dbExecProfileResult({
-    consoleError,
+function dbExecProfile({
     limit = 20,
     lineWidth = 80,
     modeOnExit
@@ -837,16 +829,12 @@ function dbExecProfileResult({
 
     let result;
     if (modeOnExit && !DB_EXEC_PROFILE_MODE) {
-        dbExecAsync({
-            modeProfile: true
-        });
+        DB_EXEC_PROFILE_MODE = true;
         process.on("exit", function () {
-            noop(consoleError || console.error)(
-                dbExecProfileResult({
-                    limit,
-                    lineWidth
-                })
-            );
+            console.error(dbExecProfile({
+                limit,
+                lineWidth
+            }));
         });
         return;
     }
@@ -865,7 +853,7 @@ function dbExecProfileResult({
         ).slice(0, lineWidth);
     }).join("\n");
     result = (
-        `\ndbExecProfileResult:\n`
+        `\ndbExecProfile:\n`
         + ` #  time cnt sql\n`
         + `${result}\n`
     );
@@ -1894,7 +1882,7 @@ export {
     dbExecAndReturnLastTable,
     dbExecAndReturnLastValue,
     dbExecAsync,
-    dbExecProfileResult,
+    dbExecProfile,
     dbFileLoadAsync,
     dbFileSaveAsync,
     dbNoopAsync,

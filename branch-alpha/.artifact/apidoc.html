@@ -170,7 +170,6 @@ function dbExecAsync<span class="apidocSignatureSpan">({
     bindList = [],
     db,
     modeNoop,
-    modeProfile,
     responseType,
     sql
 })</span>
@@ -179,9 +178,8 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult">14.
-function dbExecProfileResult<span class="apidocSignatureSpan">({
-    consoleError,
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
+function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
     modeOnExit
@@ -1168,7 +1166,6 @@ assertJsonEqual(valActual, valExpect, {
     bindList = [],
     db,
     modeNoop,
-    modeProfile,
     responseType,
     sql
 })</span>
@@ -1179,7 +1176,6 @@ assertJsonEqual(valActual, valExpect, {
     bindList = [],
     db,
     modeNoop,
-    modeProfile,
     responseType,
     sql
 }) {
@@ -1193,10 +1189,6 @@ assertJsonEqual(valActual, valExpect, {
     let result;
     let timeElapsed;
     if (modeNoop) {
-        return;
-    }
-    if (modeProfile) {
-        DB_EXEC_PROFILE_MODE = true;
         return;
     }
     if (DB_EXEC_PROFILE_MODE) {
@@ -1256,7 +1248,9 @@ assertJsonEqual(valActual, valExpect, {
     if (!IS_BROWSER) {
         result = cModule._jsbatonStealCbuffer(
             baton.buffer,
-            0,...
+            0,
+            Number(
+                responseType !== "arraybuffer" &amp;&amp; responseType !== "la...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1279,9 +1273,8 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfileResult">14.
-    function dbExecProfileResult<span class="apidocSignatureSpan">({
-    consoleError,
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
+    function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
     modeOnExit
@@ -1289,8 +1282,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     </a>
     </h2>
 </li>
-<li>Description and source-code:<pre class="apidocCodePre">function dbExecProfileResult({
-    consoleError,
+<li>Description and source-code:<pre class="apidocCodePre">function dbExecProfile({
     limit = 20,
     lineWidth = 80,
     modeOnExit
@@ -1300,16 +1292,12 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 
 </span>    let result;
     if (modeOnExit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
-        dbExecAsync({
-            modeProfile: true
-        });
+        DB_EXEC_PROFILE_MODE = true;
         process.on("exit", function () {
-            noop(consoleError || console.error)(
-                dbExecProfileResult({
-                    limit,
-                    lineWidth
-                })
-            );
+            console.error(dbExecProfile({
+                limit,
+                lineWidth
+            }));
         });
         return;
     }
@@ -1328,7 +1316,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
         ).slice(0, lineWidth);
     }).join("\n");
     result = (
-        `\ndbExecProfileResult:\n`
+        `\ndbExecProfile:\n`
         + ` #  time cnt sql\n`
         + `${result}\n`
     );
@@ -1342,7 +1330,7 @@ let {
 npm_config_mode_test_save
 } = process.env;
 
-<span class="apidocCodeKeywordSpan">dbExecProfileResult</span>({
+<span class="apidocCodeKeywordSpan">dbExecProfile</span>({
 modeOnExit: true
 });
 
