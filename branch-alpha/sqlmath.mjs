@@ -85,6 +85,8 @@ const SQLITE_OPEN_URI = 0x00000040;             /* Ok for sqlite3_open_v2() */
 const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let IS_BROWSER;
+let PROFILE_DBEXEC_DICT = {};
+let PROFILE_DBEXEC_MODE;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
 let cModule;
@@ -709,6 +711,7 @@ async function dbExecAsync({
     bindList = [],
     db,
     modeNoop,
+    modeProfile,
     responseType,
     sql
 }) {
@@ -720,9 +723,15 @@ async function dbExecAsync({
     let bufi = [0];
     let referenceList = [];
     let result;
+    let timeElapsed;
     if (modeNoop) {
         return;
     }
+    if (modeProfile) {
+        PROFILE_DBEXEC_MODE = true;
+        return;
+    }
+    timeElapsed = Date.now();
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
             baton = jsbatonSetValue(baton, undefined, `:${key}\u0000`);
@@ -783,15 +792,17 @@ async function dbExecAsync({
             )
         );
     }
+    // responseType
     switch (responseType) {
     case "arraybuffer":
     case "lastblob":
-        return result;
+        break;
     case "lastvalue":
     case "list":
-        return jsonParseArraybuffer(result);
+        result = jsonParseArraybuffer(result);
+        break;
     default:
-        return jsonParseArraybuffer(result).map(function (table) {
+        result = jsonParseArraybuffer(result).map(function (table) {
             let colList = table.shift();
             return table.map(function (row) {
                 let dict = {};
@@ -802,6 +813,41 @@ async function dbExecAsync({
             });
         });
     }
+    // PROFILE_DBEXEC_MODE
+    if (PROFILE_DBEXEC_MODE) {
+        timeElapsed = Date.now() - timeElapsed;
+        sql = String(sql).trim().slice(0, 4096);
+        PROFILE_DBEXEC_DICT[sql] = PROFILE_DBEXEC_DICT[sql] || [0, 0, sql];
+        PROFILE_DBEXEC_DICT[sql][0] += timeElapsed;
+        PROFILE_DBEXEC_DICT[sql][1] += 1;
+    }
+    return result;
+}
+
+function dbExecProfileResult({
+    limit = 20,
+    lineWidth = 80
+}) {
+
+// This function will exec <sql> in <db> and return <result>.
+
+    let result;
+    result = Object.values(PROFILE_DBEXEC_DICT);
+    result.sort(function (aa, bb) {
+        return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
+    });
+    result = result.slice(0, limit).map(function ([
+        timeElapsed, count, sql
+    ], ii) {
+        return String(
+            `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
+            + ` ${timeElapsed.toFixed(0).padStart(4)}ms`
+            + ` - ${count.toFixed(0).padStart(3)}`
+            + " - " + JSON.stringify(sql)
+        ).slice(0, lineWidth);
+    }).join("\n");
+    result = `\ndbExecProfileResult:\n${result}\n`;
+    return result;
 }
 
 async function dbFileLoadAsync({
@@ -1789,6 +1835,7 @@ export {
     LGBM_PREDICT_LEAF_INDEX,
     LGBM_PREDICT_NORMAL,
     LGBM_PREDICT_RAW_SCORE,
+    PROFILE_DBEXEC_DICT,
     SQLITE_OPEN_AUTOPROXY,
     SQLITE_OPEN_CREATE,
     SQLITE_OPEN_DELETEONCLOSE,
@@ -1825,6 +1872,7 @@ export {
     dbExecAndReturnLastTable,
     dbExecAndReturnLastValue,
     dbExecAsync,
+    dbExecProfileResult,
     dbFileLoadAsync,
     dbFileSaveAsync,
     dbNoopAsync,

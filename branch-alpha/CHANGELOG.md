@@ -6,6 +6,7 @@
 - none
 
 # v2025.9.1-beta
+- profile - Update function dbExecAsync() with instrumentation to rank sql-queries by total-await-time.
 - sqlmath - Update function dbCallAsync() to include db.filename in error-message.
 - sqlmath - Replace miniz-library with native-zib-library.
 - sqlmath - ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib, so link with external-zlib.

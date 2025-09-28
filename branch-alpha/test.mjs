@@ -45,6 +45,7 @@ import {
     dbExecAndReturnLastTable,
     dbExecAndReturnLastValue,
     dbExecAsync,
+    dbExecProfileResult,
     dbFileLoadAsync,
     dbFileSaveAsync,
     dbNoopAsync,
@@ -70,7 +71,14 @@ let {
 let {
     npm_config_mode_test_save
 } = process.env;
-noop(debugInline);
+
+(function () {
+    noop(debugInline);
+    dbExecAsync({modeProfile: true});
+    process.on("exit", function () {
+        console.error(dbExecProfileResult({}));
+    });
+}());
 
 jstestDescribe((
     "test_apidoc"
