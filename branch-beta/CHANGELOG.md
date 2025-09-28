@@ -6,6 +6,8 @@
 - none
 
 # v2025.9.1-beta
+- coverage - Add coverage-directives '/*coverage-disable*/', '/*coverage-enable*/'. '//coverage-ignore-line'.
+- sqlmath - Add function dbExecProfile() to profile sql-queries.
 - sqlmath - Update function dbCallAsync() to include db.filename in error-message.
 - sqlmath - Replace miniz-library with native-zib-library.
 - sqlmath - ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib, so link with external-zlib.
