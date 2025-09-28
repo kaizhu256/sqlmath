@@ -983,7 +983,7 @@ body {
 <pre><span class="lineno"><a href="#line_825" id="line_825">  825.</a></span><span class="count        ">      2</span><span>    modeInit</span></pre>
 <pre><span class="lineno"><a href="#line_826" id="line_826">  826.</a></span><span class="count        ">      2</span><span>}) {</span></pre>
 <pre><span class="lineno"><a href="#line_827" id="line_827">  827.</a></span><span class="count        ">      2</span><span></span></pre>
-<pre><span class="lineno"><a href="#line_828" id="line_828">  828.</a></span><span class="count        ">      2</span><span>// This function will exec &lt;sql&gt; in &lt;db&gt; and return &lt;result&gt;.</span></pre>
+<pre><span class="lineno"><a href="#line_828" id="line_828">  828.</a></span><span class="count        ">      2</span><span>// This function will profile dbExecAsync.</span></pre>
 <pre><span class="lineno"><a href="#line_829" id="line_829">  829.</a></span><span class="count        ">      2</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_830" id="line_830">  830.</a></span><span class="count        ">      2</span><span>    let result;</span></pre>
 <pre><span class="lineno"><a href="#line_831" id="line_831">  831.</a></span><span class="count        ">      1</span><span>    if (modeInit &amp;&amp; !DB_EXEC_PROFILE_MODE) {</span></pre>
@@ -997,9 +997,9 @@ body {
 <pre><span class="lineno"><a href="#line_839" id="line_839">  839.</a></span><span class="count        ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_840" id="line_840">  840.</a></span><span class="count        ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_841" id="line_841">  841.</a></span><span class="count        ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_842" id="line_842">  842.</a></span><span class="count        ">   1150</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_843" id="line_843">  843.</a></span><span class="count        ">    301</span><span>        return ((bb[0] - aa[0]) || (bb[1] - aa[1]));</span></pre>
-<pre><span class="lineno"><a href="#line_844" id="line_844">  844.</a></span><span class="count        ">   1150</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_842" id="line_842">  842.</a></span><span class="count        ">   1214</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_843" id="line_843">  843.</a></span><span class="count        ">    279</span><span>        return ((bb[0] - aa[0]) || (bb[1] - aa[1]));</span></pre>
+<pre><span class="lineno"><a href="#line_844" id="line_844">  844.</a></span><span class="count        ">   1214</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_845" id="line_845">  845.</a></span><span class="count        ">     20</span><span>    result = result.slice(0, limit).map(function ([</span></pre>
 <pre><span class="lineno"><a href="#line_846" id="line_846">  846.</a></span><span class="count        ">     20</span><span>        timeElapsed, count, sql</span></pre>
 <pre><span class="lineno"><a href="#line_847" id="line_847">  847.</a></span><span class="count        ">     20</span><span>    ], ii) {</span></pre>

@@ -825,7 +825,7 @@ function dbExecProfile({
     modeInit
 }) {
 
-// This function will exec <sql> in <db> and return <result>.
+// This function will profile dbExecAsync.
 
     let result;
     if (modeInit && !DB_EXEC_PROFILE_MODE) {
