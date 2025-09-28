@@ -84,9 +84,9 @@ const SQLITE_OPEN_TRANSIENT_DB = 0x00000400;    /* VFS only */
 const SQLITE_OPEN_URI = 0x00000040;             /* Ok for sqlite3_open_v2() */
 const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
+let DB_EXEC_PROFILE_DICT = {};
+let DB_EXEC_PROFILE_MODE;
 let IS_BROWSER;
-let PROFILE_DBEXEC_DICT = {};
-let PROFILE_DBEXEC_MODE;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
 let cModule;
@@ -728,7 +728,7 @@ async function dbExecAsync({
         return;
     }
     if (modeProfile) {
-        PROFILE_DBEXEC_MODE = true;
+        DB_EXEC_PROFILE_MODE = true;
         return;
     }
     timeElapsed = Date.now();
@@ -813,13 +813,13 @@ async function dbExecAsync({
             });
         });
     }
-    // PROFILE_DBEXEC_MODE
-    if (PROFILE_DBEXEC_MODE) {
+    // DB_EXEC_PROFILE_MODE
+    if (DB_EXEC_PROFILE_MODE) {
         timeElapsed = Date.now() - timeElapsed;
         sql = String(sql).trim().slice(0, 4096);
-        PROFILE_DBEXEC_DICT[sql] = PROFILE_DBEXEC_DICT[sql] || [0, 0, sql];
-        PROFILE_DBEXEC_DICT[sql][0] += timeElapsed;
-        PROFILE_DBEXEC_DICT[sql][1] += 1;
+        DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || [0, 0, sql];
+        DB_EXEC_PROFILE_DICT[sql][0] += timeElapsed;
+        DB_EXEC_PROFILE_DICT[sql][1] += 1;
     }
     return result;
 }
@@ -832,7 +832,7 @@ function dbExecProfileResult({
 // This function will exec <sql> in <db> and return <result>.
 
     let result;
-    result = Object.values(PROFILE_DBEXEC_DICT);
+    result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
         return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
     });
@@ -841,14 +841,14 @@ function dbExecProfileResult({
     ], ii) {
         return String(
             `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
-            + ` ${timeElapsed.toFixed(0).padStart(5)}`
+            + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
         ).slice(0, lineWidth);
     }).join("\n");
     result = (
         `\ndbExecProfileResult:\n`
-        + ` #   time cnt sql\n`
+        + ` #  time cnt sql\n`
         + `${result}\n`
     );
     return result;
@@ -1827,6 +1827,7 @@ await sqlmathInit();
 sqlmathInit(); // coverage-hack
 
 export {
+    DB_EXEC_PROFILE_DICT,
     LGBM_DTYPE_FLOAT32,
     LGBM_DTYPE_FLOAT64,
     LGBM_DTYPE_INT32,
@@ -1839,7 +1840,6 @@ export {
     LGBM_PREDICT_LEAF_INDEX,
     LGBM_PREDICT_NORMAL,
     LGBM_PREDICT_RAW_SCORE,
-    PROFILE_DBEXEC_DICT,
     SQLITE_OPEN_AUTOPROXY,
     SQLITE_OPEN_CREATE,
     SQLITE_OPEN_DELETEONCLOSE,

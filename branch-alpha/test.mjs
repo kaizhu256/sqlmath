@@ -73,8 +73,9 @@ let {
 } = process.env;
 
 (function () {
-    noop(debugInline);
-    dbExecAsync({modeProfile: true});
+    dbExecAsync({
+        modeProfile: true
+    });
     process.on("exit", function () {
         console.error(dbExecProfileResult({}));
     });
@@ -4200,3 +4201,7 @@ jstestDescribe((
         });
     });
 });
+
+export {
+    debugInline
+};

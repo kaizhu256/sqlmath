@@ -566,8 +566,8 @@ number SQLITE_OPEN_WAL
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT">65.
-object PROFILE_DBEXEC_DICT
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.DB_EXEC_PROFILE_DICT">65.
+object DB_EXEC_PROFILE_DICT
 </a>
 
 </li>
@@ -1194,7 +1194,7 @@ assertJsonEqual(valActual, valExpect, {
         return;
     }
     if (modeProfile) {
-        PROFILE_DBEXEC_MODE = true;
+        DB_EXEC_PROFILE_MODE = true;
         return;
     }
     timeElapsed = Date.now();
@@ -1254,7 +1254,7 @@ assertJsonEqual(valActual, valExpect, {
             baton.buffer,
             0,
             Number(
-                respon...
+                respo...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1293,7 +1293,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 // This function will exec &lt;sql&gt; in &lt;db&gt; and return &lt;result&gt;.
 
 </span>    let result;
-    result = Object.values(PROFILE_DBEXEC_DICT);
+    result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
         return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
     });
@@ -1302,25 +1302,25 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     ], ii) {
         return String(
             `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
-            + ` ${timeElapsed.toFixed(0).padStart(5)}`
+            + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
         ).slice(0, lineWidth);
     }).join("\n");
     result = (
         `\ndbExecProfileResult:\n`
-        + ` #   time cnt sql\n`
+        + ` #  time cnt sql\n`
         + `${result}\n`
     );
     return result;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-npm_config_mode_test_save
 } = process.env;
 
 (function () {
-noop(debugInline);
-dbExecAsync({modeProfile: true});
+dbExecAsync({
+    modeProfile: true
+});
 process.on("exit", function () {
     console.error(<span class="apidocCodeKeywordSpan">dbExecProfileResult</span>({}));
 });
@@ -2102,6 +2102,8 @@ async function sqlmathInit() {
         });
     });
 });
+
+export {
 ...</pre></li>
 
 <li>
@@ -2403,8 +2405,8 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT">65.
-    object PROFILE_DBEXEC_DICT
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.DB_EXEC_PROFILE_DICT" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.DB_EXEC_PROFILE_DICT">65.
+    object DB_EXEC_PROFILE_DICT
     </a>
     </h2>
 </li>
