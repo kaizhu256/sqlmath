@@ -1185,15 +1185,15 @@ assertJsonEqual(valActual, valExpect, {
 </span>    let baton = jsbatonCreate("_dbExec");
     let bindByKey = !Array.isArray(bindList);
     let bufi = [0];
+    let profileBegin;
     let profileObj;
     let referenceList = [];
     let result;
-    let timeStart;
     if (modeNoop) {
         return;
     }
     if (DB_EXEC_PROFILE_MODE) {
-        timeStart = Date.now();
+        profileBegin = Date.now();
     }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
@@ -1243,7 +1243,7 @@ assertJsonEqual(valActual, valExpect, {
                 : 0
             )
         ],
-        "modeDb"
+        "modeDbExec"
     );
     result = result[0];
     if (!IS_BROWSER) {
@@ -1251,7 +1251,7 @@ assertJsonEqual(valActual, valExpect, {
             baton.buffer,
             0,
             Number(
-                responseType !== "arraybuffer" &amp;&amp; resp...
+                responseType !== "arraybuffer" &amp;...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
