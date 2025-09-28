@@ -3735,6 +3735,7 @@ import moduleHttps from "https";
         } else if (
             line_source.endsWith(" //jslint-ignore-line")
             || line_source.endsWith(" //jslint-quiet")
+            || line_source.endsWith(" //coverage-ignore-line")
         ) {
 
 // test_cause:
@@ -10885,9 +10886,12 @@ body {
     color: #666;
 }
 .coverage .coverageIgnore {
-    background: #ccc;
+    background: #bbb;
 }
 .coverage .coverageLow,
+.coverage .ignore {
+    background: #bbb;
+}
 .coverage .uncovered {
     background: #ebb;
 }
@@ -10910,6 +10914,10 @@ body {
 .coverage pre:hover span,
 .coverage tr:hover td {
     background: #7d7;
+}
+.coverage pre:hover span.ignore,
+.coverage tr:hover td.coverageIgnore {
+    background: #bbb;
 }
 .coverage pre:hover span.uncovered,
 .coverage tr:hover td.coverageLow {
@@ -11119,6 +11127,7 @@ body {
                 let inHole;
                 let lineHtml;
                 let lineId;
+                let lineIgnore = line.endsWith("//coverage-ignore-line");
                 lineHtml = "";
                 lineId = "line_" + (ii + 1);
                 switch (count) {
@@ -11159,7 +11168,11 @@ body {
 // true.
 
                             if (isHole) {
-                                lineHtml += " class=\"uncovered\"";
+                                lineHtml += (
+                                    lineIgnore
+                                    ? " class=\"ignore\""
+                                    : " class=\"uncovered\""
+                                );
                             }
                             lineHtml += ">";
                             chunk = "";
@@ -11179,7 +11192,9 @@ body {
 </span>
 <span class="count
                 ${(
-                    count <= 0
+                    (count <= 0 && lineIgnore)
+                    ? "ignore"
+                    : count <= 0
                     ? "uncovered"
                     : ""
                 )}"
@@ -11486,9 +11501,10 @@ function sentinel() {}
         });
         linesTotal = lineList.length;
         linesCovered = lineList.filter(function ({
-            count
+            count,
+            line
         }) {
-            return count > 0;
+            return count > 0 || line.endsWith("//coverage-ignore-line");
         }).length;
         await moduleFs.promises.mkdir((
             modulePath.dirname(coverageDir + pathname)
