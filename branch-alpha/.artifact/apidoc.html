@@ -1199,7 +1199,9 @@ assertJsonEqual(valActual, valExpect, {
         DB_EXEC_PROFILE_MODE = true;
         return;
     }
-    timeElapsed = Date.now();
+    if (DB_EXEC_PROFILE_MODE) {
+        timeElapsed = Date.now();
+    }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
             baton = jsbatonSetValue(baton, undefined, `:${key}\u0000`);
@@ -1254,9 +1256,7 @@ assertJsonEqual(valActual, valExpect, {
     if (!IS_BROWSER) {
         result = cModule._jsbatonStealCbuffer(
             baton.buffer,
-            0,
-            Number(
-                respo...
+            0,...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
