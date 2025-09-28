@@ -1185,15 +1185,10 @@ assertJsonEqual(valActual, valExpect, {
 </span>    let baton = jsbatonCreate("_dbExec");
     let bindByKey = !Array.isArray(bindList);
     let bufi = [0];
-    let profileBegin;
-    let profileObj;
     let referenceList = [];
     let result;
     if (modeNoop) {
         return;
-    }
-    if (DB_EXEC_PROFILE_MODE) {
-        profileBegin = Date.now();
     }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
@@ -1251,7 +1246,12 @@ assertJsonEqual(valActual, valExpect, {
             baton.buffer,
             0,
             Number(
-                responseType !== "arraybuffer" &amp;...
+                responseType !== "arraybuffer" &amp;&amp; responseType !== "lastblob"
+            )
+        );
+    }
+    switch (responseType) {
+    case "arraybuffer"...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1304,11 +1304,13 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     }
     result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
-        return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
+        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));
     });
-    result = result.slice(0, limit).map(function ([
-        timeElapsed, count, sql
-    ], ii) {
+    result = result.slice(0, limit).map(function ({
+        count,
+        sql,
+        timeElapsed
+    }, ii) {
         return String(
             `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
             + ` ${timeElapsed.toFixed(0).padStart(4)}`

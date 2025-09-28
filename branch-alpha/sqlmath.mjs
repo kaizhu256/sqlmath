@@ -496,7 +496,10 @@ async function dbCallAsync(baton, argList, mode, db) {
     let errStack;
     let funcname;
     let id;
+    let profileObj;
+    let profileStart;
     let result;
+    let sql;
     let timeElapsed;
     // If argList contains <db>, then mark it as busy.
     if (mode === "modeDb" || mode === "modeDbExec") {
@@ -510,6 +513,20 @@ async function dbCallAsync(baton, argList, mode, db) {
         db.ptr = db.connPool[db.ii][0];
         // increment db.busy
         db.busy += 1;
+        //
+        if (DB_EXEC_PROFILE_MODE && mode === "modeDbExec") {
+            profileStart = Date.now();
+            sql = String(argList[1]).trim().slice(0, 4096);
+            DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || {
+                busy: 0,
+                count: 0,
+                sql,
+                timeElapsed: 0
+            };
+            profileObj = DB_EXEC_PROFILE_DICT[sql];
+            profileObj.busy += 1;
+            profileObj.count += 1;
+        }
         try {
             return await dbCallAsync(
                 baton,
@@ -518,6 +535,16 @@ async function dbCallAsync(baton, argList, mode, db) {
                 db
             );
         } finally {
+            if (profileObj) {
+                profileObj.busy -= 1;
+                assertOrThrow(
+                    profileObj.busy >= 0,
+                    `dbCallAsync - invalid profileObj.busy = ${profileObj.busy}`
+                );
+                if (profileObj.busy === 0) {
+                    profileObj.timeElapsed += Date.now() - profileStart;
+                }
+            }
             // decrement db.busy
             db.busy -= 1;
             assertOrThrow(
@@ -724,15 +751,10 @@ async function dbExecAsync({
     let baton = jsbatonCreate("_dbExec");
     let bindByKey = !Array.isArray(bindList);
     let bufi = [0];
-    let profileBegin;
-    let profileObj;
     let referenceList = [];
     let result;
     if (modeNoop) {
         return;
-    }
-    if (DB_EXEC_PROFILE_MODE) {
-        profileBegin = Date.now();
     }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
@@ -814,16 +836,6 @@ async function dbExecAsync({
             });
         });
     }
-    if (DB_EXEC_PROFILE_MODE) {
-        sql = String(sql).trim().slice(0, 4096);
-        DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || [0, 0, sql];
-        profileObj = DB_EXEC_PROFILE_DICT[sql];
-        profileObj[0] = Math.min(
-            profileObj[0] + (Date.now() - profileBegin),
-            Date.now() - DB_EXEC_PROFILE_MODE
-        );
-        profileObj[1] += 1;
-    }
     return result;
 }
 
@@ -848,11 +860,13 @@ function dbExecProfile({
     }
     result = Object.values(DB_EXEC_PROFILE_DICT);
     result.sort(function (aa, bb) {
-        return ((bb[0] - aa[0]) || (bb[1] - aa[1]));
+        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));
     });
-    result = result.slice(0, limit).map(function ([
-        timeElapsed, count, sql
-    ], ii) {
+    result = result.slice(0, limit).map(function ({
+        count,
+        sql,
+        timeElapsed
+    }, ii) {
         return String(
             `${Number(ii + 1).toFixed(0).padStart(2, " ")}.`
             + ` ${timeElapsed.toFixed(0).padStart(4)}`
