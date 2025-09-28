@@ -566,21 +566,28 @@ number SQLITE_OPEN_WAL
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">65.
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT">65.
+object PROFILE_DBEXEC_DICT
+</a>
+
+</li>
+<li>
+
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">66.
 string SQLMATH_EXE
 </a>
 
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">66.
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">67.
 string SQLMATH_NODE
 </a>
 
 </li>
 <li>
 
-<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">67.
+<a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version">68.
 string version
 </a>
 
@@ -1183,11 +1190,11 @@ assertJsonEqual(valActual, valExpect, {
     let referenceList = [];
     let result;
     let timeElapsed;
-    if (modeProfile) {
-        PROFILE_DBEXEC_DICT = PROFILE_DBEXEC_DICT || {};
+    if (modeNoop) {
         return;
     }
-    if (modeNoop) {
+    if (modeProfile) {
+        PROFILE_DBEXEC_MODE = true;
         return;
     }
     timeElapsed = Date.now();
@@ -1247,7 +1254,7 @@ assertJsonEqual(valActual, valExpect, {
             baton.buffer,
             0,
             Number(
- ...
+                respon...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -2392,7 +2399,15 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">65.
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.PROFILE_DBEXEC_DICT">65.
+    object PROFILE_DBEXEC_DICT
+    </a>
+    </h2>
+</li>
+
+<li>
+    <h2>
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_EXE">66.
     string SQLMATH_EXE
     </a>
     </h2>
@@ -2400,7 +2415,7 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">66.
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.SQLMATH_NODE">67.
     string SQLMATH_NODE
     </a>
     </h2>
@@ -2408,7 +2423,7 @@ jstestIt((
 
 <li>
     <h2>
-    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">67.
+    <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.version" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.version">68.
     string version
     </a>
     </h2>
