@@ -488,19 +488,18 @@ SQLMATH_CFLAG_WNO_LIST=" \\
     );
 }
 
-async function dbCallAsync(baton, argList, mode) {
+async function dbCallAsync(baton, argList, mode, db) {
 
 // This function will call c-function dbXxx() with given <funcname>
 // and return [<baton>, ...argList].
 
-    let db;
     let errStack;
     let funcname;
     let id;
     let result;
     let timeElapsed;
     // If argList contains <db>, then mark it as busy.
-    if (mode === "modeDb") {
+    if (mode === "modeDb" || mode === "modeDbExec") {
         // init db
         db = argList[0];
         assertOrThrow(
@@ -512,7 +511,12 @@ async function dbCallAsync(baton, argList, mode) {
         // increment db.busy
         db.busy += 1;
         try {
-            return await dbCallAsync(baton, [db.ptr, ...argList.slice(1)], db);
+            return await dbCallAsync(
+                baton,
+                [db.ptr, ...argList.slice(1)],
+                undefined,
+                db
+            );
         } finally {
             // decrement db.busy
             db.busy -= 1;
@@ -641,8 +645,8 @@ async function dbCallAsync(baton, argList, mode) {
         return [result.baton, ...result.argList];
     } catch (err) {
         // debug db.filename
-        if (mode?.filename2 || mode?.filename) {
-            err.message += ` (from ${mode?.filename2 || mode?.filename})`;
+        if (db?.filename2 || db?.filename) {
+            err.message += ` (from ${db?.filename2 || db?.filename})`;
         }
         err.stack += errStack;
         assertOrThrow(undefined, err);
@@ -720,14 +724,15 @@ async function dbExecAsync({
     let baton = jsbatonCreate("_dbExec");
     let bindByKey = !Array.isArray(bindList);
     let bufi = [0];
+    let profileBegin;
+    let profileObj;
     let referenceList = [];
     let result;
-    let timeElapsed;
     if (modeNoop) {
         return;
     }
     if (DB_EXEC_PROFILE_MODE) {
-        timeElapsed = Date.now();
+        profileBegin = Date.now();
     }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
@@ -777,7 +782,7 @@ async function dbExecAsync({
                 : 0
             )
         ],
-        "modeDb"
+        "modeDbExec"
     );
     result = result[0];
     if (!IS_BROWSER) {
@@ -810,11 +815,14 @@ async function dbExecAsync({
         });
     }
     if (DB_EXEC_PROFILE_MODE) {
-        timeElapsed = Date.now() - timeElapsed;
         sql = String(sql).trim().slice(0, 4096);
         DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || [0, 0, sql];
-        DB_EXEC_PROFILE_DICT[sql][0] += timeElapsed;
-        DB_EXEC_PROFILE_DICT[sql][1] += 1;
+        profileObj = DB_EXEC_PROFILE_DICT[sql];
+        profileObj[0] = Math.min(
+            profileObj[0] + (Date.now() - profileBegin),
+            Date.now() - DB_EXEC_PROFILE_MODE
+        );
+        profileObj[1] += 1;
     }
     return result;
 }
@@ -829,7 +837,7 @@ function dbExecProfile({
 
     let result;
     if (modeInit && !DB_EXEC_PROFILE_MODE) {
-        DB_EXEC_PROFILE_MODE = true;
+        DB_EXEC_PROFILE_MODE = Date.now();
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,

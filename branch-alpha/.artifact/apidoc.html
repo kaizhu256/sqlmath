@@ -1185,14 +1185,15 @@ assertJsonEqual(valActual, valExpect, {
 </span>    let baton = jsbatonCreate("_dbExec");
     let bindByKey = !Array.isArray(bindList);
     let bufi = [0];
+    let profileObj;
     let referenceList = [];
     let result;
-    let timeElapsed;
+    let timeStart;
     if (modeNoop) {
         return;
     }
     if (DB_EXEC_PROFILE_MODE) {
-        timeElapsed = Date.now();
+        timeStart = Date.now();
     }
     if (bindByKey) {
         Object.entries(bindList).forEach(function ([key, val]) {
@@ -1250,7 +1251,7 @@ assertJsonEqual(valActual, valExpect, {
             baton.buffer,
             0,
             Number(
-                responseType !== "arraybuffer" &amp;&amp; responseType !== "la...
+                responseType !== "arraybuffer" &amp;&amp; resp...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1292,7 +1293,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 
 </span>    let result;
     if (modeInit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
-        DB_EXEC_PROFILE_MODE = true;
+        DB_EXEC_PROFILE_MODE = Date.now();
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
