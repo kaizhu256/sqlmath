@@ -181,9 +181,9 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
 function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
-    lineWidth = 80,
+    lineLength = 80,
     modeInit,
-    sqlLength = 4096
+    sqlLength = 256
 })</span>
 </a>
 
@@ -1285,18 +1285,18 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
     function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
-    lineWidth = 80,
+    lineLength = 80,
     modeInit,
-    sqlLength = 4096
+    sqlLength = 256
 })</span>
     </a>
     </h2>
 </li>
 <li>Description and source-code:<pre class="apidocCodePre">function dbExecProfile({
     limit = 20,
-    lineWidth = 80,
+    lineLength = 80,
     modeInit,
-    sqlLength = 4096
+    sqlLength = 256
 }) {
 <span class="apidocCodeCommentSpan">
 // This function will profile dbExecAsync.
@@ -1308,7 +1308,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
-                lineWidth
+                lineLength
             }));
         });
         return;
@@ -1327,7 +1327,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
             + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
-        ).slice(0, lineWidth);
+        ).slice(0, lineLength);
     }).join("\n");
     result = (
         `\ndbExecProfile:\n`

@@ -859,9 +859,9 @@ async function dbExecAsync({
 
 function dbExecProfile({
     limit = 20,
-    lineWidth = 80,
+    lineLength = 80,
     modeInit,
-    sqlLength = 4096
+    sqlLength = 256
 }) {
 
 // This function will profile dbExecAsync.
@@ -873,7 +873,7 @@ function dbExecProfile({
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
-                lineWidth
+                lineLength
             }));
         });
         return;
@@ -892,7 +892,7 @@ function dbExecProfile({
             + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
-        ).slice(0, lineWidth);
+        ).slice(0, lineLength);
     }).join("\n");
     result = (
         `\ndbExecProfile:\n`
