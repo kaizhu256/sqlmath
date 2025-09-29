@@ -1040,7 +1040,7 @@ async function dbOpenAsync({
         await moduleFs.promises.access(fileLgbm).then(async function () {
             await dbExecAsync({
                 db,
-                sql: `SELECT lgbm_dlopen('${fileLgbm}');`
+                sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
             });
         }).catch(noop);
     }
