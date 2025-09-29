@@ -516,7 +516,12 @@ async function dbCallAsync(baton, argList, mode, db) {
         // init profileObj
         if (DB_EXEC_PROFILE_MODE && mode === "modeDbExec") {
             profileStart = Date.now();
-            sql = String(argList[1]).trim().slice(0, 4096);
+            sql = String(argList[1]);
+            // sql-hash - remove comment
+            sql = sql.replace((/(?:^|\s+?)--.*/gm), "");
+            // sql-hash - remove whitespace
+            sql = sql.replace((/\s+/g), " ");
+            sql = sql.trim().slice(0, 4096);
             DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || {
                 busy: 0,
                 count: 0,
