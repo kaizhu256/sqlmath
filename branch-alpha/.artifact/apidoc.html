@@ -225,7 +225,7 @@ function dbNoopAsync<span class="apidocSignatureSpan">(...argList)</span>
 function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     modeLgbm,
     threadCount = 1
@@ -1026,7 +1026,7 @@ jstestIt((
     "test dbFileXxx handling-behavior"
 ), async function test_dbFileXxx() {
     let data;
-    let db = await dbOpenAsync({
+    let db = await dbOpenAsync({});
 ...</pre></li>
 
 <li>
@@ -1422,13 +1422,13 @@ jstestIt((
     return dbData[1 + 0];
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+    sql: "CREATE TABLE t01 AS SELECT 1 AS c01"
+});
 await dbFileSaveAsync({
     db,
     filename: ".testDbFileXxx.sqlite"
 });
-db = await dbOpenAsync({
-    filename: ":memory:"
-});
+db = await dbOpenAsync({});
 await <span class="apidocCodeKeywordSpan">dbFileLoadAsync</span>({
     db,
     filename: ".testDbFileXxx.sqlite"
@@ -1526,7 +1526,7 @@ assertJsonEqual(
     function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     modeLgbm,
     threadCount = 1
@@ -1537,7 +1537,7 @@ assertJsonEqual(
 <li>Description and source-code:<pre class="apidocCodePre">async function dbOpenAsync({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     modeLgbm,
     threadCount = 1
@@ -1590,7 +1590,7 @@ assertJsonEqual(
         fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
         fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
         fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        fileLgbm = `${...
+        f...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1602,13 +1602,13 @@ jstestIt((
     "test sqlmathWebworkerInit handling-behavior"
 ), async function () {
     let db = await <span class="apidocCodeKeywordSpan">dbOpenAsync</span>({
-        dbData: new ArrayBuffer(),
-        filename: ":memory:"
+        dbData: new ArrayBuffer()
     });
     sqlmathWebworkerInit({
         db,
         modeTest: true
     });
+});
 ...</pre></li>
 
 <li>
@@ -2117,12 +2117,12 @@ async function sqlmathInit() {
     }
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+), function test_sqlmathWebworkerInit() {
     jstestIt((
         "test sqlmathWebworkerInit handling-behavior"
     ), async function () {
         let db = await dbOpenAsync({
-            dbData: new ArrayBuffer(),
-            filename: ":memory:"
+            dbData: new ArrayBuffer()
         });
         <span class="apidocCodeKeywordSpan">sqlmathWebworkerInit</span>({
             db,

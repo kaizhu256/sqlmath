@@ -989,7 +989,7 @@ async function dbNoopAsync(...argList) {
 async function dbOpenAsync({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     modeLgbm,
     threadCount = 1
@@ -1043,11 +1043,9 @@ async function dbOpenAsync({
         fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
         fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
         fileLgbm = `${import.meta.dirname}/sqlmath/${fileLgbm}`;
-        await moduleFs.promises.access(fileLgbm).then(async function () {
-            await dbExecAsync({
-                db,
-                sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
-            });
+        dbExecAsync({
+            db,
+            sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
         });
     }
     return db;
