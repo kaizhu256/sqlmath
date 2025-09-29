@@ -986,6 +986,7 @@ async function dbOpenAsync({
     dbData,
     filename,
     flags,
+    modeLgbm,
     threadCount = 1
 }) {
 
@@ -1031,7 +1032,7 @@ async function dbOpenAsync({
     }));
     db.connPool = connPool;
     // init lightgbm
-    if (!IS_BROWSER) {
+    if (modeLgbm) {
         fileLgbm = process.platform;
         fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
         fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
@@ -1042,7 +1043,7 @@ async function dbOpenAsync({
                 db,
                 sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
             });
-        }).catch(noop);
+        });
     }
     return db;
 }

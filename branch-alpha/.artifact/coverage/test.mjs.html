@@ -1291,7 +1291,7 @@ body {
 <pre><span class="lineno"><a href="#line_1126" id="line_1126"> 1126.</a></span><span class="count    ">      1</span><span>        );</span></pre>
 <pre><span class="lineno"><a href="#line_1127" id="line_1127"> 1127.</a></span><span class="count    ">      1</span><span>        `);</span></pre>
 <pre><span class="lineno"><a href="#line_1128" id="line_1128"> 1128.</a></span><span class="count    ">     12</span><span>        async function testLgbm(sqlDataXxx, sqlTrainXxx, sqlPredictXxx, sqlIi) {</span></pre>
-<pre><span class="lineno"><a href="#line_1129" id="line_1129"> 1129.</a></span><span class="count    ">     12</span><span>            let db = await dbOpenAsync({filename: ":memory:"});</span></pre>
+<pre><span class="lineno"><a href="#line_1129" id="line_1129"> 1129.</a></span><span class="count    ">     12</span><span>            let db = await dbOpenAsync({filename: ":memory:", modeLgbm: true});</span></pre>
 <pre><span class="lineno"><a href="#line_1130" id="line_1130"> 1130.</a></span><span class="count    ">     12</span><span>            let fileActual = `.tmp/test_lgbm_preb_${sqlIi}.txt`;</span></pre>
 <pre><span class="lineno"><a href="#line_1131" id="line_1131"> 1131.</a></span><span class="count    ">     12</span><span>            await Promise.all([</span></pre>
 <pre><span class="lineno"><a href="#line_1132" id="line_1132"> 1132.</a></span><span class="count    ">     12</span><span>                dbTableImportAsync({</span></pre>
