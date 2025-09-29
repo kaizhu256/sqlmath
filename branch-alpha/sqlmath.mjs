@@ -86,6 +86,7 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let DB_EXEC_PROFILE_DICT = {};
 let DB_EXEC_PROFILE_MODE;
+let DB_EXEC_PROFILE_SQL_LENGTH;
 let IS_BROWSER;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
@@ -521,7 +522,7 @@ async function dbCallAsync(baton, argList, mode, db) {
             sql = sql.replace((/(?:^|\s+?)--.*/gm), "");
             // sql-hash - remove whitespace
             sql = sql.replace((/\s+/g), " ");
-            sql = sql.trim().slice(0, 4096);
+            sql = sql.trim().slice(0, DB_EXEC_PROFILE_SQL_LENGTH);
             DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || {
                 busy: 0,
                 count: 0,
@@ -859,7 +860,8 @@ async function dbExecAsync({
 function dbExecProfile({
     limit = 20,
     lineWidth = 80,
-    modeInit
+    modeInit,
+    sqlLength = 4096
 }) {
 
 // This function will profile dbExecAsync.
@@ -867,6 +869,7 @@ function dbExecProfile({
     let result;
     if (modeInit && !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = Date.now();
+        DB_EXEC_PROFILE_SQL_LENGTH = sqlLength;
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,

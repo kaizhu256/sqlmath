@@ -182,7 +182,8 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
-    modeInit
+    modeInit,
+    sqlLength = 4096
 })</span>
 </a>
 
@@ -1285,7 +1286,8 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
     lineWidth = 80,
-    modeInit
+    modeInit,
+    sqlLength = 4096
 })</span>
     </a>
     </h2>
@@ -1293,7 +1295,8 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 <li>Description and source-code:<pre class="apidocCodePre">function dbExecProfile({
     limit = 20,
     lineWidth = 80,
-    modeInit
+    modeInit,
+    sqlLength = 4096
 }) {
 <span class="apidocCodeCommentSpan">
 // This function will profile dbExecAsync.
@@ -1301,6 +1304,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 </span>    let result;
     if (modeInit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = Date.now();
+        DB_EXEC_PROFILE_SQL_LENGTH = sqlLength;
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
