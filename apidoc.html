@@ -181,8 +181,9 @@ function dbExecAsync<span class="apidocSignatureSpan">({
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
 function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
-    lineWidth = 80,
-    modeInit
+    lineLength = 80,
+    modeInit,
+    sqlLength = 256
 })</span>
 </a>
 
@@ -225,7 +226,7 @@ function dbNoopAsync<span class="apidocSignatureSpan">(...argList)</span>
 function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     threadCount = 1
 })</span>
@@ -1025,7 +1026,7 @@ jstestIt((
     "test dbFileXxx handling-behavior"
 ), async function test_dbFileXxx() {
     let data;
-    let db = await dbOpenAsync({
+    let db = await dbOpenAsync({});
 ...</pre></li>
 
 <li>
@@ -1283,16 +1284,18 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbExecProfile">14.
     function dbExecProfile<span class="apidocSignatureSpan">({
     limit = 20,
-    lineWidth = 80,
-    modeInit
+    lineLength = 80,
+    modeInit,
+    sqlLength = 256
 })</span>
     </a>
     </h2>
 </li>
 <li>Description and source-code:<pre class="apidocCodePre">function dbExecProfile({
     limit = 20,
-    lineWidth = 80,
-    modeInit
+    lineLength = 80,
+    modeInit,
+    sqlLength = 256
 }) {
 <span class="apidocCodeCommentSpan">
 // This function will profile dbExecAsync.
@@ -1300,10 +1303,11 @@ SELECT WIN_SUM2() FROM (SELECT 1);
 </span>    let result;
     if (modeInit &amp;&amp; !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = Date.now();
+        DB_EXEC_PROFILE_SQL_LENGTH = sqlLength;
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
-                lineWidth
+                lineLength
             }));
         });
         return;
@@ -1322,7 +1326,7 @@ SELECT WIN_SUM2() FROM (SELECT 1);
             + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
-        ).slice(0, lineWidth);
+        ).slice(0, lineLength);
     }).join("\n");
     result = (
         `\ndbExecProfile:\n`
@@ -1421,13 +1425,13 @@ jstestIt((
     return dbData[1 + 0];
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+    sql: "CREATE TABLE t01 AS SELECT 1 AS c01"
+});
 await dbFileSaveAsync({
     db,
     filename: ".testDbFileXxx.sqlite"
 });
-db = await dbOpenAsync({
-    filename: ":memory:"
-});
+db = await dbOpenAsync({});
 await <span class="apidocCodeKeywordSpan">dbFileLoadAsync</span>({
     db,
     filename: ".testDbFileXxx.sqlite"
@@ -1525,7 +1529,7 @@ assertJsonEqual(
     function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     threadCount = 1
 })</span>
@@ -1535,7 +1539,7 @@ assertJsonEqual(
 <li>Description and source-code:<pre class="apidocCodePre">async function dbOpenAsync({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     threadCount = 1
 }) {
@@ -1550,7 +1554,7 @@ assertJsonEqual(
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let fileLgbm;
+    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1581,13 +1585,13 @@ assertJsonEqual(
         return ptr;
     }));
     db.connPool = connPool;
-    // init lightgbm
-    if (!IS_BROWSER) {
-        fileLgbm = process.platform;
-        fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
-        fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
-        fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        fileLgbm = `${import.meta...
+    if (!IS_BROWSER &amp;&amp; !DB_OPEN_INIT) {
+        DB_OPEN_INIT = true;
+        // init lgbm
+        libLgbm = process.platform;
+        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
+        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
+        libLgbm = libLgbm.replace(process.plat...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -1599,13 +1603,13 @@ jstestIt((
     "test sqlmathWebworkerInit handling-behavior"
 ), async function () {
     let db = await <span class="apidocCodeKeywordSpan">dbOpenAsync</span>({
-        dbData: new ArrayBuffer(),
-        filename: ":memory:"
+        dbData: new ArrayBuffer()
     });
     sqlmathWebworkerInit({
         db,
         modeTest: true
     });
+});
 ...</pre></li>
 
 <li>
@@ -2114,12 +2118,12 @@ async function sqlmathInit() {
     }
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+), function test_sqlmathWebworkerInit() {
     jstestIt((
         "test sqlmathWebworkerInit handling-behavior"
     ), async function () {
         let db = await dbOpenAsync({
-            dbData: new ArrayBuffer(),
-            filename: ":memory:"
+            dbData: new ArrayBuffer()
         });
         <span class="apidocCodeKeywordSpan">sqlmathWebworkerInit</span>({
             db,

@@ -2069,6 +2069,7 @@ SQLMATH_FUNC static void sql1_lgbm_dlopen_func(
     int errcode = 0;
     errcode = dbDlopen(context, filename, (void **) &lgbm_library);
     if (errcode) {
+        sqlite3_result_error_code(context, errcode);
         return;
     }
     LGBM_dlsym();

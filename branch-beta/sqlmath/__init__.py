@@ -312,7 +312,7 @@ def db_noop(*arglist):
     return db_call(jsbaton_create("_dbNoop"), arglist)
 
 
-def db_open(filename, flags=None):
+def db_open(filename=":memory:", flags=None):
     """
     This function will open and return sqlite-database-connection <db>.
 
