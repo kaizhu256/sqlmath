@@ -228,7 +228,6 @@ function dbOpenAsync<span class="apidocSignatureSpan">({
     dbData,
     filename = ":memory:",
     flags,
-    modeLgbm,
     threadCount = 1
 })</span>
 </a>
@@ -1532,7 +1531,6 @@ assertJsonEqual(
     dbData,
     filename = ":memory:",
     flags,
-    modeLgbm,
     threadCount = 1
 })</span>
     </a>
@@ -1543,7 +1541,6 @@ assertJsonEqual(
     dbData,
     filename = ":memory:",
     flags,
-    modeLgbm,
     threadCount = 1
 }) {
 <span class="apidocCodeCommentSpan">
@@ -1557,7 +1554,7 @@ assertJsonEqual(
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let fileLgbm;
+    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1588,13 +1585,13 @@ assertJsonEqual(
         return ptr;
     }));
     db.connPool = connPool;
-    // init lightgbm
-    if (modeLgbm) {
-        fileLgbm = process.platform;
-        fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
-        fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
-        fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        f...
+    if (!DB_OPEN_INIT) {
+        DB_OPEN_INIT = true;
+        libLgbm = process.platform;
+        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
+        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
+        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
+        libLgbm = ...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...

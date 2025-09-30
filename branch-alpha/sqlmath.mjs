@@ -87,6 +87,7 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 let DB_EXEC_PROFILE_DICT = {};
 let DB_EXEC_PROFILE_MODE;
 let DB_EXEC_PROFILE_SQL_LENGTH;
+let DB_OPEN_INIT;
 let IS_BROWSER;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
@@ -994,7 +995,6 @@ async function dbOpenAsync({
     dbData,
     filename = ":memory:",
     flags,
-    modeLgbm,
     threadCount = 1
 }) {
 
@@ -1008,7 +1008,7 @@ async function dbOpenAsync({
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let fileLgbm;
+    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1039,17 +1039,17 @@ async function dbOpenAsync({
         return ptr;
     }));
     db.connPool = connPool;
-    // init lightgbm
-    if (modeLgbm) {
-        fileLgbm = process.platform;
-        fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
-        fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
-        fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        fileLgbm = `${import.meta.dirname}/sqlmath/${fileLgbm}`;
-        await moduleFs.promises.access(fileLgbm);
-        dbExecAsync({
+    if (!DB_OPEN_INIT) {
+        DB_OPEN_INIT = true;
+        libLgbm = process.platform;
+        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
+        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
+        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm);
+        await dbExecAsync({
             db,
-            sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
+            sql: `SELECT LGBM_DLOPEN('${libLgbm}');`
         });
     }
     return db;
