@@ -1046,6 +1046,7 @@ async function dbOpenAsync({
         fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
         fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
         fileLgbm = `${import.meta.dirname}/sqlmath/${fileLgbm}`;
+        await moduleFs.promises.access(fileLgbm);
         dbExecAsync({
             db,
             sql: `SELECT LGBM_DLOPEN('${fileLgbm}');`
