@@ -6,6 +6,8 @@
 - none
 
 # v2025.9.1-beta
+- sqlmath - Update function dbExecProfile() with additional-arg sqlLength.
+- sqlmath - Update function dbOpenAsync() with default-filename :memory:.
 - coverage - Add coverage-directives '/*coverage-disable*/', '/*coverage-enable*/'. '//coverage-ignore-line'.
 - sqlmath - Add function dbExecProfile() to profile sql-queries.
 - sqlmath - Update function dbCallAsync() to include db.filename in error-message.

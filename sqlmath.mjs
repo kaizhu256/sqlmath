@@ -86,6 +86,8 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 let DB_EXEC_PROFILE_DICT = {};
 let DB_EXEC_PROFILE_MODE;
+let DB_EXEC_PROFILE_SQL_LENGTH;
+let DB_OPEN_INIT;
 let IS_BROWSER;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
@@ -516,7 +518,12 @@ async function dbCallAsync(baton, argList, mode, db) {
         // init profileObj
         if (DB_EXEC_PROFILE_MODE && mode === "modeDbExec") {
             profileStart = Date.now();
-            sql = String(argList[1]).trim().slice(0, 4096);
+            sql = String(argList[1]);
+            // sql-hash - remove comment
+            sql = sql.replace((/(?:^|\s+?)--.*/gm), "");
+            // sql-hash - remove whitespace
+            sql = sql.replace((/\s+/g), " ");
+            sql = sql.trim().slice(0, DB_EXEC_PROFILE_SQL_LENGTH);
             DB_EXEC_PROFILE_DICT[sql] = DB_EXEC_PROFILE_DICT[sql] || {
                 busy: 0,
                 count: 0,
@@ -853,8 +860,9 @@ async function dbExecAsync({
 
 function dbExecProfile({
     limit = 20,
-    lineWidth = 80,
-    modeInit
+    lineLength = 80,
+    modeInit,
+    sqlLength = 256
 }) {
 
 // This function will profile dbExecAsync.
@@ -862,10 +870,11 @@ function dbExecProfile({
     let result;
     if (modeInit && !DB_EXEC_PROFILE_MODE) {
         DB_EXEC_PROFILE_MODE = Date.now();
+        DB_EXEC_PROFILE_SQL_LENGTH = sqlLength;
         process.on("exit", function () {
             console.error(dbExecProfile({
                 limit,
-                lineWidth
+                lineLength
             }));
         });
         return;
@@ -884,7 +893,7 @@ function dbExecProfile({
             + ` ${timeElapsed.toFixed(0).padStart(4)}`
             + ` ${count.toFixed(0).padStart(3)}`
             + " " + JSON.stringify(sql)
-        ).slice(0, lineWidth);
+        ).slice(0, lineLength);
     }).join("\n");
     result = (
         `\ndbExecProfile:\n`
@@ -984,7 +993,7 @@ async function dbNoopAsync(...argList) {
 async function dbOpenAsync({
     afterFinalization,
     dbData,
-    filename,
+    filename = ":memory:",
     flags,
     threadCount = 1
 }) {
@@ -999,7 +1008,7 @@ async function dbOpenAsync({
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let fileLgbm;
+    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1030,19 +1039,18 @@ async function dbOpenAsync({
         return ptr;
     }));
     db.connPool = connPool;
-    // init lightgbm
-    if (!IS_BROWSER) {
-        fileLgbm = process.platform;
-        fileLgbm = fileLgbm.replace("darwin", "lib_lightgbm.dylib");
-        fileLgbm = fileLgbm.replace("win32", "lib_lightgbm.dll");
-        fileLgbm = fileLgbm.replace(process.platform, "lib_lightgbm.so");
-        fileLgbm = `${import.meta.dirname}/sqlmath/${fileLgbm}`;
-        await moduleFs.promises.access(fileLgbm).then(async function () {
-            await dbExecAsync({
-                db,
-                sql: `SELECT lgbm_dlopen('${fileLgbm}');`
-            });
-        }).catch(noop);
+    if (!IS_BROWSER && !DB_OPEN_INIT) {
+        DB_OPEN_INIT = true;
+        // init lgbm
+        libLgbm = process.platform;
+        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
+        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
+        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await dbExecAsync({
+            db,
+            sql: `SELECT LGBM_DLOPEN('${libLgbm}');`
+        });
     }
     return db;
 }
