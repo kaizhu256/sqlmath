@@ -1585,13 +1585,13 @@ assertJsonEqual(
         return ptr;
     }));
     db.connPool = connPool;
-    if (!DB_OPEN_INIT) {
+    if (!IS_BROWSER &amp;&amp; !DB_OPEN_INIT) {
         DB_OPEN_INIT = true;
+        // init lgbm
         libLgbm = process.platform;
         libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
         libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
-        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
-        libLgbm = ...
+        libLgbm = libLgbm.replace(process.plat...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...

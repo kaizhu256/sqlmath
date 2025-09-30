@@ -1045,9 +1045,9 @@ body {
 <pre><span class="lineno"><a href="#line_880" id="line_880">  880.</a></span><span class="count    ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_881" id="line_881">  881.</a></span><span class="count    ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_882" id="line_882">  882.</a></span><span class="count    ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_883" id="line_883">  883.</a></span><span class="count    ">   1531</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_884" id="line_884">  884.</a></span><span class="count    ">    502</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
-<pre><span class="lineno"><a href="#line_885" id="line_885">  885.</a></span><span class="count    ">   1531</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_883" id="line_883">  883.</a></span><span class="count    ">   1368</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_884" id="line_884">  884.</a></span><span class="count    ">    436</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
+<pre><span class="lineno"><a href="#line_885" id="line_885">  885.</a></span><span class="count    ">   1368</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_886" id="line_886">  886.</a></span><span class="count    ">     20</span><span>    result = result.slice(0, limit).map(function ({</span></pre>
 <pre><span class="lineno"><a href="#line_887" id="line_887">  887.</a></span><span class="count    ">     20</span><span>        count,</span></pre>
 <pre><span class="lineno"><a href="#line_888" id="line_888">  888.</a></span><span class="count    ">     20</span><span>        sql,</span></pre>
@@ -1204,14 +1204,14 @@ body {
 <pre><span class="lineno"><a href="#line_1039" id="line_1039"> 1039.</a></span><span class="count    ">     32</span><span>        return ptr;</span></pre>
 <pre><span class="lineno"><a href="#line_1040" id="line_1040"> 1040.</a></span><span class="count    ">     32</span><span>    }));</span></pre>
 <pre><span class="lineno"><a href="#line_1041" id="line_1041"> 1041.</a></span><span class="count    ">     32</span><span>    db.connPool = connPool;</span></pre>
-<pre><span class="lineno"><a href="#line_1042" id="line_1042"> 1042.</a></span><span class="count    ">      1</span><span>    if (!DB_OPEN_INIT) {</span></pre>
+<pre><span class="lineno"><a href="#line_1042" id="line_1042"> 1042.</a></span><span class="count    ">      1</span><span>    if (!IS_BROWSER &amp;&amp; !DB_OPEN_INIT) {</span></pre>
 <pre><span class="lineno"><a href="#line_1043" id="line_1043"> 1043.</a></span><span class="count    ">      1</span><span>        DB_OPEN_INIT = true;</span></pre>
-<pre><span class="lineno"><a href="#line_1044" id="line_1044"> 1044.</a></span><span class="count    ">      1</span><span>        libLgbm = process.platform;</span></pre>
-<pre><span class="lineno"><a href="#line_1045" id="line_1045"> 1045.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");</span></pre>
-<pre><span class="lineno"><a href="#line_1046" id="line_1046"> 1046.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");</span></pre>
-<pre><span class="lineno"><a href="#line_1047" id="line_1047"> 1047.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");</span></pre>
-<pre><span class="lineno"><a href="#line_1048" id="line_1048"> 1048.</a></span><span class="count    ">      1</span><span>        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;</span></pre>
-<pre><span class="lineno"><a href="#line_1049" id="line_1049"> 1049.</a></span><span class="count    ">      1</span><span>        await moduleFs.promises.access(libLgbm);</span></pre>
+<pre><span class="lineno"><a href="#line_1044" id="line_1044"> 1044.</a></span><span class="count    ">      1</span><span>        // init lgbm</span></pre>
+<pre><span class="lineno"><a href="#line_1045" id="line_1045"> 1045.</a></span><span class="count    ">      1</span><span>        libLgbm = process.platform;</span></pre>
+<pre><span class="lineno"><a href="#line_1046" id="line_1046"> 1046.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");</span></pre>
+<pre><span class="lineno"><a href="#line_1047" id="line_1047"> 1047.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");</span></pre>
+<pre><span class="lineno"><a href="#line_1048" id="line_1048"> 1048.</a></span><span class="count    ">      1</span><span>        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");</span></pre>
+<pre><span class="lineno"><a href="#line_1049" id="line_1049"> 1049.</a></span><span class="count    ">      1</span><span>        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;</span></pre>
 <pre><span class="lineno"><a href="#line_1050" id="line_1050"> 1050.</a></span><span class="count    ">      1</span><span>        await dbExecAsync({</span></pre>
 <pre><span class="lineno"><a href="#line_1051" id="line_1051"> 1051.</a></span><span class="count    ">      1</span><span>            db,</span></pre>
 <pre><span class="lineno"><a href="#line_1052" id="line_1052"> 1052.</a></span><span class="count    ">      1</span><span>            sql: `SELECT LGBM_DLOPEN('${libLgbm}');`</span></pre>

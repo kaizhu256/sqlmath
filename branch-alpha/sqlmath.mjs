@@ -1039,14 +1039,14 @@ async function dbOpenAsync({
         return ptr;
     }));
     db.connPool = connPool;
-    if (!DB_OPEN_INIT) {
+    if (!IS_BROWSER && !DB_OPEN_INIT) {
         DB_OPEN_INIT = true;
+        // init lgbm
         libLgbm = process.platform;
         libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
         libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
         libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
         libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-        await moduleFs.promises.access(libLgbm);
         await dbExecAsync({
             db,
             sql: `SELECT LGBM_DLOPEN('${libLgbm}');`
