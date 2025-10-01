@@ -542,7 +542,6 @@ shSqlmathUpdate() {(set -e
         for FILE in \
             .ci.sh \
             asset_sqlmath_external_rollup.js \
-            indent.exe \
             index.html \
             setup.py \
             sqlmath.mjs \
