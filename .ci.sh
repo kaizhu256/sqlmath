@@ -542,7 +542,6 @@ shSqlmathUpdate() {(set -e
         for FILE in \
             .ci.sh \
             asset_sqlmath_external_rollup.js \
-            indent.exe \
             index.html \
             setup.py \
             sqlmath.mjs \
@@ -552,7 +551,7 @@ shSqlmathUpdate() {(set -e
             sqlmath_browser.mjs \
             sqlmath_external_sqlite.c \
             sqlmath_wrapper_wasm.js \
-            zlib.lib
+            zlib.v1.3.1.vcpkg.x64-windows-static.lib
         do
             ln -f "$HOME/Documents/sqlmath/$FILE" "$FILE"
         done

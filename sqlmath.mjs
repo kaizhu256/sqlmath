@@ -128,7 +128,7 @@ let {
 let sqlMessageDict = {}; // dict of web-worker-callbacks
 let sqlMessageId = 0;
 let sqlWorker;
-let version = "v2025.9.1-beta";
+let version = "v2025.9.30";
 
 async function assertErrorThrownAsync(asyncFunc, regexp) {
 
@@ -341,7 +341,7 @@ async function ciBuildExt({
             ./build/Release/SRC_SQLITE_BASE.lib \
             ./build/Release/SRC_SQLMATH_CUSTOM.lib \
             ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.lib \
+            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
             \
             -ltcg \
             -nologo \
@@ -521,6 +521,14 @@ async function dbCallAsync(baton, argList, mode, db) {
             sql = String(argList[1]);
             // sql-hash - remove comment
             sql = sql.replace((/(?:^|\s+?)--.*/gm), "");
+            // sql-hash - remove vowel
+            sql = sql.replace((/[aeiou]\b/gi), "\u0000$&");
+            sql = sql.replace((/([bcdfghjklmnpqrstvwxyz])[aeiou]+/gi), "$1");
+            sql = sql.replace((/\u0000([aeiou])\b/gi), "$1");
+            // sql-hash - remove underscore
+            sql = sql.replace((/_+/g), "");
+            // sql-hash - truncate long text
+            sql = sql.replace((/(\S{16})\S+/g), "$1");
             // sql-hash - remove whitespace
             sql = sql.replace((/\s+/g), " ");
             sql = sql.trim().slice(0, DB_EXEC_PROFILE_SQL_LENGTH);

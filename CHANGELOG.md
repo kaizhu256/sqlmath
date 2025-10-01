@@ -5,7 +5,7 @@
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
 
-# v2025.9.1-beta
+# v2025.9.30
 - sqlmath - Update function dbExecProfile() with additional-arg sqlLength.
 - sqlmath - Update function dbOpenAsync() with default-filename :memory:.
 - coverage - Add coverage-directives '/*coverage-disable*/', '/*coverage-enable*/'. '//coverage-ignore-line'.
