@@ -506,7 +506,7 @@ body {
 <pre><span class="lineno"><a href="#line_341" id="line_341">  341.</a></span><span class="count    ">      7</span><span>            ./build/Release/SRC_SQLITE_BASE.lib \</span></pre>
 <pre><span class="lineno"><a href="#line_342" id="line_342">  342.</a></span><span class="count    ">      7</span><span>            ./build/Release/SRC_SQLMATH_CUSTOM.lib \</span></pre>
 <pre><span class="lineno"><a href="#line_343" id="line_343">  343.</a></span><span class="count    ">      7</span><span>            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \</span></pre>
-<pre><span class="lineno"><a href="#line_344" id="line_344">  344.</a></span><span class="count    ">      7</span><span>            ./zlib.lib \</span></pre>
+<pre><span class="lineno"><a href="#line_344" id="line_344">  344.</a></span><span class="count    ">      7</span><span>            ./zlib.v1.3.1.vcpkg_x64-windows-static.lib \</span></pre>
 <pre><span class="lineno"><a href="#line_345" id="line_345">  345.</a></span><span class="count    ">      7</span><span>            \</span></pre>
 <pre><span class="lineno"><a href="#line_346" id="line_346">  346.</a></span><span class="count    ">      7</span><span>            -ltcg \</span></pre>
 <pre><span class="lineno"><a href="#line_347" id="line_347">  347.</a></span><span class="count    ">      7</span><span>            -nologo \</span></pre>
@@ -1053,9 +1053,9 @@ body {
 <pre><span class="lineno"><a href="#line_888" id="line_888">  888.</a></span><span class="count    ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_889" id="line_889">  889.</a></span><span class="count    ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_890" id="line_890">  890.</a></span><span class="count    ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_891" id="line_891">  891.</a></span><span class="count    ">   1464</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_892" id="line_892">  892.</a></span><span class="count    ">    507</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
-<pre><span class="lineno"><a href="#line_893" id="line_893">  893.</a></span><span class="count    ">   1464</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_891" id="line_891">  891.</a></span><span class="count    ">   1412</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_892" id="line_892">  892.</a></span><span class="count    ">    477</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
+<pre><span class="lineno"><a href="#line_893" id="line_893">  893.</a></span><span class="count    ">   1412</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_894" id="line_894">  894.</a></span><span class="count    ">     20</span><span>    result = result.slice(0, limit).map(function ({</span></pre>
 <pre><span class="lineno"><a href="#line_895" id="line_895">  895.</a></span><span class="count    ">     20</span><span>        count,</span></pre>
 <pre><span class="lineno"><a href="#line_896" id="line_896">  896.</a></span><span class="count    ">     20</span><span>        sql,</span></pre>

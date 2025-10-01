@@ -341,7 +341,7 @@ async function ciBuildExt({
             ./build/Release/SRC_SQLITE_BASE.lib \
             ./build/Release/SRC_SQLMATH_CUSTOM.lib \
             ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.lib \
+            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
             \
             -ltcg \
             -nologo \
