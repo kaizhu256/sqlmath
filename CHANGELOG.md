@@ -1,9 +1,13 @@
 # Changelog
 
 # Todo
+- betadog - Add function taskBacktest() to auto-remove features with low feature-importance.
 - sqlmath - Re-introduce sliding-discrete-fourier-transform to improve initial guess in sql-function WIN_SINEFIT2().
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
+
+# v2025.11.1-beta
+- ci - Upgrade nodejs used in ci to v24.
 
 # v2025.9.30
 - sqlmath - Update function dbExecProfile() with additional-arg sqlLength.
