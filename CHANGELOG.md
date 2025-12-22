@@ -7,6 +7,7 @@
 - none
 
 # v2025.11.1-beta
+- sqlmath - Update function dbOpenAsync() with default-prm timeoutBusy=5000.
 - ci - Upgrade nodejs used in ci to v24.
 
 # v2025.9.30
