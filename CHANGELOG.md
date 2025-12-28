@@ -6,7 +6,8 @@
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
 
-# v2025.11.1-beta
+# v2025.12.28
+- jslint - Upgrade to jslint-v2025.12.28.
 - sqlmath - Update function dbOpenAsync() with default-prm timeoutBusy=5000.
 - ci - Upgrade nodejs used in ci to v24.
 
