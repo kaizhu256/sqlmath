@@ -97,8 +97,8 @@ process.stdout.write(
         # .github_cache - save
         if [ "$GITHUB_ACTION" ] && [ ! -d .github_cache/_emsdk/ ]
         then
-            mkdir -p .github_cache
-            cp -a "$EMSDK" .github_cache
+            mkdir -p .github_cache/
+            cp -a "$EMSDK" .github_cache/
         fi
     fi
     ) &
@@ -443,7 +443,7 @@ shCiPublishPypiCustom() {(set -e
 shCiTestNodejs() {(set -e
 # This function will run test in nodejs.
     # init .tmp
-    mkdir -p .tmp
+    mkdir -p .tmp/
     # rebuild c-module
     export npm_config_mode_test=1
     if [ "$npm_config_fast" != true ]
