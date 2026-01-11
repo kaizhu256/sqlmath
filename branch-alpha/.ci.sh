@@ -116,7 +116,7 @@ process.stdout.write(
         || [ "$GITHUB_BRANCH0" = master ] \
     )
     then
-        GITHUB_UPLOAD_RETRY=0
+        export GITHUB_UPLOAD_RETRY=0
         while true
         do
             GITHUB_UPLOAD_RETRY="$((GITHUB_UPLOAD_RETRY + 1))"
