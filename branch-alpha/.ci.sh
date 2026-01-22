@@ -205,7 +205,8 @@ shCiBaseCustomArtifactUpload() {(set -e
         # git push
         shGitCmdWithGithubToken push origin artifact
         # git squash
-        if (shCiMatrixIsmainName) && [ "$GITHUB_BRANCH0" = alpha ]
+        if (shCiMatrixIsmainName) \
+            && ([ "$GITHUB_BRANCH0" = alpha ] || [ "$GITHUB_BRANCH0" = beta ])
         then
             shGitCommitPushOrSquash "" 50
         fi
