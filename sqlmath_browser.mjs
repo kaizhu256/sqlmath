@@ -751,7 +751,7 @@ DELETE FROM ${tableChart} WHERE datatype = 'xx_label';
 SELECT
         (CASE
             WHEN (category LIKE 'index%') THEN 3
-            WHEN (category LIKE 'short%') THEN 1
+            WHEN (category LIKE '___-') THEN 1
             ELSE 5
         END) AS series_color,
         category LIKE '-%' AS is_dummy,
