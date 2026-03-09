@@ -26,12 +26,17 @@ __version_info__ = ("2026", "2", "28")
 
 import json
 import math
+import os
+import platform
 import re
 import struct
 import sys
 import weakref
 
 from ._sqlmath import _pybatonSetMemoryview, _pybatonStealCbuffer, _pydbCall
+
+DB_OPEN_INIT = 0
+
 
 JSBATON_ARGC = 8
 JSBATON_OFFSET_ALL = 256
@@ -312,7 +317,11 @@ def db_noop(*arglist):
     return db_call(jsbaton_create("_dbNoop"), arglist)
 
 
-def db_open(filename=":memory:", flags=None):
+def db_open(
+    filename=":memory:",
+    flags=None,
+    timeout_busy=5000
+):
     """
     This function will open and return sqlite-database-connection <db>.
 
@@ -347,6 +356,22 @@ def db_open(filename=":memory:", flags=None):
     db.filename = filename
     db.ptr = ptr
     weakref.finalize(db, db_close, db)
+    # init lgbm
+    global DB_OPEN_INIT
+    if DB_OPEN_INIT == 0:
+        DB_OPEN_INIT = 1
+        lib_lgbm = platform.system()
+        lib_lgbm = lib_lgbm.replace("Darwin", "lib_lightgbm.dylib")
+        lib_lgbm = lib_lgbm.replace("Linux", "lib_lightgbm.so")
+        lib_lgbm = lib_lgbm.replace("Windows", "lib_lightgbm.dll")
+        lib_lgbm = f'{os.path.dirname(os.path.abspath(__file__))}/{lib_lgbm}'
+        db_exec(
+            db=db,
+            sql=f"""
+PRAGMA busy_timeout = {timeout_busy};
+SELECT LGBM_DLOPEN('{lib_lgbm}');
+            """,
+        )
     return db
 
 
