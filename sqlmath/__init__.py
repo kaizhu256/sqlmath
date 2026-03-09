@@ -35,7 +35,9 @@ import weakref
 
 from ._sqlmath import _pybatonSetMemoryview, _pybatonStealCbuffer, _pydbCall
 
-DB_OPEN_INIT = 0
+STATE = {
+    "DB_OPEN_INIT": False,
+}
 
 
 JSBATON_ARGC = 8
@@ -357,9 +359,8 @@ def db_open(
     db.ptr = ptr
     weakref.finalize(db, db_close, db)
     # init lgbm
-    global DB_OPEN_INIT
-    if DB_OPEN_INIT == 0:
-        DB_OPEN_INIT = 1
+    if not STATE["DB_OPEN_INIT"]:
+        STATE["DB_OPEN_INIT"] = True
         lib_lgbm = platform.system()
         lib_lgbm = lib_lgbm.replace("Darwin", "lib_lightgbm.dylib")
         lib_lgbm = lib_lgbm.replace("Linux", "lib_lightgbm.so")
