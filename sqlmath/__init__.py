@@ -26,7 +26,7 @@ __version_info__ = ("2026", "2", "28")
 
 import json
 import math
-import os
+import pathlib
 import platform
 import re
 import struct
@@ -320,7 +320,7 @@ def db_noop(*arglist):
 def db_open(
     filename=":memory:",
     flags=None,
-    timeout_busy=5000
+    timeout_busy=5000,
 ):
     """
     This function will open and return sqlite-database-connection <db>.
@@ -364,7 +364,7 @@ def db_open(
         lib_lgbm = lib_lgbm.replace("Darwin", "lib_lightgbm.dylib")
         lib_lgbm = lib_lgbm.replace("Linux", "lib_lightgbm.so")
         lib_lgbm = lib_lgbm.replace("Windows", "lib_lightgbm.dll")
-        lib_lgbm = f'{os.path.dirname(os.path.abspath(__file__))}/{lib_lgbm}'
+        lib_lgbm = f"{pathlib.Path(__file__).resolve().parent}/{lib_lgbm}"
         db_exec(
             db=db,
             sql=f"""
