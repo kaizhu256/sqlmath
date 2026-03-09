@@ -507,6 +507,283 @@ SELECT * FROM testDbExecAsync2;
         # test null-case handling-behavior
         assert_error_thrown(lambda: sqlmath.db_open(None), "invalid filename")
 
+    def test_lgbm(self):
+        """Test lgbm handling-behavior."""
+        file_preb = "test_lgbm_preb.txt"
+        file_test = "test_lgbm_binary.test"
+        file_train = "test_lgbm_binary.train"
+        # --- SQL Templates ---
+        sql_data_file = f"""
+UPDATE __lgbm_state
+    SET
+        data_train_handle = (
+            SELECT
+                LGBM_DATASETCREATEFROMFILE(
+                    '{file_train}', -- filename
+                    'max_bin=15', -- param_data
+                    NULL -- reference
+                )
+        );
+UPDATE __lgbm_state
+    SET
+        data_test_handle = (
+            SELECT
+                LGBM_DATASETCREATEFROMFILE(
+                    '{file_test}', -- filename
+                    'max_bin=15', -- param_data
+                    data_train_handle -- reference
+                )
+        );
+        """
+        sql_data_table = """
+UPDATE __lgbm_state
+    SET
+        data_train_handle = (
+            SELECT
+                LGBM_DATASETCREATEFROMTABLE(
+                    'max_bin=15', -- param_data
+                    NULL, -- reference
+                    --
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
+                )
+            FROM __lgbm_file_train
+        );
+UPDATE __lgbm_state
+    SET
+        data_test_handle = (
+            SELECT
+                LGBM_DATASETCREATEFROMTABLE(
+                    'max_bin=15', -- param_data
+                    data_train_handle, -- reference
+                    --
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
+                )
+            FROM __lgbm_file_test
+        );
+        """
+        sql_predict_file = f"""
+SELECT
+        LGBM_PREDICTFORFILE(
+            model,                      -- model
+            {LGBM_PREDICT_NORMAL},     -- predict_type
+            0,                          -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- param_pred
+            --
+            '{file_test}',              -- data_filename
+            0,                          -- data_has_header
+            'fileActual'                -- result_filename
+        )
+    FROM __lgbm_state;
+SELECT
+        LGBM_PREDICTFORFILE(
+            model,                      -- model
+            {LGBM_PREDICT_NORMAL},     -- predict_type
+            10,                         -- start_iteration
+            25,                         -- num_iteration
+            '',                         -- param_pred
+            --
+            '{file_test}',              -- data_filename
+            0,                          -- data_has_header
+            'fileActual'                -- result_filename
+        )
+    FROM __lgbm_state;
+        """
+        sql_predict_table = f"""
+DROP TABLE IF EXISTS __lgbm_table_preb;
+CREATE TABLE __lgbm_table_preb AS
+    SELECT
+        DOUBLEARRAY_EXTRACT(__lgp, 0) AS prediction
+    FROM (
+        SELECT
+            LGBM_PREDICTFORTABLE(
+                (SELECT model FROM __lgbm_state),   -- model
+                {LGBM_PREDICT_NORMAL},     -- predict_type
+                0,                          -- start_iteration
+                25,                         -- num_iteration
+                '',                         -- param_pred
+                --
+                _2,  _3,  _4,
+                _5,  _6,  _7,  _8,
+                _9,  _10, _11, _12,
+                _13, _14, _15, _16,
+                _17, _18, _19, _20,
+                _21, _22, _23, _24,
+                _25, _26, _27, _28,
+                _29
+            ) OVER (
+                ORDER BY rowid ASC
+                ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
+            ) AS __lgp
+        FROM __lgbm_file_test
+    );
+DROP TABLE IF EXISTS __lgbm_table_preb;
+CREATE TABLE __lgbm_table_preb AS
+    SELECT
+        DOUBLEARRAY_EXTRACT(__lgp, 0) AS _1
+    FROM (
+        SELECT
+            LGBM_PREDICTFORTABLE(
+                (SELECT model FROM __lgbm_state),   -- model
+                {LGBM_PREDICT_NORMAL},     -- predict_type
+                10,                         -- start_iteration
+                25,                         -- num_iteration
+                '',                         -- param_pred
+                --
+                _2,  _3,  _4,
+                _5,  _6,  _7,  _8,
+                _9,  _10, _11, _12,
+                _13, _14, _15, _16,
+                _17, _18, _19, _20,
+                _21, _22, _23, _24,
+                _25, _26, _27, _28,
+                _29
+            ) OVER (
+                ORDER BY rowid ASC
+                ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
+            ) AS __lgp
+        FROM __lgbm_file_test
+    );
+        """
+        sql_train_data = """
+UPDATE __lgbm_state
+    SET
+        model = LGBM_TRAINFROMDATASET(
+            -- param_train
+            (
+                'objective=binary'
+                || ' learning_rate=0.1' -- default=0.1
+                || ' max_depth=-1' -- default=-1
+                || ' metric=auc' -- default=""
+                || ' min_data_in_leaf=20' -- default=20
+                || ' num_class=1' -- default=1
+                || ' num_leaves=31' -- default=31
+                || ' verbosity=0' -- default=1
+            ),
+            50, -- num_iteration
+            10, -- eval_step
+            --
+            data_train_handle, -- train_data
+            data_test_handle -- test_data
+        );
+        """
+        sql_train_file = f"""
+UPDATE __lgbm_state
+    SET
+        model = LGBM_TRAINFROMFILE(
+            -- param_train
+            (
+                'objective=binary'
+                || ' learning_rate=0.1' -- default=0.1
+                || ' max_depth=-1' -- default=-1
+                || ' metric=auc' -- default=""
+                || ' min_data_in_leaf=20' -- default=20
+                || ' num_class=1' -- default=1
+                || ' num_leaves=31' -- default=31
+                || ' verbosity=0' -- default=1
+            ),
+            50, -- num_iteration
+            10, -- eval_step
+            --
+            '{file_train}', -- file_train
+            'max_bin=15', -- param_data
+            '{file_test}' -- file_test
+        );
+        """
+        # --- Test Execution Function ---
+        def run_test_lgbm(sql_data_xxx, sql_train_xxx, sql_predict_xxx, sql_ii):
+            db = db_open({})
+            file_actual = f".tmp/test_lgbm_preb_{sql_ii}.txt"
+            # Import initial data
+            for filename, table in [(file_preb, "__lgbm_file_preb"),
+                                    (file_test, "__lgbm_file_test"),
+                                    (file_train, "__lgbm_file_train")]:
+                db_table_import(db=db, filename=filename, header_missing=True, mode="tsv", table_name=table)
+            # Setup state and train
+            db_exec(db=db, sql="""
+UPDATE __lgbm_state
+    SET
+        model = (
+            SELECT
+                LGBM_TRAINFROMTABLE(
+                    -- param_train
+                    (
+                        'objective=binary'
+                        || ' learning_rate=0.1' -- default=0.1
+                        || ' max_depth=-1' -- default=-1
+                        || ' metric=auc' -- default=""
+                        || ' min_data_in_leaf=20' -- default=20
+                        || ' num_class=1' -- default=1
+                        || ' num_leaves=31' -- default=31
+                        || ' verbosity=0' -- default=1
+                    ),
+                    50, -- num_iteration
+                    10, -- eval_step
+                    --
+                    'max_bin=15', -- param_data
+                    NULL, -- reference
+                    --
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
+                )
+            FROM __lgbm_file_train
+        );
+            """)
+            # Predict and Cleanup
+            # Note: .replace() handles the dynamic filename as the JS regex did
+            db_exec(db=db, sql=f"""
+                {sql_predict_xxx.replace("fileActual", file_actual)}
+                SELECT LGBM_DATASETFREE(data_test_handle), LGBM_DATASETFREE(data_train_handle)
+                FROM __lgbm_state;
+            """)
+            if sql_predict_xxx == sql_predict_file:
+                db_table_import(db=db, filename=file_actual, header_missing=True, mode="tsv", table_name="__lgbm_table_preb")
+            db_file_save(db=db, filename=f".tmp/test_lgbm_{sql_ii}.sqlite")
+            # Assertions
+            state = db_exec_and_return_last_row(db=db, sql="""
+                SELECT data_test_num_data, data_test_num_feature, data_train_num_data, data_train_num_feature
+                FROM __lgbm_state;
+            """)
+            assert state == {
+                "data_test_num_data": 500,
+                "data_test_num_feature": 28,
+                "data_train_num_data": 7000,
+                "data_train_num_feature": 28,
+            }
+            if sql_predict_xxx == sql_predict_file:
+                with open(file_actual) as f_act, open(file_preb) as f_preb:
+                    assert f_act.read() == f_preb.read()
+            res_actual = db_exec_and_return_last_table(db=db, sql="SELECT ROUND(_1, 8) AS _1 FROM __lgbm_table_preb;")
+            res_expected = db_exec_and_return_last_table(db=db, sql="SELECT ROUND(_1, 8) AS _1 FROM __lgbm_file_preb;")
+            assert res_actual == res_expected
+        # --- Combinatorial Loop ---
+        sql_ii = 0
+        for data_sql in [sql_data_file, sql_data_table]:
+            for train_sql in [sql_train_data, sql_train_file]: # Added sql_train_table if needed
+                for predict_sql in [sql_predict_file, sql_predict_table]:
+                    sql_ii += 1
+                    run_test_lgbm(data_sql, train_sql, predict_sql, sql_ii)
+
 
 if __name__ == "__main__":
     unittest.main()
