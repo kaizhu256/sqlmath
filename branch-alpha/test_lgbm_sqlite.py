@@ -44,13 +44,6 @@ class TestCaseSqlmath(unittest.TestCase):
 
     def test_lgbm(self):
         """Test lgbm handling-behavior."""
-        # !! db = sqlmath.db_open(":memory:")
-        # !! sqlmath.db_exec(
-            # !! db=db,
-            # !! sql=f"""
-# !! CREATE VIRTUAL TABLE temp.t1 USING csv(filename='test_lgbm_binary.train');
-            # !! """,
-        # !! )
         filePreb = "test_lgbm_preb.txt"
         fileTest = "test_lgbm_binary.test"
         fileTrain = "test_lgbm_binary.train"
@@ -85,14 +78,14 @@ UPDATE __lgbm_state
                     'max_bin=15', -- param_data
                     NULL, -- reference
                     --
-                    c1,  c2,  c3,  c4,
-                    c5,  c6,  c7,  c8,
-                    c9,  c10, c11, c12,
-                    c13, c14, c15, c16,
-                    c17, c18, c19, c20,
-                    c21, c22, c23, c24,
-                    c25, c26, c27, c28,
-                    c29
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
                 )
             FROM __lgbm_file_train
         );
@@ -104,14 +97,14 @@ UPDATE __lgbm_state
                     'max_bin=15', -- param_data
                     data_train_handle, -- reference
                     --
-                    c1,  c2,  c3,  c4,
-                    c5,  c6,  c7,  c8,
-                    c9,  c10, c11, c12,
-                    c13, c14, c15, c16,
-                    c17, c18, c19, c20,
-                    c21, c22, c23, c24,
-                    c25, c26, c27, c28,
-                    c29
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
                 )
             FROM __lgbm_file_test
         );
@@ -128,7 +121,7 @@ SELECT
             --
             '{fileTest}',               -- data_filename
             0,                          -- data_has_header
-            'fileActual'                -- result_filename
+            'file_actual'                -- result_filename
         )
     FROM __lgbm_state;
 SELECT
@@ -141,7 +134,7 @@ SELECT
             --
             '{fileTest}',               -- data_filename
             0,                          -- data_has_header
-            'fileActual'                -- result_filename
+            'file_actual'                -- result_filename
         )
     FROM __lgbm_state;
         """
@@ -159,14 +152,14 @@ CREATE TABLE __lgbm_table_preb AS
                 25,                         -- num_iteration
                 '',                         -- param_pred
                 --
-                c2,  c3,  c4,
-                c5,  c6,  c7,  c8,
-                c9,  c10, c11, c12,
-                c13, c14, c15, c16,
-                c17, c18, c19, c20,
-                c21, c22, c23, c24,
-                c25, c26, c27, c28,
-                c29
+                _2,  _3,  _4,
+                _5,  _6,  _7,  _8,
+                _9,  _10, _11, _12,
+                _13, _14, _15, _16,
+                _17, _18, _19, _20,
+                _21, _22, _23, _24,
+                _25, _26, _27, _28,
+                _29
             ) OVER (
                 ORDER BY rowid ASC
                 ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
@@ -176,7 +169,7 @@ CREATE TABLE __lgbm_table_preb AS
 DROP TABLE IF EXISTS __lgbm_table_preb;
 CREATE TABLE __lgbm_table_preb AS
     SELECT
-        DOUBLEARRAY_EXTRACT(__lgp, 0) AS c1
+        DOUBLEARRAY_EXTRACT(__lgp, 0) AS _1
     FROM (
         SELECT
             LGBM_PREDICTFORTABLE(
@@ -186,14 +179,14 @@ CREATE TABLE __lgbm_table_preb AS
                 25,                         -- num_iteration
                 '',                         -- param_pred
                 --
-                c2,  c3,  c4,
-                c5,  c6,  c7,  c8,
-                c9,  c10, c11, c12,
-                c13, c14, c15, c16,
-                c17, c18, c19, c20,
-                c21, c22, c23, c24,
-                c25, c26, c27, c28,
-                c29
+                _2,  _3,  _4,
+                _5,  _6,  _7,  _8,
+                _9,  _10, _11, _12,
+                _13, _14, _15, _16,
+                _17, _18, _19, _20,
+                _21, _22, _23, _24,
+                _25, _26, _27, _28,
+                _29
             ) OVER (
                 ORDER BY rowid ASC
                 ROWS BETWEEN 0 PRECEDING AND 0 FOLLOWING
@@ -269,14 +262,14 @@ UPDATE __lgbm_state
                     'max_bin=15', -- param_data
                     NULL, -- reference
                     --
-                    c1,  c2,  c3,  c4,
-                    c5,  c6,  c7,  c8,
-                    c9,  c10, c11, c12,
-                    c13, c14, c15, c16,
-                    c17, c18, c19, c20,
-                    c21, c22, c23, c24,
-                    c25, c26, c27, c28,
-                    c29
+                    _1,  _2,  _3,  _4,
+                    _5,  _6,  _7,  _8,
+                    _9,  _10, _11, _12,
+                    _13, _14, _15, _16,
+                    _17, _18, _19, _20,
+                    _21, _22, _23, _24,
+                    _25, _26, _27, _28,
+                    _29
                 )
             FROM __lgbm_file_train
         );
@@ -292,17 +285,18 @@ SELECT 1;
             for filename, table_name in [(filePreb, "__lgbm_file_preb"),
                                     (fileTest, "__lgbm_file_test"),
                                     (fileTrain, "__lgbm_file_train")]:
-                # !! sqlmath.db_table_import(
-                    # !! db=db,
-                    # !! filename=filename,
-                    # !! header_missing=None,
-                    # !! mode="tsv",
-                    # !! table_name=table_name
-                # !! )
-                sqlmath.db_exec(db=db, sql=f"""
-CREATE VIRTUAL TABLE {table_name} USING tsv(filename='{filename}');
-                """)
+                sqlmath.db_table_import(
+                    db=db,
+                    filename=filename,
+                    header_missing=True,
+                    mode="tsv",
+                    table_name=table_name
+                )
+                # !! sqlmath.db_exec(db=db, sql=f"""
+# !! CREATE VIRTUAL TABLE {table_name} USING tsv(filename='{filename}');
+                # !! """)
 
+            # !! return
             # Setup state and train
             sql=f"""
 -- lgbm - init
@@ -331,6 +325,28 @@ UPDATE __lgbm_state
 -- lgbm - train
 {sqlTrainXxx};
             """
+            # !! sql=f"""
+# !! -- lgbm - init
+# !! CREATE TABLE __lgbm_state(
+    # !! data_test_handle INTEGER,
+    # !! data_test_num_data REAL,
+    # !! data_test_num_feature REAL,
+    # !! --
+    # !! data_train_handle INTEGER,
+    # !! data_train_num_data REAL,
+    # !! data_train_num_feature REAL,
+    # !! --
+    # !! model BLOB
+# !! );
+# !! INSERT INTO __lgbm_state(rowid) SELECT 1;
+
+# !! -- lgbm - data
+# !! {sqlDataXxx};
+            # !! """
+            # !! print(sql)
+            # !! sqlmath.db_exec(db=db, sql=sql)
+            # !! print("\n\n\n\nalsjfsalkjflskfdj\n\n\n")
+            # !! return
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - init
 CREATE TABLE __lgbm_state(
@@ -358,10 +374,9 @@ UPDATE __lgbm_state
 -- lgbm - train
 {sqlTrainXxx};
             """)
-            return
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - predict
-{sqlPredictXxx.replace("fileActual", fileActual)};
+{sqlPredictXxx.replace("file_actual", file_actual)};
 
 -- lgbm - cleanup
 SELECT
@@ -374,7 +389,7 @@ SELECT
             # Note: .replace() handles the dynamic filename as the JS regex did
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - predict
-{sqlPredictXxx.replace("fileActual", fileActual)};
+{sqlPredictXxx.replace("file_actual", file_actual)};
 
 -- lgbm - cleanup
 SELECT

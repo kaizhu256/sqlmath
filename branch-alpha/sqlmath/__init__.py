@@ -209,9 +209,10 @@ def db_close(db):
         db_call(jsbaton_create("_dbClose"), [db.ptr, db.filename])
 
 
-def db_exec(
+def db_exec( # noqa: C901
     bind_list=None,
     db=None,
+    mode_debug=None,
     response_type=None,
     sql=None,
 ):
@@ -241,6 +242,8 @@ def db_exec(
                 bufi,
                 externalbuffer_list,
             )
+    if mode_debug:
+        print(sql, sys.stderr)
     db_call(
         baton,
         [
@@ -269,7 +272,12 @@ def db_exec(
             return json.loads(_pybatonStealCbuffer(baton, 0, 1))
         case _:
             table_list = []
-            for table in json.loads(_pybatonStealCbuffer(baton, 0, 1)):
+            json_raw = _pybatonStealCbuffer(baton, 0, 1)
+            if mode_debug:
+                print(json.dumps(json_raw), sys.stderr)
+            # !! if not json_raw:
+                # !! return None
+            for table in json.loads(json_raw):
                 col_list = tuple(enumerate(table.pop(0)))
                 table_list.append([
                     {key: row[ii] for ii, key in col_list}
@@ -479,14 +487,14 @@ def db_table_import( # noqa: C901 PLR0912 PLR0913
         },
         db=db,
         sql=(
-            f"CREATE TABLE {table_name} ({','.join(col_list)});"
+            f"CREATE TABLE {table_name} ({','.join(final_cols)});"
             if not row_list else
             (
                 f"CREATE TABLE {table_name} AS SELECT "
                 + ",".join(
                     [
                         f"value->>{ii} AS {col}"
-                        for ii, col in enumerate(col_list)
+                        for ii, col in enumerate(final_cols)
                     ],
                 )
                 + " FROM JSON_EACH($row_list);"
