@@ -24,6 +24,8 @@
 __version__ = "2026.3.1"
 __version_info__ = ("2026", "3", "1")
 
+import csv
+import io
 import json
 import math
 import pathlib
@@ -389,6 +391,110 @@ SELECT LGBM_DLOPEN('{lib_lgbm}');
     return db
 
 
+def db_table_import( # noqa: C901 PLR0912 PLR0913
+    db=None,
+    filename=None,
+    header_missing=None,
+    mode=None,
+    table_name=None,
+    text_data=None,
+):
+    """This function will create table from imported csv/json <textData>."""
+    row_list = []
+    rowid_list = []
+    if filename:
+        with pathlib.Path(filename).open(encoding="utf-8") as f:
+            text_data = f.read()
+    if text_data is None:
+        text_data = ""
+    if mode == "csv":
+        row_list = json_row_list_from_csv(text_data)
+    elif mode == "tsv":
+        row_list = [
+            line.split("\t") for line in text_data.strip().splitlines()
+        ]
+    # elif mode == "json":
+    else:
+        try:
+            row_list = json.loads(text_data)
+        except json.JSONDecodeError:
+            row_list = []
+    # Normalize row_list if it's a dictionary
+    if isinstance(row_list, dict):
+        rowid_list = list(row_list.keys())
+        row_list = list(row_list.values())
+    if not isinstance(row_list, list):
+        row_list = []
+    # Handle header_missing
+    if header_missing and row_list and isinstance(row_list[0], list):
+        header = [str(i + 1) for i in range(len(row_list[0]))]
+        row_list.insert(0, header)
+    # Normalize empty data
+    if not row_list:
+        row_list = [["undefined"]]
+    # Normalize objects to lists if necessary
+    if not isinstance(row_list[0], list):
+        # Extract unique keys across all objects
+        all_keys = []
+        for obj in row_list:
+            if isinstance(obj, dict):
+                all_keys.extend(obj.keys())
+        # Preserve order and get unique keys
+        col_list = list(dict.fromkeys(all_keys))
+        normalized_rows = [col_list] # First row is headers
+        for obj in row_list:
+            normalized_rows.extend(
+                [obj.get(key) for key in col_list]
+                for obj in row_list
+            )
+        row_list = normalized_rows
+    # Extract col_list from first row
+    col_list = row_list.pop(0)
+    # Preserve rowid if it existed from a dict import
+    if rowid_list:
+        col_list.insert(0, "rowid")
+        for i in range(len(row_list)):
+            row_list[i].insert(0, rowid_list[i])
+    # Normalize column names (regex sanitization)
+    seen_cols = set()
+    final_cols = []
+    for col_name in col_list:
+        clean_name = str(col_name).strip()
+        clean_name = re.sub(r"\W", "_", clean_name)
+        # Ensure it starts with a letter or underscore
+        if not re.match(r"[A-Z_a-z]", clean_name) or clean_name == "":
+            clean_name = "_" + clean_name
+        # Handle duplicates
+        suffix = 1
+        candidate = clean_name
+        while candidate in seen_cols:
+            suffix += 1
+            candidate = f"{clean_name}_{suffix}"
+        seen_cols.add(candidate)
+        final_cols.append(candidate)
+    # create dbtable from rowList
+    db_exec(
+        bind_list={
+            "row_list": json.dumps(row_list),
+        },
+        db=db,
+        sql=(
+            f"CREATE TABLE {table_name} ({','.join(col_list)});"
+            if not row_list else
+            (
+                f"CREATE TABLE {table_name} AS SELECT "
+                + ",".join(
+                    [
+                        f"value->>{ii} AS {col}"
+                        for ii, col in enumerate(col_list)
+                    ],
+                )
+                + " FROM JSON_EACH($row_list);"
+            )
+        ),
+    )
+
+
 def debuginline(*argv):
     """This function will print <argv> to stderr and then return <argv>[0]."""
     arg0 = argv[0] if argv else None
@@ -666,6 +772,22 @@ def jsbaton_set_value(baton, argi, val, bufi, reference_list): # noqa: C901 PLR0
 def noop(val=None, *_, **__):
     """This function will do nothing except return <val>."""
     return val
+
+
+def json_row_list_from_csv(csv_text):
+    """This function will convert <csv>-text to json list-of-list."""
+    # Normalize line endings and trim as per original logic
+    csv_text = csv_text.rstrip() + "\n"
+    # Use io.StringIO to treat the string as a file for the csv reader
+    file = io.StringIO(csv_text)
+    reader = csv.reader(
+        file,
+        quotechar='"',
+        delimiter=",",
+        quoting=csv.QUOTE_MINIMAL,
+        skipinitialspace=False,
+    )
+    return [row for row in reader if row]
 
 
 def objectdeepcopywithkeyssorted(obj):

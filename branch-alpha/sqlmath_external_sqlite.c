@@ -217,8 +217,8 @@ shRollupFetch
                     "flags": "ig"
                 },
                 {
-                    "aa": "([\"']),([\"'])",
-                    "bb": "$1\\t$2",
+                    "aa": "\\b(c!=|c==|cTerm==)','",
+                    "bb": "$1'\\t'",
                     "flags": "g"
                 }
             ],
@@ -278916,7 +278916,7 @@ static int tsv_append(tsvReader *p, char c){
 }
 
 /* Read a single field of tsv text.  Compatible with rfc4180 and extended
-** with the option of having a separator other than "\t".
+** with the option of having a separator other than ",".
 **
 **   +  Input comes from p->in.
 **   +  Store results in p->z of length p->n.  Space to hold p->z comes
@@ -278990,7 +278990,7 @@ static char *tsv_read_one_field(tsvReader *p){
         }
       }
     }
-    while( c>'\t' || (c!=EOF && c!='\t' && c!='\n') ){
+    while( c>',' || (c!=EOF && c!='\t' && c!='\n') ){
       if( tsv_append(p, (char)c) ) return 0;
       c = tsv_getc(p);
     }
@@ -279300,14 +279300,14 @@ static int tsvtabConnect(
     if( nCol>0 && bHeader<1 ){
       for(iCol=0; iCol<nCol; iCol++){
         sqlite3_str_appendf(pStr, "%sc%d TEXT", zSep, iCol);
-        zSep = "\t";
+        zSep = ",";
       }
     }else{
       do{
         char *z = tsv_read_one_field(&sRdr);
         if( (nCol>0 && iCol<nCol) || (nCol<0 && bHeader) ){
           sqlite3_str_appendf(pStr,"%s\"%w\" TEXT", zSep, z);
-          zSep = "\t";
+          zSep = ",";
           iCol++;
         }
       }while( sRdr.cTerm=='\t' );
@@ -279316,7 +279316,7 @@ static int tsvtabConnect(
       }else{
         while( iCol<nCol ){
           sqlite3_str_appendf(pStr,"%sc%d TEXT", zSep, ++iCol);
-          zSep = "\t";
+          zSep = ",";
         }
       }
     }
