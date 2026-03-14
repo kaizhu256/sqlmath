@@ -5090,8 +5090,13 @@ static int Pybaton_getbuffer(
     Py_buffer * view,
     int flags
 ) {
-    return PyBuffer_FillInfo(view, (PyObject *) self, self->buf, self->len, 0,
-        flags);
+    return PyBuffer_FillInfo(   //
+        view,                   // view
+        (PyObject *) self,      // exporter
+        self->buf,              // buf
+        self->len,              // len
+        0,                      // readonly
+        flags);                 // flags
 }
 
 static int Pybaton_init(
@@ -5134,7 +5139,7 @@ static PyTypeObject PyBaton = {
     .tp_as_buffer = &Pybaton_as_buffer,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_init = (initproc) Pybaton_init,
-    .tp_itemsize = 0,
+    .tp_itemsize = 1,
     // .tp_new is set at runtime.
 };
 
