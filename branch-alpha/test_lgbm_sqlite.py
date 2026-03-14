@@ -44,16 +44,16 @@ class TestCaseSqlmath(unittest.TestCase):
 
     def test_lgbm(self):
         """Test lgbm handling-behavior."""
-        filePreb = "test_lgbm_preb.txt"
-        fileTest = "test_lgbm_binary.test"
-        fileTrain = "test_lgbm_binary.train"
-        sqlDataFile = f"""
+        file_preb = "test_lgbm_preb.txt"
+        file_test = "test_lgbm_binary.test"
+        file_train = "test_lgbm_binary.train"
+        sql_data_file = f"""
 UPDATE __lgbm_state
     SET
         data_train_handle = (
             SELECT
                 LGBM_DATASETCREATEFROMFILE(
-                    '{fileTrain}', -- filename
+                    '{file_train}', -- filename
                     'max_bin=15', -- param_data
                     NULL -- reference
                 )
@@ -63,13 +63,13 @@ UPDATE __lgbm_state
         data_test_handle = (
             SELECT
                 LGBM_DATASETCREATEFROMFILE(
-                    '{fileTest}', -- filename
+                    '{file_test}', -- filename
                     'max_bin=15', -- param_data
                     data_train_handle -- reference
                 )
         );
         """
-        sqlDataTable = """
+        sql_data_table = """
 UPDATE __lgbm_state
     SET
         data_train_handle = (
@@ -109,8 +109,7 @@ UPDATE __lgbm_state
             FROM __lgbm_file_test
         );
         """
-        sqlIi = 0
-        sqlPredictFile = f"""
+        sql_predict_file = f"""
 SELECT
         LGBM_PREDICTFORFILE(
             model,                      -- model
@@ -119,7 +118,7 @@ SELECT
             25,                         -- num_iteration
             '',                         -- param_pred
             --
-            '{fileTest}',               -- data_filename
+            '{file_test}',               -- data_filename
             0,                          -- data_has_header
             'file_actual'                -- result_filename
         )
@@ -132,13 +131,13 @@ SELECT
             25,                         -- num_iteration
             '',                         -- param_pred
             --
-            '{fileTest}',               -- data_filename
+            '{file_test}',               -- data_filename
             0,                          -- data_has_header
             'file_actual'                -- result_filename
         )
     FROM __lgbm_state;
         """
-        sqlPredictTable = f"""
+        sql_predict_table = f"""
 DROP TABLE IF EXISTS __lgbm_table_preb;
 CREATE TABLE __lgbm_table_preb AS
     SELECT
@@ -194,7 +193,7 @@ CREATE TABLE __lgbm_table_preb AS
         FROM __lgbm_file_test
     );
         """
-        sqlTrainData = """
+        sql_train_data = """
 UPDATE __lgbm_state
     SET
         model = LGBM_TRAINFROMDATASET(
@@ -216,7 +215,7 @@ UPDATE __lgbm_state
             data_test_handle -- test_data
         );
         """
-        sqlTrainFile = f"""
+        sql_train_file = f"""
 UPDATE __lgbm_state
     SET
         model = LGBM_TRAINFROMFILE(
@@ -234,12 +233,12 @@ UPDATE __lgbm_state
             50, -- num_iteration
             10, -- eval_step
             --
-            '{fileTrain}', -- file_train
+            '{file_train}', -- file_train
             'max_bin=15', -- param_data
-            '{fileTest}' -- file_test
+            '{file_test}' -- file_test
         );
         """
-        sqlTrainTable = """
+        sql_train_table = """
 UPDATE __lgbm_state
     SET
         model = (
@@ -273,18 +272,16 @@ UPDATE __lgbm_state
                 )
             FROM __lgbm_file_train
         );
-
 SELECT 1;
         """
         # --- Test Execution Function ---
-        def run_test_lgbm(sqlDataXxx, sqlTrainXxx, sqlPredictXxx, sqlIi):
+        def run_test_lgbm(sql_data_xxx, sql_train_xxx, sql_predict_xxx, sql_ii):
             db = sqlmath.db_open(":memory:")
-            file_actual = f".tmp/test_lgbm_preb_{sqlIi}.txt"
-
+            file_actual = f".tmp/test_lgbm_preb_{sql_ii}.txt"
             # Import initial data
-            for filename, table_name in [(filePreb, "__lgbm_file_preb"),
-                                    (fileTest, "__lgbm_file_test"),
-                                    (fileTrain, "__lgbm_file_train")]:
+            for filename, table_name in [(file_preb, "__lgbm_file_preb"),
+                                    (file_test, "__lgbm_file_test"),
+                                    (file_train, "__lgbm_file_train")]:
                 sqlmath.db_table_import(
                     db=db,
                     filename=filename,
@@ -309,66 +306,72 @@ CREATE TABLE __lgbm_state(
     model BLOB
 );
 INSERT INTO __lgbm_state(rowid) SELECT 1;
-
 -- lgbm - data
-{sqlDataXxx};
+{sql_data_xxx};
 UPDATE __lgbm_state
     SET
         data_test_num_data = LGBM_DATASETGETNUMDATA(data_test_handle),
         data_test_num_feature = LGBM_DATASETGETNUMFEATURE(data_test_handle),
         data_train_num_data = LGBM_DATASETGETNUMDATA(data_train_handle),
         data_train_num_feature = LGBM_DATASETGETNUMFEATURE(data_train_handle);
-
 -- lgbm - train
-{sqlTrainXxx};
+{sql_train_xxx};
             """)
+            debuginline(1)
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - predict
-{sqlPredictXxx.replace("file_actual", file_actual)};
-
+{sql_predict_xxx.replace("file_actual", file_actual)};
 -- lgbm - cleanup
 SELECT
         LGBM_DATASETFREE(data_test_handle),
         LGBM_DATASETFREE(data_train_handle)
     FROM __lgbm_state;
             """)
-
             # Predict and Cleanup
             # Note: .replace() handles the dynamic filename as the JS regex did
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - predict
-{sqlPredictXxx.replace("file_actual", file_actual)};
-
+{sql_predict_xxx.replace("file_actual", file_actual)};
 -- lgbm - cleanup
 SELECT
         LGBM_DATASETFREE(data_test_handle),
         LGBM_DATASETFREE(data_train_handle)
     FROM __lgbm_state;
             """)
-
-            if sqlPredictXxx == sqlPredictFile:
-                db_table_import(db=db, filename=file_actual, header_missing=True, mode="tsv", table_name="__lgbm_table_preb")
-
-            db_file_save(db=db, filename=f".tmp/test_lgbm_{sqlIi}.sqlite")
-
+            if sql_predict_xxx == sql_predict_file:
+                sqlmath.db_table_import(
+                    db=db,
+                    filename=file_actual,
+                    header_missing=True,
+                    mode="tsv",
+                    table_name="__lgbm_table_preb",
+                )
+            sqlmath.db_file_save(
+                db=db,
+                filename=f".tmp/test_lgbm_{sql_ii}.sqlite",
+            )
             # Assertions
             state = sqlmath.db_exec_and_return_last_row(db=db, sql="""
-                SELECT data_test_num_data, data_test_num_feature, data_train_num_data, data_train_num_feature
-                FROM __lgbm_state;
+SELECT
+        data_test_num_data,
+        data_test_num_feature,
+        data_train_num_data,
+        data_train_num_feature
+    FROM __lgbm_state;
             """)
-            assert state == {
+            assert state == { # noqa: S101
                 "data_test_num_data": 500,
                 "data_test_num_feature": 28,
                 "data_train_num_data": 7000,
                 "data_train_num_feature": 28,
             }
-
         # --- Combinatorial Loop ---
-        for dataSql in [sqlDataFile, sqlDataTable]:
-            for trainSql in [sqlTrainData, sqlTrainFile]:
-                for predictSql in [sqlPredictFile, sqlPredictTable]:
-                    sqlIi += 1
-                    run_test_lgbm(dataSql, trainSql, predictSql, sqlIi)
+        sql_ii = 0
+        for data_sql in [sql_data_file, sql_data_table]:
+            for train_sql in [sql_train_data, sql_train_file, sql_train_table]:
+                for predict_sql in [sql_predict_file, sql_predict_table]:
+                    sql_ii += 1
+                    run_test_lgbm(data_sql, train_sql, predict_sql, sql_ii)
 
 if __name__ == "__main__":
     unittest.main()
