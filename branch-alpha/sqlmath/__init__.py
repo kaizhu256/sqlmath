@@ -161,13 +161,9 @@ def assert_or_throw(condition, message):
         )
 
 
-def db_call(baton, arglist, mode_debug=None):
+def db_call(baton, arglist):
     """This function will call c-function dbXxx() with given <funcname>."""
     """and return [<baton>, ...arglist]."""
-    # !! # copy argList to avoid side-effect
-    # !! arglist = arglist.copy()
-    if mode_debug:
-        print(arglist, sys.stderr)
     assert_or_throw(
         len(arglist) <= JSBATON_ARGC,
         f"db_call - len(arglist) must be less than than {JSBATON_ARGC}",
@@ -197,7 +193,6 @@ def db_call(baton, arglist, mode_debug=None):
                 val if val.endswith("\u0000") else val + "\u0000",
                 None,
                 None,
-                mode_debug,
             )
             continue
         msg = f'db_call - invalid arg-type "{type(val)}"'
@@ -217,7 +212,6 @@ def db_close(db):
 def db_exec(
     bind_list=None,
     db=None,
-    mode_debug=None,
     response_type=None,
     sql=None,
 ):
@@ -247,8 +241,6 @@ def db_exec(
                 bufi,
                 externalbuffer_list,
             )
-    if mode_debug:
-        print(len(sql), sql, sys.stderr)
     db_call(
         baton,
         [
@@ -267,7 +259,6 @@ def db_exec(
                 else 0
             ),
         ],
-        mode_debug=mode_debug,
     )
     match response_type:
         case "arraybuffer":
@@ -279,10 +270,8 @@ def db_exec(
         case _:
             table_list = []
             json_raw = _pybatonStealCbuffer(baton, 0, 1)
-            if mode_debug:
-                print(json.dumps(json_raw), sys.stderr)
-            # !! if not json_raw:
-                # !! return None
+            if not json_raw:
+                return None
             for table in json.loads(json_raw):
                 col_list = tuple(enumerate(table.pop(0)))
                 table_list.append([
@@ -552,7 +541,7 @@ def jsbaton_get_string(baton, argi):
     )
 
 
-def jsbaton_set_value(baton, argi, val, bufi, reference_list, mode_debug=None):
+def jsbaton_set_value(baton, argi, val, bufi, reference_list):
     """
     This function will push <val> to buffer <baton>.
 
@@ -704,11 +693,6 @@ def jsbaton_set_value(baton, argi, val, bufi, reference_list, mode_debug=None):
             val = bytes(val, "utf-8")
             vtype = SQLITE_DATATYPE_TEXT
             vsize = 4 + len(val)
-            if mode_debug:
-                print({
-                    vsize,
-                    val,
-                })
         # 30. 1.tuple
         # 31. json
         case _:
