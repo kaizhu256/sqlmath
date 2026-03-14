@@ -290,9 +290,6 @@ SELECT 1;
                     mode="tsv",
                     table_name=table_name,
                 )
-                # !! sqlmath.db_exec(db=db, sql=f"""
-# !! CREATE VIRTUAL TABLE {table_name} USING tsv(filename='{filename}');
-                # !! """)
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - init
 CREATE TABLE __lgbm_state(
@@ -386,6 +383,7 @@ SELECT ROUND(_1, 8) AS _1 FROM __lgbm_file_preb;
                 for predict_sql in [sql_predict_file, sql_predict_table]:
                     sql_ii += 1
                     run_test_lgbm(data_sql, train_sql, predict_sql, sql_ii)
+
 
 if __name__ == "__main__":
     unittest.main()

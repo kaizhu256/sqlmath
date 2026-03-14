@@ -1557,7 +1557,6 @@ assertJsonEqual(
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1590,11 +1589,15 @@ assertJsonEqual(
     db.connPool = connPool;
     if (!IS_BROWSER &amp;&amp; !DB_OPEN_INIT) {
         DB_OPEN_INIT = true;
-        // init lgbm
-        libLgbm = process.platform;
-        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
-        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
-        libLgbm = libL...
+        await Promise.all([
+            // PRAGMA busy_timeout
+            dbExecAsync({
+                db,
+                sql: (`
+PRAGMA busy_timeout = ${timeoutBusy};
+                `)
+            }),
+            // LGBM_D...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...

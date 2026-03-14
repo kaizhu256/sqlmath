@@ -1017,7 +1017,6 @@ async function dbOpenAsync({
 // );
     let connPool;
     let db = {busy: 0, filename, ii: 0};
-    let libLgbm;
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
     assertOrThrow(
         !dbData || isExternalBuffer(dbData),
@@ -1050,21 +1049,34 @@ async function dbOpenAsync({
     db.connPool = connPool;
     if (!IS_BROWSER && !DB_OPEN_INIT) {
         DB_OPEN_INIT = true;
-        // init lgbm
-        libLgbm = process.platform;
-        libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
-        libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
-        libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
-        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-        await moduleFs.promises.access(libLgbm).then(async function () {
-            await dbExecAsync({
+        await Promise.all([
+            // PRAGMA busy_timeout
+            dbExecAsync({
                 db,
                 sql: (`
 PRAGMA busy_timeout = ${timeoutBusy};
-SELECT LGBM_DLOPEN('${libLgbm}');
                 `)
-            });
-        }).catch(noop);
+            }),
+            // LGBM_DLOPEN
+            (async function () {
+                let libLgbm;
+                libLgbm = process.platform;
+                libLgbm = libLgbm.replace("darwin", "lib_lightgbm.dylib");
+                libLgbm = libLgbm.replace("win32", "lib_lightgbm.dll");
+                libLgbm = libLgbm.replace(process.platform, "lib_lightgbm.so");
+                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+                await moduleFs.promises.access(
+                    libLgbm
+                ).then(async function () {
+                    await dbExecAsync({
+                        db,
+                        sql: (`
+SELECT LGBM_DLOPEN('${libLgbm}');
+                        `)
+                    });
+                }).catch(noop);
+            }())
+        ]);
     }
     return db;
 }
