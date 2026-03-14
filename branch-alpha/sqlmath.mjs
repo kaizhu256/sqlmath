@@ -87,7 +87,7 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 let DB_EXEC_PROFILE_DICT = {};
 let DB_EXEC_PROFILE_MODE;
 let DB_EXEC_PROFILE_SQL_LENGTH;
-let DB_OPEN_INIT;
+let DB_STATE = {};
 let IS_BROWSER;
 let SQLMATH_EXE;
 let SQLMATH_NODE;
@@ -1047,8 +1047,8 @@ async function dbOpenAsync({
         return ptr;
     }));
     db.connPool = connPool;
-    if (!IS_BROWSER && !DB_OPEN_INIT) {
-        DB_OPEN_INIT = true;
+    if (!IS_BROWSER && !DB_STATE.init) {
+        DB_STATE.init = true;
         await Promise.all([
             // PRAGMA busy_timeout
             dbExecAsync({
@@ -1074,6 +1074,7 @@ PRAGMA busy_timeout = ${timeoutBusy};
 SELECT LGBM_DLOPEN('${libLgbm}');
                         `)
                     });
+                    DB_STATE.lgbm = true;
                 }).catch(noop);
             }())
         ]);
@@ -1915,6 +1916,7 @@ sqlmathInit(); // coverage-hack
 
 export {
     DB_EXEC_PROFILE_DICT,
+    DB_STATE,
     LGBM_DTYPE_FLOAT32,
     LGBM_DTYPE_FLOAT64,
     LGBM_DTYPE_INT32,
