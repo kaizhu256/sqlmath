@@ -25,6 +25,7 @@ test_lgbm_sqlite.py.
 python test_lgbm_sqlite.py --verbose
 """
 
+import pathlib
 import unittest
 
 import sqlmath
@@ -317,18 +318,6 @@ UPDATE __lgbm_state
 -- lgbm - train
 {sql_train_xxx};
             """)
-            debuginline(1)
-            sqlmath.db_exec(db=db, sql=f"""
--- lgbm - predict
-{sql_predict_xxx.replace("file_actual", file_actual)};
--- lgbm - cleanup
-SELECT
-        LGBM_DATASETFREE(data_test_handle),
-        LGBM_DATASETFREE(data_train_handle)
-    FROM __lgbm_state;
-            """)
-            # Predict and Cleanup
-            # Note: .replace() handles the dynamic filename as the JS regex did
             sqlmath.db_exec(db=db, sql=f"""
 -- lgbm - predict
 {sql_predict_xxx.replace("file_actual", file_actual)};
@@ -351,20 +340,45 @@ SELECT
                 filename=f".tmp/test_lgbm_{sql_ii}.sqlite",
             )
             # Assertions
-            state = sqlmath.db_exec_and_return_last_row(db=db, sql="""
+            sqlmath.assert_json_equal(
+                sqlmath.db_exec(
+                    db=db,
+                    sql="""
 SELECT
         data_test_num_data,
         data_test_num_feature,
         data_train_num_data,
         data_train_num_feature
     FROM __lgbm_state;
-            """)
-            assert state == { # noqa: S101
-                "data_test_num_data": 500,
-                "data_test_num_feature": 28,
-                "data_train_num_data": 7000,
-                "data_train_num_feature": 28,
-            }
+                    """,
+                )[-1][-1],
+                {
+                    "data_test_num_data": 500.0,
+                    "data_test_num_feature": 28.0,
+                    "data_train_num_data": 7000.0,
+                    "data_train_num_feature": 28.0,
+                },
+            )
+            if sql_predict_xxx == sql_predict_file:
+                with pathlib.Path(file_actual).open("r", encoding="utf8") as ff:
+                    data_actual = ff.read()
+                with pathlib.Path(file_preb).open("r", encoding="utf8") as ff:
+                    data_preb = ff.read()
+                sqlmath.assert_json_equal(data_actual, data_preb)
+            sqlmath.assert_json_equal(
+                sqlmath.db_exec(
+                    db=db,
+                    sql="""
+SELECT ROUND(_1, 8) AS _1 FROM __lgbm_table_preb;
+                    """,
+                )[-1],
+                sqlmath.db_exec(
+                    db=db,
+                    sql="""
+SELECT ROUND(_1, 8) AS _1 FROM __lgbm_file_preb;
+                    """,
+                )[-1],
+            )
         # --- Combinatorial Loop ---
         sql_ii = 0
         for data_sql in [sql_data_file, sql_data_table]:
