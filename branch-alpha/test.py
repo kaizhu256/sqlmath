@@ -267,8 +267,9 @@ class TestCaseSqlmath(unittest.TestCase):
             [[], "[]"],
             # 11. 0.memoryview
             [memoryview(b""), None],
-            # !! [memoryview(bytes("\u0000", "utf-8")), None],
-            # !! [memoryview(bytes("\u0000\U0001f600\u0000", "utf-8")), None],
+            # ugly-hack - segmentation-fault
+            # [memoryview(bytes("\u0000", "utf-8")), None],
+            # [memoryview(bytes("\u0000\U0001f600\u0000", "utf-8")), None],
             # 12. 0.range
             [range(0), Exception],
             [range(1), Exception],
@@ -759,7 +760,6 @@ SELECT 1;
         ):
             db = db_open(":memory:")
             file_actual = f".tmp/test_lgbm_preb_{sql_ii}.py.txt"
-            # !! pathlib.Path(".tmp/").mkdir(parents=True, exist_ok=True)
             # Import initial data
             for filename, table_name in [
                 (file_preb, "__lgbm_file_preb"),
