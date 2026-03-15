@@ -30,6 +30,7 @@ import json
 import math
 import pathlib
 import re
+import sys
 import unittest
 
 from sqlmath import (
@@ -593,9 +594,9 @@ SELECT
             25,                         -- num_iteration
             '',                         -- param_pred
             --
-            '{file_test}',               -- data_filename
+            '{file_test}',              -- data_filename
             0,                          -- data_has_header
-            'file_actual'                -- result_filename
+            'file_actual'               -- result_filename
         )
     FROM __lgbm_state;
 SELECT
@@ -606,9 +607,9 @@ SELECT
             25,                         -- num_iteration
             '',                         -- param_pred
             --
-            '{file_test}',               -- data_filename
+            '{file_test}',              -- data_filename
             0,                          -- data_has_header
-            'file_actual'                -- result_filename
+            'file_actual'               -- result_filename
         )
     FROM __lgbm_state;
         """
@@ -756,19 +757,21 @@ SELECT 1;
             sql_train_xxx,
             sql_predict_xxx, sql_ii,
         ):
-            if not (
-                DB_STATE["lgbm"]
-                and pathlib.Path(file_preb).exists()
-            ):
-                return
             db = db_open(":memory:")
             file_actual = f".tmp/test_lgbm_preb_{sql_ii}.txt"
+            pathlib.Path(".tmp/").mkdir(parents=True, exist_ok=True)
             # Import initial data
             for filename, table_name in [
                 (file_preb, "__lgbm_file_preb"),
                 (file_test, "__lgbm_file_test"),
                 (file_train, "__lgbm_file_train"),
             ]:
+                if not (
+                    DB_STATE["lgbm"]
+                    and pathlib.Path(filename).exists()
+                ):
+                    print(f"{filename} - not exist", sys.stderr)
+                    return
                 db_table_import(
                     db=db,
                     filename=filename,
@@ -869,7 +872,6 @@ SELECT ROUND(_1, 8) AS _1 FROM __lgbm_file_preb;
                 )[-1],
             )
         # --- Combinatorial Loop ---
-        pathlib.Path(".tmp/").mkdir(parents=True, exist_ok=True)
         sql_ii = 0
         for data_sql in [sql_data_file, sql_data_table]:
             for train_sql in [sql_train_data, sql_train_file, sql_train_table]:
