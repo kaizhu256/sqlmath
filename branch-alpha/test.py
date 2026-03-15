@@ -758,19 +758,20 @@ SELECT 1;
             sql_predict_xxx, sql_ii,
         ):
             db = db_open(":memory:")
-            file_actual = f".tmp/test_lgbm_preb_{sql_ii}.txt"
-            pathlib.Path(".tmp/").mkdir(parents=True, exist_ok=True)
+            file_actual = f".tmp/test_lgbm_preb_{sql_ii}.py.txt"
+            # !! pathlib.Path(".tmp/").mkdir(parents=True, exist_ok=True)
             # Import initial data
             for filename, table_name in [
                 (file_preb, "__lgbm_file_preb"),
                 (file_test, "__lgbm_file_test"),
                 (file_train, "__lgbm_file_train"),
             ]:
+                # ugly-hack - Fix unknown file-not-exist-bug in wheel.
                 if not (
                     DB_STATE["lgbm"]
                     and pathlib.Path(filename).exists()
                 ):
-                    print(f"{filename} - not exist", sys.stderr)
+                    print(f"test_lgbm - {filename} - not exist", sys.stderr)
                     return
                 db_table_import(
                     db=db,
