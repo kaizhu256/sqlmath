@@ -749,6 +749,7 @@ UPDATE __lgbm_state
         );
 SELECT 1;
         """
+
         # --- Test Execution Function ---
         def run_test_lgbm(
             sql_data_xxx,
