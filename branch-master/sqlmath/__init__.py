@@ -21,8 +21,8 @@
 
 """sqlmath.py."""
 
-__version__ = "2026.1.31"
-__version_info__ = ("2026", "1", "31")
+__version__ = "2026.2.28"
+__version_info__ = ("2026", "2", "28")
 
 import json
 import math
@@ -393,7 +393,7 @@ def jsbaton_get_string(baton, argi):
     )
 
 
-def jsbaton_set_value(baton, argi, val, bufi, reference_list): # noqa: C901 PLR0912
+def jsbaton_set_value(baton, argi, val, bufi, reference_list):
     """
     This function will push <val> to buffer <baton>.
 
