@@ -6,7 +6,7 @@
 - none
 
 # v2026.3.2-beta
-- ci - Add ci-workflow for pull-requests.
+- ci - Update file .github/workflows/ci.yml with hook to run on pull-request.
 
 # v2026.3.1
 - sqlmath-python - bugfix - Fix 762-character-limit SQL-string-bug in python-function db_exec().
