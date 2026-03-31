@@ -12,6 +12,11 @@ on:
       - alpha
       - beta
       - master
+  pull_request:
+    branches:
+      - alpha
+      - beta
+      - master
   workflow_dispatch:
 env:
   MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
@@ -29,6 +34,7 @@ jobs:
         node_version:
           - "24"
         os:
+          - macos-15-intel
           - macos-latest
           - ubuntu-latest
           - windows-latest
