@@ -3919,12 +3919,9 @@ static void winSinefitSnr(
     if (saa <= 0 || !isnormal(saa)) {
         goto catch_nan;
     }
-    double inva = 1.0 / saa;
+    const double inva = 1.0 / saa;
     // guess snr - sww - using x-variance.p
     if (1) {
-        if (wsf->vxx <= 0 || !isnormal(wsf->vxx)) {
-            goto catch_nan;
-        }
         sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);       // window-period
     }
     // guess snr - spp - using multivariate-linear-regression
@@ -4049,15 +4046,12 @@ static void winSinefitSnr(
         // sww  = sww - dw
         const double invd = 1.0 / (hpp * hww - hpw * hpw);
         const double det = hpp * hww - hpw * hpw;
-        saa = sxy / sxx;
-        if (                    //
-            !isfinite(invd) ||  //
-            !isnormal(det) ||   //
-            !isnormal(saa) ||   //
-            fabs(det) < 1e-12 * (fabs(hpp * hww) + fabs(hpw * hpw))) {
+        if (!isfinite(invd) ||  //
+            fabs(det) < 1e-12   // Prevent ill-conditioned updates.
+            ) {
             goto catch_nan;
         }
-        inva = 1.0 / saa;
+        saa = sxy / sxx;
         spp -= invd * (+hww * gp - hpw * gw);
         sww -= invd * (-hpw * gp + hpp * gw);
         spp = fmod(spp, 2 * MATH_PI);
@@ -4091,40 +4085,18 @@ static void winSinefitSnr(
             spp = spp2;
             vrr1 = vrr2;
         }
-        if (vrr1 < 0) {
-            vrr1 = 0;
-        }
         wsf->see = sqrt(vrr1 * invn0);
     }
-    // Canonicalize sww >= 0: sin(-w*t+p) == -sin(w*t-p), so a negative
-    // sww describes the same curve family as a positive one with negated
-    // amplitude and negated phase. Needed so 2*pi/sww ("stt" key) stays
-    // a well-defined, positive period.
-    if (sww < 0) {
-        sww = -sww;
-        saa = -saa;
-        spp = -spp;
-    }
-    // Canonicalize saa >= 0: sin(t) == -sin(t+pi), so a negative
-    // amplitude and its pi-shifted-phase twin describe the same curve.
-    // Pin saa >= 0 so the feature doesn't carry arbitrary sign noise from
-    // which twin the solver happened to converge to.
-    if (saa < 0) {
-        saa = -saa;
-        spp += MATH_PI;
-    }
-    spp = fmod(spp, 2 * MATH_PI);
+    // save wsf
     if (spp < 0) {
         spp += 2 * MATH_PI;
     }
-    // save wsf
     wsf->saa = saa;
     wsf->spp = spp;
     wsf->sww = sww;
     return;
   catch_nan:
     wsf->saa = 0;
-    wsf->see = 0;
     wsf->spp = 0;
     wsf->sww = 0;
 }
