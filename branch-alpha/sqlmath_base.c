@@ -117,26 +117,20 @@ file sqlmath_h - start
 #endif                          // SQLITE_MAX_FUNCTION_ARG
 
 
+// Allocate only for xStep (nhead > 0). xValue/xFinal/xInverse pass nhead=0 and
+// must NOT create a context - allocating there pins nhead to 0 for the life of
+// the aggregate, which aliases doublewinHead() onto doublewinBody().
 #define DOUBLEWIN_AGGREGATE_CONTEXT(nhead) \
     Doublewin **dblwinAgg = (Doublewin **) sqlite3_aggregate_context(context, \
-        (int) (sizeof(*dblwinAgg) * (nhead != 0))); \
-    if (dblwinAgg != NULL) { \
-        if (doublewinAggmalloc(dblwinAgg, nhead) != SQLITE_OK) { \
-            sqlite3_result_error_nomem(context); \
-            return; \
-        } \
-    } else if (identityInt(nhead) > 0) { \
+        (nhead) == 0 ? 0 : sizeof(*dblwinAgg)); \
+    if (trueAlways() && (nhead) > 0 && (dblwinAgg == NULL || \
+        doublewinAggmalloc(dblwinAgg, (nhead)) != SQLITE_OK)) { \
         sqlite3_result_error_nomem(context); \
         return; \
     } \
-    Doublewin *dblwin; \
-    if (dblwinAgg != NULL && *dblwinAgg != NULL) { \
-        dblwin = *dblwinAgg; \
-    } else { \
-        double dblwinNull[32]; \
-        memset(dblwinNull, 0, sizeof(dblwinNull)); \
-        dblwin = (Doublewin *) dblwinNull; \
-    } \
+    double dblwinNull[32] = { 0 }; \
+    Doublewin *dblwin = dblwinAgg != NULL && *dblwinAgg != NULL ? *dblwinAgg \
+        : (Doublewin *) dblwinNull; \
     double *dblwin_body = doublewinBody(dblwin); \
     double *dblwin_head = doublewinHead(dblwin); \
     UNUSED_PARAMETER(dblwin_body); \
@@ -548,10 +542,9 @@ file sqlmath_base - start
 static int dbCount = 0;
 
 
-static inline int identityInt(
-    const int xx
+static inline int trueAlways(
 ) {
-    return xx;
+    return 1;
 }
 
 
