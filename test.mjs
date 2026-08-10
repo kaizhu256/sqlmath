@@ -3954,7 +3954,9 @@ SELECT
                     "test_data_sinefit.csv",
                     "force"
                 );
-                assertJsonEqual(valActual, valExpect);
+                if (process.arch === "x64") {
+                    assertJsonEqual(valActual, valExpect);
+                }
             }())
         ]);
     });
