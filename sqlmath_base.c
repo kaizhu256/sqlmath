@@ -4049,8 +4049,7 @@ static void winSinefitSnr(
         saa = sxy / sxx;
         if (!isfinite(invd) ||  //
             fabs(det) < 1e-12 ||        // Prevent ill-conditioned updates.
-            (saa <= 0 || !isnormal(saa))
-            ) {
+            !isnormal(saa)) {
             goto catch_nan;
         }
         inva = 1.0 / saa;
