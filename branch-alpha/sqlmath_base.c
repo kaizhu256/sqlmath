@@ -4292,6 +4292,12 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
     UNUSED_PARAMETER(argc);
     // validate argv
     const int icol = sqlite3_value_int(argv[1]);
+    if (sqlite3_value_type(argv[0]) != SQLITE_BLOB) {
+        sqlite3_result_error(context,
+            "sinefit_extract - 1st argument must be a sinefit-object blob",
+            -1);
+        return;
+    }
     const uint32_t bytes = (uint32_t) sqlite3_value_bytes(argv[0]);
     if (icol < 0) {
         sqlite3_result_error(context,
@@ -4299,14 +4305,19 @@ SQLMATH_FUNC static void sql1_sinefit_extract_func(
         return;
     }
     if (bytes <= 0 || SIZEOF_BLOB_MAX < bytes   //
-        || bytes < (icol + 1) * WIN_SINEFIT_N * sizeof(double)) {
+        || bytes < ((size_t) icol + 1) * WIN_SINEFIT_N * sizeof(double)) {
         sqlite3_result_error(context,
             "sinefit_extract"
             " - 1st argument as sinefit-object does not have enough columns",
             -1);
         return;
     }
-    const WinSinefit *wsf = (WinSinefit *) sqlite3_value_blob(argv[0]) + icol;
+    const WinSinefit *blob0 = sqlite3_value_blob(argv[0]);
+    if (blob0 == NULL) {
+        sqlite3_result_error_nomem(context);
+        return;
+    }
+    const WinSinefit *wsf = blob0 + icol;
     const char *key = (char *) sqlite3_value_text(argv[2]);
     if (key == NULL) {
         sqlite3_result_error(context,
@@ -4468,9 +4479,23 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     }
     // validate argv
     const int ncol = (argc - argc0) / 2;
-    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(blobCopy);
     if (argc < argc0 + 2 || argc != argc0 + ncol * 2) {
         goto catch_error;
+    }
+    // Reject non-blob, and fetch blob before bytes - see sinefit_extract.
+    if (sqlite3_value_type(blobCopy) != SQLITE_BLOB) {
+        sqlite3_result_error(context,
+            "sinefit_refitlast - 1st argument must be a sinefit-object blob",
+            -1);
+        sqlite3_value_free(blobCopy);
+        return;
+    }
+    const WinSinefit *blob0 = sqlite3_value_blob(blobCopy);
+    const uint32_t bytes = (uint32_t) sqlite3_value_bytes(blobCopy);
+    if (blob0 == NULL) {
+        sqlite3_value_free(blobCopy);
+        sqlite3_result_error_nomem(context);
+        return;
     }
     if (bytes <= 0 || SIZEOF_BLOB_MAX < bytes   //
         || bytes < ncol * WIN_SINEFIT_N * sizeof(double)) {
@@ -4481,7 +4506,6 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         sqlite3_value_free(blobCopy);
         return;
     }
-    const WinSinefit *blob0 = sqlite3_value_blob(blobCopy);
     // Validate nnn as double before casting - the blob is untrusted
     // user-input, and (int) of nan/inf/huge-double is undefined-behavior.
     const double nnn = blob0->nnn;
