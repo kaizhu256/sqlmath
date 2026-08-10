@@ -4088,14 +4088,24 @@ static void winSinefitSnr(
         }
         wsf->see = sqrt(vrr1 * invn0);
     }
-    // Canonicalize sign: sin(t) == -sin(t+pi), so an amplitude/phase pair
-    // and its negated-amplitude/pi-shifted-phase twin describe the same
-    // curve. Pin saa >= 0 so the feature doesn't carry arbitrary sign
-    // noise from which twin the solver happened to converge to.
+    // Canonicalize sww >= 0: sin(-w*t+p) == -sin(w*t-p), so a negative
+    // sww describes the same curve family as a positive one with negated
+    // amplitude and negated phase. Needed so 2*pi/sww ("stt" key) stays
+    // a well-defined, positive period.
+    if (sww < 0) {
+        sww = -sww;
+        saa = -saa;
+        spp = -spp;
+    }
+    // Canonicalize saa >= 0: sin(t) == -sin(t+pi), so a negative
+    // amplitude and its pi-shifted-phase twin describe the same curve.
+    // Pin saa >= 0 so the feature doesn't carry arbitrary sign noise from
+    // which twin the solver happened to converge to.
     if (saa < 0) {
         saa = -saa;
-        spp = fmod(spp + MATH_PI, 2 * MATH_PI);
+        spp += MATH_PI;
     }
+    spp = fmod(spp, 2 * MATH_PI);
     if (spp < 0) {
         spp += 2 * MATH_PI;
     }
