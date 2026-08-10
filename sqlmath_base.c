@@ -4099,6 +4099,7 @@ static void winSinefitSnr(
     return;
   catch_nan:
     wsf->saa = 0;
+    wsf->see = 0;
     wsf->spp = 0;
     wsf->sww = 0;
 }
