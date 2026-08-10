@@ -3922,6 +3922,9 @@ static void winSinefitSnr(
     double inva = 1.0 / saa;
     // guess snr - sww - using x-variance.p
     if (1) {
+        if (wsf->vxx <= 0 || !isnormal(wsf->vxx)) {
+            goto catch_nan;
+        }
         sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);       // window-period
     }
     // guess snr - spp - using multivariate-linear-regression
@@ -4087,6 +4090,9 @@ static void winSinefitSnr(
         if (vrr2 < vrr1) {
             spp = spp2;
             vrr1 = vrr2;
+        }
+        if (vrr1 < 0) {
+            vrr1 = 0;
         }
         wsf->see = sqrt(vrr1 * invn0);
     }
