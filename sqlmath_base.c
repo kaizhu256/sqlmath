@@ -4103,9 +4103,9 @@ static void winSinefitSnr(
     return;
   catch_nan:
     wsf->saa = 0;
+    wsf->see = 0;
     wsf->spp = 0;
     wsf->sww = 0;
-    wsf->see = 0;
 }
 
 SQLMATH_FUNC static void sql3_win_sinefit2_value(
