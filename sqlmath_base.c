@@ -4046,13 +4046,11 @@ static void winSinefitSnr(
         // sww  = sww - dw
         const double invd = 1.0 / (hpp * hww - hpw * hpw);
         const double det = hpp * hww - hpw * hpw;
-        if (!isfinite(invd) ||  //
-            fabs(det) < 1e-12   // Prevent ill-conditioned updates.
-            ) {
-            goto catch_nan;
-        }
         saa = sxy / sxx;
-        if (saa <= 0 || !isnormal(saa)) {
+        if (!isfinite(invd) ||  //
+            fabs(det) < 1e-12 ||        // Prevent ill-conditioned updates.
+            (saa <= 0 || !isnormal(saa))
+            ) {
             goto catch_nan;
         }
         inva = 1.0 / saa;
