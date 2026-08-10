@@ -3919,7 +3919,7 @@ static void winSinefitSnr(
     if (saa <= 0 || !isnormal(saa)) {
         goto catch_nan;
     }
-    const double inva = 1.0 / saa;
+    double inva = 1.0 / saa;
     // guess snr - sww - using x-variance.p
     if (1) {
         sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);       // window-period
@@ -4000,6 +4000,16 @@ static void winSinefitSnr(
         double hww = 0;         // hessian ddr/dwdw
         double sxx = 0;
         double sxy = 0;
+        // Refresh inva from the previous iteration's least-squares saa so
+        // the residual scale used for gp/gw/hpp/hpw/hww stays consistent
+        // with the amplitude actually being tracked, instead of pinned to
+        // the pre-loop power-law guess for the entire 8-iteration budget.
+        if (jj < 8) {
+            if (saa == 0 || !isfinite(saa)) {
+                goto catch_nan;
+            }
+            inva = 1.0 / saa;
+        }
         // yy   ~ saa*sin(sww*tt + spp)
         // cost = cos(sww*tt + spp)
         // sint = sin(sww*tt + spp)
