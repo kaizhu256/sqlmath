@@ -3564,6 +3564,85 @@ WITH tmp1 AS (
                     ]
                 );
             }()),
+            // test sinefit_refitlast malformed-blob handling-behavior
+            (async function () {
+                // WinSinefit field-offsets, in bytes
+                let offsetNnn = 5 * 8;
+                let offsetWbb = 16 * 8;
+                function blobMalformed(nnn, wbb) {
+                    // ncol=1 header = WIN_SINEFIT_N * 8 = 184 bytes
+                    let buf = new ArrayBuffer(184);
+                    let dv = new DataView(buf);
+                    dv.setFloat64(offsetNnn, nnn, true);
+                    dv.setFloat64(offsetWbb, wbb, true);
+                    return new Uint8Array(buf);
+                }
+                // test malformed-nnn handling-behavior
+                await Promise.all([
+                    0 / 0,              // nan
+                    1 / 0,              // inf
+                    -1 / 0,             // -inf
+                    1e300,              // overflows (int)
+                    -1,                 // negative
+                    0,                  // empty
+                    1.5                 // non-integral
+                ].map(function (nnn) {
+                    return assertErrorThrownAsync(function () {
+                        return dbExecAsync({
+                            bindList: [blobMalformed(nnn, 0)],
+                            db,
+                            sql: "SELECT sinefit_refitlast(?1, 0, 0)"
+                        });
+                    }, "sinefit_refitlast");
+                }));
+                // test malformed-wbb handling-behavior
+                // nnn=1 implies nbody = 3, so any wbb but 0 is invalid.
+                await Promise.all([
+                    0 / 0, 1 / 0, 1e300, -1, 1, 2, 3, 1.5
+                ].map(function (wbb) {
+                    return assertErrorThrownAsync(function () {
+                        return dbExecAsync({
+                            bindList: [blobMalformed(1, wbb)],
+                            db,
+                            sql: "SELECT sinefit_refitlast(?1, 0, 0)"
+                        });
+                    }, "sinefit_refitlast");
+                }));
+                // test truncated-blob handling-behavior
+                await assertErrorThrownAsync(function () {
+                    return dbExecAsync({
+                        bindList: [new Uint8Array(100)],
+                        db,
+                        sql: "SELECT sinefit_refitlast(?1, 0, 0)"
+                    });
+                }, "sinefit_refitlast");
+                // test wrong-argc handling-behavior
+                await assertErrorThrownAsync(function () {
+                    return dbExecAsync({
+                        bindList: [blobMalformed(1, 0)],
+                        db,
+                        sql: "SELECT sinefit_refitlast(?1, 0)"
+                    });
+                }, "sinefit_refitlast");
+            }()),
+            // test win_sinefit2-aggregate-normal handling-behavior
+            (async function () {
+                // test non-blob 1st-argument handling-behavior
+                await Promise.all([
+                    "'hello'",
+                    "123",
+                    "1.5",
+                    "NULL",
+                    "zeroblob(0)"
+                ].map(function (arg) {
+                    return assertErrorThrownAsync(function () {
+                        return dbExecAsync({
+                            db,
+                            sql: `SELECT sinefit_extract(${arg}, 0, 'nnn', 0)`
+                        });
+                    }, "sinefit_extract");
+                }));
+            }()),
             // test win_sinefit2-aggregate-normal handling-behavior
             (async function () {
                 let valActual;
