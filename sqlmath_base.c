@@ -4046,12 +4046,14 @@ static void winSinefitSnr(
         // sww  = sww - dw
         const double invd = 1.0 / (hpp * hww - hpw * hpw);
         const double det = hpp * hww - hpw * hpw;
-        if (!isfinite(invd) ||  //
-            fabs(det) < 1e-12   // Prevent ill-conditioned updates.
-            ) {
+        saa = sxy / sxx;
+        if (                    //
+            !isfinite(invd) ||  //
+            !isnormal(det) ||   //
+            !isnormal(saa) ||   //
+            fabs(det) < 1e-12 * (fabs(hpp * hww) + fabs(hpw * hpw))) {
             goto catch_nan;
         }
-        saa = sxy / sxx;
         spp -= invd * (+hww * gp - hpw * gw);
         sww -= invd * (-hpw * gp + hpp * gw);
         spp = fmod(spp, 2 * MATH_PI);
@@ -4085,12 +4087,16 @@ static void winSinefitSnr(
             spp = spp2;
             vrr1 = vrr2;
         }
+        if (vrr1 < 0) {
+            vrr1 = 0;
+        }
         wsf->see = sqrt(vrr1 * invn0);
     }
-    // save wsf
+    spp = fmod(spp, 2 * MATH_PI);
     if (spp < 0) {
         spp += 2 * MATH_PI;
     }
+    // save wsf
     wsf->saa = saa;
     wsf->spp = spp;
     wsf->sww = sww;
@@ -4099,6 +4105,7 @@ static void winSinefitSnr(
     wsf->saa = 0;
     wsf->spp = 0;
     wsf->sww = 0;
+    wsf->see = 0;
 }
 
 SQLMATH_FUNC static void sql3_win_sinefit2_value(
