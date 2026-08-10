@@ -4482,16 +4482,20 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
         return;
     }
     const WinSinefit *blob0 = sqlite3_value_blob(blobCopy);
-    const int nbody = (int) blob0->nnn * ncol * WIN_SINEFIT_STEP;
-    if (blob0->nnn <= 0
-        || bytes != (ncol * WIN_SINEFIT_N + nbody) * sizeof(double)) {
+    // Validate nnn as double before casting - the blob is untrusted
+    // user-input, and (int) of nan/inf/huge-double is undefined-behavior.
+    const double nnn = blob0->nnn;
+    const double nbodyDbl = nnn * ncol * WIN_SINEFIT_STEP;
+    if (!isfinite(nnn) || nnn < 1 || nnn != floor(nnn) ||
+        nbodyDbl > (double) (SIZEOF_BLOB_MAX / sizeof(double)) ||
+        bytes != (ncol * WIN_SINEFIT_N + (int) nbodyDbl) * sizeof(double)) {
         sqlite3_result_error(context,
             "sinefit_refitlast"
-            " - 1st argument as sinefit-object does not have enough columns",
-            -1);
+            " - 1st argument as sinefit-object is malformed", -1);
         sqlite3_value_free(blobCopy);
         return;
     }
+    const int nbody = (int) nbodyDbl;
     // init wsf0
     WinSinefit *wsf0 = sqlite3_malloc(bytes);
     if (wsf0 == NULL) {
@@ -4504,8 +4508,16 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
     WinSinefit *wsf = wsf0;
     argv += argc0;
     double *xxyy = (double *) (wsf0 + ncol);
-    const int wbb = (int) wsf->wbb;
-    if (!(0 <= wbb && wbb + ncol * WIN_SINEFIT_STEP <= nbody)) {
+    // Validate wbb as double before casting, and require alignment to a
+    // row-boundary - an unaligned wbb reads in-bounds but off-field.
+    const double wbbDbl = wsf->wbb;
+    if (!(isfinite(wbbDbl) && wbbDbl >= 0 && wbbDbl == floor(wbbDbl) &&
+            wbbDbl + ncol * WIN_SINEFIT_STEP <= nbody)) {
+        sqlite3_free(wsf0);
+        goto catch_error;
+    }
+    const int wbb = (int) wbbDbl;
+    if (wbb % (ncol * WIN_SINEFIT_STEP) != 0) {
         sqlite3_free(wsf0);
         goto catch_error;
     }
