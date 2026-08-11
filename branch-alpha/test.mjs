@@ -3625,6 +3625,23 @@ WITH tmp1 AS (
                     });
                 }, "sinefit_refitlast");
             }()),
+            // test sinefit_extract non-blob 1st-argument handling-behavior
+            (async function () {
+                await Promise.all([
+                    "'hello'",
+                    "123",
+                    "1.5",
+                    "NULL",
+                    "zeroblob(0)"
+                ].map(function (arg) {
+                    return assertErrorThrownAsync(function () {
+                        return dbExecAsync({
+                            db,
+                            sql: `SELECT sinefit_extract(${arg}, 0, 'nnn', 0)`
+                        });
+                    }, "sinefit_extract");
+                }));
+            }()),
             // test win_sinefit2-aggregate-normal handling-behavior
             (async function () {
                 // test non-blob 1st-argument handling-behavior
