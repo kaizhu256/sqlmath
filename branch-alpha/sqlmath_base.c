@@ -4128,8 +4128,7 @@ static void winSinefitSnr(
         // negative (nnn-5) would be clamped to 0 and silently report a
         // perfect fit, so guard nnn explicitly and yield NAN -> sqlite
         // NULL instead.
-        wsf->see = (nnn > 5
-            ? sqrt(fmax(0, vrr1 / (nnn - 5)))
+        wsf->see = (nnn > 5 ? sqrt(fmax(0, vrr1 / (nnn - 5)))
             : NAN);
     }
     // Canonicalize sww >= 0: sin(-w*t+p) == -sin(w*t-p).
