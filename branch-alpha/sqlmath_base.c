@@ -4020,7 +4020,7 @@ static void winSinefitSnr(
         }
     }
     // calculate snr - spp, sww - using gauss-newton-method
-    for (int jj = 8; jj > 0; jj -= 1) {
+    for (int jj = 16; jj > 0; jj -= 1) {
         // for (int jj = sqrt(nnn); jj > 1; jj -= 1) {
         double gp = 0;          // gradient-phase
         double gw = 0;          // gradient-frequency
