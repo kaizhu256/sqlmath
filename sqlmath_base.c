@@ -3945,9 +3945,10 @@ static double winSinefitGuessSww(
     // declare var0
     const int nrow = (int) nnn;
     const int stride = ncol * WIN_SINEFIT_STEP;
-    // kLo=1 is scanned but cannot win - a single cycle per window is not
-    // separable from the trend the lnr stage already removed. kHi stops
-    // one short of nyquist so the 3-tap parabola stays in-range.
+    // kLo=1 must be allowed to win: one cycle per window is the single
+    // most common best-fit on real price data, and is fully separable
+    // from the straight line the lnr stage removed. kHi stops one short
+    // of nyquist so the 3-tap parabola stays in-range.
     const int kLo = 1;
     const int kHi = nrow / 2 - 1;
     double bestA = 0;           // psd[kBest - 1]
@@ -4003,7 +4004,7 @@ static double winSinefitGuessSww(
                 cc[jj] * s1[jj] * s2[jj];
             // rolling 3-tap - candidate argmax is the middle bin, so
             // both neighbours are already known when it is tested.
-            if (kk >= kLo + 2 && prev1 > bestB) {
+            if (kk >= kLo + 1 && prev1 > bestB) {
                 bestA = prev2;
                 bestB = prev1;
                 bestC = psd;
@@ -4020,7 +4021,7 @@ static double winSinefitGuessSww(
     // low k is brutal - nnn/2 vs nnn/3 is a sixth of the window - so
     // without this the seed lands in discrete jumps.
     kf = kBest;
-    if (1) {
+    if (kBest > kLo) {
         const double la = log(bestA + 1e-300);
         const double lb = log(bestB + 1e-300);
         const double lc = log(bestC + 1e-300);
