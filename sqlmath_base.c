@@ -3979,7 +3979,7 @@ static double winSinefitGuessSww(
         double s1[4];
         double s2[4];
         for (int jj = 0; jj < 4; jj += 1) {
-            cc[jj] = k0 + jj <= kHi //
+            cc[jj] = k0 + jj <= kHi     //
                 ? 2.0 * cos(2 * MATH_PI * (k0 + jj) / nnn)
                 : 0.0;
             s1[jj] = 0;
@@ -4146,8 +4146,8 @@ static void winSinefitSnr(
         double hpp = 0;         // hessian ddr/dpdp
         double hpw = 0;         // hessian ddr/dpdw
         double hww = 0;         // hessian ddr/dwdw
-        // double sxx = 0;
-        // double sxy = 0;
+        double sxx = 0;
+        double sxy = 0;
         // yy   ~ saa*sin(sww*tt + spp)
         // cost = cos(sww*tt + spp)
         // sint = sin(sww*tt + spp)
@@ -4170,8 +4170,8 @@ static void winSinefitSnr(
             const double cost = cos(tmp);
             const double sint = sin(tmp);
             // solve saa
-            // sxx += sint * sint;
-            // sxy += sint * WIN_SINEFIT_WSF_RR(ii);
+            sxx += sint * sint;
+            sxy += sint * WIN_SINEFIT_WSF_RR(ii);
             // solve spp, sww
             const double rr = inva * WIN_SINEFIT_WSF_RR(ii) - sint;
             tmp = -cost * rr;
@@ -4194,12 +4194,12 @@ static void winSinefitSnr(
         // sww  = sww - dw
         const double invd = 1.0 / (hpp * hww - hpw * hpw);
         const double det = hpp * hww - hpw * hpw;
-        // saa = sxy / sxx;
-        // inva = 1.0 / saa;
+        saa = sxy / sxx;
+        inva = 1.0 / saa;
         if (                    //
             !isfinite(invd) ||  //
             !isnormal(det) ||   //
-            // !isnormal(saa) ||   //
+            !isnormal(saa) ||   //
             fabs(det) < 1e-12 * (fabs(hpp * hww) + fabs(hpw * hpw))) {
             goto catch_nan;
         }
