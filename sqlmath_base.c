@@ -3915,6 +3915,129 @@ static void winSinefitLnrFull(
     wsf->vrr = vrr;
 }
 
+static double winSinefitGuessSww(
+    const double *xxyy,
+    const int nbody,
+    const int ncol,
+    const double vxx,
+    const double nnn
+) {
+// This function will guess sine angular-frequency <sww>, by scanning the
+// goertzel-periodogram of the lnr-residual <rr> and returning the
+// parabolically-interpolated argmax.
+//
+// Complexity is O(nnn^2) - (nnn/2 bins) * (nnn samples) - versus O(nnn)
+// for the rest of winSinefitSnr. The per-iteration cost is ~10x lower
+// (one fma-chain, no libm), so the crossover where this dominates is
+// near nnn=700. Fine at nnn=42/252; revisit if the window grows.
+//
+// <xx> is assumed evenly-spaced, with spacing recovered from <vxx>. Real
+// spacing is 1,1,1,1,3 across weekends; the resulting phase-error is
+// bounded by ~1 x-unit and does not accumulate, so it is negligible at
+// the long periods that matter and only degrades near nyquist. The
+// gauss-newton stage refits against the true <xx> regardless - this is
+// only a seed, and only needs to land within half a bin.
+//
+// Reads <rr> but never <xx>: psd = |sum|^2 is invariant to the constant
+// phase that the <xx> origin contributes, and - being a circular shift -
+// invariant to where dblwin's ring-buffer happens to be rotated. The
+// latter holds exactly only on integer bins, hence the k/nnn grid.
+    // declare var0
+    const int nrow = (int) nnn;
+    const int stride = ncol * WIN_SINEFIT_STEP;
+    // kLo=1 is scanned but cannot win - a single cycle per window is not
+    // separable from the trend the lnr stage already removed. kHi stops
+    // one short of nyquist so the 3-tap parabola stays in-range.
+    const int kLo = 1;
+    const int kHi = nrow / 2 - 1;
+    double bestA = 0;           // psd[kBest - 1]
+    double bestB = -1;          // psd[kBest]
+    double bestC = 0;           // psd[kBest + 1]
+    double kf = 0;
+    double prev1 = 0;           // psd[k - 1]
+    double prev2 = 0;           // psd[k - 2]
+    int kBest = 0;
+    // validate arg
+    if (nrow < 16 || nrow > 0x00ffffff || stride <= 0 ||
+        nbody != nrow * stride || kHi < kLo + 2 ||
+        vxx <= 0 || !isnormal(vxx)) {
+        return 0;
+    }
+    // xspan = nnn*dx = dft-periodicity-length in x-units, recovered from
+    // the population sum-of-squared-deviations of an arithmetic sequence:
+    //     vxx = dx*dx * nnn*(nnn*nnn - 1) / 12
+    const double xspan = sqrt(12.0 * vxx * nnn / (nnn * nnn - 1.0));
+    if (xspan <= 0 || !isnormal(xspan)) {
+        return 0;
+    }
+    // scan periodogram - 4 goertzel-chains interleaved, so the serial
+    // recurrence s0 = rr + cc*s1 - s2 is throughput-bound not latency-
+    // bound. Bins past kHi run with cc=0 and are discarded.
+    for (int k0 = kLo; k0 <= kHi; k0 += 4) {
+        double cc[4];
+        double s1[4];
+        double s2[4];
+        for (int jj = 0; jj < 4; jj += 1) {
+            cc[jj] = k0 + jj <= kHi //
+                ? 2.0 * cos(2 * MATH_PI * (k0 + jj) / nnn)
+                : 0.0;
+            s1[jj] = 0;
+            s2[jj] = 0;
+        }
+        for (int ii = 0; ii < nbody; ii += stride) {
+            const double rr = WIN_SINEFIT_WSF_RR(ii);
+            for (int jj = 0; jj < 4; jj += 1) {
+                const double s0 = rr + cc[jj] * s1[jj] - s2[jj];
+                s2[jj] = s1[jj];
+                s1[jj] = s0;
+            }
+        }
+        for (int jj = 0; jj < 4; jj += 1) {
+            const int kk = k0 + jj;
+            if (kk > kHi) {
+                break;
+            }
+            // |X_k|^2 recovered from the goertzel state, without the
+            // final complex rotation - the sin() term cancels.
+            const double psd = s1[jj] * s1[jj] + s2[jj] * s2[jj] -
+                cc[jj] * s1[jj] * s2[jj];
+            // rolling 3-tap - candidate argmax is the middle bin, so
+            // both neighbours are already known when it is tested.
+            if (kk >= kLo + 2 && prev1 > bestB) {
+                bestA = prev2;
+                bestB = prev1;
+                bestC = psd;
+                kBest = kk - 1;
+            }
+            prev2 = prev1;
+            prev1 = psd;
+        }
+    }
+    if (kBest <= 0 || bestB <= 0 || !isfinite(bestB)) {
+        return 0;
+    }
+    // interpolate argmax - parabola through log-power. Bin spacing at
+    // low k is brutal - nnn/2 vs nnn/3 is a sixth of the window - so
+    // without this the seed lands in discrete jumps.
+    kf = kBest;
+    if (1) {
+        const double la = log(bestA + 1e-300);
+        const double lb = log(bestB + 1e-300);
+        const double lc = log(bestC + 1e-300);
+        const double den = la - 2.0 * lb + lc;
+        if (fabs(den) > 1e-12) {
+            double delta = 0.5 * (la - lc) / den;
+            delta = fmax(-0.5, fmin(0.5, delta));
+            if (isfinite(delta)) {
+                kf += delta;
+            }
+        }
+    }
+    // bin kf = kf cycles per xspan
+    const double sww = 2 * MATH_PI * kf / xspan;
+    return isnormal(sww) ? sww : 0;
+}
+
 static void winSinefitSnr(
     WinSinefit * wsf,
     double *xxyy,
@@ -3926,9 +4049,6 @@ static void winSinefitSnr(
     // declare var0
     const double nnn = nbody / (ncol * WIN_SINEFIT_STEP);
     const double invn0 = 1.0 / nnn;
-    // const double swwMax = MATH_PI * (nnn - 1) / //
-    // sqrt(12.0 * wsf->vxx * invn0);
-    // const double swwMin = 4.0 * MATH_PI / sqrt(12.0 * wsf->vxx * invn0);
     double inva = 0;
     double saa = 0;
     double spp = 0;
@@ -3943,15 +4063,13 @@ static void winSinefitSnr(
     if (saa <= 0 || !isnormal(saa) || wsf->vxx <= 0 || !isnormal(wsf->vxx)) {
         goto catch_nan;
     }
-    // guess snr - sww - using x-M2 (sum of squared deviations from mxx)
+    // guess snr - sww - using goertzel-periodogram of lnr-residual
     if (1) {
-        // if (!isnormal(swwMax) || !isnormal(swwMin) || swwMin >= swwMax) {
-        //     // window too small/degenerate for any valid cycle count
-        //     goto catch_nan;
-        // }
-        // window-period
-        sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);
-        // sww = fmax(swwMin, fmin(swwMax, sww));
+        sww = winSinefitGuessSww(xxyy, nbody, ncol, wsf->vxx, nnn);
+        if (!isnormal(sww)) {
+            // fallback - window-period
+            sww = 2 * MATH_PI / sqrt(4.0 * wsf->vxx * invn0);
+        }
     }
     // guess snr - spp - using multivariate-linear-regression
     if (1) {
