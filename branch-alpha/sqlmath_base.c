@@ -3438,9 +3438,10 @@ SQLMATH_FUNC static void sql1_coinflip_extract_func(
     // names the pts convention, it is not the scale.
     if (strcmp(key, "biasba50") == 0) {
         sqlite3_result_double_or_null(context, (        //
-                0.5 * (agg->nhithead / agg->nhead       //
-                    + agg->nhittail / agg->ntail)       //
-                - 0.5));                                //
+                0.5 * (         //
+                    agg->nhithead / agg->nhead +        //
+                    agg->nhittail / agg->ntail) -       //
+                0.5));          //
         return;
     }
     // bias for head
