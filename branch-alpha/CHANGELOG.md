@@ -8,7 +8,7 @@
 - none
 
 # v2026.9.29
-- jslint - Move 242 line-leading && or || to line end.
+- jslint-ecma - Add ES2018-feature Asynchronous Iteration - for await...of.
 - sqlmath - Update sql-function WIN_COINFLIP2() to calculate 'biasba50' - balanced-accuracy-minus-50.
 
 # v2026.8.31
