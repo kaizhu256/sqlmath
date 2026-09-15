@@ -7,6 +7,10 @@
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
 
+# v2026.9.29
+- jslint-ecma - Add ES2018-feature Asynchronous Iteration - for await...of.
+- sqlmath - Update sql-function WIN_COINFLIP2() to calculate 'biasba50' - balanced-accuracy-minus-50.
+
 # v2026.8.31
 - jslint-ci - Update ci-shell-function shGitLsTree() to include sha256 hash of files.
 - sqlmath - Cleanup c-function winSinefitSnr().
