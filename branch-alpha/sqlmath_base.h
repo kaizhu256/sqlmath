@@ -3286,6 +3286,12 @@ static void tc_sha256_compress(unsigned int *iv, const uint8_t *data)
 
 
 /*
+repo https://github.com/microsoft/LightGBM/tree/v4.7.0
+committed 2026-07-18T20:10:03Z
+*/
+
+
+/*
 file https://github.com/microsoft/LightGBM/blob/v4.7.0/include/LightGBM/arrow.h
 */
 
