@@ -28,10 +28,10 @@ jobs:
         node_version:
           - "24"
         os:
-          - macos-15
           - macos-15-intel
+          - macos-latest
           - ubuntu-26.04
-          - windows-2025
+          - windows-latest
         python_version:
           - "3.12"
 # base - .github/workflows/ci.yml - beg
