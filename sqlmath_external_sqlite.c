@@ -290,7 +290,7 @@ shRollupFetch
 
 -  zTail = strrchr(zName, '_');
 +// hack-sqlite - fix warning
-+  const char *zTail = strrchr(zName, '_');
++  zTail = (const char *)strrchr(zName, '_');
 
 -#if HAVE_GMTIME_R
 +// hack-sqlite - HAVE_GMTIME_S
@@ -142045,7 +142045,7 @@ SQLITE_PRIVATE int sqlite3ShadowTableName(sqlite3 *db, const char *zName){
   char *zTail;                  /* Pointer to the last "_" in zName */
   Table *pTab;                  /* Table that zName is a shadow of */
 // hack-sqlite - fix warning
-  const char *zTail = strrchr(zName, '_');
+  zTail = (const char *)strrchr(zName, '_');
   if( zTail==0 ) return 0;
   *zTail = 0;
   pTab = sqlite3FindTable(db, zName, 0);
