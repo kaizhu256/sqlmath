@@ -25,11 +25,12 @@ test.py.
 python test.py --verbose
 """
 
-import datetime as dt
+import datetime
 import json
 import math
 import pathlib
 import re
+import sys
 import unittest
 
 from sqlmath import (
@@ -60,9 +61,9 @@ noop(debuginline)
 class TestCaseSqlmath(unittest.TestCase):
     """Custom TestCase."""
 
-    def test_db_bind(self) -> None:
+    def test_db_bind(self):
         """Test db_bind handling-behavior."""
-        def test_db_bind_exec(ii, val_in, val_expect) -> None:
+        def test_db_bind_exec(ii, val_in, val_expect):
             for bind_list, sql in [
                 [
                     [
@@ -127,7 +128,7 @@ class TestCaseSqlmath(unittest.TestCase):
                     "val_in": str(val_in),
                 })
 
-        def test_db_bind_lastblob(ii, val_in, val_expect) -> None:
+        def test_db_bind_lastblob(ii, val_in, val_expect):
             if val_expect is Exception:
                 assert_error_thrown(
                     lambda:
@@ -172,7 +173,7 @@ class TestCaseSqlmath(unittest.TestCase):
                 "val_in": str(val_in),
             })
 
-        def test_db_bind_response_type(ii, val_in, val_expect) -> None:
+        def test_db_bind_response_type(ii, val_in, val_expect):
             for response_type in [
                 "arraybuffer",
                 "list",
@@ -290,7 +291,7 @@ class TestCaseSqlmath(unittest.TestCase):
             [(), "[]"],
             [(None,), "[null]"],
             # 16. 0.misc
-            [dt.datetime.now(dt.timezone.utc), Exception],
+            [datetime.datetime.now(datetime.timezone.utc), Exception],
             [noop, Exception],
             [re.compile(""), Exception],
         ]):
@@ -298,7 +299,7 @@ class TestCaseSqlmath(unittest.TestCase):
             test_db_bind_lastblob(ii, val_in, val_expect)
             test_db_bind_response_type(ii, val_in, val_expect)
 
-    def test_db_close(self) -> None:
+    def test_db_close(self):
         """Test db_close handling-behavior."""
         db = db_open(":memory:")
         # test null-case handling-behavior
@@ -306,7 +307,7 @@ class TestCaseSqlmath(unittest.TestCase):
         # test close handling-behavior
         db_close(db)
 
-    def test_db_exec(self) -> None:
+    def test_db_exec(self):
         """Test db_exec handling-behavior."""
         db = db_open(":memory:")
         # test null-case handling-behavior
@@ -371,13 +372,13 @@ SELECT * FROM testDbExecAsync2;
                         ],
                     ],
                 )
-            except Exception as err: # noqa: BLE001
+            except Exception as err: # noqa: BLE001, PERF203
                 assert_or_throw(
                     "table testDbExecAsync1 already exists" in str(err),
                     err,
                 )
 
-    def test_db_file_xxx(self) -> None:
+    def test_db_file_xxx(self):
         """Test db_file_xxx handling-behavior."""
         db = db_open(":memory:")
         assert_error_thrown(
@@ -414,7 +415,7 @@ SELECT * FROM testDbExecAsync2;
         ]
         assert_json_equal(val_actual, val_expect)
 
-    def test_db_noop(self) -> None:
+    def test_db_noop(self):
         """Test db_noop handling-behavior."""
         for val_in, val_expect in [
             #  1. 0.NoneType
@@ -491,7 +492,7 @@ SELECT * FROM testDbExecAsync2;
             [(), Exception],
             [(None,), Exception],
             # 16. 0.misc
-            [dt.datetime.now(dt.timezone.utc), Exception],
+            [datetime.datetime.now(datetime.timezone.utc), Exception],
             [noop, Exception],
             [re.compile(""), Exception],
         ]:
@@ -513,12 +514,12 @@ SELECT * FROM testDbExecAsync2;
                 "val_in": val_in,
             })
 
-    def test_db_open(self) -> None:
+    def test_db_open(self):
         """Test db_open handling-behavior."""
         # test null-case handling-behavior
         assert_error_thrown(lambda: db_open(None), "invalid filename")
 
-    def test_lgbm(self) -> None:
+    def test_lgbm(self):
         """Test lgbm handling-behavior."""
         file_preb = "test_lgbm_preb.txt"
         file_test = "test_lgbm_binary.test"
@@ -756,7 +757,7 @@ SELECT 1;
             sql_data_xxx,
             sql_train_xxx,
             sql_predict_xxx, sql_ii,
-        ) -> None:
+        ):
             db = db_open(":memory:")
             file_actual = f".tmp/test_lgbm_preb_{sql_ii}.py.txt"
             # Import initial data
@@ -770,6 +771,7 @@ SELECT 1;
                     DB_STATE["lgbm"]
                     and pathlib.Path(filename).exists()
                 ):
+                    print(f"test_lgbm - {filename} - not exist", sys.stderr)
                     return
                 db_table_import(
                     db=db,
