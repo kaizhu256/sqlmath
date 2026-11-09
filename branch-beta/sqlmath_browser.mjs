@@ -12,7 +12,6 @@ import {
     noop,
     sqlmathWebworkerInit
 } from "./sqlmath.mjs";
-let BLOB_SAVE;
 let CRISPX = -0.5;
 let CRISPY = 0.5;
 let {
@@ -25,7 +24,7 @@ let DB_INIT = Promise.resolve();
 let DB_MAIN;
 let DB_QUERY;
 let DEBOUNCE_DICT = Object.create(null);
-let UI_ANIMATE_DATENOW;
+let UI_ANIMATE_DATENOW = Date.now();
 let UI_ANIMATE_DURATION = 250;
 let UI_ANIMATE_DURATION_INV = 1 / UI_ANIMATE_DURATION;
 let UI_ANIMATE_LIST = [];
@@ -38,6 +37,7 @@ let UI_FILE_SAVE = document.createElement("a");
 let UI_LOADING = document.getElementById("loadingPanel1");
 let UI_LOADING_COUNTER = 0;
 let UI_PAGE_SIZE = 256;
+let UI_RESIZE_WIDTH = window.innerWidth;
 let UI_ROW_HEIGHT = 16;
 let UI_VIEW_SIZE = 20;
 
@@ -97,14 +97,16 @@ function debounce(key, func, ...argList) {
 // this function will debounce <func> with given <key>
     let val = DEBOUNCE_DICT[key];
     if (val) {
+        val.argList = argList;
         val.func = func;
         return;
     }
     val = {
+        argList,
         func: noop,
         timerTimeout: setTimeout(function () {
             delete DEBOUNCE_DICT[key];
-            val.func(...argList);
+            val.func(...val.argList);
         }, 250)
     };
     DEBOUNCE_DICT[key] = val;
@@ -1242,16 +1244,14 @@ function fileSave({
     filename
 }) {
 // this function will save <buf> with given <filename>
-    // cleanup previous blob to prevent memory-leak
-    URL.revokeObjectURL(BLOB_SAVE);
     // create new blob
-    BLOB_SAVE = URL.createObjectURL(new Blob([
+    let url = URL.createObjectURL(new Blob([
         buf
     ]));
-    UI_FILE_SAVE.href = BLOB_SAVE;
-    // cleanup blob to prevent memory-leak
+    UI_FILE_SAVE.href = url;
+    // cleanup this blob, not a later save's, to prevent memory-leak
     setTimeout(function () {
-        URL.revokeObjectURL(UI_FILE_SAVE.href);
+        URL.revokeObjectURL(url);
     }, 30000);
     UI_FILE_SAVE.download = filename.toLowerCase().replace((
         /[^0-9a-z]+/g
@@ -1322,7 +1322,10 @@ async function init() {
     });
     // init event-handling
     [
+        ["#contentPanel1", "click", onTocToggle],
         ["#tocPanel1", "click", onDbAction],
+        ["#tocPanel1", "click", onTocToggle],
+        ["#tocToggle1", "click", onTocToggle],
         [".dbExec", "click", onDbExec],
         [".dbcrudExec", "click", onDbcrudExec],
         [".modalCancel", "click", onModalClose],
@@ -1354,11 +1357,10 @@ async function init() {
     });
     // init location.search
     await Promise.all(Array.from(
-        location.search.slice(1).split("&")
-    ).map(async function (elem) {
-        let [
-            key, val
-        ] = elem.split("=");
+        new URLSearchParams(location.search)
+    ).map(async function ([
+        key, val
+    ]) {
         switch (key) {
         case "demo":
             switch (val) {
@@ -1394,15 +1396,16 @@ async function init() {
             return;
         case "sqlDb":
             modeDemo = undefined;
-            DB_INIT = new Promise(async function (resolve) {
-                val = await fetch(val);
-                val = await val.arrayBuffer();
+            DB_INIT = (async function () {
+                let res = await fetch(val);
+                if (!res.ok) {
+                    throw new Error(`sqlDb - fetch ${val} - ${res.status}`);
+                }
                 await dbFileLoadAsync({
                     db: DB_MAIN,
-                    dbData: val
+                    dbData: await res.arrayBuffer()
                 });
-                resolve();
-            });
+            }());
             return;
         case "sqlScript":
             modeDemo = undefined;
@@ -2084,6 +2087,12 @@ function onModalClose({
 
 function onResize() {
 // this function will handle resize-event
+    // ignore height-only resize, e.g. ios url-bar collapsing on scroll,
+    // which would otherwise rebuild every chart and lose its zoom
+    if (window.innerWidth === UI_RESIZE_WIDTH) {
+        return;
+    }
+    UI_RESIZE_WIDTH = window.innerWidth;
     document.querySelectorAll(
         "#dbchartList1 .contentElem"
     ).forEach(function (elem) {
@@ -2092,11 +2101,29 @@ function onResize() {
     uitableInitWithinView({});
 }
 
+function onTocToggle(evt) {
+// this function will open or close #tocPanel1 drawer on narrow screen:
+// #tocToggle1 toggles it, a toc-link or #contentPanel1 closes it
+    let isOpen = false;
+    if (evt.currentTarget.id === "tocToggle1") {
+        isOpen = !document.body.classList.contains("tocOpen");
+    } else if (
+        evt.currentTarget.id === "tocPanel1" && !evt.target.closest("a")
+    ) {
+        return;
+    }
+    document.body.classList.toggle("tocOpen", isOpen);
+    document.getElementById("tocToggle1").setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+}
+
 function stringHtmlSafe(str) {
 // this function will make <str> html-safe
 // https://stackoverflow.com/questions/7381974
     if (typeof str !== "string") {
-        str = String(str);
+        str = String(str ?? "");
     }
     return str.replace((
         /&/gu
@@ -2695,12 +2722,6 @@ CREATE TEMP TABLE __chart_series_xy1 AS
     SELECT
         series_index,
         xx,
-        LAG(xx, 1, NULL) OVER (
-            PARTITION BY series_index ORDER BY xx
-        ) AS xx_lag,
-        LEAD(xx, 1, NULL) OVER (
-            PARTITION BY series_index ORDER BY xx
-        ) AS xx_lead,
         yy
     FROM (
         SELECT
@@ -2895,7 +2916,7 @@ SELECT
             </rect>
             <text class="uichartTooltipText"></text>
         </g>
-        <g class="uichartMousetrackerList">/g>
+        <g class="uichartMousetrackerList"></g>
     </svg>
     </div>
     <div class="uichartAxislabel0">${stringHtmlSafe(uichart.xaxisTitle)}</div>
@@ -3008,6 +3029,7 @@ SELECT
         "diamond",
         "triangle-down"
     ];
+    let touchState;
     let xaxisMax;
     let xaxisMin;
     let xaxistickDict = {};
@@ -3058,7 +3080,6 @@ SELECT
         elemTspan = svgAttrSet("tspan");
         elemTspan.textContent = (function () {
             let num;
-            let numDigitList;
             let xOrY = (
                 isXaxis
                 ? "x"
@@ -3076,41 +3097,7 @@ SELECT
                 step: uichart[xOrY + "step"],
                 suffix: uichart[xOrY + "valueSuffix"]
             }).slice(0, 16);
-            // number already formatted
-            if (typeof num !== "number") {
-                return num;
-            }
-            // small number
-            if (Math.abs(num) < 1000) {
-                return num.toLocaleString();
-            }
-            // large number
-            num = Math.round(num).toLocaleString();
-            numDigitList = num.split(
-                /[^+\-0-9]/
-            );
-            switch (numDigitList.length) {
-            // kilo
-            case 2:
-                return numDigitList[0] + "k";
-            // mega
-            case 3:
-                return numDigitList[0] + "M";
-            // giga
-            case 4:
-                return numDigitList[0] + "G";
-            // tera
-            case 5:
-                return numDigitList[0] + "T";
-            // peta
-            case 6:
-                return numDigitList[0] + "P";
-            // exa
-            case 7:
-                return numDigitList[0] + "E";
-            default:
-                return num;
-            }
+            return num;
         }());
         elemTicklabel = svgAttrSet("text", {
             "text-anchor": (
@@ -3178,6 +3165,99 @@ SELECT
             num += suffix;
         }
         return String(num);
+    }
+    function onCanvasTouch(evt) {
+    // this function will handle touchscreen <evt> on canvas-area:
+    // 1-finger horizontal drag pans, 1-finger vertical drag scrolls page,
+    // 2-finger pinch zooms around the pinch-center
+        let fingerList = Array.from(evt.touches).map(function ({
+            clientX,
+            clientY
+        }) {
+            return {
+                clientY,
+                xfrac: (
+                    clientX -
+                    elemCanvasFixed.getBoundingClientRect().left -
+                    plotLeft
+                ) / plotWidth
+            };
+        });
+        let spanNow;
+        let spanOld;
+        let xmax = xdataMax;
+        let xmin = xdataMin;
+        let xwidth;
+        let xwidthMin = Math.min(xdataMax - xdataMin, 4 * xdataDxx);
+        // touchstart, touchend - re-anchor gesture to remaining fingers
+        if (evt.type !== "touchmove") {
+            touchState = fingerList.length && {
+                direction: (
+                    fingerList.length === 2
+                    ? "zoom"
+                    : undefined
+                ),
+                fingerList,
+                xmax: Math.min(xdataMax, xzoomMax ?? xdataMax),
+                xmin: Math.max(xdataMin, xzoomMin ?? xdataMin)
+            };
+            return;
+        }
+        if (!touchState || fingerList.length > 2) {
+            return;
+        }
+        // 1-finger - decide pan or page-scroll from first movement
+        if (!touchState.direction) {
+            spanNow = plotWidth * Math.abs(
+                fingerList[0].xfrac - touchState.fingerList[0].xfrac
+            );
+            spanOld = Math.abs(
+                fingerList[0].clientY - touchState.fingerList[0].clientY
+            );
+            if (Math.max(spanNow, spanOld) < 8) {
+                return;
+            }
+            touchState.direction = (
+                spanNow > spanOld
+                ? "pan"
+                : "scroll"
+            );
+        }
+        if (touchState.direction === "scroll") {
+            return;
+        }
+        evt.preventDefault();
+        xwidth = touchState.xmax - touchState.xmin;
+        if (touchState.direction === "pan") {
+            xmin = touchState.xmin - xwidth * (
+                fingerList[0].xfrac - touchState.fingerList[0].xfrac
+            );
+        } else if (fingerList.length === 2) {
+            spanOld = Math.max(0.01, Math.abs(
+                touchState.fingerList[0].xfrac - touchState.fingerList[1].xfrac
+            ));
+            spanNow = Math.max(0.01, Math.abs(
+                fingerList[0].xfrac - fingerList[1].xfrac
+            ));
+            // data-x under old pinch-center stays under new pinch-center
+            xmin = touchState.xmin + xwidth * 0.5 * (
+                touchState.fingerList[0].xfrac + touchState.fingerList[1].xfrac
+            );
+            xwidth = Math.max(xwidthMin, Math.min(
+                xdataMax - xdataMin,
+                xwidth * spanOld / spanNow
+            ));
+            xmin -= xwidth * 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac);
+        } else {
+            return;
+        }
+        // clamp window within data
+        xmin = Math.max(xdataMin, Math.min(xmin, xdataMax - xwidth));
+        xmax = xmin + xwidth;
+        xzoomMax = xmax;
+        xzoomMin = xmin;
+        // uichartRedraw - uichartZoom
+        uichartRedraw();
     }
     function onCanvasZoom(evt) {
     // this function will zoom/un-zoom at current mouse-location on canvas-area
@@ -4055,6 +4135,13 @@ SELECT
     elemCanvasFlex.onmouseleave = onPointUnhover;
     elemCanvasFlex.onmousemove = onPointHover;
     elemCanvasFlex.onwheel = onCanvasZoom;
+    [
+        "touchcancel", "touchend", "touchmove", "touchstart"
+    ].forEach(function (type) {
+        elemCanvasFlex.addEventListener(type, onCanvasTouch, {
+            passive: false
+        });
+    });
     elemLegend.onmouseleave = onPointUnhover;
     elemLegend.onmouseover = onSeriesHover;
     elemUichart.querySelector(".uichartNav").onclick = onUichartAction;
@@ -4066,11 +4153,11 @@ SELECT
         let {
             isDummy,
             seriesColor,
+            seriesShape,
             xdata,
             ydata
         } = series;
         let pointListSeries;
-        let seriesShape;
         elemSeries.classList.add(`elemSeries_${seriesIi}`);
         // init seriesColor
         if (isDummy) {
@@ -4087,7 +4174,7 @@ SELECT
         // init seriesShape
         if (isBarchart || isDummy) {
             seriesShape = "square";
-        } else {
+        } else if (!(seriesShape && typeof seriesShape === "string")) {
             seriesShape = seriesShapeList[
                 ((seriesShape ?? counterShape) - 1) % seriesShapeList.length
             ];
@@ -4222,7 +4309,8 @@ SELECT
 </path>
 </g>
 </svg>
-<span style="margin-left: 12px; position: absolute;">${series.seriesName}</span>
+<span style="margin-left: 12px; position: absolute;"
+>${stringHtmlSafe(series.seriesName)}</span>
 </a>
         `);
     }).join("");
@@ -4330,20 +4418,28 @@ async function uitableAjax(baton, {
         uiFadeIn(elemLoading);
         baton.modeAjax = 1;
         // uitable - paginate
-        rowList = await dbExecAsync({
-            db,
-            responseType: "list",
-            sql: (`
+        try {
+            rowList = await dbExecAsync({
+                db,
+                responseType: "list",
+                sql: (`
 SELECT
         rowid,
         --
         ${dbtableName}.*
     FROM ${dbtableName}
-    ORDER BY [${colList[sortCol]}] ${sortDir}
+    ORDER BY [${colList[sortCol]}] ${sortDir}, rowid
     LIMIT ${Number(UI_PAGE_SIZE)}
     OFFSET ${Number(baton.rowOffset)};
-            `)
-        });
+                `)
+            });
+        } finally {
+            // query failed - reset, else table is stuck in modeAjax 1
+            if (rowList === undefined) {
+                baton.modeAjax = 0;
+                uiFadeOut(elemLoading);
+            }
+        }
         rowList = (
             rowList[0]
             ? rowList[0].slice(1)
@@ -4442,7 +4538,7 @@ function uitableCreate(baton) {
             <thead>
                 <tr>
         `) +
-        jsonHtmlSafe(baton.colList).map(function (col, ii) {
+        baton.colList.map(stringHtmlSafe).map(function (col, ii) {
             return (
                 ii === 0
                 ? `<th title="${col}" data-sort="asc">${col}</th>`
