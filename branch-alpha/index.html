@@ -745,6 +745,8 @@ textarea {
     margin-right: 16px;
     overflow: hidden;
     position: relative;
+    /* page scrolls vertically; js handles horizontal pan and pinch */
+    touch-action: pan-y;
 }
 .uichartAxislabel0,
 .uichartAxislabel1,
@@ -834,6 +836,35 @@ button:hover {
 #tocPanel1 {
     box-shadow: 2px 2px 4px 2px #bbb;
 }
+
+
+/*css section drawer - narrow screen hides #tocPanel1 behind #tocToggle1*/
+#tocToggle1 {
+    display: none;
+}
+@media (max-width: 767px) {
+    #contentPanel1 {
+        padding: 2rem 8px;
+    }
+    #tocPanel1 {
+        background: #fff;
+        padding-top: 2rem;
+        transform: translateX(-100%);
+        transition: transform 0.25s;
+        z-index: 50;
+    }
+    .tocOpen #tocPanel1 {
+        transform: none;
+    }
+    #tocToggle1 {
+        box-shadow: 2px 2px 4px 2px #bbb;
+        display: block;
+        left: 0.5rem;
+        position: fixed;
+        top: 0.5rem;
+        z-index: 60;
+    }
+}
 </style>
 </head>
 <body>
@@ -884,6 +915,7 @@ button:hover {
 <div id="tocDbList1"></div>
 <div class="tocDivider"></div>
 </div>
+<button id="tocToggle1" aria-controls="tocPanel1" aria-expanded="false">menu</button>
 <!-- tocPanel1 end -->
 
 
