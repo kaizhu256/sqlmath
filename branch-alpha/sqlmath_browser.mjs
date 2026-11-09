@@ -2342,6 +2342,7 @@ function svgAttrSet(elem, attrDict = {}) {
             case "stroke-width":
             case "text-anchor":
             case "transform":
+            case "vector-effect":
             case "visibility":
                 elem.setAttribute(key, val);
                 return;
@@ -3118,6 +3119,62 @@ SELECT
             num.toPrecision(12)
         );
     }
+    function graphAnimate(elemGraph, dpath) {
+    // this function will draw line <elemGraph> at its final position <dpath>,
+    // then animate an svg-transform from the previous axis-scale.
+    // svgAnimate cannot tween "d" when the vertex-count changes, which it
+    // does on every zoom since crowded markers are hidden, so the line
+    // snapped while its dots slid. Each pixel is affine in the axis-scale
+    // [ax, bx, ay, by], so tweening the scale moves line and dots together.
+        let affineBeg = elemGraph.fx_affine;
+        let affineEnd = [
+            xtransOffset - xtransWidth * xaxisMin,
+            xtransWidth,
+            plotHeight + ytransWidth * yaxisMin,
+            -ytransWidth
+        ];
+        let datebeg = UI_ANIMATE_DATENOW;
+        function graphAnimateStep() {
+            let affineNow;
+            let fxprg = Math.min(1, (
+                UI_ANIMATE_DURATION_INV * (UI_ANIMATE_DATENOW - datebeg)
+            ));
+            let sx;
+            let sy;
+            affineNow = affineBeg.map(function (beg, ii) {
+                return beg + fxprg * (affineEnd[ii] - beg);
+            });
+            sx = affineNow[1] / affineEnd[1];
+            sy = affineNow[3] / affineEnd[3];
+            elemGraph.fx_affine = affineNow;
+            if (fxprg >= 1) {
+                elemGraph.removeAttribute("transform");
+                return true;
+            }
+            // map final-position pixel back to current axis-scale
+            elemGraph.setAttribute("transform", (
+                `matrix(${sx} 0 0 ${sy} ` +
+                `${affineNow[0] - sx * affineEnd[0]} ` +
+                `${affineNow[2] - sy * affineEnd[2]})`
+            ));
+            return false;
+        }
+        elemGraph.setAttribute("d", dpath);
+        // animate - stop existing animation for given elem
+        graphAnimateStep.elem2 = elemGraph;
+        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function ({
+            elem2
+        }) {
+            return elem2 !== elemGraph;
+        });
+        // first-draw - nothing to animate from
+        if (!affineBeg) {
+            elemGraph.fx_affine = affineEnd;
+            return;
+        }
+        graphAnimateStep();
+        UI_ANIMATE_LIST.push(graphAnimateStep);
+    }
     function numberFormat({
         convert,
         modeTick,
@@ -3556,6 +3613,19 @@ SELECT
             return;
         }
     }
+    function pointVisibleSet(pointObj, isVisible) {
+    // this function will show or hide marker of <pointObj>,
+    // skipping the dom-write if unchanged
+        if (Boolean(pointObj.isMarkerHidden) === !isVisible) {
+            return;
+        }
+        pointObj.isMarkerHidden = !isVisible;
+        pointObj.elemPoint.setAttribute("visibility", (
+            isVisible
+            ? "inherit"
+            : "hidden"
+        ));
+    }
     // uichartRedraw - start
     function uichartRedraw(modeDebounce) {
     // this function will redraw <uichart>
@@ -3917,19 +3987,25 @@ SELECT
                 pointListSeries
             } = series;
             let elemGraphD = "";
-            let pointXPrv = 0;
-            let pointYPrv = 0;
+            let pointXPrv;
+            let pointYPrv;
             if (series.isHidden) {
                 return;
             }
             // redraw pointListSeries
+            // optimization - with many points, e.g. 5 years daily, animating
+            // every marker made zoom and pan sluggish (~14k svg paths for 11
+            // series), so hide markers that are offscreen or within ~11px of
+            // the previous shown marker, and skip their animation
             pointListSeries.forEach(function (pointObj, ii) {
+                let affine = elemGraph?.fx_affine;
                 let barY;
                 let {
                     elemPoint,
                     xval,
                     yval
                 } = pointObj;
+                let isOffscreen;
                 let pointX;
                 let pointY;
                 // pixelate xval, yval to pointX, pointY
@@ -3945,9 +4021,20 @@ SELECT
                 if (pointY === undefined) {
                     return;
                 }
+                // offscreen = this point and its neighbor are past one edge;
+                // keep the neighbor just past each edge, the line needs it
+                isOffscreen = (
+                    (pointListSeries[ii + 1]?.xval ?? xval) < xaxisMin ||
+                    xaxisMax < (pointListSeries[ii - 1]?.xval ?? xval)
+                );
+                if (isOffscreen) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
                 if (isBarchart) {
                     // if isBarchart, then redraw point as bar
                     barY = Math.min(pointY, plotbarYaxis);
+                    pointVisibleSet(pointObj, true);
                     svgAnimate(elemPoint, {
                         height: Math.max(
                             4,
@@ -3959,27 +4046,43 @@ SELECT
                     });
                     return;
                 }
-                if (
+                // if not isBarchart, then hide marker crowding previous one
+                if (!(
+                    pointXPrv === undefined ||
+                    xval < xaxisMin ||
+                    xaxisMax < xval ||
+                    ii + 1 === pointListSeries.length ||
                     128 <= (
                         Math.pow(pointX - pointXPrv, 2) +
                         Math.pow(pointY - pointYPrv, 2)
-                    ) ||
-                    ii + 1 === pointListSeries.length
-                ) {
-                    pointXPrv = pointX;
-                    pointYPrv = pointY;
+                    )
+                )) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
+                pointXPrv = pointX;
+                pointYPrv = pointY;
+                // re-shown marker - start where its line is drawn now, not at
+                // its stale position, so marker and line move together
+                if (pointObj.isMarkerHidden) {
+                    elemPoint.fx_x = (
+                        affine
+                        ? affine[0] + affine[1] * xval
+                        : pointX
+                    ) - ELEM_POINT_RADIUS;
+                    elemPoint.fx_y = (
+                        affine
+                        ? affine[2] + affine[3] * yval
+                        : pointY
+                    ) - ELEM_POINT_RADIUS;
+                    pointVisibleSet(pointObj, true);
                 }
                 // if not isBarchart, then redraw point as shape
                 svgAnimate(elemPoint, {
                     height: 2 * ELEM_POINT_RADIUS,
-                    // visibility: (
-                    //     pointX === pointXPrv
-                    //     ? "inherit"
-                    //     : "hidden"
-                    // ),
                     width: 2 * ELEM_POINT_RADIUS,
-                    x: pointXPrv - ELEM_POINT_RADIUS,
-                    y: pointYPrv - ELEM_POINT_RADIUS
+                    x: pointX - ELEM_POINT_RADIUS,
+                    y: pointY - ELEM_POINT_RADIUS
                 });
                 // if not isBarchart, then calculate elemGraphD
                 elemGraphD += (
@@ -3990,16 +4093,13 @@ SELECT
                         // lineto
                         : "L"
                     ) +
-                    // + ` ${pointX} ${pointY} `
-                    ` ${pointXPrv} ${pointYPrv} `
+                    ` ${pointX} ${pointY} `
                 );
             });
             // if not isBarchart, then redraw elemGraph
             if (!isBarchart) {
                 elemGraphD = elemGraphD.trim();
-                svgAnimate(elemGraph, {
-                    d: elemGraphD
-                });
+                graphAnimate(elemGraph, elemGraphD);
                 elemGraphtracker.setAttribute("d", elemGraphD);
             }
             // calculate pixelToPointDict
@@ -4192,7 +4292,9 @@ SELECT
                 stroke: seriesColor,
                 "stroke-linecap": "round",
                 "stroke-linejoin": "round",
-                "stroke-width": ELEM_GRAPH_LINE_WIDTH
+                "stroke-width": ELEM_GRAPH_LINE_WIDTH,
+                // keep line-width constant while graphAnimate scales it
+                "vector-effect": "non-scaling-stroke"
             });
             elemSeries.appendChild(elemGraph);
             // init elemGraphtracker
