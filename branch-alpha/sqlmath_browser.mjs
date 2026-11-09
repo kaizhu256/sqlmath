@@ -20,7 +20,7 @@ let {
 let DBTABLE_DICT = new Map();
 let DB_CHART;
 let DB_DICT = new Map();
-let DB_EXEC_BUSY;
+let DB_EXEC_CHAIN = Promise.resolve();
 let DB_INIT = Promise.resolve();
 let DB_MAIN;
 let DB_QUERY;
@@ -32,6 +32,7 @@ let UI_ANIMATE_LIST = [];
 let UI_CONTEXTMENU = document.getElementById("contextmenu1");
 let UI_CONTEXTMENU_BATON;
 let UI_CRUD = document.getElementById("crudPanel1");
+let UI_CRUD_OPEN_COUNT = 0;
 let UI_EDITOR;
 let UI_FILE_OPEN = document.createElement("input");
 let UI_FILE_SAVE = document.createElement("a");
@@ -39,12 +40,24 @@ let UI_LOADING = document.getElementById("loadingPanel1");
 let UI_LOADING_COUNTER = 0;
 let UI_LONGPRESS_FIRED;
 let UI_LONGPRESS_TIMER;
+let UI_LONGPRESS_XY = [
+    0, 0
+];
 let UI_PAGE_SIZE = 256;
 let UI_RESIZE_WIDTH = window.innerWidth;
 let UI_ROW_HEIGHT = 16;
 let UI_VIEW_SIZE = 20;
 
 noop(debugInline);
+
+async function dbCloseWhenIdle(db) {
+// this function will close <db> once its pending queries finish, since
+// dbCloseAsync throws while db.busy > 0, which leaked the wasm handle
+    while (db.busy > 0) {
+        await waitAsync(100);
+    }
+    await dbCloseAsync(db);
+}
 
 async function dbFileAttachAsync({
     db,
@@ -288,25 +301,34 @@ async function demoTradebot() {
 // this function will run demo-tradebot
     let tmp;
     let tradebotState;
+    // any failure up to tradebot_state - dropped connection mid-body, bad
+    // file, no such table - returns falsy, so init falls back to demoDefault.
+    // REVIEWED 2026-11-09, KEPT: a file truncated on the server loads as a
+    // malformed DB_MAIN, so the fallback shows "malformed" - very rare
     try {
         tmp = await fetch(`.tradebot_public.sqlite?aa=${Date.now()}`);
         if (tmp.status !== 200) {
             return;
         }
+        await dbFileLoadAsync({
+            db: DB_MAIN,
+            dbData: await tmp.arrayBuffer()
+        });
+        tradebotState = noop(
+            await dbExecAsync({
+                db: DB_MAIN,
+                sql: "SELECT * FROM tradebot_state;"
+            })
+        )[0][0];
     } catch (ignore) {
         return;
     }
-    tmp = await tmp.arrayBuffer();
-    await dbFileLoadAsync({
-        db: DB_MAIN,
-        dbData: tmp
-    });
-    tradebotState = noop(
-        await dbExecAsync({
-            db: DB_MAIN,
-            sql: "SELECT * FROM tradebot_state;"
-        })
-    )[0][0];
+    if (!tradebotState) {
+        return;
+    }
+    // datenow is "YYYY-MM-DD HH:MM:SS"; safari cannot Date-parse the space,
+    // only the iso "T" form, so normalize once for every new Date() below
+    tradebotState.datenow = String(tradebotState.datenow).replace(" ", "T");
     UI_EDITOR.setValue([
         (`
 -- table - tradebot_intraday_day - insert
@@ -1257,7 +1279,7 @@ function fileSave({
 }) {
 // this function will save <buf> with given <filename>
     // create new blob
-    let url = URL.createObjectURL(new Blob([
+    const url = URL.createObjectURL(new Blob([
         buf
     ]));
     UI_FILE_SAVE.href = url;
@@ -1280,6 +1302,9 @@ function fileSave({
 }
 
 async function init() {
+    let isDbFailed;
+    let isDemoDone;
+    let isScriptFailed;
     let modeDemo = true;
     await sqlmathWebworkerInit({});
     // init DB_XXX
@@ -1373,27 +1398,43 @@ async function init() {
     });
     // init location.search
     await Promise.all(Array.from(
-        new URLSearchParams(location.search)
-    ).map(async function ([
-        key, val
-    ]) {
+        location.search.slice(1).split("&")
+    ).map(async function (elem) {
+        let [
+            key, ...valList
+        ] = elem.split("=");
+        // raw value, not URLSearchParams - it turned "+" into space, and
+        // decoding first broke encoded "#" and "?" (fetch takes %xx as is)
+        let val = valList.join("=");
         switch (key) {
         case "demo":
             switch (val) {
             case "demoDefault":
-                modeDemo = undefined;
-                await demoDefault();
-                return;
             case "demoTradebot":
                 modeDemo = undefined;
-                await demoTradebot();
+                await DB_INIT;
+                // false if its db failed to load - init then renders anyway
+                isDemoDone = await (
+                    val === "demoDefault"
+                    ? demoDefault()
+                    : demoTradebot()
+                );
                 return;
             }
             return;
         case "jsScript":
-            // REVIEWED 2026-11-09, KEPT: loads any url as script on this
-            // origin, a dev hook. Origin is static gh-pages with no secrets,
-            // so a crafted link gains nothing a self-hosted page would not.
+            // same-origin only [reviewed 2026-11-09] - every gh-pages project
+            // page shares the kaizhu256.github.io origin, so a crafted link
+            // to an outside script would get all of their storage
+            // malformed url, e.g. "//" - skip it, a throw would abort init
+            try {
+                key = new URL(val, location.href).origin;
+            } catch (ignore) {
+                key = "";
+            }
+            if (key !== location.origin) {
+                return;
+            }
             modeDemo = undefined;
             key = document.createElement("script");
             key.src = val;
@@ -1415,8 +1456,12 @@ async function init() {
             return;
         case "sqlDb":
             modeDemo = undefined;
-            DB_INIT = (async function () {
-                let res = await fetch(val);
+            // uiTryCatch shows a failed fetch in the error panel, and never
+            // rejects, so init still runs the editor
+            DB_INIT = uiTryCatch(async function () {
+                let res;
+                isDbFailed = true;
+                res = await fetch(val);
                 if (!res.ok) {
                     throw new Error(`sqlDb - fetch ${val} - ${res.status}`);
                 }
@@ -1424,14 +1469,26 @@ async function init() {
                     db: DB_MAIN,
                     dbData: await res.arrayBuffer()
                 });
-            }());
+                isDbFailed = false;
+            });
             return;
         case "sqlScript":
             modeDemo = undefined;
             await DB_INIT;
-            val = await fetch(val);
-            val = await val.text();
-            UI_EDITOR.setValue(val);
+            // uiTryCatch shows a failed fetch in the error panel, else a bad
+            // link loads the server 404 page into the editor as sql
+            await uiTryCatch(async function () {
+                let res;
+                // set before fetch - a network failure (offline, cors, mixed
+                // content) rejects fetch itself, not via res.ok
+                isScriptFailed = true;
+                res = await fetch(val);
+                if (!res.ok) {
+                    throw new Error(`sqlScript - fetch ${val} - ${res.status}`);
+                }
+                UI_EDITOR.setValue(await res.text());
+                isScriptFailed = false;
+            });
             return;
         }
     }));
@@ -1444,8 +1501,20 @@ async function init() {
             return !svgAnimateStep();
         });
     }, 16);
+    // ?demo= already ran its script - do not run it again
+    if (isDemoDone) {
+        return;
+    }
     if (!modeDemo) {
         await DB_INIT;
+        // failed load - skip the run, whose first step would fade out the
+        // load error after ~0.5s, leaving an empty app and no explanation
+        if (isDbFailed || isScriptFailed) {
+            // render without onDbExec, which would fade the error - import
+            // needs DB_MAIN.dbtableList, which only uiRenderDb sets
+            await uiRenderDb();
+            return;
+        }
         await onDbExec({});
         return;
     }
@@ -1494,6 +1563,8 @@ function onContextmenu(evt) {
     }
     // contextmenu - right-click
     // contextmenu - enable default
+    // REVIEWED 2026-11-09, KEPT: modifier-click and shift+f10 get the native
+    // menu, so crud has no keyboard path - keyboard access is feature work
     if (ctrlKey || metaKey || shiftKey) {
         return;
     }
@@ -1530,7 +1601,11 @@ function onContextmenu(evt) {
             break;
         case "dbrowDelete":
         case "dbrowUpdate":
-            if (target.dataset.rowid === undefined) {
+            // WITHOUT ROWID rows render rowid "null" - no row to act on
+            if (
+                target.dataset.rowid === undefined ||
+                target.dataset.rowid === "null"
+            ) {
                 return;
             }
             break;
@@ -1643,10 +1718,13 @@ TO
     "{{new_column}}";
 
 -- row - insert
-INSERT INTO ${baton.dbtableFullname} (` +
-            JSON.stringify(baton.colList.slice(1), undefined, 4).slice(1, -1) +
-            `) VALUES (\n` +
-            `${"    NULL,\n".repeat(baton.colList.length - 2)}    NULL` +
+INSERT INTO ${baton.dbtableFullname} (\n    ` +
+            baton.colListWritable.slice(1).map(sqlIdQuote).join(",\n    ") +
+            `\n) VALUES (\n` +
+            "    NULL,\n".repeat(
+                Math.max(0, baton.colListWritable.length - 2)
+            ) +
+            "    NULL" +
             `
 );
 
@@ -1655,12 +1733,12 @@ UPDATE
     ${baton.dbtableFullname}
 SET
 ` +
-            baton.colList.slice(1).map(function (col) {
+            baton.colListWritable.slice(1).map(function (col) {
                 return `    ${sqlIdQuote(col)} = NULL`;
             }).join(",\n") +
             `
 WHERE
-    rowid = ${baton.rowid};
+    rowid IN (${sqlRowidLiteral(baton.rowid)});
 
 -- table - rename
 ALTER TABLE
@@ -1702,13 +1780,16 @@ RENAME TO
             break;
         }
         uiFadeIn(UI_CRUD);
-        UI_CRUD.style.zIndex = 1;
+        // above #tocPanel1 drawer (z-index 50) on narrow screen
+        UI_CRUD.style.zIndex = 70;
+        // new modal-open - a crud run queued from an earlier one must skip
+        UI_CRUD_OPEN_COUNT += 1;
         // ergonomy - auto-focus first input
         Array.from(UI_CRUD.querySelectorAll(
             ".modalContent input"
-        )).every(function (elem) {
-            elem.focus();
-        });
+        )).find(function (elem) {
+            return elem.offsetParent !== null;
+        })?.focus();
         return;
     }
     // slow actions that require loading
@@ -1766,7 +1847,8 @@ RENAME TO
                 : "json"
             ),
             tableName: dbNameNext(
-                "[__file{{ii}}]",
+                // keys are sqlIdQuote'd, so match "..." not [...]
+                "\"__file{{ii}}\"",
                 new Set(DB_MAIN.dbtableList.keys())
             ).slice(1, -1),
             textData: (
@@ -1788,7 +1870,7 @@ RENAME TO
             db: DB_MAIN,
             sql: `DETACH ${baton.dbName};`
         });
-        await dbCloseAsync(baton.db);
+        await dbCloseWhenIdle(baton.db);
         await uiRenderDb();
         return;
     case "dbExec":
@@ -1821,7 +1903,8 @@ RENAME TO
         await dbExecAsync({
             db: baton.db,
             sql: (`
-DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
+DELETE FROM ${baton.dbtableName}
+    WHERE rowid IN (${sqlRowidLiteral(baton.rowid)});
             `)
         });
         await uiRenderDb();
@@ -1848,7 +1931,7 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
         data = await dbExecAsync({
             db: baton.db,
             responseType: "list",
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableName};`
         });
         data = data[0] || [];
         data.shift();
@@ -1864,7 +1947,7 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
     case "dbtableSaveJson":
         data = await dbExecAsync({
             db: baton.db,
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableName};`
         });
         fileSave({
             buf: JSON.stringify(data[0] || []),
@@ -1877,8 +1960,13 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             responseType: "list",
             sql: (
                 `SELECT ` +
-                baton.colList.map(function (col) {
-                    return `COLUMNTYPE(${sqlIdQuote(col)})`;
+                baton.colList.map(function (col, ii) {
+                    // col 0 is rowid - NULL for a WITHOUT ROWID table
+                    return "COLUMNTYPE(" + (
+                        ii === 0
+                        ? baton.sqlRowid.replace(" AS rowid", "")
+                        : sqlIdQuote(col)
+                    ) + ")";
                 }).join(",") +
                 ` FROM ${baton.dbtableName};`
             )
@@ -1887,7 +1975,7 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
         data = await dbExecAsync({
             db: baton.db,
             responseType: "list",
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableName};`
         });
         data = data[0] || [];
         data.shift();
@@ -1900,9 +1988,27 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
 -- EXEC sp_rename '__sqlite_table_01', '__sqlite_table_02';
             `).trim() +
             `\nCREATE TABLE __sqlite_table_01 (\n` +
-            baton.colList.map(function (col, ii) {
-                col = col.replace((/\W/g), "_");
-                col = col.replace((/^\d/), "_$&");
+            // REVIEWED 2026-11-09, KEPT: a reserved word like "group" stays
+            // bare - quoting needs a dialect choice (mysql backtick vs
+            // ansi double-quote), and no reader imports these elsewhere
+            baton.colList.map(function (col) {
+                return col.replace((/\W/g), "_").replace((/^\d/), "_$&");
+            }).reduce(function (list, col) {
+                // dedupe against every name produced so far - "名前" and
+                // "住所" both became "__", a csv round-trip repeats "rowid",
+                // and a suffix can itself collide, e.g. a, a, a_2
+                let ii = 1;
+                let name = col;
+                // case-insensitive, as sql names are: Total_Count, total_count
+                while (list.some(function (name2) {
+                    return name2.toLowerCase() === name.toLowerCase();
+                })) {
+                    ii += 1;
+                    name = col + "_" + ii;
+                }
+                list.push(name);
+                return list;
+            }, []).map(function (col, ii) {
                 // #define SQLITE_INTEGER  1
                 // #define SQLITE_COLUMNTYPE_INTEGER_BIG   11
                 // #define SQLITE_FLOAT    2
@@ -1927,17 +2033,15 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             data.map(function (rowList) {
                 return (
                     `INSERT INTO __sqlite_table_01 VALUES (` +
-                    rowList.map(function (val, ii) {
-                        switch (val !== null && columntypeList[ii]) {
-                        case 1: // SQLITE_INTEGER
-                        case 2: // SQLITE_FLOAT
-                        case 11: // SQLITE_COLUMNTYPE_INTEGER_BIG
+                    rowList.map(function (val) {
+                        // type by value, not by COLUMNTYPE, a column aggregate:
+                        // a mixed text/integer column crashed .replace, and
+                        // one blob exported every text value as NULL
+                        switch (typeof val) {
+                        case "number":
                             return val;
-                        case 3: // SQLITE_TEXT
-                        case 13: // SQLITE_COLUMNTYPE_TEXT_BIG
+                        case "string":
                             return "'" + val.replace((/'/g), "''") + "'";
-                        // case 4: // SQLITE_BLOB
-                        // case 5: // SQLITE_NULL
                         default:
                             return "NULL";
                         }
@@ -1964,19 +2068,15 @@ async function onDbExec({
 // 3. ui-render sql-queries to html
     let dbqueryList;
     if (!modeTryCatch) {
-        // ignore re-entry, e.g. double ctrl+enter, else both runs race to
-        // re-create result_00 and one fails "table already exists"
-        if (DB_EXEC_BUSY) {
-            return;
-        }
-        DB_EXEC_BUSY = true;
-        try {
-            await uiTryCatch(onDbExec, {
+        // queue runs, e.g. double ctrl+enter or a crud refresh during a
+        // long run, else they race to re-create result_00 and one fails
+        // "table already exists"; uiTryCatch never rejects, so chain holds
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            return uiTryCatch(onDbExec, {
                 modeTryCatch: true
             });
-        } finally {
-            DB_EXEC_BUSY = false;
-        }
+        });
+        await DB_EXEC_CHAIN;
         return;
     }
     // close error modal
@@ -2000,11 +2100,14 @@ async function onDbExec({
 BEGIN TRANSACTION;
 SELECT
         group_concat(
-            'DROP TABLE "' || REPLACE(name, '"', '""') || '";', ''
+            'DROP TABLE IF EXISTS "' || REPLACE(name, '"', '""') || '";', ''
         ) AS sql
     FROM sqlite_master
     WHERE
-        type = 'table';
+        type = 'table'
+        -- sqlite_sequence etc. may not be dropped - one AUTOINCREMENT
+        -- table made every later execute fail; IF EXISTS covers fts shadows
+        AND name NOT LIKE 'sqlite!_%' ESCAPE '!';
 END TRANSACTION;
                 `)
             })
@@ -2015,11 +2118,19 @@ END TRANSACTION;
         });
     }));
     // 1. exec sql-command in webworker
-    dbqueryList = await dbExecAsync({
-        db: DB_MAIN,
-        responseType: "list",
-        sql: UI_EDITOR.getValue()
-    });
+    // failed script - still re-render, since chart/query tables were dropped
+    // above and their old panels would query tables that no longer exist
+    try {
+        dbqueryList = await dbExecAsync({
+            db: DB_MAIN,
+            responseType: "list",
+            sql: UI_EDITOR.getValue()
+        });
+    } finally {
+        if (!dbqueryList) {
+            await uiRenderDb();
+        }
+    }
     // 2. save query-result
     await Promise.all(dbqueryList.map(async function (rowList, ii) {
         let colList = rowList.shift().map(function (col, ii) {
@@ -2049,38 +2160,70 @@ async function onDbcrudExec({
     modeTryCatch
 }) {
 // this function will exec crud operation
+    const openCount = UI_CRUD_OPEN_COUNT;
     let sql;
     if (!modeTryCatch) {
-        await uiTryCatch(onDbcrudExec, {
-            modeTryCatch: true
+        // queue like onDbExec; a double ctrl+enter or ok ran the crud sql
+        // twice, e.g. 2 rows inserted - a run skips once its modal closed,
+        // or was closed and reopened, else it ran unconfirmed sql
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            if (
+                UI_CRUD.style.visibility !== "visible" ||
+                UI_CRUD_OPEN_COUNT !== openCount
+            ) {
+                return;
+            }
+            return uiTryCatch(onDbcrudExec, {
+                modeTryCatch: true
+            });
         });
+        await DB_EXEC_CHAIN;
         return;
     }
     sql = document.querySelector("#crudPanel1 textarea").value.replace((
-        /\{\{\w+?\}\}/g
-    ), function (match0) {
+        /("?)\{\{(\w+?)\}\}("?)/g
+    ), function (match0, quote1, name, quote2) {
         let val = document.querySelector(
-            `#crudPanel1 .crudInput-${match0.slice(2, -2)} .crudInput`
+            `#crudPanel1 .crudInput-${name} .crudInput`
         );
         if (!val) {
             return match0;
         }
-        if (val.tagName === "SELECT") {
-            return val.selectedOptions[0].textContent;
-        }
-        return val.value.trim();
+        val = (
+            val.tagName === "SELECT"
+            ? val.selectedOptions[0].textContent
+            : val.value.trim()
+        );
+        // "{{name}}" is an identifier - quote it, so a name holding '"'
+        // cannot break or inject into the crud sql
+        return (
+            (quote1 && quote2)
+            ? sqlIdQuote(val)
+            : quote1 + val + quote2
+        );
     });
     await dbExecAsync({
         db: DB_MAIN,
         sql
     });
     await uiRenderDb();
+    // a modal opened while this ran is not ours to close
+    if (UI_CRUD_OPEN_COUNT !== openCount) {
+        return;
+    }
     uiFadeOut(UI_CRUD);
     UI_CRUD.style.zIndex = -1;
 }
 
 function onKeyDown(evt) {
 // this function will handle event keyup
+    // lower-case - caps lock gives "S", and the browser's own save opened
+    let key = String(evt.key).toLowerCase();
+    // non-latin layout, e.g. russian "ы" on the s key - use the key position,
+    // else the browser's own save or open runs; evt.key first, for dvorak
+    if (!(/^[a-z]$/).test(key) && (/^Key[A-Z]$/).test(evt.code)) {
+        key = evt.code.slice(3).toLowerCase();
+    }
     switch (evt.key) {
     case "Escape":
         // close error-modal
@@ -2089,9 +2232,20 @@ function onKeyDown(evt) {
         uiFadeOut(UI_CONTEXTMENU);
         return;
     }
-    switch ((evt.ctrlKey || evt.metaKey) && evt.key) {
+    // shift+letter is another shortcut, e.g. firefox ctrl+shift+s
+    switch (
+        (evt.ctrlKey || evt.metaKey) &&
+        !(evt.shiftKey && key.length === 1) &&
+        key
+    ) {
     // database - execute
-    case "Enter":
+    // lower-case, as key is lowered above - "Enter" never matched
+    case "enter":
+        // crud modal open - run its sql, not the main editor script
+        if (UI_CRUD.style.visibility === "visible") {
+            onDbcrudExec({});
+            return;
+        }
         onDbExec({});
         return;
     // database - open
@@ -2118,17 +2272,16 @@ function onModalClose({
 
 function onResize() {
 // this function will handle resize-event
-    // ignore height-only resize, e.g. ios url-bar collapsing on scroll,
-    // which would otherwise rebuild every chart and lose its zoom
-    if (window.innerWidth === UI_RESIZE_WIDTH) {
-        return;
+    // rebuild charts on a width change only - a height-only resize, e.g. ios
+    // url-bar collapsing on scroll, would rebuild every chart and lose zoom
+    if (window.innerWidth !== UI_RESIZE_WIDTH) {
+        UI_RESIZE_WIDTH = window.innerWidth;
+        for (const elem of document.querySelectorAll(
+            "#dbchartList1 .contentElem"
+        )) {
+            elem.dataset.init = "0";
+        }
     }
-    UI_RESIZE_WIDTH = window.innerWidth;
-    document.querySelectorAll(
-        "#dbchartList1 .contentElem"
-    ).forEach(function (elem) {
-        elem.dataset.init = "0";
-    });
     uitableInitWithinView({});
 }
 
@@ -2153,7 +2306,15 @@ function onTocToggle(evt) {
 function onTouchLongpress(evt) {
 // this function will open contextmenu on touch long-press,
 // since ios safari never fires contextmenu-event
-    let touch = evt.touches[0];
+    const touch = evt.touches[0];
+    // ignore wobble under 10px - ios fires touchmove for a held finger
+    if (evt.type === "touchmove" && touch && Math.hypot(
+        touch.clientX - UI_LONGPRESS_XY[0],
+        touch.clientY - UI_LONGPRESS_XY[1]
+    ) < 10) {
+        return;
+    }
+    // any other touch event ends a pending long-press
     clearTimeout(UI_LONGPRESS_TIMER);
     switch (evt.type) {
     case "touchend":
@@ -2164,9 +2325,17 @@ function onTouchLongpress(evt) {
         return;
     case "touchstart":
         UI_LONGPRESS_FIRED = false;
-        if (evt.touches.length !== 1) {
+        // arm only on contextmenu targets, else a long-press on a button or
+        // the editor would swallow its tap
+        if (
+            evt.touches.length !== 1 ||
+            !evt.target.closest(`.tocElemA[data-dbtype], tr[data-dbtype="row"]`)
+        ) {
             return;
         }
+        UI_LONGPRESS_XY = [
+            touch.clientX, touch.clientY
+        ];
         UI_LONGPRESS_TIMER = setTimeout(function () {
             UI_LONGPRESS_FIRED = true;
             onContextmenu({
@@ -2180,13 +2349,26 @@ function onTouchLongpress(evt) {
         }, 500);
         return;
     }
-    // touchcancel, touchmove - not a long-press
 }
 
 function sqlIdQuote(name) {
 // this function will quote sql-identifier <name>, so names with space, "]"
 // or a keyword do not break or inject into generated sql
     return "\"" + String(name).replace((/"/g), "\"\"") + "\"";
+}
+
+function sqlRowidLiteral(val) {
+// this function will make <val> the list for a "rowid IN (...)" compare:
+// an integer as both 3 and '3' - a user column named rowid with no
+// affinity holds either (query result, csv round-trip) and they never
+// equal each other; anything else is quoted - such a column can hold
+// sql, e.g. '1 OR 1=1'
+    val = String(val);
+    return (
+        (/^-?\d+$/).test(val)
+        ? val + ", '" + val + "'"
+        : "'" + val.replace((/'/g), "''") + "'"
+    );
 }
 
 function stringHtmlSafe(str) {
@@ -2289,6 +2471,10 @@ function svgAnimate(elem, attrDict, mode) {
     function svgAnimateStep() {
         let fxprg = 1;
         let isDone = datebeg + UI_ANIMATE_DURATION <= UI_ANIMATE_DATENOW;
+        // superseded by a newer animation of this elem - drop from list
+        if (svgAnimateStep.isCancelled) {
+            return true;
+        }
         // animate - linear fxnow, fxprg
         if (!isDone) {
             fxprg = (
@@ -2380,16 +2566,20 @@ function svgAnimate(elem, attrDict, mode) {
         return isDone;
     }
     // animate - stop existing animation for given elem
-    svgAnimateStep.elem2 = elem;
-    UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function ({
-        elem2
-    }) {
-        return elem2 !== elem;
-    });
+    svgAnimateCancel(elem);
+    elem.fx_step = svgAnimateStep;
     // animate - svgAnimateStep()
     svgAnimateStep();
     // animate - setInterval()
     UI_ANIMATE_LIST.push(svgAnimateStep);
+}
+
+function svgAnimateCancel(elem) {
+// this function will cancel <elem>'s running animation, by flag - a
+// UI_ANIMATE_LIST.filter per call made each redraw O(n^2) in markers
+    if (elem.fx_step) {
+        elem.fx_step.isCancelled = true;
+    }
 }
 
 function svgAttrSet(elem, attrDict = {}) {
@@ -2527,8 +2717,8 @@ async function uiRenderDb() {
     }) {
         return `${name}`;
     }));
-    DB_DICT.forEach(function (db) {
-        let {
+    for (const db of DB_DICT.values()) {
+        const {
             dbName,
             isDbchart,
             isDbquery
@@ -2536,9 +2726,9 @@ async function uiRenderDb() {
         // db detached by sql - forget and close it, else handle leaks in wasm
         if (!isDbchart && !isDbquery && !dbList.has(dbName)) {
             DB_DICT.delete(dbName);
-            dbCloseAsync(db);
+            dbCloseWhenIdle(db);
         }
-    });
+    }
     // DBTABLE_DICT - cleanup old uitable
     DBTABLE_DICT.forEach(function ({
         isDbchart,
@@ -2571,6 +2761,16 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
         if (!dbtableList) {
             return;
         }
+        // chart, query db - hide sqlite internals, e.g. sqlite_sequence left
+        // by an AUTOINCREMENT table, which cannot be dropped or charted
+        dbtableList = dbtableList.filter(function ({
+            tbl_name
+        }) {
+            return !(
+                (isDbchart || isDbquery) &&
+                String(tbl_name).startsWith("sqlite_")
+            );
+        });
         dbtableList = new Map(dbtableList.map(function ({
             colList = [],
             dbtableFullname,
@@ -2579,12 +2779,15 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
             sql,
             tbl_name
         }, ii) {
+            // WITHOUT ROWID table has no rowid column to select or sort by
+            const isNoRowid = (/\)[^)]*\bWITHOUT\s+ROWID\b[^)]*$/i).test(sql);
             dbtableFullname = (
                 dbtableFullname || `${dbName}.${sqlIdQuote(tbl_name)}`
             );
             dbtableIi += 1;
             baton = {
                 colList,
+                colListWritable: colList,
                 db,
                 dbName,
                 dbtableFullname,
@@ -2600,6 +2803,16 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 sortCol: 0,
                 sortDir: "asc",
                 sql,
+                sqlRowid: (
+                    isNoRowid
+                    ? "NULL AS rowid"
+                    : "rowid"
+                ),
+                sqlRowidTie: (
+                    isNoRowid
+                    ? ""
+                    : ", rowid"
+                ),
                 title: `table ${dbtableFullname}`
             };
             DBTABLE_DICT.set(baton.hashtag, baton);
@@ -2607,20 +2820,32 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 baton.dbtableName, baton
             ];
         }));
-        tmp = "";
-        dbtableList.forEach(function ({
+        // REVIEWED 2026-11-09, KEPT: names are unqualified, so a TEMP table
+        // of the same name shadows a main one - rare in this ui
+        tmp = Array.from(dbtableList.values()).map(function ({
             dbtableName,
             hashtag
         }) {
-            tmp += (`
+            return (`
 SELECT '${hashtag}' AS hashtag;
-PRAGMA table_info(${dbtableName});
+PRAGMA table_xinfo(${dbtableName});
 SELECT COUNT(*) AS rowcount FROM ${dbtableName};
             `);
         });
+        // one unreadable table, e.g. a virtual table whose module is not
+        // compiled in, fails the batch - retry per table, skipping failures
         tmp = await dbExecAsync({
             db,
-            sql: tmp
+            sql: tmp.join("")
+        }).catch(async function () {
+            return (await Promise.all(tmp.map(function (sql) {
+                return dbExecAsync({
+                    db,
+                    sql
+                }).catch(function () {
+                    return [];
+                });
+            }))).flat();
         });
         tmp.forEach(function (rowList) {
             let row0 = rowList[0];
@@ -2632,9 +2857,29 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
             ].forEach(function (key) {
                 switch (row0.hasOwnProperty(key) && key) {
                 case "cid":
+                    // table_xinfo, not table_info, which skips generated
+                    // columns that SELECT * returns - headers sat over the
+                    // wrong cells. hidden 1 is a vtable hidden column, which
+                    // SELECT * omits; hidden 2, 3 is generated, not writable
                     baton.colList = [
                         "rowid",
-                        rowList.map(function ({
+                        rowList.filter(function ({
+                            hidden
+                        }) {
+                            return hidden !== 1;
+                        }).map(function ({
+                            name
+                        }) {
+                            return name;
+                        })
+                    ].flat();
+                    baton.colListWritable = [
+                        "rowid",
+                        rowList.filter(function ({
+                            hidden
+                        }) {
+                            return !hidden;
+                        }).map(function ({
                             name
                         }) {
                             return name;
@@ -2927,6 +3172,8 @@ SELECT
     );
         `)
     });
+    // REVIEWED 2026-11-09, KEPT: a chart table must carry an options row;
+    // without one this throws, shown by uiTryCatch
     uichart = JSON.parse(uichart[0][0].options);
     contentElem.querySelector(".uitable").style.display = "none";
     elemUichart.style.display = "flex";
@@ -3200,24 +3447,28 @@ SELECT
     // this function will draw line <elemGraph> at its final position <dpath>,
     // then animate an svg-transform from the previous axis-scale.
     // svgAnimate cannot tween "d" when the vertex-count changes, which it
-    // does on every zoom since crowded markers are hidden, so the line
+    // does on every zoom since offscreen points are dropped, so the line
     // snapped while its dots slid. Each pixel is affine in the axis-scale
     // [ax, bx, ay, by], so tweening the scale moves line and dots together.
-        let affineBeg = elemGraph.fx_affine;
-        let affineEnd = [
+        const affineBeg = elemGraph.fx_affine;
+        const affineEnd = [
             xtransOffset - xtransWidth * xaxisMin,
             xtransWidth,
             plotHeight + ytransWidth * yaxisMin,
             -ytransWidth
         ];
-        let datebeg = UI_ANIMATE_DATENOW;
+        const datebeg = UI_ANIMATE_DATENOW;
         function graphAnimateStep() {
-            let affineNow;
-            let fxprg = Math.min(1, (
+            const fxprg = Math.min(1, (
                 UI_ANIMATE_DURATION_INV * (UI_ANIMATE_DATENOW - datebeg)
             ));
+            let affineNow;
             let sx;
             let sy;
+            // superseded by a newer animation of this line - drop from list
+            if (graphAnimateStep.isCancelled) {
+                return true;
+            }
             affineNow = affineBeg.map(function (beg, ii) {
                 return beg + fxprg * (affineEnd[ii] - beg);
             });
@@ -3238,15 +3489,13 @@ SELECT
         }
         elemGraph.setAttribute("d", dpath);
         // animate - stop existing animation for given elem
-        graphAnimateStep.elem2 = elemGraph;
-        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function ({
-            elem2
-        }) {
-            return elem2 !== elemGraph;
-        });
+        svgAnimateCancel(elemGraph);
+        elemGraph.fx_step = graphAnimateStep;
         // first-draw - nothing to animate from
         if (!affineBeg) {
             elemGraph.fx_affine = affineEnd;
+            // a cancelled tween leaves its last matrix behind - clear it
+            elemGraph.removeAttribute("transform");
             return;
         }
         graphAnimateStep();
@@ -3262,7 +3511,17 @@ SELECT
     }) {
     // this function will format <num>
         if (step && typeof num === "number") {
-            num *= step;
+            // round to step decimals + the value's own (a tick can sit
+            // between steps, e.g. 2.5) - 3 * 0.1 printed 0.30000000000000004,
+            // and floatCorrect's 12 digits cut epoch-ms
+            num = (
+                String(String(step) + String(floatCorrect(num))).includes("e")
+                ? floatCorrect(num * step)
+                : Number(Number(num * step).toFixed(Math.min(20, (
+                    String(String(step).split(".")[1] || "").length +
+                    String(String(floatCorrect(num)).split(".")[1] || "").length
+                ))))
+            );
         }
         switch (convert) {
         case "juliandayToDate":
@@ -3304,7 +3563,14 @@ SELECT
     // this function will handle touchscreen <evt> on canvas-area:
     // 1-finger horizontal drag pans, 1-finger vertical drag scrolls page,
     // 2-finger pinch zooms around the pinch-center
-        let fingerList = Array.from(evt.touches).map(function ({
+        // every finger on this chart - targetTouches only counts fingers
+        // that began on the same svg element, so a pinch from a line and
+        // blank plot area read as a jumpy 1-finger pan
+        const fingerList = Array.from(evt.touches).filter(function ({
+            target
+        }) {
+            return elemCanvasFlex.contains(target);
+        }).map(function ({
             clientX,
             clientY
         }) {
@@ -3317,12 +3583,10 @@ SELECT
                 ) / plotWidth
             };
         });
+        let dmin;
+        let dspan;
         let spanNow;
         let spanOld;
-        let xmax = xdataMax;
-        let xmin = xdataMin;
-        let xwidth;
-        let xwidthMin = Math.min(xdataMax - xdataMin, 4 * xdataDxx);
         // touchstart, touchend - re-anchor gesture to remaining fingers
         if (evt.type !== "touchmove") {
             touchState = fingerList.length && {
@@ -3331,9 +3595,11 @@ SELECT
                     ? "zoom"
                     : undefined
                 ),
-                fingerList,
-                xmax: Math.min(xdataMax, xzoomMax ?? xdataMax),
-                xmin: Math.max(xdataMin, xzoomMin ?? xdataMin)
+                // displayed axis, as fingers see it: plot-pixel 0 is
+                // xaxisMin - dxx/2, and the plot spans the padded axis + dxx
+                dmin: xaxisMin - 0.5 * xdataDxx,
+                dspan: xaxisMax - xaxisMin + xdataDxx,
+                fingerList
             };
             return;
         }
@@ -3361,9 +3627,9 @@ SELECT
             return;
         }
         evt.preventDefault();
-        xwidth = touchState.xmax - touchState.xmin;
+        dspan = touchState.dspan;
         if (touchState.direction === "pan") {
-            xmin = touchState.xmin - xwidth * (
+            dmin = touchState.dmin - dspan * (
                 fingerList[0].xfrac - touchState.fingerList[0].xfrac
             );
         } else if (fingerList.length === 2) {
@@ -3374,29 +3640,31 @@ SELECT
                 fingerList[0].xfrac - fingerList[1].xfrac
             ));
             // data-x under old pinch-center stays under new pinch-center
-            xmin = touchState.xmin + xwidth * 0.5 * (
+            dmin = touchState.dmin + dspan * 0.5 * (
                 touchState.fingerList[0].xfrac + touchState.fingerList[1].xfrac
             );
-            xwidth = Math.max(xwidthMin, Math.min(
-                xdataMax - xdataMin,
-                xwidth * spanOld / spanNow
-            ));
-            xmin -= xwidth * 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac);
+            dspan *= spanOld / spanNow;
+            dmin -= dspan * 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac);
         } else {
             return;
         }
-        // clamp window within data
-        xmin = Math.max(xdataMin, Math.min(xmin, xdataMax - xwidth));
-        xmax = xmin + xwidth;
-        xzoomMax = xmax;
-        xzoomMin = xmin;
+        xzoomFromDisplayed(dmin, dspan, (
+            touchState.direction === "pan"
+            ? 0.5
+            : 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac)
+        ));
         // uichartRedraw - uichartZoom
         uichartRedraw();
     }
     function onCanvasZoom(evt) {
     // this function will zoom/un-zoom at current mouse-location on canvas-area
+        const dspan = xaxisMax - xaxisMin + xdataDxx;
         let xmid = 0.5;
         let xscale = 1.2500; // zoom-out
+        // horizontal trackpad swipe - not a zoom, leave it to the page
+        if (evt.deltaY === 0) {
+            return;
+        }
         evt.preventDefault();
         evt.stopPropagation();
         if (!evt.modeDebounce) {
@@ -3416,9 +3684,14 @@ SELECT
             xscale = 0.8000; // zoom-in
         }
         xmid += 0.5 * (xmid - 0.4000);
-        xmid = xaxisMin + xmid * (xaxisMax - xaxisMin);
-        xzoomMax = xmid + xscale * (xaxisMax - xmid);
-        xzoomMin = xmid + xscale * (xaxisMin - xmid);
+        // scale the displayed axis about xmid, then invert the padding, so
+        // repeated notches no longer drift wider; zoom-out pivots at a fixed
+        // 0.55, so in-at-cursor then out returns exactly only at center
+        xzoomFromDisplayed(
+            xaxisMin - 0.5 * xdataDxx + xmid * (1 - xscale) * dspan,
+            xscale * dspan,
+            xmid
+        );
         // uichartRedraw - uichartZoom
         uichartRedraw();
     }
@@ -3644,7 +3917,12 @@ SELECT
         let target;
         evt.preventDefault();
         evt.stopPropagation();
-        if (!evt.modeDebounce) {
+        // legend toggle acts at once - debounce kept only the first and last
+        // of quick clicks, dropping a middle series toggle
+        if (
+            !evt.modeDebounce &&
+            !evt.target.closest(`[data-action="uichartSeriesHideOrShow"]`)
+        ) {
             debounce("onUichartAction", onUichartAction, Object.assign(evt, {
                 modeDebounce: true
             }));
@@ -3665,6 +3943,9 @@ SELECT
             seriesList.forEach(function (series) {
                 uichartSeriesHideOrShow(series, modeHide);
             });
+            // each show hovered its series - unhover, else the last one stays
+            // thick and highlighted, stuck on touch with no mouseleave
+            onSeriesUnhover();
             uichartRedraw();
             await waitAsync(200);
             uiFadeOut(baton.elemLoading);
@@ -3693,6 +3974,8 @@ SELECT
     function pointVisibleSet(pointObj, isVisible) {
     // this function will show or hide marker of <pointObj>,
     // skipping the dom-write if unchanged
+    // REVIEWED 2026-11-09, KEPT: a crowded marker vanishes, not fades -
+    // fading would animate hidden markers again, the cost this removed
         if (Boolean(pointObj.isMarkerHidden) === !isVisible) {
             return;
         }
@@ -3721,7 +4004,9 @@ SELECT
         //
         // pre-calculate plotLeft, plotRight, plotWidth
         //
-        plotLeft = 32;
+        // resizing skips the y-label measure below - keep its last margin,
+        // else wide labels jump to 32px and back when the catch-up lands
+        plotLeft = (isResizing && plotLeft) || 32;
         plotWidth = canvasWidth - plotLeft - 32;
         plotRight = canvasWidth - plotWidth - plotLeft;
         //
@@ -3768,6 +4053,8 @@ SELECT
                 axisMin = 0;
             }
             seriesList.forEach(function (series) {
+                const xhi = xaxisMax + 0.5 * xdataDxx;
+                const xlo = xaxisMin - 0.5 * xdataDxx;
                 let ii;
                 let nn;
                 let xcropEnd;
@@ -3781,24 +4068,26 @@ SELECT
                     return;
                 }
                 nn = xdata.length;
-                // calculate xcropEnd, xcropStart
+                // calculate xcropEnd, xcropStart over the displayed range
+                // [xaxisMin - dxx/2, xaxisMax + dxx/2], so a visible edge
+                // point is autoscaled and an invisible one is not
                 // xdata inside xcrop-range
-                if (xaxisMin <= xdata[0] && xdata[nn - 1] <= xaxisMax) {
+                if (xlo <= xdata[0] && xdata[nn - 1] <= xhi) {
                     xcropEnd = nn;
                     xcropStart = 0;
                 // xdata outside xcrop-range
-                } else if (xdata[nn - 1] < xaxisMin || xaxisMax < xdata[0]) {
+                } else if (xdata[nn - 1] < xlo || xhi < xdata[0]) {
                     xcropEnd = 0;
                     xcropStart = 0;
                 // init xcropStart
                 } else {
                     ii = 0;
-                    while (ii < nn && xdata[ii] < xaxisMin) {
+                    while (ii < nn && xdata[ii] < xlo) {
                         ii += 1;
                     }
-                    xcropStart = Math.max(0, ii - 1);
+                    xcropStart = ii;
                     // init xcropEnd
-                    while (ii < nn && xdata[ii] < xaxisMax) {
+                    while (ii < nn && xdata[ii] <= xhi) {
                         ii += 1;
                     }
                     xcropEnd = ii;
@@ -3807,7 +4096,8 @@ SELECT
                 ii = xcropStart;
                 while (ii < xcropEnd) {
                     yval = ydata[ii];
-                    if (!Number.isNaN(yval)) {
+                    // skip Infinity too - it made every axis value NaN
+                    if (Number.isFinite(yval)) {
                         axisMax = Math.max(axisMax ?? yval, yval);
                         axisMin = Math.min(axisMin ?? yval, yval);
                     }
@@ -3864,7 +4154,13 @@ SELECT
             while (true) {
                 tickxList.push(tickx);
                 tickx = floatCorrect(tickx + tickInterval);
-                if (tickx > tickxMax || tickx === tickxPrv) {
+                // non-finite axis or plotWidth <= 0 would loop forever
+                if (
+                    tickx > tickxMax ||
+                    tickx === tickxPrv ||
+                    !Number.isFinite(tickx) ||
+                    tickxList.length > 1000
+                ) {
                     break;
                 }
                 tickxPrv = tickx;
@@ -3879,7 +4175,9 @@ SELECT
                 if (tickxMin < axisMin - 0.5 * xdataDxx) {
                     tickxList.shift();
                 }
-            } else {
+            // ticks collapsed by floatCorrect, e.g. 1.7e12 + 0..9, keep the
+            // raw axis - else max === min and every pointY is NaN
+            } else if (tickxMax > tickxMin) {
                 axisMax = tickxMax;
                 axisMin = tickxMin;
             }
@@ -3957,6 +4255,8 @@ SELECT
         // update crop-area for
         // elemCrosshairList, elemMousetrackerList, elemSeriesList
         //
+        // cancel the startup clip tween, else it ends at the old plotWidth
+        svgAnimateCancel(elemClip.firstElementChild);
         svgAttrSet(elemClip.firstElementChild, {
             height: plotHeight,
             width: plotWidth
@@ -4058,6 +4358,8 @@ SELECT
         // redraw seriesList - start
         //
         seriesList.forEach(function (series) {
+            // read once - graphAnimate updates it only after this loop
+            const affine = series.elemGraph?.fx_affine;
             let {
                 elemGraph,
                 elemGraphtracker,
@@ -4065,17 +4367,26 @@ SELECT
             } = series;
             let elemGraphD = "";
             let pointXPrv;
-            let pointYPrv;
+            let xviewMax = xaxisMax;
+            let xviewMin = xaxisMin;
             if (series.isHidden) {
                 return;
+            }
+            // widen to what the line shows at its pre-tween scale - else the
+            // line edge goes blank for the 250ms graphAnimate tween
+            if (affine) {
+                xviewMax = Math.max(
+                    xviewMax,
+                    (plotWidth - affine[0]) / affine[1]
+                );
+                xviewMin = Math.min(xviewMin, -affine[0] / affine[1]);
             }
             // redraw pointListSeries
             // optimization - with many points, e.g. 5 years daily, animating
             // every marker made zoom and pan sluggish (~14k svg paths for 11
-            // series), so hide markers that are offscreen or within ~11px of
+            // series), so hide markers that are offscreen or within 8px (x) of
             // the previous shown marker, and skip their animation
             pointListSeries.forEach(function (pointObj, ii) {
-                let affine = elemGraph?.fx_affine;
                 let barY;
                 let {
                     elemPoint,
@@ -4087,10 +4398,12 @@ SELECT
                 let pointY;
                 // pixelate xval, yval to pointX, pointY
                 pointX = xaxisTranslate(xval);
+                // non-finite y (Infinity) is a gap - "L x -Infinity" is invalid
+                // path data that stopped the line drawing there
                 pointY = (
-                    yval === undefined
-                    ? undefined
-                    : yaxisTranslate(yval)
+                    Number.isFinite(yval)
+                    ? yaxisTranslate(yval)
+                    : undefined
                 );
                 // save pointX, pointY
                 pointObj.pointX = pointX;
@@ -4100,9 +4413,11 @@ SELECT
                 }
                 // offscreen = this point and its neighbor are past one edge;
                 // keep the neighbor just past each edge, the line needs it
+                // REVIEWED 2026-11-09, KEPT: a NULL neighbor at the edge
+                // leaves a gap only inside the 2-4% padding strip
                 isOffscreen = (
-                    (pointListSeries[ii + 1]?.xval ?? xval) < xaxisMin ||
-                    xaxisMax < (pointListSeries[ii - 1]?.xval ?? xval)
+                    (pointListSeries[ii + 1]?.xval ?? xval) < xviewMin ||
+                    xviewMax < (pointListSeries[ii - 1]?.xval ?? xval)
                 );
                 if (isOffscreen) {
                     pointVisibleSet(pointObj, false);
@@ -4128,22 +4443,39 @@ SELECT
                     });
                     return;
                 }
+                // if not isBarchart, then calculate elemGraphD - every
+                // in-range point, so thinning markers never erases a dip
+                elemGraphD += (
+                    (
+                        elemGraphD === ""
+                        // moveto
+                        ? "M"
+                        // lineto
+                        : "L"
+                    ) +
+                    ` ${pointX} ${pointY} `
+                );
+                // outside the displayed range (axis +- dxx/2) - line only, no
+                // marker: the plot clips it,
+                // and the widened tween range would unhide thousands of them
+                if (
+                    xval < xaxisMin - 0.5 * xdataDxx ||
+                    xaxisMax + 0.5 * xdataDxx < xval
+                ) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
                 // if not isBarchart, then hide marker crowding previous one
                 if (!(
                     pointXPrv === undefined ||
-                    xval < xaxisMin ||
-                    xaxisMax < xval ||
                     ii + 1 === pointListSeries.length ||
-                    128 <= (
-                        Math.pow(pointX - pointXPrv, 2) +
-                        Math.pow(pointY - pointYPrv, 2)
-                    )
+                    // x spacing only - y distance kept noisy series unthinned
+                    8 <= pointX - pointXPrv
                 )) {
                     pointVisibleSet(pointObj, false);
                     return;
                 }
                 pointXPrv = pointX;
-                pointYPrv = pointY;
                 // re-shown marker - start where its line is drawn now, not at
                 // its stale position, so marker and line move together
                 if (pointObj.isMarkerHidden) {
@@ -4166,17 +4498,6 @@ SELECT
                     x: pointX - ELEM_POINT_RADIUS,
                     y: pointY - ELEM_POINT_RADIUS
                 });
-                // if not isBarchart, then calculate elemGraphD
-                elemGraphD += (
-                    (
-                        elemGraphD === ""
-                        // moveto
-                        ? "M"
-                        // lineto
-                        : "L"
-                    ) +
-                    ` ${pointX} ${pointY} `
-                );
             });
             // if not isBarchart, then redraw elemGraph
             if (!isBarchart) {
@@ -4196,12 +4517,24 @@ SELECT
             );
         }
         // reset seriesHovered
+        // REVIEWED 2026-11-09, KEPT: on a barchart this rewrites every bar's
+        // fill twice per redraw - costs only with thousands of bars
         seriesList.forEach(function (series) {
             if (!seriesHovered || seriesHovered.isHidden) {
                 onSeriesHover(series);
                 onSeriesUnhover();
             }
         });
+        // hovered series - point lookup at the new zoom, not the old
+        if (seriesHovered && !seriesHovered.isHidden && !isBarchart) {
+            xpixelToPointDictHovered = seriesHovered.xpixelToPointDict;
+        }
+        // hide tooltip and crosshair - they mark a pre-redraw pixel, and a
+        // tap gives no mouseleave; the next mousemove redraws them
+        pointHovered = undefined;
+        elemCrosshairList.children[0].setAttribute("visibility", "hidden");
+        elemCrosshairList.children[1].setAttribute("visibility", "hidden");
+        elemTooltip.setAttribute("visibility", "hidden");
         //
         // redraw seriesList - end
         //
@@ -4220,6 +4553,10 @@ SELECT
         isResizing += 1;
         setTimeout(function () {
             isResizing -= 1;
+            // redraws during resize skip axis calc - catch up once settled
+            if (isResizing === 0) {
+                uichartRedraw();
+            }
         }, UI_ANIMATE_DURATION);
         svgAttrSet(elemCanvasFixed, {
             height: canvasHeight,
@@ -4232,6 +4569,17 @@ SELECT
     // this function will hide-or-show <series>
         if (!series || series.isDummy) {
             return;
+        }
+        // re-shown line: cancel its tween and drop fx_affine, so it draws
+        // fresh at the current zoom; hide every marker via pointVisibleSet
+        // while still hidden - a flag-only hide skipped the dom write and
+        // left ghost markers at stale pixels
+        if (!modeHide && series.isHidden && series.elemGraph) {
+            svgAnimateCancel(series.elemGraph);
+            delete series.elemGraph.fx_affine;
+            for (const pointObj of series.pointListSeries) {
+                pointVisibleSet(pointObj, false);
+            }
         }
         // reset previously hidden points to yaxis
         if (isBarchart && !modeHide && series.isHidden) {
@@ -4281,9 +4629,20 @@ SELECT
         let xpixelEnd;
         while (ii < nn) {
             pointObj = pointList[ii];
-            if (pointObj.pointY !== undefined && !pointObj.series.isHidden) {
+            // on-plot points only - edge pixels mapped to an offscreen point
+            // with no marker, and its tooltip could land off the svg
+            if (
+                pointObj.pointY !== undefined &&
+                !pointObj.series.isHidden &&
+                0 <= pointObj.pointX &&
+                pointObj.pointX <= plotWidth
+            ) {
                 if (pointObjPrv) {
-                    xpixelEnd = 0.5 * (pointObjPrv.pointX + pointObj.pointX);
+                    // cap at plotWidth - zoomed-in data lies far beyond it
+                    xpixelEnd = Math.min(
+                        plotWidth,
+                        0.5 * (pointObjPrv.pointX + pointObj.pointX)
+                    );
                     while (xpixel < xpixelEnd) {
                         dict[xpixel] = pointObjPrv;
                         xpixel += 1;
@@ -4298,6 +4657,27 @@ SELECT
             xpixel += 1;
         }
         return dict;
+    }
+    function xzoomFromDisplayed(dmin, dspan, pivot) {
+    // this function will set xzoomMin, xzoomMax so uichartRedraw displays
+    // the x-axis from <dmin> spanning <dspan> (plot-pixel 0 to plotWidth).
+    // It inverts uichartRedraw's x padding: 2% then 2.04%, then 1% then
+    // 1.0404% of that, then dxx/2 each side - so displayed span is
+    // 1.06131204 * window + dxx, and its left edge sits
+    // 0.03090804 * window + dxx/2 below the window.
+    // <pivot> is the plot fraction (pinch center, cursor) that must stay put
+    // when the 4*dxx floor clamps the width, else zoom past max slid sideways
+        const xwidth = Math.max(
+            Math.min(xdataMax - xdataMin, 4 * xdataDxx),
+            Math.min(xdataMax - xdataMin, (dspan - xdataDxx) / 1.06131204)
+        );
+        let xmin;
+        dmin += pivot * (dspan - (1.06131204 * xwidth + xdataDxx));
+        xmin = dmin + 0.5 * xdataDxx + 0.03090804 * xwidth;
+        // clamp window within data
+        xmin = Math.max(xdataMin, Math.min(xmin, xdataMax - xwidth));
+        xzoomMax = xmin + xwidth;
+        xzoomMin = xmin;
     }
     function yaxisTranslate(yval) {
     // this function will translate <yval> to ypixel position on chart
@@ -4317,13 +4697,13 @@ SELECT
     elemCanvasFlex.onmouseleave = onPointUnhover;
     elemCanvasFlex.onmousemove = onPointHover;
     elemCanvasFlex.onwheel = onCanvasZoom;
-    [
+    for (const type of [
         "touchcancel", "touchend", "touchmove", "touchstart"
-    ].forEach(function (type) {
+    ]) {
         elemCanvasFlex.addEventListener(type, onCanvasTouch, {
             passive: false
         });
-    });
+    }
     elemLegend.onmouseleave = onPointUnhover;
     elemLegend.onmouseover = onSeriesHover;
     elemUichart.querySelector(".uichartNav").onclick = onUichartAction;
@@ -4345,9 +4725,14 @@ SELECT
         if (isDummy) {
             seriesColor = "rgba(192,192,192,0)";
         } else if (!(seriesColor && typeof seriesColor === "string")) {
-            seriesColor = seriesColorList[
-                ((seriesColor ?? counterColor) - 1) % seriesColorList.length
-            ];
+            // a 1-based index picks a color; 0 or other values cycle
+            seriesColor = seriesColorList[(
+                (
+                    (Number.isInteger(seriesColor) && seriesColor > 0)
+                    ? seriesColor
+                    : counterColor
+                ) - 1
+            ) % seriesColorList.length];
             counterColor += 1;
         }
         seriesColor = seriesColor.replace((
@@ -4356,10 +4741,18 @@ SELECT
         // init seriesShape
         if (isBarchart || isDummy) {
             seriesShape = "square";
-        } else if (!(seriesShape && typeof seriesShape === "string")) {
-            seriesShape = seriesShapeList[
-                ((seriesShape ?? counterShape) - 1) % seriesShapeList.length
-            ];
+        } else if (!(
+            /^(?:circle|diamond|square|triangle|triangle-down)$/
+        ).test(seriesShape)) {
+            // a name svgShapeDraw knows is kept; a 1-based index picks from
+            // seriesShapeList; 0 or an unknown name cycles
+            seriesShape = seriesShapeList[(
+                (
+                    (Number.isInteger(seriesShape) && seriesShape > 0)
+                    ? seriesShape
+                    : counterShape
+                ) - 1
+            ) % seriesShapeList.length];
             counterShape += 1;
         }
         // init xdata, ydata
@@ -4487,7 +4880,7 @@ SELECT
 <g>
 <path
     d="${svgShapeDraw(series.seriesShape, 0, 2, 10, 10)}"
-    fill="${series.seriesColor}"
+    fill="${stringHtmlSafe(series.seriesColor)}"
     stroke-width="0"
 >
 </path>
@@ -4566,12 +4959,13 @@ async function uitableAjax(baton, {
         // rows map to pixels proportionally, same as table-top below, so
         // the bottom of the scroller reads "to N of N"
         viewRowBeg = Math.max(0, Math.round(
-            rowCount * elemScroller.scrollTop / elemScroller.scrollHeight
+            rowCount * elemScroller.scrollTop /
+            Math.max(1, elemScroller.scrollHeight)
         ));
         viewRowEnd = Math.min(rowCount, Math.round(
             rowCount *
             (elemScroller.scrollTop + elemScroller.clientHeight) /
-            elemScroller.scrollHeight
+            Math.max(1, elemScroller.scrollHeight)
         ));
         // update table-view info
         elemInfo.textContent = (
@@ -4616,11 +5010,11 @@ async function uitableAjax(baton, {
                 responseType: "list",
                 sql: (`
 SELECT
-        rowid,
+        ${baton.sqlRowid},
         --
         ${dbtableName}.*
     FROM ${dbtableName}
-    ORDER BY ${sqlIdQuote(colList[sortCol])} ${sortDir}, rowid
+    ORDER BY ${sqlIdQuote(colList[sortCol])} ${sortDir}${baton.sqlRowidTie}
     LIMIT ${Number(UI_PAGE_SIZE)}
     OFFSET ${Number(rowOffset)};
                 `)
@@ -4663,13 +5057,17 @@ SELECT
     }
     // uitableDraw
     // Position the table in the virtual scroller
+    // REVIEWED 2026-11-09, KEPT: over ~1M rows browsers cap the scroller
+    // height, so row-to-pixel mapping drifts - not worth a second scheme
     elemTable.style.top = Math.max(0, Math.round(
         elemScroller.scrollHeight * rowOffset / (baton.rowCount + 1)
     )) + "px";
     // Insert the required TR nodes into the table for display
     jsonHtmlSafe(rowList).forEach(function (row) {
+        // a user column named rowid can hold '"' - escape it for the attribute
+        const rowid = String(row[0]).replace((/"/g), "&quot;");
         html += (`
-<tr data-dbtype="row" data-hashtag="${hashtag}" data-rowid="${row[0]}">
+<tr data-dbtype="row" data-hashtag="${hashtag}" data-rowid="${rowid}">
         `);
         row.forEach(function (val) {
             html += "<td>" + (val ?? "") + "</td>";
@@ -4683,9 +5081,6 @@ SELECT
     if (baton.modeAjax === 2) {
         baton.modeAjax = 0;
         // keep focus on current scroller when debouncing
-        if (type === "scroll") {
-            elemScroller.focus();
-        }
         await uitableAjax(baton, {});
         return;
     }
@@ -4845,8 +5240,11 @@ function waitAsync(timeout) {
 // init
 // iOS Safari can fire load before this module finishes evaluating
 // (top-level await in sqlmath.mjs), so init directly if already loaded.
+// uiTryCatch shows any init error, else the page sits on the spinner
 if (document.readyState === "complete") {
-    init();
+    uiTryCatch(init);
 } else {
-    window.addEventListener("load", init);
+    window.addEventListener("load", function () {
+        uiTryCatch(init);
+    });
 }
