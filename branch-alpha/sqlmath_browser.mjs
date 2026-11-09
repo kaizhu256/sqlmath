@@ -20,6 +20,7 @@ let {
 let DBTABLE_DICT = new Map();
 let DB_CHART;
 let DB_DICT = new Map();
+let DB_EXEC_BUSY;
 let DB_INIT = Promise.resolve();
 let DB_MAIN;
 let DB_QUERY;
@@ -36,6 +37,8 @@ let UI_FILE_OPEN = document.createElement("input");
 let UI_FILE_SAVE = document.createElement("a");
 let UI_LOADING = document.getElementById("loadingPanel1");
 let UI_LOADING_COUNTER = 0;
+let UI_LONGPRESS_FIRED;
+let UI_LONGPRESS_TIMER;
 let UI_PAGE_SIZE = 256;
 let UI_RESIZE_WIDTH = window.innerWidth;
 let UI_ROW_HEIGHT = 16;
@@ -50,15 +53,24 @@ async function dbFileAttachAsync({
 // this function will attach database <dbData> to <db>
     let dbAttached;
     let dbName = dbNameNext("attach{{ii}}", new Set(DB_DICT.keys()));
+    let isAttached;
     dbAttached = await dbOpenAsync({
         dbData,
         filename: `file:${dbName}?mode=memory&cache=shared`
     });
     dbAttached.dbName = dbName;
-    await dbExecAsync({
-        db,
-        sql: `ATTACH DATABASE '${dbAttached.filename}' AS ${dbName}`
-    });
+    try {
+        await dbExecAsync({
+            db,
+            sql: `ATTACH DATABASE '${dbAttached.filename}' AS ${dbName}`
+        });
+        isAttached = true;
+    } finally {
+        // failed ATTACH - close handle, else it leaks in wasm
+        if (!isAttached) {
+            await dbCloseAsync(dbAttached);
+        }
+    }
     DB_DICT.set(dbName, dbAttached);
     // normalize order
     DB_DICT = Array.from(DB_DICT.values());
@@ -1334,6 +1346,10 @@ async function init() {
         ["body", "contextmenu", onContextmenu],
         [UI_FILE_OPEN, "change", onDbAction],
         [document, "keydown", onKeyDown],
+        [document, "touchcancel", onTouchLongpress],
+        [document, "touchend", onTouchLongpress],
+        [document, "touchmove", onTouchLongpress],
+        [document, "touchstart", onTouchLongpress],
         [window, "hashchange", uitableInitWithinView],
         [window, "resize", onResize]
     ].forEach(function ([
@@ -1375,6 +1391,9 @@ async function init() {
             }
             return;
         case "jsScript":
+            // REVIEWED 2026-11-09, KEPT: loads any url as script on this
+            // origin, a dev hook. Origin is static gh-pages with no secrets,
+            // so a crafted link gains nothing a self-hosted page would not.
             modeDemo = undefined;
             key = document.createElement("script");
             key.src = val;
@@ -1637,7 +1656,7 @@ UPDATE
 SET
 ` +
             baton.colList.slice(1).map(function (col) {
-                return `    "${col}" = NULL`;
+                return `    ${sqlIdQuote(col)} = NULL`;
             }).join(",\n") +
             `
 WHERE
@@ -1859,7 +1878,7 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             sql: (
                 `SELECT ` +
                 baton.colList.map(function (col) {
-                    return `COLUMNTYPE(${col}) AS ${col}`;
+                    return `COLUMNTYPE(${sqlIdQuote(col)})`;
                 }).join(",") +
                 ` FROM ${baton.dbtableName};`
             )
@@ -1945,9 +1964,19 @@ async function onDbExec({
 // 3. ui-render sql-queries to html
     let dbqueryList;
     if (!modeTryCatch) {
-        await uiTryCatch(onDbExec, {
-            modeTryCatch: true
-        });
+        // ignore re-entry, e.g. double ctrl+enter, else both runs race to
+        // re-create result_00 and one fails "table already exists"
+        if (DB_EXEC_BUSY) {
+            return;
+        }
+        DB_EXEC_BUSY = true;
+        try {
+            await uiTryCatch(onDbExec, {
+                modeTryCatch: true
+            });
+        } finally {
+            DB_EXEC_BUSY = false;
+        }
         return;
     }
     // close error modal
@@ -1970,7 +1999,9 @@ async function onDbExec({
                 sql: (`
 BEGIN TRANSACTION;
 SELECT
-        group_concat('DROP TABLE [' || name || '];', '') AS sql
+        group_concat(
+            'DROP TABLE "' || REPLACE(name, '"', '""') || '";', ''
+        ) AS sql
     FROM sqlite_master
     WHERE
         type = 'table';
@@ -2117,6 +2148,45 @@ function onTocToggle(evt) {
         "aria-expanded",
         String(isOpen)
     );
+}
+
+function onTouchLongpress(evt) {
+// this function will open contextmenu on touch long-press,
+// since ios safari never fires contextmenu-event
+    let touch = evt.touches[0];
+    clearTimeout(UI_LONGPRESS_TIMER);
+    switch (evt.type) {
+    case "touchend":
+        // swallow click after long-press, else it hides the contextmenu
+        if (UI_LONGPRESS_FIRED) {
+            evt.preventDefault();
+        }
+        return;
+    case "touchstart":
+        UI_LONGPRESS_FIRED = false;
+        if (evt.touches.length !== 1) {
+            return;
+        }
+        UI_LONGPRESS_TIMER = setTimeout(function () {
+            UI_LONGPRESS_FIRED = true;
+            onContextmenu({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                preventDefault: noop,
+                stopPropagation: noop,
+                target: evt.target,
+                type: "contextmenu"
+            });
+        }, 500);
+        return;
+    }
+    // touchcancel, touchmove - not a long-press
+}
+
+function sqlIdQuote(name) {
+// this function will quote sql-identifier <name>, so names with space, "]"
+// or a keyword do not break or inject into generated sql
+    return "\"" + String(name).replace((/"/g), "\"\"") + "\"";
 }
 
 function stringHtmlSafe(str) {
@@ -2271,7 +2341,7 @@ function svgAnimate(elem, attrDict, mode) {
                 }
                 // cache attribute
                 elem[fxattr2] = fxnow;
-                if (fx_seriesShape || translateY) {
+                if (fx_seriesShape || translateY !== undefined) {
                     return;
                 }
                 // update child tspans x values
@@ -2301,7 +2371,7 @@ function svgAnimate(elem, attrDict, mode) {
                 elem.fx_height
             ));
         }
-        if (translateY) {
+        if (translateY !== undefined) {
             elem.setAttribute(
                 "transform",
                 `translate(${elem.fx_translateX},${elem.fx_translateY})`
@@ -2457,13 +2527,16 @@ async function uiRenderDb() {
     }) {
         return `${name}`;
     }));
-    DB_DICT.forEach(function ({
-        dbName,
-        isDbchart,
-        isDbquery
-    }) {
+    DB_DICT.forEach(function (db) {
+        let {
+            dbName,
+            isDbchart,
+            isDbquery
+        } = db;
+        // db detached by sql - forget and close it, else handle leaks in wasm
         if (!isDbchart && !isDbquery && !dbList.has(dbName)) {
             DB_DICT.delete(dbName);
+            dbCloseAsync(db);
         }
     });
     // DBTABLE_DICT - cleanup old uitable
@@ -2506,7 +2579,9 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
             sql,
             tbl_name
         }, ii) {
-            dbtableFullname = dbtableFullname || `${dbName}.[${tbl_name}]`;
+            dbtableFullname = (
+                dbtableFullname || `${dbName}.${sqlIdQuote(tbl_name)}`
+            );
             dbtableIi += 1;
             baton = {
                 colList,
@@ -2514,7 +2589,7 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 dbName,
                 dbtableFullname,
                 dbtableIi,
-                dbtableName: `[${tbl_name}]`,
+                dbtableName: sqlIdQuote(tbl_name),
                 hashtag: `dbtable_${String(dbtableIi).padStart(2, "0")}`,
                 ii,
                 isDbchart,
@@ -2649,7 +2724,9 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
                 ? "query"
                 : "table"
             );
-            html += ` ${stringHtmlSafe(dbtableName.slice(1, -1))}</a>\n`;
+            html += ` ${stringHtmlSafe(
+                dbtableName.slice(1, -1).replace((/""/g), "\"")
+            )}</a>\n`;
         });
     });
     document.querySelector("#tocDbList1").innerHTML = html;
@@ -4034,6 +4111,11 @@ SELECT
                 if (isBarchart) {
                     // if isBarchart, then redraw point as bar
                     barY = Math.min(pointY, plotbarYaxis);
+                    // re-shown bar - start at target, not its stale spot
+                    if (pointObj.isMarkerHidden) {
+                        elemPoint.fx_x = pointX - plotbarMargin;
+                        elemPoint.fx_y = barY;
+                    }
                     pointVisibleSet(pointObj, true);
                     svgAnimate(elemPoint, {
                         height: Math.max(
@@ -4436,6 +4518,7 @@ SELECT
 
 async function uitableAjax(baton, {
     rowList,
+    rowOffset,
     type
 }) {
     let {
@@ -4480,12 +4563,16 @@ async function uitableAjax(baton, {
             uiFadeOut(elemLoading);
             return;
         }
+        // rows map to pixels proportionally, same as table-top below, so
+        // the bottom of the scroller reads "to N of N"
         viewRowBeg = Math.max(0, Math.round(
-            rowCount *
-            elemScroller.scrollTop /
-            (elemScroller.scrollHeight - 1 * UI_ROW_HEIGHT)
+            rowCount * elemScroller.scrollTop / elemScroller.scrollHeight
         ));
-        viewRowEnd = Math.min(rowCount, Math.round(viewRowBeg + UI_VIEW_SIZE));
+        viewRowEnd = Math.min(rowCount, Math.round(
+            rowCount *
+            (elemScroller.scrollTop + elemScroller.clientHeight) /
+            elemScroller.scrollHeight
+        ));
         // update table-view info
         elemInfo.textContent = (
             "showing " +
@@ -4520,6 +4607,9 @@ async function uitableAjax(baton, {
         uiFadeIn(elemLoading);
         baton.modeAjax = 1;
         // uitable - paginate
+        // capture offset - a scroll during the query moves baton.rowOffset,
+        // which would mis-position these rows
+        rowOffset = baton.rowOffset;
         try {
             rowList = await dbExecAsync({
                 db,
@@ -4530,9 +4620,9 @@ SELECT
         --
         ${dbtableName}.*
     FROM ${dbtableName}
-    ORDER BY [${colList[sortCol]}] ${sortDir}, rowid
+    ORDER BY ${sqlIdQuote(colList[sortCol])} ${sortDir}, rowid
     LIMIT ${Number(UI_PAGE_SIZE)}
-    OFFSET ${Number(baton.rowOffset)};
+    OFFSET ${Number(rowOffset)};
                 `)
             });
         } finally {
@@ -4559,6 +4649,7 @@ SELECT
         // recurse - draw
         await uitableAjax(baton, {
             rowList,
+            rowOffset,
             type: "uitableDraw"
         });
         return;
@@ -4573,7 +4664,7 @@ SELECT
     // uitableDraw
     // Position the table in the virtual scroller
     elemTable.style.top = Math.max(0, Math.round(
-        elemScroller.scrollHeight * baton.rowOffset / (baton.rowCount + 1)
+        elemScroller.scrollHeight * rowOffset / (baton.rowCount + 1)
     )) + "px";
     // Insert the required TR nodes into the table for display
     jsonHtmlSafe(rowList).forEach(function (row) {
