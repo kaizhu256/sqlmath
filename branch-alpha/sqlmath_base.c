@@ -989,8 +989,7 @@ SQLMATH_API void dbFileLoad(
 ** parameter isSave is zero, then the contents of the database opened by
 ** pInMemory are replaced by data loaded from the file zFilename.
 **
-** If the operation is successful, SQLITE_OK is returned. Otherwise, if
-** an error occurs, an SQLite error code is returned.
+** An error code is reported through <baton> by JSBATON_ASSERT_OK().
 */
     sqlite3 *db = NULL;
     sqlite3 *pInMemory = (sqlite3 *) jsbatonGetInt64(baton, 0);
@@ -1031,8 +1030,7 @@ SQLMATH_API void dbFileLoad(
         }
         errcode = sqlite3_errcode(pTo);
     }
-    /* Close the database connection opened on database file zFilename
-     ** and return the result of this function. */
+    /* Close the database connection opened on database file zFilename. */
     (void) sqlite3_close(pFile);
     JSBATON_ASSERT_OK();
   catch_error:
