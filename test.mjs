@@ -103,17 +103,42 @@ jstestDescribe((
 ), function test_assertXxx() {
     jstestIt((
         "test assertXxx handling-behavior"
-    ), function () {
-        assertErrorThrownAsync(function () {
+    ), async function () {
+        await assertErrorThrownAsync(function () {
             assertNumericalEqual(0, 0);
         }, "value cannot be 0 or falsy");
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             assertNumericalEqual(1, 2);
         }, "1 != 2");
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             assertNumericalEqual(1, 2, "aa");
         }, "aa");
         assertNumericalEqual(1, 1);
+        // test assertErrorThrownAsync error handling-behavior
+        await assertErrorThrownAsync(function () {
+            return assertErrorThrownAsync(noop);
+        }, "No error thrown");
+        // test assertJsonEqual error handling-behavior
+        await assertErrorThrownAsync(function () {
+            assertJsonEqual(1, 2);
+        }, "!==");
+        await assertErrorThrownAsync(function () {
+            assertJsonEqual(1, 2, "undefined");
+        }, "undefined");
+        await assertErrorThrownAsync(function () {
+            assertJsonEqual(1, 2, {});
+        }, "");
+        // test assertOrThrow error handling-behavior
+        await assertErrorThrownAsync(function () {
+            assertOrThrow(undefined, "undefined");
+        }, "undefined");
+        await assertErrorThrownAsync(function () {
+            assertOrThrow(undefined, new Error());
+        }, "");
+        // test listOrEmptyList null-case handling-behavior
+        assertJsonEqual(listOrEmptyList(), []);
+        // test waitAsync null-case handling-behavior
+        await waitAsync();
     });
 });
 
@@ -256,7 +281,7 @@ jstestDescribe((
             let bufActual;
             let bufExpect;
             if (valExpect === Error) {
-                assertErrorThrownAsync(
+                await assertErrorThrownAsync(
                     dbExecAndReturnLastBlob.bind(undefined, {
                         bindList: [valIn],
                         db,
@@ -328,7 +353,7 @@ jstestDescribe((
         async function test_dbBind_lastValue(ii, valIn, valExpect) {
             let valActual;
             if (valExpect === Error) {
-                assertErrorThrownAsync(
+                await assertErrorThrownAsync(
                     dbExecAndReturnLastValue.bind(undefined, {
                         bindList: [valIn],
                         db,
@@ -359,7 +384,7 @@ jstestDescribe((
             ].map(async function (responseType) {
                 let valActual;
                 if (valExpect === Error) {
-                    assertErrorThrownAsync(
+                    await assertErrorThrownAsync(
                         dbExecAsync.bind(undefined, {
                             bindList: [valIn],
                             db,
@@ -552,7 +577,7 @@ jstestDescribe((
             let baton;
             let valActual;
             if (valExpect === Error) {
-                assertErrorThrownAsync(function () {
+                await assertErrorThrownAsync(function () {
                     return dbNoopAsync(undefined, valIn, undefined);
                 }, "invalid arg|integer");
                 return;
@@ -586,7 +611,7 @@ jstestDescribe((
     ), async function test_dbCloseAsync() {
         let db = await dbOpenAsync({});
         // test null-case handling-behavior
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return dbCloseAsync({});
         }, "cannot close db");
         // test close handling-behavior
@@ -666,7 +691,7 @@ jstestDescribe((
             modeNoop: true
         });
         // test null-case handling-behavior
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return dbExecAsync({
                 db,
                 sql: undefined
@@ -740,7 +765,7 @@ SELECT * FROM testDbExecAsync2;
             }
         });
         // test close-while-busy handling-behavior
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return dbCloseAsync(db);
         }, "cannot close db");
     });
@@ -753,7 +778,7 @@ SELECT * FROM testDbExecAsync2;
         dbFileLoadAsync({
             modeNoop: true
         });
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return dbFileSaveAsync({
                 db,
                 filename: 0
@@ -1284,40 +1309,6 @@ SELECT ROUND(_1, 8) AS _1 FROM __lgbm_file_preb;
             });
         });
         await Promise.all(promiseList);
-    });
-});
-
-jstestDescribe((
-    "test_misc"
-), function test_misc() {
-    jstestIt((
-        "test misc handling-behavior"
-    ), async function () {
-        // test assertErrorThrownAsync error handling-behavior
-        await assertErrorThrownAsync(function () {
-            return assertErrorThrownAsync(noop);
-        }, "No error thrown");
-        // test assertJsonEqual error handling-behavior
-        await assertErrorThrownAsync(function () {
-            assertJsonEqual(1, 2);
-        }, "!==");
-        await assertErrorThrownAsync(function () {
-            assertJsonEqual(1, 2, "undefined");
-        }, "undefined");
-        await assertErrorThrownAsync(function () {
-            assertJsonEqual(1, 2, {});
-        }, "");
-        // test assertOrThrow error handling-behavior
-        await assertErrorThrownAsync(function () {
-            assertOrThrow(undefined, "undefined");
-        }, "undefined");
-        await assertErrorThrownAsync(function () {
-            assertOrThrow(undefined, new Error());
-        }, "");
-        // test listOrEmptyList null-case handling-behavior
-        assertJsonEqual(listOrEmptyList(), []);
-        // test waitAsync null-case handling-behavior
-        await waitAsync();
     });
 });
 
@@ -2809,26 +2800,15 @@ SELECT
         let valExpect0;
         let valIn;
         function sqlSinefitExtractLnr(wsf, ii, suffix) {
-            return (`
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'gyy', 0), 8) AS gyy${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'laa', 0), 8) AS laa${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lbb', 0), 8) AS lbb${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lee', 0), 8) AS lee${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lxy', 0), 8) AS lxy${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'lyy', 0), 8) AS lyy${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mee', 0), 8) AS mee${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mrr', 0), 8) AS mrr${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxe', 0), 8) AS mxe${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'mxx', 0), 8) AS mxx${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'myy', 0), 8) AS myy${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'nnn', 0), 8) AS nnn${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rra', 0), 8) AS rra${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'rrb', 0), 8) AS rrb${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxa', 0), 8) AS xxa${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'xxb', 0), 8) AS xxb${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yya', 0), 8) AS yya${suffix},
-    ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, 'yyb', 0), 8) AS yyb${suffix}
-            `);
+            return [
+                "gyy", "laa", "lbb", "lee", "lxy", "lyy", "mee", "mrr", "mxe",
+                "mxx", "myy", "nnn", "rra", "rrb", "xxa", "xxb", "yya", "yyb"
+            ].map(function (key) {
+                return (
+                    `ROUND(SINEFIT_EXTRACT(${wsf}, ${ii}, '${key}', 0), 8)` +
+                    ` AS ${key}${suffix}`
+                );
+            }).join(",\n");
         }
         async function test_win_sinefit2_aggregate({
             aa,
