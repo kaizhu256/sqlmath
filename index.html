@@ -450,9 +450,16 @@ textarea {
     left: 50%;
     position: fixed;
     top: 50%;
+    /* short screen - scroll, keep title, close and ok reachable */
+    max-height: calc(100vh - 16px);
+    /* dvh - 100vh counts the hidden-toolbar height on phones */
+    max-height: calc(100dvh - 16px);
+    max-width: calc(100vw - 16px);
+    overflow-y: auto;
     transform: translate(-50%, -50%);
     width: 24rem;
-    z-index: 1;
+    /* above #tocPanel1 drawer (z-index 50) on narrow screen */
+    z-index: 70;
 }
 .modalTitle {
     line-height: 1.5rem;
@@ -485,8 +492,12 @@ textarea {
 #contentPanel1 th {
     border-right: 1px solid #999;
     max-width: 16rem;
+    /* one line per row - virtual scroll assumes every row is 16px */
+    overflow: hidden;
     padding: 0 2px;
     text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 #contentPanel1 th {
     background: #bbd;
@@ -612,6 +623,11 @@ textarea {
 }
 #contextmenu1 {
     background: #fff;
+    /* short screen, e.g. phone landscape - scroll, keep bottom items */
+    max-height: calc(100vh - 16px);
+    /* dvh - 100vh counts the hidden-toolbar height on phones */
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
     position: fixed;
     width: 256px;
     z-index: 99;
@@ -733,6 +749,12 @@ textarea {
 
 
 /*css section uichart*/
+/* a pan starting on a tick or gridline froze once the y autoscale removed
+   it - touchmove keeps going to the removed element */
+.uichartAxistickList,
+.uichartGridlineList {
+    pointer-events: none;
+}
 .uichart {
     font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
@@ -825,6 +847,8 @@ button:hover {
     box-shadow: 4px 4px 8px 2px #777;
     opacity: 0;
     transition: visibility 0.5s, opacity 0.5s;
+    /* start hidden - opacity 0 alone still catches taps */
+    visibility: hidden;
 }
 .uichartCanvasFlex:hover {
     border-color: #bbb;
@@ -838,7 +862,24 @@ button:hover {
 }
 
 
-/*css section longpress - ios long-press opens crud contextmenu, not callout*/
+/*css section touch - ios field zoom, long-press selection*/
+/* ios safari zooms into a focused field under 16px and stays zoomed */
+@supports (-webkit-touch-callout: none) {
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+/* touch long-press opens the crud contextmenu, not a text selection */
+@media (hover: none) {
+    #contentPanel1 tbody tr,
+    .tocElemA {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+/* ios long-press opens the crud contextmenu, not the link callout */
 #contentPanel1 tbody tr,
 .tocElemA {
     -webkit-touch-callout: none;
@@ -857,11 +898,14 @@ button:hover {
         background: #fff;
         padding-top: 2rem;
         transform: translateX(-100%);
-        transition: transform 0.25s;
+        transition: transform 0.25s, visibility 0.25s;
+        /* closed - no shadow sliver, links not tab-focusable */
+        visibility: hidden;
         z-index: 50;
     }
     .tocOpen #tocPanel1 {
         transform: none;
+        visibility: visible;
     }
     #tocToggle1 {
         box-shadow: 2px 2px 4px 2px #bbb;
@@ -1035,7 +1079,7 @@ fork on github
 
 
 <!-- loadingPanel1 start -->
-<div id="loadingPanel1" style="opacity: 1;"><div class="uiLoading"></div></div>
+<div id="loadingPanel1" style="opacity: 1; visibility: visible;"><div class="uiLoading"></div></div>
 <!-- loadingPanel1 end -->
 
 </body>
