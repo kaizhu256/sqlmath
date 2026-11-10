@@ -397,10 +397,18 @@ SQLMATH_CFLAG_WNO_LIST=" \\
         "target_defaults": {
             "cflags": cflagWallList,
 // https://github.com/nodejs/node-gyp/blob/v10.3.1/gyp/pylib/gyp/MSVSSettings.py
+// Node 26 win is clang-cl built - drop its lto and pgo flags msvc warns on.
             "msvs_settings": {
                 "VCCLCompilerTool": {
-                    "WarnAsError": 1,
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]],
+                    "WarnAsError": "true",
                     "WarningLevel": 4
+                },
+                "VCLibrarianTool": {
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]]
+                },
+                "VCLinkerTool": {
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]]
                 }
             },
             "xcode_settings": {
@@ -415,7 +423,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
-                        "WarnAsError": 1,
+                        "WarnAsError": "true",
                         "WarningLevel": 2
                     }
                 },
