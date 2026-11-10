@@ -250,7 +250,8 @@ shCiBuildWasm() {(set -e
     # cd ${EMSDK} && . ./emsdk_env.sh && cd ..
     # build wasm
     printf "shCiBuildWasm\n" 1>&2
-    OPTION1="$OPTION1 -flto"
+    # USE_ZLIB at compile too - zlib.h lives in the port, not the sysroot
+    OPTION1="$OPTION1 -flto -sUSE_ZLIB=1"
     # debug
     # OPTION1="$OPTION1 -O0"
     OPTION1="$OPTION1 -Os"
@@ -297,7 +298,6 @@ shCiBuildWasm() {(set -e
     OPTION2="$OPTION2,_sqlite3_malloc"
     #
     OPTION2="$OPTION2 -s EXPORTED_RUNTIME_METHODS=cwrap"
-    OPTION2="$OPTION2 -s LLD_REPORT_UNDEFINED"
     #
     case "$1" in
     --debug)
@@ -309,18 +309,10 @@ shCiBuildWasm() {(set -e
     esac
     # shellcheck disable=SC2086
     emcc $OPTION1 $OPTION2 \
-        --memory-init-file 0 \
         --pre-js sqlmath_wrapper_wasm.js \
         -o build/sqlmath_wasm.js \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s ALLOW_TABLE_GROWTH=1 \
-        -s NODEJS_CATCH_EXIT=0 \
-        -s NODEJS_CATCH_REJECTION=0 \
-        -s RESERVED_FUNCTION_POINTERS=64 \
-\
-        -s USE_ZLIB=1 \
-\
-        -s WASM_BIGINT \
         build/sqlmath_base.c.wasm.o \
         build/sqlmath_external_sqlite.c.wasm.o \
         #
@@ -345,7 +337,7 @@ shCiBuildWasm() {(set -e
 
 shCiEmsdkExport() {
 # This function will export emsdk env.
-    export EMSCRIPTEN_VERSION=3.1.3
+    export EMSCRIPTEN_VERSION=6.0.13
     export EMSDK="$PWD/_emsdk"
     # https://github.com/sql-js/sql.js/blob/v1.6.2/.devcontainer/Dockerfile
     if [ ! "$PATH_EMSDK" ]

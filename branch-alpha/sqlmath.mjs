@@ -353,29 +353,8 @@ async function ciBuildExt1NodejsConfigure({
 
 // This function will setup posix/win32 env for building c-extension.
 
-    let cflagWallList = [];
-    let cflagWnoList = [];
-    String(
-        await fsReadFileUnlessTest(".ci.sh", "utf8", (`
-SQLMATH_CFLAG_WALL_LIST=" \\
-"
-SQLMATH_CFLAG_WNO_LIST=" \\
-"
-        `))
-    ).replace((
-        /(SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)=" \\([\S\s]*?)"/g
-    ), function (ignore, cflagType, cflagList) {
-        cflagList = cflagList.split(/[\s\\]/).filter(noop);
-        switch (cflagType) {
-        case "SQLMATH_CFLAG_WALL_LIST":
-            cflagWallList = cflagList;
-            break;
-        case "SQLMATH_CFLAG_WNO_LIST":
-            cflagWnoList = cflagList;
-            break;
-        }
-        return "";
-    });
+    const cflagWallList = ["-Wall", "-Werror", "-Wextra"];
+    const cflagWnoList = ["-Werror", "-Wno-all", "-Wno-extra"];
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
