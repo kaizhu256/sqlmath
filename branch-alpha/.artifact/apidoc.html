@@ -793,14 +793,14 @@ jstestDescribe((
 ), function test_assertXxx() {
 jstestIt((
     "test assertXxx handling-behavior"
-), function () {
-    assertErrorThrownAsync(function () {
+), async function () {
+    await assertErrorThrownAsync(function () {
         <span class="apidocCodeKeywordSpan">assertNumericalEqual</span>(0, 0);
     }, "value cannot be 0 or falsy");
-    assertErrorThrownAsync(function () {
+    await assertErrorThrownAsync(function () {
         assertNumericalEqual(1, 2);
     }, "1 != 2");
-    assertErrorThrownAsync(function () {
+    await assertErrorThrownAsync(function () {
         assertNumericalEqual(1, 2, "aa");
     }, "aa");
 ...</pre></li>
@@ -1688,7 +1688,7 @@ assertJsonEqual(
     let baton;
     let valActual;
     if (valExpect === Error) {
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return <span class="apidocCodeKeywordSpan">dbNoopAsync</span>(undefined, valIn, undefined);
         }, "invalid arg|integer");
         return;
@@ -1745,8 +1745,8 @@ assertJsonEqual(
                 flags ?? (
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
-                // 3. const char *zVfs        Name of VFS module to use
-                undefined
+                // 3. int timeoutBusy
+                timeoutBusy
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1756,19 +1756,20 @@ assertJsonEqual(
     db.connPool = connPool;
     if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
         DB_STATE.init = true;
-        await Promise.all([
-            // PRAGMA busy_timeout
-            dbExecAsync({
-                db,
-                sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
-                `)
-            }),
-            // LGBM_DLOPEN
-            (async function () {
-                let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-                await moduleFs....
+        // LGBM_DLOPEN
+        await (async function () {
+            let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
+            libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+            await moduleFs.promises.access(
+                libLgbm
+            ).then(async function () {
+                await dbExecAsync({
+                    db,
+                    sql: (`
+SELECT LGBM_DLOPEN('${libLgbm}');
+                    `)
+                });
+       ...
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -2167,21 +2168,21 @@ assertJsonEqual(valActual, valExpect, {
     return `${libPlatform}_${libArch}.${libExt}`;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-    db,
-    sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
-    `)
-}),
-// LGBM_DLOPEN
-(async function () {
-    let libLgbm = `lib_lightgbm_${<span class="apidocCodeKeywordSpan">libPlatformArchExt</span>()}`;
-    libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-    await moduleFs.promises.access(
-        libLgbm
-    ).then(async function () {
-        await dbExecAsync({
-            db,
-            sql: (`
+    return ptr;
+}));
+db.connPool = connPool;
+if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
+    DB_STATE.init = true;
+    // LGBM_DLOPEN
+    await (async function () {
+        let libLgbm = `lib_lightgbm_${<span class="apidocCodeKeywordSpan">libPlatformArchExt</span>()}`;
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(
+            libLgbm
+        ).then(async function () {
+            await dbExecAsync({
+                db,
+                sql: (`
 ...</pre></li>
 
 <li>
@@ -2212,7 +2213,7 @@ PRAGMA busy_timeout = ${timeoutBusy};
 });
 
 jstestDescribe((
-"test_sqlite"
+"test_childProcessSpawn2"
 ...</pre></li>
 
 <li>
@@ -2458,8 +2459,8 @@ jstestDescribe((
 });
 
 jstestDescribe((
-"test_sqlite"
-), function test_sqlite() {
+"test_childProcessSpawn2"
+), function test_childProcessSpawn2() {
 jstestIt((
 ...</pre></li>
 
