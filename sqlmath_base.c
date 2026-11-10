@@ -521,10 +521,6 @@ file sqlmath_base - start
 #if defined(SRC_SQLMATH_BASE_C2)
 
 
-// track how many sqlite-db open
-static int dbCount = 0;
-
-
 static inline int trueAlways(
 ) {
     return 1;
@@ -593,9 +589,6 @@ SQLMATH_API void dbClose(
     // call c-function
     errcode = sqlite3_close_v2(db);
     JSBATON_ASSERT_OK();
-    if (db != NULL) {
-        dbCount -= 1;
-    }
   catch_error:
     (void) 0;
 }
@@ -1096,7 +1089,6 @@ SQLMATH_API void dbOpen(
         flags,                  // flags
         NULL);
     JSBATON_ASSERT_OK();
-    dbCount += 1;
     // Per-connection, so every db and every pool-connection gets it.
     sqlite3_busy_timeout(db, (int) baton->argv[3]);
     // save db
