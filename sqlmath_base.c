@@ -71,7 +71,7 @@ file sqlmath_h - start
 
 
 #define JSBATON_ARGC            8
-#define JSBATON_OFFSET_ALL      256
+#define JSBATON_OFFSET_ALL      512
 #define JSBATON_OFFSET_ARGV     128
 #define JSBATON_OFFSET_BUFV     192
 #define JSBATON_OFFSET_ERRMSG   48
@@ -282,6 +282,9 @@ typedef struct Jsbaton {
     int64_t argv[JSBATON_ARGC]; // offset 128-192
     Jsbuffer bufv[JSBATON_ARGC];        // offset 192-320
 } Jsbaton;
+// Bind data starts at JSBATON_OFFSET_ALL; header must fit before it.
+typedef char JsbatonFitsOffsetAll[(sizeof(Jsbaton) <= JSBATON_OFFSET_ALL)
+    ? 1 : -1];
 SQLMATH_API void dbCall(
     Jsbaton * baton
 );
@@ -542,6 +545,15 @@ static inline int trueAlways(
 // - LEAVE AS IS - REAL returns as 15 digits, ~1e-15 relative; %.17g would
 //   change every float's text.
 // - LEAVE AS IS - py <db_exec> has no lastvalue; no py caller reads it.
+// DBEXEC REVIEW 2026-11-10 - c, js, napi, py binding; verdicts:
+// - FIXED - JSBATON_OFFSET_ALL 256 -> 512 [owner pick over 320]: bufv[8] ran
+//   to byte 320, so external-buffer 5-8 overwrote bind data; sizeof check.
+// - LEAVE AS IS - busy_timeout blocks a libuv thread per waiter; 4 waiters
+//   plus a COMMIT in a LATER exec stall 5 s [measured 5,374 ms]. betadog runs
+//   BEGIN..COMMIT in one exec, where waiting helps. DO NOT split one.
+// - LEAVE AS IS - <jspromiseCreate> leaks its ref on the busy-work misuse
+//   path; <pydbCall> holds the GIL, which keeps the early PyBuffer_Release
+//   safe; strlen(sqlite3_column_name()) is NULL only on OOM.
 // RE-REVIEW 2026-11-10 - 0 high, 0 med:
 // - FIXED - js closed-db error now names db.filename.
 // - LEAVE AS IS - wasm failed <_dbFileLoad> keeps FILENAME_DBTMP until the

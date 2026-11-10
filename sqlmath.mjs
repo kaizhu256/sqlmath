@@ -51,7 +51,7 @@ const debugInline = (function () {
 debugInline(); // coverage-hack
 
 const JSBATON_ARGC = 8; //jslint-ignore-line
-const JSBATON_OFFSET_ALL = 256;
+const JSBATON_OFFSET_ALL = 512;
 const JSBATON_OFFSET_ARGV = 128;
 const JSBATON_OFFSET_BUFV = 192;
 // const JSBATON_OFFSET_ERRMSG = 48;
