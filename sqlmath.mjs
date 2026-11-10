@@ -716,7 +716,7 @@ async function dbCallAsync(baton, argList, mode, db) {
         );
         db.ii = (db.ii + 1) % db.connPool.length;
         db.ptr = db.connPool[db.ii][0];
-        assertOrThrow(db.ptr, "dbCallAsync - db is closed");
+        assertOrThrow(db.ptr, `dbCallAsync - db is closed - ${db.filename}`);
         // increment db.busy
         db.busy += 1;
         // init profileObj

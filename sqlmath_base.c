@@ -542,6 +542,11 @@ static inline int trueAlways(
 // - LEAVE AS IS - REAL returns as 15 digits, ~1e-15 relative; %.17g would
 //   change every float's text.
 // - LEAVE AS IS - py <db_exec> has no lastvalue; no py caller reads it.
+// RE-REVIEW 2026-11-10 - 0 high, 0 med:
+// - FIXED - js closed-db error now names db.filename.
+// - LEAVE AS IS - wasm failed <_dbFileLoad> keeps FILENAME_DBTMP until the
+//   next load overwrites it; afterFinalization fires per pool-connection, no
+//   caller passes it; <dbExec> memset(NULL, 0, 0) on 0 binds is harmless.
 // - FINE - <dbCall>, <dbClose>, <dbFileLoad>, <dbNoop>,
 //   js dbExecAndReturnLast*, <dbExecProfile>, <dbFileLoadAsync>,
 //   <dbTableImportAsync>.
