@@ -254,7 +254,8 @@ def db_close(db):
     # prevent segfault - do not close db if actions are pending
     if not db.closed:
         db.closed = True
-        db_call(jsbaton_create("_dbClose"), [db.ptr, db.filename])
+        db.ptr = 0
+        db.finalize()
 
 
 def db_exec(
@@ -264,6 +265,7 @@ def db_exec(
     sql=None,
 ):
     """This function will exec <sql> in <db> and return <result>."""
+    assert_or_throw(db.ptr, "db_exec - db is closed")
     if bind_list is None:
         bind_list = []
     baton = jsbaton_create("_dbExec")
@@ -353,6 +355,7 @@ def db_file_load(
         isinstance(filename, str) and filename,
         f"invalid filename {filename}",
     )
+    assert_or_throw(db.ptr, "db_file_load - db is closed")
     db_call(
         jsbaton_create("_dbFileLoad"),
         [
@@ -412,8 +415,8 @@ def db_open(
                 if flags is None
                 else flags
             ),
-            # 3. const char *zVfs        Name of VFS module to use
-            None,
+            # 3. int timeout_busy
+            timeout_busy,
         ],
     )[0]
     # ctype-q = long-long
@@ -421,16 +424,15 @@ def db_open(
     db = SqlmathDb()
     db.filename = filename
     db.ptr = ptr
-    weakref.finalize(db, db_close, db)
+    # Finalizer must not reference db, or db is never collected.
+    db.finalize = weakref.finalize(
+        db,
+        db_call,
+        jsbaton_create("_dbClose"),
+        [ptr, filename],
+    )
     if not DB_STATE["init"]:
         DB_STATE["init"] = True
-        # PRAGMA busy_timeout
-        db_exec(
-            db=db,
-            sql=f"""
-PRAGMA busy_timeout = {timeout_busy};
-            """,
-        )
         # LGBM_DLOPEN
         lib_lgbm = f"lib_lightgbm_{lib_platform_arch_ext()}"
         lib_lgbm = pathlib.Path(__file__).resolve().parent / lib_lgbm
@@ -496,11 +498,10 @@ def db_table_import( # noqa: PLR0917
         # Preserve order and get unique keys
         col_list = list(dict.fromkeys(all_keys))
         normalized_rows = [col_list] # First row is headers
-        for obj in row_list:
-            normalized_rows.extend(
-                [obj.get(key) for key in col_list]
-                for obj in row_list
-            )
+        normalized_rows.extend(
+            [obj.get(key) for key in col_list]
+            for obj in row_list
+        )
         row_list = normalized_rows
     # Extract col_list from first row
     col_list = row_list.pop(0)
@@ -521,10 +522,10 @@ def db_table_import( # noqa: PLR0917
         # Handle duplicates
         suffix = 1
         candidate = clean_name
-        while candidate in seen_cols:
+        while candidate.lower() in seen_cols:
             suffix += 1
             candidate = f"{clean_name}_{suffix}"
-        seen_cols.add(candidate)
+        seen_cols.add(candidate.lower())
         final_cols.append(candidate)
     # create dbtable from rowList
     db_exec(
@@ -533,13 +534,15 @@ def db_table_import( # noqa: PLR0917
         },
         db=db,
         sql=(
-            f"CREATE TABLE {table_name} ({','.join(final_cols)});"
+            f"CREATE TABLE {table_name} (" + ",".join(
+                f'"{col}"' for col in final_cols
+            ) + ");"
             if not row_list else
             (
                 f"CREATE TABLE {table_name} AS SELECT "
                 + ",".join(
                     [
-                        f"value->>{ii} AS {col}"
+                        f'value->>{ii} AS "{col}"'
                         for ii, col in enumerate(final_cols)
                     ],
                 )

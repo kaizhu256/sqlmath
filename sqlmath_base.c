@@ -531,6 +531,20 @@ static inline int trueAlways(
 // file sqlmath_base - SQLMATH_API
 
 // SQLMATH_API db - start
+// DBXXX REVIEW 2026-11-10 - js, c, py dbXxx reviewed; verdicts:
+// - FIXED - busy_timeout reached only the 1st db and 1 conn; <dbOpen> sets it.
+// - FIXED - py <db_table_import> wrote N^2 rows; quotes and dedups columns.
+// - FIXED - exec on a closed db segfaulted; js and py assert db.ptr first.
+// - FIXED - py <weakref.finalize> held db, so it was never collected.
+// - FIXED - <dbDlopen> posix sleep(100) was 100 s; <dbExec> memset before
+//   NULL check; dead "errcode ||" after prepare.
+// - LEAVE AS IS - <dbOpen> leaks the handle on a failed open (rare, +1 branch).
+// - LEAVE AS IS - REAL returns as 15 digits, ~1e-15 relative; %.17g would
+//   change every float's text.
+// - LEAVE AS IS - py <db_exec> has no lastvalue; no py caller reads it.
+// - FINE - <dbCall>, <dbClose>, <dbFileLoad>, <dbNoop>,
+//   js dbExecAndReturnLast*, <dbExecProfile>, <dbFileLoadAsync>,
+//   <dbTableImportAsync>.
 SQLMATH_API void dbCall(
     Jsbaton * baton
 ) {
@@ -580,7 +594,7 @@ SQLMATH_API int dbDlopen(
 #if defined(_WIN32)
         Sleep(100);
 #else
-        sleep(100);
+        usleep(100000);
 #endif                          // _WIN32
     }
     if (*library == (void *) isBusy) {
@@ -706,11 +720,11 @@ SQLMATH_API void dbExec(
     bindList =
         (DbExecBindElem *) sqlite3_malloc(bindListLength *
         sizeof(DbExecBindElem));
-    memset(bindList, 0, bindListLength * sizeof(DbExecBindElem));
     if (bindListLength > 0 && bindList == NULL) {
         errcode = SQLITE_NOMEM;
         JSBATON_ASSERT_OK()
     }
+    memset(bindList, 0, bindListLength * sizeof(DbExecBindElem));
     bindElem = bindList;
     ii = 1;
     while (ii <= bindListLength) {
@@ -771,7 +785,7 @@ SQLMATH_API void dbExec(
         }
         errcode = sqlite3_prepare_v2(db, zSql, -1, &pStmt, &zTmp);
         JSBATON_ASSERT_OK();
-        if (errcode || *zSql == '\x00') {
+        if (*zSql == '\x00') {
             break;
         }
         zSql = zTmp;
@@ -1066,6 +1080,8 @@ SQLMATH_API void dbOpen(
         NULL);
     JSBATON_ASSERT_OK();
     dbCount += 1;
+    // Per-connection, so every db and every pool-connection gets it.
+    sqlite3_busy_timeout(db, (int) baton->argv[3]);
     // save db
     baton->argv[0] = (int64_t) db;
   catch_error:

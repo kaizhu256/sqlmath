@@ -716,6 +716,7 @@ async function dbCallAsync(baton, argList, mode, db) {
         );
         db.ii = (db.ii + 1) % db.connPool.length;
         db.ptr = db.connPool[db.ii][0];
+        assertOrThrow(db.ptr, "dbCallAsync - db is closed");
         // increment db.busy
         db.busy += 1;
         // init profileObj
@@ -1235,8 +1236,8 @@ async function dbOpenAsync({
                 flags ?? (
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
-                // 3. const char *zVfs        Name of VFS module to use
-                undefined
+                // 3. int timeoutBusy
+                timeoutBusy
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1246,31 +1247,22 @@ async function dbOpenAsync({
     db.connPool = connPool;
     if (!IS_BROWSER && !DB_STATE.init) {
         DB_STATE.init = true;
-        await Promise.all([
-            // PRAGMA busy_timeout
-            dbExecAsync({
-                db,
-                sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
-                `)
-            }),
-            // LGBM_DLOPEN
-            (async function () {
-                let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-                await moduleFs.promises.access(
-                    libLgbm
-                ).then(async function () {
-                    await dbExecAsync({
-                        db,
-                        sql: (`
+        // LGBM_DLOPEN
+        await (async function () {
+            let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
+            libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+            await moduleFs.promises.access(
+                libLgbm
+            ).then(async function () {
+                await dbExecAsync({
+                    db,
+                    sql: (`
 SELECT LGBM_DLOPEN('${libLgbm}');
-                        `)
-                    });
-                    DB_STATE.lgbm = true;
-                }).catch(noop);
-            }())
-        ]);
+                    `)
+                });
+                DB_STATE.lgbm = true;
+            }).catch(noop);
+        }());
     }
     return db;
 }
