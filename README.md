@@ -188,9 +188,6 @@ Try it live: **[sqlmath.github.io/sqlmath](https://sqlmath.github.io/sqlmath/ind
 
 | Function | Description |
 |----------|-------------|
-| `cot(x)` | Cotangent |
-| `coth(x)` | Hyperbolic cotangent |
-| `fmod(x, y)` | Floating-point modulo |
 | `squared(x)` | Square of x |
 | `squaredwithsign(x)` | Square preserving sign (negative input → negative output) |
 | `sqrtwithsign(x)` | Square root preserving sign |
@@ -216,7 +213,6 @@ Try it live: **[sqlmath.github.io/sqlmath](https://sqlmath.github.io/sqlmath/ind
 
 | Function | Description |
 |----------|-------------|
-| `marginoferror95(p, n)` | 95% margin of error: sqrt(p*(1-p)/n) |
 | `random1()` | Random float in [0, 1) |
 
 
@@ -226,7 +222,6 @@ Try it live: **[sqlmath.github.io/sqlmath](https://sqlmath.github.io/sqlmath/ind
 
 | Function | Description |
 |----------|-------------|
-| `doublearray_array(...)` | Create double array from values |
 | `doublearray_extract(arr, i)` | Extract element at index |
 | `doublearray_jsonfrom(json)` | Create array from JSON |
 | `doublearray_jsonto(arr)` | Convert array to JSON |
@@ -247,6 +242,10 @@ sqlmath extends SQLite's date functions with integer-format conversions (YYYYMMD
 |----------|-------------|
 | `WIN_SINEFIT2(...)` | Fit sine wave to data (aggregate window function) |
 | `SINEFIT_REFITLAST(...)` | Refit sine wave with new data point |
+
+> `STDEV`, `WIN_QUANTILE2` and `WIN_SINEFIT2` assume a window frame ending at
+> `CURRENT ROW`. With `k FOLLOWING` (k > 0), the last k rows return stale
+> values.
 
 
 <br><br>
@@ -409,7 +408,6 @@ db_exec(db=db, sql="""
 | `LGBM_TRAINFROMFILE(params, n_iter, eval, train_file, data_params, test_file)` | scalar | Train from LibSVM file |
 | `LGBM_PREDICTFORTABLE(model, type, start, n, params, ...)` | window | Predict per row |
 | `LGBM_PREDICTFORFILE(model, type, start, n, params, file, header, out)` | scalar | Predict and save to file |
-| `lgbm_extract(result, key)` | scalar | Extract value from result |
 
 **Complete Example:**
 
