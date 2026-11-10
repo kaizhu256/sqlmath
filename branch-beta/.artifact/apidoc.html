@@ -244,7 +244,6 @@ function dbNoopAsync<span class="apidocSignatureSpan">(...argList)</span>
 <a class="apidocElementLiA" href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbOpenAsync">20.
 function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
-    dbData,
     filename = ":memory:",
     flags,
     threadCount = 1,
@@ -669,21 +668,21 @@ string version
     );
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-            [1, "1"],
-            [0, undefined]
-        ];
-        await Promise.all([
-            (async function () {
-let valActual;
-// test win_sum2-error handling-behavior
-await <span class="apidocCodeKeywordSpan">assertErrorThrownAsync</span>(function () {
-    return dbExecAsync({
-        db,
-        sql: (`
-SELECT WIN_SUM2() FROM (SELECT 1);
-        `)
-    });
-}, "wrong number of arguments");
+    await Promise.all([
+        "'hello'",
+        "123",
+        "1.5",
+        "NULL",
+        "zeroblob(0)"
+    ].map(function (arg) {
+        return <span class="apidocCodeKeywordSpan">assertErrorThrownAsync</span>(function () {
+            return dbExecAsync({
+                db,
+                sql: `SELECT sinefit_extract(${arg}, 0, 'nnn', 0)`
+            });
+        }, "sinefit_extract");
+    }));
+}()),
 ...</pre></li>
 
 <li>
@@ -749,21 +748,21 @@ SELECT WIN_SUM2() FROM (SELECT 1);
     }
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-CREATE TEMP TABLE __tmp1 (val REAL);
-SELECT WIN_SUM1(1) FROM __tmp1;
-                    `)
-                });
-                valActual = valActual.map(function ({val}) {
-                    return val;
-                });
-                <span class="apidocCodeKeywordSpan">assertJsonEqual</span>(valActual, [null]);
-                // test win_sum2-null-case handling-behavior
-                valActual = await dbExecAndReturnLastTable({
-                    db,
-                    sql: (`
-DROP TABLE IF EXISTS __tmp1;
-CREATE TEMP TABLE __tmp1 (val REAL);
-SELECT DOUBLEARRAY_JSONTO(WIN_SUM2(1, 2, 3)) FROM __tmp1;
+                valActual,
+                String("1").replace(npm_config_mode_test_save, "force")
+            );
+            valExpect = await fsReadFileUnlessTest(
+                "test_data_sinefit.csv",
+                "force"
+            );
+            <span class="apidocCodeKeywordSpan">assertJsonEqual</span>(valActual, valExpect);
+        }())
+    ]);
+});
+});
+
+jstestDescribe((
+"test_sqlmathWebworkerInit"
 ...</pre></li>
 
 <li>
@@ -826,21 +825,21 @@ jstestIt((
     }
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-            db,
-            sql: (`
-SELECT DOUBLEARRAY_JSONTO(DOUBLEARRAY_JSONFROM($valIn)) AS result;
-            `)
-        })
-    ).result;
-} catch (ignore) {
-    <span class="apidocCodeKeywordSpan">assertOrThrow</span>(valExpect === "error", JSON.stringify({
-        ii,
-        valActual,
-        valExpect,
-        valIn
-    }, undefined, 4));
-    return;
-}
+            WINDOW __w AS (ORDER BY id ASC ${sqlFrame})
+    )
+    WINDOW __w AS (ORDER BY id ASC ${sqlFrame})
+);
+                `)
+            });
+            assertJsonEqual(valActual[0].nn, 200, sqlFrame);
+            <span class="apidocCodeKeywordSpan">assertOrThrow</span>(valActual[0].diff &lt; 1e-9, valActual);
+        })),
+        // test win_quantilex-aggregate-normal handling-behavior
+        test_win_quantilex_aggregate({
+            quantile: 0,
+            valExpect: [
+                0.0000, 0.0000, 0.0000, 0.0000,
+                0.0000, 0.0000, 0.0000, 0.0000,
 ...</pre></li>
 
 <li>
@@ -1296,21 +1295,21 @@ FROM (
     return result;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-        db,
-        sql: (`
-SELECT WIN_SUM2() FROM (SELECT 1);
-        `)
-    });
-}, "wrong number of arguments");
-// test win_sum1-null-case handling-behavior
-valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastTable</span>({
-    db,
-    sql: (`
-DROP TABLE IF EXISTS __tmp1;
-CREATE TEMP TABLE __tmp1 (val REAL);
-SELECT WIN_SUM1(1) FROM __tmp1;
-    `)
-});
+                    elem = elem.split(" ");
+                    return {
+                        date: elem[0],
+                        ii,
+                        priceClose: Number(elem[1])
+                    };
+                });
+                valActual = await <span class="apidocCodeKeywordSpan">dbExecAndReturnLastTable</span>({
+                    bindList: {
+                        testDataSpx
+                    },
+                    db,
+                    sql: (`
+DROP TABLE IF EXISTS __sinefit_csv;
+CREATE TEMP TABLE __sinefit_csv AS
 ...</pre></li>
 
 <li>
@@ -1566,9 +1565,7 @@ jstestIt((
                 filename,
                 // 2. const int isSave
                 modeSave,
-                // 3. undefined
-                undefined,
-                // 4. dbData - same position as dbOpenAsync
+                // 3. wasm-only - arraybuffer of raw sqlite-database
                 dbData
             ],
             "modeDbFile"
@@ -1707,7 +1704,6 @@ assertJsonEqual(
     <a href="#apidoc.elem.%22.%2Fsqlmath.mjs%22.dbOpenAsync" id="apidoc.elem.%22.%2Fsqlmath.mjs%22.dbOpenAsync">
     function dbOpenAsync<span class="apidocSignatureSpan">({
     afterFinalization,
-    dbData,
     filename = ":memory:",
     flags,
     threadCount = 1,
@@ -1718,7 +1714,6 @@ assertJsonEqual(
 </li>
 <li>Description and source-code:<pre class="apidocCodePre">async function dbOpenAsync({
     afterFinalization,
-    dbData,
     filename = ":memory:",
     flags,
     threadCount = 1,
@@ -1736,10 +1731,6 @@ assertJsonEqual(
     let connPool;
     let db = {busy: 0, filename, ii: 0};
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
-    assertOrThrow(
-        !dbData || isExternalBuffer(dbData),
-        "dbData must be ArrayBuffer"
-    );
     connPool = await Promise.all(Array.from(new Array(
         threadCount
     ), async function () {
@@ -1755,9 +1746,7 @@ assertJsonEqual(
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
                 // 3. const char *zVfs        Name of VFS module to use
-                undefined,
-                // 4. wasm-only - arraybuffer of raw sqlite-database
-                dbData
+                undefined
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1775,7 +1764,11 @@ assertJsonEqual(
 PRAGMA busy_timeout = ${timeoutBusy};
                 `)
             }),
-            // LGBM...
+            // LGBM_DLOPEN
+            (async function () {
+                let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
+                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+                await moduleFs....
 }
 </pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
@@ -2355,13 +2348,13 @@ async function sqlmathInit() {
     }
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
+jstestDescribe((
+    "test_sqlmathWebworkerInit"
 ), function test_sqlmathWebworkerInit() {
     jstestIt((
         "test sqlmathWebworkerInit handling-behavior"
     ), async function () {
-        let db = await dbOpenAsync({
-            dbData: new ArrayBuffer()
-        });
+        let db = await dbOpenAsync({});
         <span class="apidocCodeKeywordSpan">sqlmathWebworkerInit</span>({
             db,
             modeTest: true

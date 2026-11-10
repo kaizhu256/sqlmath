@@ -1130,9 +1130,7 @@ async function dbFileLoadAsync({
                 filename,
                 // 2. const int isSave
                 modeSave,
-                // 3. undefined
-                undefined,
-                // 4. dbData - same position as dbOpenAsync
+                // 3. wasm-only - arraybuffer of raw sqlite-database
                 dbData
             ],
             "modeDbFile"
@@ -1198,7 +1196,6 @@ async function dbNoopAsync(...argList) {
 
 async function dbOpenAsync({
     afterFinalization,
-    dbData,
     filename = ":memory:",
     flags,
     threadCount = 1,
@@ -1216,10 +1213,6 @@ async function dbOpenAsync({
     let connPool;
     let db = {busy: 0, filename, ii: 0};
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
-    assertOrThrow(
-        !dbData || isExternalBuffer(dbData),
-        "dbData must be ArrayBuffer"
-    );
     connPool = await Promise.all(Array.from(new Array(
         threadCount
     ), async function () {
@@ -1235,9 +1228,7 @@ async function dbOpenAsync({
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
                 // 3. const char *zVfs        Name of VFS module to use
-                undefined,
-                // 4. wasm-only - arraybuffer of raw sqlite-database
-                dbData
+                undefined
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1362,7 +1353,7 @@ async function dbTableImportAsync({
     colList = colList.map(function (colName) {
         let colName2;
         let duplicate = 0;
-        colName = colName.trim();
+        colName = String(colName).trim();
         colName = colName.replace((/\W/g), "_");
         colName = colName.replace((/^[^A-Z_a-z]|^$/gm), "_$&");
         while (true) {
@@ -1372,8 +1363,8 @@ async function dbTableImportAsync({
                 ? colName
                 : colName + "_" + duplicate
             );
-            if (!tmp.has(colName2)) {
-                tmp.add(colName2);
+            if (!tmp.has(colName2.toLowerCase())) {
+                tmp.add(colName2.toLowerCase());
                 return colName2;
             }
         }
@@ -1386,11 +1377,11 @@ async function dbTableImportAsync({
         db,
         sql: (
             rowList.length === 0
-            ? `CREATE TABLE ${tableName} (${colList.join(",")});`
+            ? `CREATE TABLE ${tableName} ("${colList.join("\",\"")}");`
             : (
                 `CREATE TABLE ${tableName} AS SELECT ` +
                 colList.map(function (colName, ii) {
-                    return "value->>" + ii + " AS " + colName;
+                    return "value->>" + ii + " AS \"" + colName + "\"";
                 }).join(",") +
                 " FROM JSON_EACH($rowList);"
             )

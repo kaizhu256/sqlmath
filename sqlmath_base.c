@@ -101,7 +101,6 @@ file sqlmath_h - start
 #define MATH_MAX(aa, bb) (((aa) < (bb)) ? (bb) : (aa))
 #define MATH_MIN(aa, bb) (((aa) > (bb)) ? (bb) : (aa))
 #define MATH_PI 3.141592653589793238463
-#define MATH_SIGN(aa) (((aa) < 0) ? -1 : ((aa) > 0) ? 1 : 0)
 #define SQLITE_COLUMNTYPE_INTEGER_BIG   11
 #define SQLITE_COLUMNTYPE_TEXT_BIG      13
 #define SQLITE_ERROR_DATATYPE_INVALID   0x10003
@@ -210,11 +209,6 @@ file sqlmath_h - start
         return; \
     }
 
-#define SQLITE_OK_OR_RETURN_RC(rc) \
-    if (rc != SQLITE_OK) { \
-        return rc; \
-    }
-
 #define SQL_CREATE_FUNC1(func, argc, flag) \
     errcode = sqlite3_create_function(db, #func, argc, \
         flag | SQLITE_DIRECTONLY | SQLITE_UTF8, NULL, \
@@ -305,11 +299,6 @@ SQLMATH_API void dbExec(
 SQLMATH_API void dbFileLoad(
     Jsbaton * baton
 );
-SQLMATH_API int dbFileLoadOrSave(
-    sqlite3 * pInMemory,
-    const char *zFilename,
-    const int isSave
-);
 SQLMATH_API void dbNoop(
     Jsbaton * baton
 );
@@ -344,10 +333,6 @@ SQLMATH_API double *doublewinBody(
 );
 SQLMATH_API double *doublewinHead(
     const Doublewin * dblwin
-);
-SQLMATH_API void doublewinResultBlob(
-    Doublewin * dblwin,
-    sqlite3_context * context
 );
 
 
@@ -453,11 +438,6 @@ SQLMATH_API double doubleMin(
 
 SQLMATH_API int doubleSign(
     const double aa
-);
-
-SQLMATH_API int doubleSortCompare(
-    const void *aa,
-    const void *bb
 );
 
 SQLMATH_API void doublearrayResult(
@@ -994,23 +974,6 @@ SQLMATH_API void dbFileLoad(
     Jsbaton * baton
 ) {
 // This function will load/save <zFilename> to/from <db>.
-    sqlite3 *db = NULL;
-    int errcode = dbFileLoadOrSave(     //
-        (sqlite3 *) jsbatonGetInt64(baton, 0),  // sqlite3 * pInMemory
-        jsbatonGetString(baton, 1),     // char *zFilename
-        (int) jsbatonGetInt64(baton, 2));       // const int isSave
-    JSBATON_ASSERT_OK();
-  catch_error:
-    (void) 0;
-}
-
-SQLMATH_API int dbFileLoadOrSave(
-    sqlite3 * pInMemory,
-    const char *zFilename,
-    const int isSave
-) {
-    // fprintf(stderr, "\nsqlmath._dbFileLoadOrSave(pp=%p ff=%s ss=%d)\n",
-    //     pInMemory, zFilename, isSave);
 /*
 ** https://www.sqlite.org/backup.html
 ** This function is used to load the contents of a database file on disk
@@ -1026,18 +989,21 @@ SQLMATH_API int dbFileLoadOrSave(
 ** parameter isSave is zero, then the contents of the database opened by
 ** pInMemory are replaced by data loaded from the file zFilename.
 **
-** If the operation is successful, SQLITE_OK is returned. Otherwise, if
-** an error occurs, an SQLite error code is returned.
+** An error code is reported through <baton> by JSBATON_ASSERT_OK().
 */
-    int rc;                     /* Function return code */
+    sqlite3 *db = NULL;
+    sqlite3 *pInMemory = (sqlite3 *) jsbatonGetInt64(baton, 0);
+    const char *zFilename = jsbatonGetString(baton, 1);
+    const int isSave = (int) jsbatonGetInt64(baton, 2);
+    int errcode;                /* Function return code */
     sqlite3 *pFile;             /* Database connection opened on zFilename */
     sqlite3_backup *pBackup;    /* Backup object used to copy data */
     sqlite3 *pTo;               /* Database to copy to (pFile or pInMemory) */
     sqlite3 *pFrom;             /* Database to copy from (pFile or pInMemory) */
     /* Open the database file identified by zFilename. Exit early if this fails
      ** for any reason. */
-    rc = sqlite3_open(zFilename, &pFile);
-    if (rc == SQLITE_OK) {
+    errcode = sqlite3_open(zFilename, &pFile);
+    if (errcode == SQLITE_OK) {
         /* If this is a 'load' operation (isSave==0), then data is copied
          ** from the database file just opened to database pInMemory.
          ** Otherwise, if this is a 'save' operation (isSave==1), then data
@@ -1062,12 +1028,13 @@ SQLMATH_API int dbFileLoadOrSave(
             (void) sqlite3_backup_step(pBackup, -1);
             (void) sqlite3_backup_finish(pBackup);
         }
-        rc = sqlite3_errcode(pTo);
+        errcode = sqlite3_errcode(pTo);
     }
-    /* Close the database connection opened on database file zFilename
-     ** and return the result of this function. */
+    /* Close the database connection opened on database file zFilename. */
     (void) sqlite3_close(pFile);
-    return rc;
+    JSBATON_ASSERT_OK();
+  catch_error:
+    (void) 0;
 }
 
 SQLMATH_API void dbNoop(
@@ -1204,18 +1171,6 @@ SQLMATH_API double *doublewinHead(
     return (double *) ((char *) dblwin + sizeof(Doublewin));
 }
 
-SQLMATH_API void doublewinResultBlob(
-    Doublewin * dblwin,
-    sqlite3_context * context
-) {
-// This function will return <dblwin> as result-blob in given <context>.
-    dblwin->alloc =
-        sizeof(Doublewin) + (dblwin->nhead + dblwin->nbody) * sizeof(double);
-    sqlite3_result_blob(context, (char *) dblwin, (int) dblwin->alloc,
-        // destructor
-        sqlite3_free);
-}
-
 // SQLMATH_API doublewin - end
 
 // SQLMATH_API str99 - start
@@ -1340,15 +1295,6 @@ SQLMATH_API int doubleSign(
 ) {
 // This function will return sign of <aa>.
     return aa < 0 ? -1 : aa > 0 ? 1 : 0;
-}
-
-SQLMATH_API int doubleSortCompare(
-    const void *aa,
-    const void *bb
-) {
-// This function will compare <aa> with <bb>.
-    const double cc = *(double *) aa - *(double *) bb;
-    return cc < 0 ? -1 : cc > 0 ? 1 : 0;
 }
 
 SQLMATH_API void doublearrayResult(
@@ -1594,50 +1540,6 @@ SQLMATH_FUNC static void sql1_copyblob_func(
     sqlite3_result_value(context, argv[0]);
 }
 
-SQLMATH_FUNC static void sql1_cot_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will return cot(argv[0]).
-    UNUSED_PARAMETER(argc);
-    sqlite3_result_double(context,
-        1.0 / tan(sqlite3_value_double_or_nan(argv[0])));
-}
-
-SQLMATH_FUNC static void sql1_coth_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will return coth(argv[0]).
-    UNUSED_PARAMETER(argc);
-    sqlite3_result_double(context,
-        1.0 / tanh(sqlite3_value_double_or_nan(argv[0])));
-}
-
-SQLMATH_FUNC static void sql1_doublearray_array_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will return binary-double-array from <argv>.
-    if (argc <= 0) {
-        return;
-    }
-    double *arr = sqlite3_malloc(argc * sizeof(double));
-    if (arr == NULL) {
-        sqlite3_result_error_nomem(context);
-        return;
-    }
-    for (int ii = 0; ii < argc; ii += 1) {
-        arr[ii] = sqlite3_value_double_or_nan(argv[ii]);
-    }
-    sqlite3_result_blob(context, (char *) arr, argc * sizeof(double),
-        // destructor
-        sqlite3_free);
-}
-
 SQLMATH_FUNC static void sql1_doublearray_extract_func(
     sqlite3_context * context,
     int argc,
@@ -1689,18 +1591,6 @@ SQLMATH_FUNC static void sql1_doublearray_jsonto_func(
     jsonResultDoublearray(context,
         (double *) sqlite3_value_blob(argv[0]),
         sqlite3_value_bytes(argv[0]) / sizeof(double));
-}
-
-SQLMATH_FUNC static void sql1_fmod_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will return fmod(dividend, divisor).
-    UNUSED_PARAMETER(argc);
-    sqlite3_result_double_or_null(context, fmod(        //
-            sqlite3_value_double_or_nan(argv[0]),       //
-            sqlite3_value_double_or_nan(argv[1])));
 }
 
 // SQLMATH_FUNC sql1_gzip_xxx_func - start
@@ -2229,50 +2119,6 @@ SQLMATH_FUNC static void sql1_lgbm_datasetsavebinary_func(
     (void) 0;
 }
 
-SQLMATH_FUNC static void sql1_lgbm_extract_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will extract <val> from lgbm-pred-object, with given <key>.
-    UNUSED_PARAMETER(argc);
-    const int nn = sqlite3_value_bytes(argv[0]) / sizeof(double);
-    // validate argv
-    if (nn == 0) {
-        sqlite3_result_error(context,
-            "lgbm_extract - 1st argument must be double-array with length >= 0",
-            -1);
-        return;
-    }
-    const double *arr = (double *) sqlite3_value_blob(argv[0]);
-    const char *key = (char *) sqlite3_value_text(argv[1]);
-    if (key == NULL) {
-        sqlite3_result_error(context,
-            "lgbm_extract - 2nd argument 'key' must not be NULL", -1);
-        return;
-    }
-    int argmax = 0;
-    double probability = arr[0];
-    for (int ii = 1; ii < nn; ii += 1) {
-        if (arr[ii] > probability) {
-            argmax = ii;
-            probability = arr[ii];
-        }
-    }
-    // predicted-class using argmax
-    if (strcmp(key, "argmax") == 0) {
-        sqlite3_result_int(context, argmax);
-        return;
-    }
-    // predicted-probability
-    if (strcmp(key, "probability") == 0) {
-        sqlite3_result_double_or_null(context, probability);
-        return;
-    }
-    sqlite3_result_error(context,
-        "lgbm_extract - 2nd argument is invalid key", -1);
-}
-
 SQLMATH_FUNC static void sql1_lgbm_predictforfile_func(
     sqlite3_context * context,
     int argc,
@@ -2482,19 +2328,6 @@ SQLMATH_FUNC static void sql1_lgbm_trainfromfile_func(
 
 // SQLMATH_FUNC sql1_lgbm_xxx_func - end
 
-SQLMATH_FUNC static void sql1_marginoferror95_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate margin-of-error sqrt(pp*(1-pp)/nn).
-    UNUSED_PARAMETER(argc);
-    const double pp = sqlite3_value_double_or_nan(argv[0]);
-    const double nn = sqlite3_value_double_or_nan(argv[1]);
-    sqlite3_result_double(context,
-        1.9599639845400543 * sqrt(pp * (1 - pp) / nn));
-}
-
 SQLMATH_FUNC static void sql1_normalizewithsqrt_func(
     sqlite3_context * context,
     int argc,
@@ -2667,23 +2500,6 @@ SQLMATH_FUNC static void sql1_squaredwithsign_func(
     UNUSED_PARAMETER(argc);
     const double xx = sqlite3_value_double_or_nan(argv[0]);
     sqlite3_result_double(context, xx < 0 ? -xx * xx : xx * xx);
-}
-
-SQLMATH_FUNC static void sql1_strtoll_func(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will return strtoll(str, base).
-    UNUSED_PARAMETER(argc);
-    const char *str = (char *) sqlite3_value_text(argv[0]);
-    const int base = sqlite3_value_int(argv[1]);
-    char *endptr = NULL;
-    int64_t value = strtoll(str, &endptr, base);
-    if (endptr == str) {
-        return;
-    }
-    sqlite3_result_int64(context, (int64_t) value);
 }
 
 SQLMATH_FUNC static void sql1_throwerror_func(
@@ -2947,135 +2763,6 @@ static void sql2_lgbm_trainfromtable_step(
 
 // SQLMATH_FUNC sql2_lgbm_trainfromtable_func - end
 
-// SQLMATH_FUNC sql3_win_avg1_func - start
-SQLMATH_FUNC static void sql3_win_avg1_value(
-    sqlite3_context * context
-) {
-// This function will calculate running-avg.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    sqlite3_result_double(context,
-        dblwin_head[(int) dblwin->ncol] / dblwin->nbody);
-}
-
-SQLMATH_FUNC static void sql3_win_avg1_final(
-    sqlite3_context * context
-) {
-// This function will calculate running-avg.
-    // dblwin - value
-    sql3_win_avg1_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_avg1_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-avg.
-    UNUSED_PARAMETER(argc);
-    UNUSED_PARAMETER(argv);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    if (!dblwin->wnn) {
-        dblwin->wnn = 1;
-    }
-}
-
-SQLMATH_FUNC static void sql3_win_avg1_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-avg.
-    if (argc < 1) {
-        sqlite3_result_error(context,
-            "win_avg2 - wrong number of arguments", -1);
-        return;
-    }
-    // dblwin - init
-    const int ncol = argc;
-    DOUBLEWIN_AGGREGATE_CONTEXT(3 * ncol);
-    if (dblwin->nbody == 0) {
-        // dblwin - init ncol
-        dblwin->ncol = ncol;
-    }
-    // dblwin - calculate avg
-    for (int ii = 0; ii < ncol; ii += 1) {
-        sqlite3_value_double_or_prev(argv[ii], &dblwin_head[ii]);
-        dblwin_head[ncol + ii] += dblwin_head[ii];
-        // fprintf(stderr, "sqlmath.win_avg2 - stp %d - xx=%f avg=%f\n", ii,
-        //     dblwin_head[ii], dblwin_head[ncol + ii]);
-        if (dblwin->wnn) {
-            dblwin_head[ncol + ii] -= dblwin_body[(int) dblwin->waa + ii];
-            // fprintf(stderr, "                   inv %d - xx=%f avg=%f\n",
-            //     ii,
-            //     dblwin_body[(int) dblwin->waa + ii], dblwin_head[ncol + ii]);
-        }
-    }
-    // dblwin - push xx
-    for (int ii = 0; ii < ncol; ii += 1) {
-        DOUBLEWIN_AGGREGATE_PUSH(dblwin_head[ii]);
-    }
-}
-
-// SQLMATH_FUNC sql3_win_avg1_func - end
-
-// SQLMATH_FUNC sql3_win_avg2_func - start
-SQLMATH_FUNC static void sql3_win_avg2_value(
-    sqlite3_context * context
-) {
-// This function will calculate running-avg.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    const int ncol = (int) dblwin->ncol;
-    if (!ncol) {
-        return;
-    }
-    // dblwin - result
-    const double inv = dblwin->ncol / dblwin->nbody;
-    for (int ii = 0; ii < ncol; ii += 1) {
-        dblwin_head[2 * ncol + ii] = dblwin_head[ncol + ii] * inv;
-    }
-    doublearrayResult(context, dblwin_head + 2 * ncol, ncol,
-        SQLITE_TRANSIENT);
-}
-
-SQLMATH_FUNC static void sql3_win_avg2_final(
-    sqlite3_context * context
-) {
-// This function will calculate running-avg.
-    // dblwin - value
-    sql3_win_avg2_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_avg2_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-avg.
-    sql3_win_avg1_inverse(context, argc, argv);
-}
-
-SQLMATH_FUNC static void sql3_win_avg2_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-avg.
-    sql3_win_avg1_step(context, argc, argv);
-}
-
-// SQLMATH_FUNC sql3_win_avg2_func - end
-
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - start
 typedef struct AggLgbmPredict {
     BoosterHandle booster;      // booster
@@ -3189,6 +2876,10 @@ static void sql3_lgbm_predictfortable_step(
 // SQLMATH_FUNC sql3_lgbm_predictfortable_func - end
 
 // SQLMATH_FUNC sql3_stdev_func - start
+// FOLLOWING-FRAME LIMIT [measured 2026-11-10, deferred]: inverse only
+// flags the oldest value for the next step to replace, so a frame ending
+// "k FOLLOWING" (k > 0) returns a stale result on its last k rows.
+// Correct on frames ending at CURRENT ROW - all betadog uses.
 typedef struct AggStdev {
     double mxx;                 // x-mean
     double nnn;                 // number of elements
@@ -3268,6 +2959,8 @@ static void sql3_stdev_step(
 // SQLMATH_FUNC sql3_stdev_func - end
 
 // SQLMATH_FUNC sql3_win_coinflip2_func - start
+// FOLLOWING-FRAME [measured 2026-11-10]: correct on shrinking frames,
+// because inverse decrements the counts that value reads.
 // INPUT ENCODING - each column takes ONE value, whose SIGN alone drives
 // nflip, nhead, nstreak, ntail, outcome exactly as it always has.
 // nhithead, nhittail and key 'biasba50' need a SECOND bit per row - was
@@ -3479,164 +3172,12 @@ SQLMATH_FUNC static void sql1_coinflip_extract_func(
 
 // SQLMATH_FUNC sql3_win_coinflip2_func - end
 
-// SQLMATH_FUNC sql3_win_ema1_func - start
-SQLMATH_FUNC static void sql3_win_ema1_value(
-    sqlite3_context * context
-) {
-// This function will calculate running exponential-moving-average.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    sqlite3_result_double(context, dblwin_body[(int) dblwin->waa]);
-}
-
-SQLMATH_FUNC static void sql3_win_ema1_final(
-    sqlite3_context * context
-) {
-// This function will calculate running exponential-moving-average.
-    // dblwin - value
-    sql3_win_ema1_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_ema1_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running exponential-moving-average.
-    UNUSED_PARAMETER(argc);
-    UNUSED_PARAMETER(argv);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    if (!dblwin->wnn) {
-        dblwin->wnn = 1;
-    }
-}
-
-SQLMATH_FUNC static void sql3_win_ema1_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running exponential-moving-average.
-    if (argc < 2) {
-        sqlite3_result_error(context, "win_ema2 - wrong number of arguments",
-            -1);
-        return;
-    }
-    // dblwin - init
-    const int ncol = argc - 1;
-    double arg_alpha = NAN;
-    DOUBLEWIN_AGGREGATE_CONTEXT(argc);
-    if (dblwin->nbody == 0) {
-        // dblwin - init ncol
-        dblwin->ncol = ncol;
-        // arg_alpha
-        arg_alpha = sqlite3_value_double_or_nan(argv[0]);
-        if (isnan(arg_alpha)) {
-            sqlite3_result_error(context,
-                "win_emax - invalid argument 'alpha'", -1);
-            return;
-        }
-        dblwin_head[ncol + 0] = arg_alpha;
-    }
-    // dblwin - calculate ema
-    arg_alpha = dblwin_head[ncol + 0];
-    const int nrow = (int) dblwin->nbody / ncol;
-    argv += 1;
-    for (int ii = 0; ii < ncol; ii += 1) {
-        sqlite3_value_double_or_prev(argv[0], &dblwin_head[ii]);
-        double *row = dblwin_body + ii;
-        // fprintf(stderr,         //
-        //     "win_ema2 - nbody=%.0f xxa=%f xx=%f arg_alpha=%f\n",        //
-        //     dblwin->nbody, *row, dblwin_head[0], arg_alpha);
-        for (int jj = 0; jj < nrow; jj += 1) {
-            *row = arg_alpha * dblwin_head[ii] + (1 - arg_alpha) * *row;
-            row += ncol;
-        }
-        argv += 1;
-    }
-    // dblwin - push xx
-    for (int ii = 0; ii < ncol; ii += 1) {
-        DOUBLEWIN_AGGREGATE_PUSH(dblwin_head[ii]);
-    }
-}
-
-// SQLMATH_FUNC sql3_win_ema1_func - end
-
-// SQLMATH_FUNC sql3_win_ema2_func - start
-SQLMATH_FUNC static void sql3_win_ema2_value(
-    sqlite3_context * context
-) {
-// This function will calculate running exponential-moving-average.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    if (!dblwin->ncol) {
-        return;
-    }
-    // dblwin - result
-    doublearrayResult(context, dblwin_body + (int) dblwin->waa,
-        (int) dblwin->ncol, SQLITE_TRANSIENT);
-}
-
-SQLMATH_FUNC static void sql3_win_ema2_final(
-    sqlite3_context * context
-) {
-// This function will calculate running exponential-moving-average.
-    // dblwin - value
-    sql3_win_ema2_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_ema2_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running exponential-moving-average.
-    sql3_win_ema1_inverse(context, argc, argv);
-}
-
-SQLMATH_FUNC static void sql3_win_ema2_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running exponential-moving-average.
-    sql3_win_ema1_step(context, argc, argv);
-}
-
-// SQLMATH_FUNC sql3_win_ema2_func - end
-
-// SQLMATH_FUNC sql3_win_quantile1_func - start
-SQLMATH_FUNC static void sql3_win_quantile1_value(
-    sqlite3_context * context
-) {
-// This function will calculate running quantile.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    sqlite3_result_double(context, dblwin_head[(int) dblwin->ncol]);
-}
-
-SQLMATH_FUNC static void sql3_win_quantile1_final(
-    sqlite3_context * context
-) {
-// This function will calculate running quantile.
-    // dblwin - value
-    sql3_win_quantile1_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_quantile1_inverse(
+// SQLMATH_FUNC sql3_win_quantile2_func - start
+// FOLLOWING-FRAME LIMIT [measured 2026-11-10, deferred]: inverse only
+// flags the oldest value for the next step to replace, so a frame ending
+// "k FOLLOWING" (k > 0) returns a stale result on its last k rows.
+// Correct on frames ending at CURRENT ROW - all betadog uses.
+SQLMATH_FUNC static void sql3_win_quantile2_inverse(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -3668,7 +3209,7 @@ SQLMATH_FUNC static void sql3_win_quantile1_inverse(
     }
 }
 
-SQLMATH_FUNC static void sql3_win_quantile1_step(
+SQLMATH_FUNC static void sql3_win_quantile2_step(
     sqlite3_context * context,
     int argc,
     sqlite3_value ** argv
@@ -3725,9 +3266,6 @@ SQLMATH_FUNC static void sql3_win_quantile1_step(
     }
 }
 
-// SQLMATH_FUNC sql3_win_quantile1_func - end
-
-// SQLMATH_FUNC sql3_win_quantile2_func - start
 SQLMATH_FUNC static void sql3_win_quantile2_value(
     sqlite3_context * context
 ) {
@@ -3754,27 +3292,13 @@ SQLMATH_FUNC static void sql3_win_quantile2_final(
     doublewinAggfree(dblwinAgg);
 }
 
-SQLMATH_FUNC static void sql3_win_quantile2_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running quantile.
-    sql3_win_quantile1_inverse(context, argc, argv);
-}
-
-SQLMATH_FUNC static void sql3_win_quantile2_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running quantile.
-    sql3_win_quantile1_step(context, argc, argv);
-}
-
 // SQLMATH_FUNC sql3_win_quantile2_func - end
 
 // SQLMATH_FUNC sql3_win_sinefit2_func - start
+// FOLLOWING-FRAME LIMIT [measured 2026-11-10, deferred]: inverse only
+// flags the oldest value for the next step to replace, so a frame ending
+// "k FOLLOWING" (k > 0) returns a stale result on its last k rows.
+// Correct on frames ending at CURRENT ROW - all betadog uses.
 #define WIN_SINEFIT_WSF_RR(ii) (xxyy[ii + 2])
 #define WIN_SINEFIT_WSF_XX(ii) (xxyy[ii + 0])
 #define WIN_SINEFIT_WSF_YY(ii) (xxyy[ii + 1])
@@ -4643,95 +4167,6 @@ SQLMATH_FUNC static void sql1_sinefit_refitlast_func(
 
 // SQLMATH_FUNC sql3_win_sinefit2_func - end
 
-// SQLMATH_FUNC sql3_win_sum1_func - start
-SQLMATH_FUNC static void sql3_win_sum1_value(
-    sqlite3_context * context
-) {
-// This function will calculate running-sum.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    sqlite3_result_double(context, dblwin_head[(int) dblwin->ncol]);
-}
-
-SQLMATH_FUNC static void sql3_win_sum1_final(
-    sqlite3_context * context
-) {
-// This function will calculate running-sum.
-    // dblwin - value
-    sql3_win_sum1_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_sum1_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-sum.
-    sql3_win_avg1_inverse(context, argc, argv);
-}
-
-SQLMATH_FUNC static void sql3_win_sum1_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-sum.
-    sql3_win_avg1_step(context, argc, argv);
-}
-
-// SQLMATH_FUNC sql3_win_sum1_func - end
-
-// SQLMATH_FUNC sql3_win_sum2_func - start
-SQLMATH_FUNC static void sql3_win_sum2_value(
-    sqlite3_context * context
-) {
-// This function will calculate running-sum.
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    if (!dblwin->ncol) {
-        return;
-    }
-    // dblwin - result
-    doublearrayResult(context, dblwin_head + (int) dblwin->ncol,
-        (int) dblwin->ncol, SQLITE_TRANSIENT);
-}
-
-SQLMATH_FUNC static void sql3_win_sum2_final(
-    sqlite3_context * context
-) {
-// This function will calculate running-sum.
-    // dblwin - value
-    sql3_win_sum2_value(context);
-    // dblwin - init
-    DOUBLEWIN_AGGREGATE_CONTEXT(0);
-    // dblwin - cleanup
-    doublewinAggfree(dblwinAgg);
-}
-
-SQLMATH_FUNC static void sql3_win_sum2_inverse(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-sum.
-    sql3_win_avg1_inverse(context, argc, argv);
-}
-
-SQLMATH_FUNC static void sql3_win_sum2_step(
-    sqlite3_context * context,
-    int argc,
-    sqlite3_value ** argv
-) {
-// This function will calculate running-sum.
-    sql3_win_avg1_step(context, argc, argv);
-}
-
-// SQLMATH_FUNC sql3_win_sum2_func - end
-
 // file sqlmath_base - init
 int sqlite3_compress_init(
     sqlite3 * db,
@@ -4753,13 +4188,9 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(casttextorempty, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(coinflip_extract, 3, 0);
     SQL_CREATE_FUNC1(copyblob, 1, 0);
-    SQL_CREATE_FUNC1(cot, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(coth, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(doublearray_array, -1, 0);
     SQL_CREATE_FUNC1(doublearray_extract, 2, 0);
     SQL_CREATE_FUNC1(doublearray_jsonfrom, 1, 0);
     SQL_CREATE_FUNC1(doublearray_jsonto, 1, 0);
-    SQL_CREATE_FUNC1(fmod, 2, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(gzip_compress, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(gzip_uncompress, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(idateadd, -1, SQLITE_FUNC_IDATE);
@@ -4777,11 +4208,9 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(lgbm_datasetgetnumfeature, 1, 0);
     SQL_CREATE_FUNC1(lgbm_datasetsavebinary, 1, 0);
     SQL_CREATE_FUNC1(lgbm_dlopen, 1, 0);
-    SQL_CREATE_FUNC1(lgbm_extract, 2, 0);
     SQL_CREATE_FUNC1(lgbm_predictforfile, 8, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromdataset, 5, 0);
     SQL_CREATE_FUNC1(lgbm_trainfromfile, 6, 0);
-    SQL_CREATE_FUNC1(marginoferror95, 2, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(normalizewithsqrt, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(normalizewithsquared, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(random1, 0, 0);
@@ -4792,23 +4221,15 @@ int sqlite3_sqlmath_base_init(
     SQL_CREATE_FUNC1(sqrtwithsign, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(squared, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(squaredwithsign, 1, SQLITE_DETERMINISTIC);
-    SQL_CREATE_FUNC1(strtoll, 2, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC1(throwerror, 1, SQLITE_DETERMINISTIC);
     SQL_CREATE_FUNC2(columntype, 1, 0);
     SQL_CREATE_FUNC2(lgbm_datasetcreatefromtable, -1, 0);
     SQL_CREATE_FUNC2(lgbm_trainfromtable, -1, 0);
     SQL_CREATE_FUNC3(lgbm_predictfortable, -1, 0);
     SQL_CREATE_FUNC3(stdev, 1, 0);
-    SQL_CREATE_FUNC3(win_avg1, 1, 0);
-    SQL_CREATE_FUNC3(win_avg2, -1, 0);
     SQL_CREATE_FUNC3(win_coinflip2, -1, 0);
-    SQL_CREATE_FUNC3(win_ema1, 2, 0);
-    SQL_CREATE_FUNC3(win_ema2, -1, 0);
-    SQL_CREATE_FUNC3(win_quantile1, 2, 0);
     SQL_CREATE_FUNC3(win_quantile2, -1, 0);
     SQL_CREATE_FUNC3(win_sinefit2, -1, 0);
-    SQL_CREATE_FUNC3(win_sum1, 1, 0);
-    SQL_CREATE_FUNC3(win_sum2, -1, 0);
     return 0;
 }
 #endif                          // SRC_SQLMATH_BASE_C2

@@ -765,6 +765,9 @@ textarea {
     border-radius: 4px;
     cursor: crosshair;
     margin-right: 16px;
+    /* drawn, the plot lost to the 256px legend - 60px at a 375px viewport;
+       300 overflowed the row, the panel clips it - 200 fits [r29, r30] */
+    min-width: 200px;
     overflow: hidden;
     position: relative;
     /* page scrolls vertically; js handles horizontal pan and pinch */
@@ -960,7 +963,7 @@ button:hover {
 </div>
 <div id="tocEditor1">
     <div class="tocTitle">sqlite editor</div>
-    <button data-action="dbExec" style="border-bottom: 1px solid #999;">script - execute</button>
+    <button class="dbExec" style="border-bottom: 1px solid #999;">script - execute</button>
     <a class="tocElemA" href="#editor1" data-dbtype="script" title="[right-click for crud operation]">script editor</a>
 </div>
 <div id="tocDbList1"></div>
@@ -1045,7 +1048,7 @@ fork on github
 
 
 <!-- crudPanel1 start -->
-<div id="crudPanel1" class="modalPanel" style="z-index: -1;">
+<div id="crudPanel1" class="modalPanel">
 <span class="modalClose">&times;</span>
 <div class="modalTitle title"></div>
 <div class="modalContent">
