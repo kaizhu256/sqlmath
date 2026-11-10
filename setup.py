@@ -619,13 +619,6 @@ def main():
         case "env_vcvarsall":
             env = env_vcvarsall()
             print(json.dumps(env, indent=4))
-        case "exe_link":
-            env = env_vcvarsall()
-            subprocess.run(
-                [env["exe_link"], *sys.argv[2:]],
-                check=True,
-                env=env,
-            )
         case "sdist":
             build_sdist("dist")
         case "test":

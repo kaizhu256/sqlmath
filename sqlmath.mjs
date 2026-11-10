@@ -338,22 +338,6 @@ async function ciBuildExt({
     # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${SQLMATH_EXE}"
-    # ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib,
-    #             so link with external-zlib.
-    if (uname | grep -q "MING\\|MSYS")
-    then
-        rm -f ${SQLMATH_EXE}
-        python setup.py exe_link \
-            ./build/Release/SRC_SQLITE_BASE.lib \
-            ./build/Release/SRC_SQLMATH_BASE.lib \
-            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
-            \
-            -ltcg \
-            -nologo \
-            -out:${SQLMATH_EXE} \
-            -subsystem:console
-    fi
 )
             `)
         ],
@@ -465,7 +449,20 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "conditions": [
                     [
                         "OS==\"win\"",
-                        {},
+// Win shell links vcpkg zlib, never node.lib - node.exe's zlib exports are
+// delay-loaded, so a shell run outside node failed 0xC06D007F on any zlib call.
+                        {
+                            "libraries": [
+                                (
+                                    "<(module_root_dir)/zlib.v1.3.1.vcpkg" +
+                                    ".x64-windows-static.lib"
+                                )
+                            ],
+                            "libraries!": [
+                                "-l\"<(node_lib_file)\""
+                            ],
+                            "win_delay_load_hook": "false"
+                        },
                         {
                             "libraries": [
                                 "-lz"
