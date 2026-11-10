@@ -980,22 +980,6 @@ jstestIt((
     # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${SQLMATH_EXE}"
-    # ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib,
-    #             so link with external-zlib.
-    if (uname | grep -q "MING\\|MSYS")
-    then
-        rm -f ${SQLMATH_EXE}
-        python setup.py exe_link \
-            ./build/Release/SRC_SQLITE_BASE.lib \
-            ./build/Release/SRC_SQLMATH_BASE.lib \
-            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
-            \
-            -ltcg \
-            -nologo \
-            -out:${SQLMATH_EXE} \
-            -subsystem:console
-    fi
 )
             `)
         ],
@@ -1932,7 +1916,7 @@ FROM __lgbm_state;
 <span class="apidocCodeKeywordSpan">debugInline</span>(); // coverage-hack
 
 const JSBATON_ARGC = 8; //jslint-ignore-line
-const JSBATON_OFFSET_ALL = 256;
+const JSBATON_OFFSET_ALL = 512;
 const JSBATON_OFFSET_ARGV = 128;
 const JSBATON_OFFSET_BUFV = 192;
 // const JSBATON_OFFSET_ERRMSG = 48;
