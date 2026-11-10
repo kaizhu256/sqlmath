@@ -59,6 +59,8 @@ async function dbCloseWhenIdle(db) {
     await dbCloseAsync(db);
 }
 
+// REVIEWED 2026-11-09 r18, KEPT: a user ATTACH named attach01 blocks this
+// one's name until detached - rare
 async function dbFileAttachAsync({
     db,
     dbData
@@ -86,6 +88,7 @@ async function dbFileAttachAsync({
     }
     DB_DICT.set(dbName, dbAttached);
     // normalize order
+    // REVIEWED 2026-11-09 r17, KEPT: a one-Map sort saves ~6 lines - churn
     DB_DICT = Array.from(DB_DICT.values());
     DB_DICT = new Map([
         DB_DICT.slice(0, 3),
@@ -298,6 +301,8 @@ UPDATE chart.__stock_chart
 }
 
 async function demoTradebot() {
+// REVIEWED 2026-11-09 r16, KEPT: repeated chart ddl - a dedupe rewrites
+// the demo text users read
 // this function will run demo-tradebot
     let tmp;
     let tradebotState;
@@ -975,9 +980,7 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (
             tableData = (
                 dateInterval === "1 day"
                 ? "tradebot_tech_intra_day"
-                : dateInterval === "1 month"
-                ? "tradebot_tech_intra_month"
-                : "tradebot_tech_intra"
+                : "tradebot_tech_intra_month"
             );
             tableChart = (
                 "chart._{{ii}}_tradebot_tech_intra_" +
@@ -1001,15 +1004,9 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (
                 xstep: (
                     dateInterval === "1 day"
                     ? 60
-                    : dateInterval === "1 month"
-                    ? 5 * 60
-                    : 1
+                    : 5 * 60
                 ),
-                xvalueConvert: (
-                    (dateInterval === "1 day" || dateInterval === "1 month")
-                    ? "unixepochToTimeutc"
-                    : "juliandayToDate"
-                ),
+                xvalueConvert: "unixepochToTimeutc",
                 yaxisTitle: "percent gain",
                 yvalueSuffix: " %"
             };
@@ -1396,10 +1393,21 @@ async function init() {
         behavior: "smooth",
         top: 0
     });
+    // init animate timer - before the url-param loads, whose
+    // charts animate, and which can throw past it [r16]
+    // REVIEWED 2026-11-09 r15, KEPT: wakes every 16 ms even idle, battery only
+    setInterval(function () {
+        UI_ANIMATE_DATENOW = Date.now();
+        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function (
+            svgAnimateStep
+        ) {
+            return !svgAnimateStep();
+        });
+    }, 16);
     // init location.search
-    await Promise.all(Array.from(
-        location.search.slice(1).split("&")
-    ).map(async function (elem) {
+    await Promise.all(location.search.slice(1).split("&").map(async function (
+        elem
+    ) {
         let [
             key, ...valList
         ] = elem.split("=");
@@ -1407,6 +1415,8 @@ async function init() {
         // decoding first broke encoded "#" and "?" (fetch takes %xx as is)
         let val = valList.join("=");
         switch (key) {
+        // REVIEWED 2026-11-09 r15, KEPT: ?demo= before ?sqlDb= awaits the
+        // old DB_INIT - url-order edge case
         case "demo":
             switch (val) {
             case "demoDefault":
@@ -1492,15 +1502,6 @@ async function init() {
             return;
         }
     }));
-    // init UI_ANIMATE_TIMER_INTERVAL
-    setInterval(function () {
-        UI_ANIMATE_DATENOW = Date.now();
-        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function (
-            svgAnimateStep
-        ) {
-            return !svgAnimateStep();
-        });
-    }, 16);
     // ?demo= already ran its script - do not run it again
     if (isDemoDone) {
         return;
@@ -1529,6 +1530,8 @@ async function init() {
 
 function jsonHtmlSafe(obj) {
 // this function will make <obj> html-safe
+// REVIEWED 2026-11-09 r15, KEPT: Infinity and NaN render blank -
+// JSON has neither
 // https://stackoverflow.com/questions/7381974
     return JSON.parse(JSON.stringify(obj).replace((
         /&/gu
@@ -1553,12 +1556,16 @@ function onContextmenu(evt) {
     } = evt;
     // contextmenu - left-click
     if (type !== "contextmenu") {
-        // contextmenu - hide
-        uiFadeOut(UI_CONTEXTMENU);
-        // contextmenu - action
-        if (target.closest(".contextmenuElem")) {
+        // contextmenu - action, only while shown - a click during the
+        // 0.5 s fade-out queued a drop or delete twice [r16]
+        if (
+            UI_CONTEXTMENU.style.visibility === "visible" &&
+            target.closest(".contextmenuElem")
+        ) {
             onDbAction(evt);
         }
+        // contextmenu - hide
+        uiFadeOut(UI_CONTEXTMENU);
         return;
     }
     // contextmenu - right-click
@@ -1568,20 +1575,26 @@ function onContextmenu(evt) {
     if (ctrlKey || metaKey || shiftKey) {
         return;
     }
-    // contextmenu - disable default
-    evt.preventDefault();
-    evt.stopPropagation();
     // init target
     target = target.closest(`.tocElemA[data-dbtype], tr[data-dbtype="row"]`);
-    // contextmenu - hide
+    // contextmenu - hide, and keep the native menu - cancelling it first
+    // killed right-click paste in the editor and android long-press [r15]
     if (!target) {
         uiFadeOut(UI_CONTEXTMENU);
         return;
     }
+    // contextmenu - disable default
+    evt.preventDefault();
+    evt.stopPropagation();
     // init UI_CONTEXTMENU_BATON
-    UI_CONTEXTMENU_BATON = DBTABLE_DICT.get(target.dataset.hashtag) || {};
+    // a copy - rowid on the shared baton let a later right-click retarget
+    // a queued row delete [r16]
+    UI_CONTEXTMENU_BATON = Object.assign(
+        {},
+        DBTABLE_DICT.get(target.dataset.hashtag),
+        {rowid: target.dataset.rowid}
+    );
     baton = UI_CONTEXTMENU_BATON;
-    baton.rowid = target.dataset.rowid;
     // show / hide .contextmenuElem
     UI_CONTEXTMENU.querySelectorAll(
         ".contextmenuDivider, .contextmenuElem"
@@ -1629,15 +1642,16 @@ function onContextmenu(evt) {
 }
 
 async function onDbAction(evt) {
-// this function will open db from file
+// this function will handle toc, contextmenu and file-open actions
     let action;
-    let baton = UI_CONTEXTMENU_BATON;
+    let baton = evt.baton || UI_CONTEXTMENU_BATON;
     let columntypeList;
+    let crud;
     let data;
     let target;
     let title;
     target = evt.target.closest("[data-action]") || evt.target;
-    action = target.dataset.action;
+    action = evt.action || target.dataset.action;
     if (!action) {
         return;
     }
@@ -1694,90 +1708,61 @@ async function onDbAction(evt) {
 </tr>
             `)
         );
-        UI_CRUD.querySelector("textarea").value = String(
-            `
-
--- column - add
+        // [sql, inputs shown], keyed by action - was picked by matching the
+        // menu label text, so a label edit filled the textarea "undefined"
+        crud = {
+            dbcolumnAdd: [`-- column - add
 ALTER TABLE
     ${baton.dbtableFullname}
 ADD
-    "{{new_column}}" TEXT NOT NULL DEFAULT '';
-
--- column - drop
+    "{{new_column}}" TEXT NOT NULL DEFAULT '';`, ".crudInput-new_column"],
+            dbcolumnDrop: [`-- column - drop
 ALTER TABLE
     ${baton.dbtableFullname}
 DROP COLUMN
-    "{{selected_column}}";
-
--- column - rename
+    "{{selected_column}}";`, ".crudInput-selected_column"],
+            dbcolumnRename: [`-- column - rename
 ALTER TABLE
     ${baton.dbtableFullname}
 RENAME
     "{{selected_column}}"
 TO
-    "{{new_column}}";
-
--- row - insert
+    "{{new_column}}";`, ".crudInput-new_column, .crudInput-selected_column"],
+            dbrowInsert: [(
+                `-- row - insert
 INSERT INTO ${baton.dbtableFullname} (\n    ` +
-            baton.colListWritable.slice(1).map(sqlIdQuote).join(",\n    ") +
-            `\n) VALUES (\n` +
-            "    NULL,\n".repeat(
-                Math.max(0, baton.colListWritable.length - 2)
-            ) +
-            "    NULL" +
-            `
-);
-
--- row - update
+                baton.colListWritable.slice(1).map(sqlIdQuote).join(",\n    ") +
+                "\n) VALUES (\n" +
+                "    NULL,\n".repeat(
+                    Math.max(0, baton.colListWritable.length - 2)
+                ) +
+                "    NULL\n);"
+            ), ""],
+            dbrowUpdate: [(
+                `-- row - update
 UPDATE
     ${baton.dbtableFullname}
 SET
 ` +
-            baton.colListWritable.slice(1).map(function (col) {
-                return `    ${sqlIdQuote(col)} = NULL`;
-            }).join(",\n") +
-            `
+                baton.colListWritable.slice(1).map(function (col) {
+                    return `    ${sqlIdQuote(col)} = NULL`;
+                }).join(",\n") +
+                `
 WHERE
-    rowid IN (${sqlRowidLiteral(baton.rowid)});
-
--- table - rename
+    rowid IN (${sqlRowidLiteral(baton.rowid)});`
+            ), ""],
+            dbtableRename: [`-- table - rename
 ALTER TABLE
     ${baton.dbtableFullname}
 RENAME TO
-    "{{new_table}}";
-            `
-        ).trim().split("\n\n").filter(function (sql) {
-            return sql.indexOf(title) === 3;
-        })[0] + "\n";
-        switch (action) {
-        case "dbcolumnAdd":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_column"
-            ).forEach(function (elem) {
+    "{{new_table}}";`, ".crudInput-new_table"]
+        };
+        crud = crud[action];
+        UI_CRUD.querySelector("textarea").value = crud[0] + "\n";
+        if (crud[1]) {
+            UI_CRUD.querySelectorAll(crud[1]).forEach(function (elem) {
                 elem.style.display = "table-row";
             });
-            break;
-        case "dbcolumnDrop":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-selected_column"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
-        case "dbcolumnRename":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_column, .crudInput-selected_column"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
-        case "dbtableRename":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_table"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
         }
         uiFadeIn(UI_CRUD);
         // above #tocPanel1 drawer (z-index 50) on narrow screen
@@ -1795,48 +1780,57 @@ RENAME TO
     // slow actions that require loading
     if (!evt.modeTryCatch) {
         evt.modeTryCatch = true;
-        await uiTryCatch(onDbAction, evt);
-        return;
-    }
-    evt.preventDefault();
-    evt.stopPropagation();
-    switch (target === UI_FILE_OPEN && action) {
-    case "dbAttach":
-        if (target.files.length === 0) {
+        evt.preventDefault();
+        if (action === "dbExec") {
+            await onDbExec({});
             return;
         }
+        // queue like onDbExec - concurrent uiRenderDb runs share
+        // DBTABLE_DICT hashtags and cross-wire batons, so a drop or delete
+        // could hit another table [r15 2026-11-09]; keep this click's baton
+        // REVIEWED 2026-11-09 r16, KEPT: 3 queue sites each differ - no helper
+        evt.baton = baton;
+        // and its action and file - queued, UI_FILE_OPEN was re-read at
+        // dequeue, so a 2nd pick replaced the 1st [r17]
+        evt.action = action;
+        evt.file = target.files?.[0];
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            return uiTryCatch(onDbAction, evt);
+        });
+        await DB_EXEC_CHAIN;
+        return;
+    }
+    if (target === UI_FILE_OPEN && !evt.file) {
+        return;
+    }
+    switch (target === UI_FILE_OPEN && action) {
+    case "dbAttach":
         await dbFileAttachAsync({
             db: DB_MAIN,
             dbData: (
-                await target.files[0].arrayBuffer()
+                await evt.file.arrayBuffer()
             )
         });
         await uiRenderDb();
         return;
     case "dbOpen":
-        if (target.files.length === 0) {
-            return;
-        }
         await dbFileLoadAsync({
             db: DB_MAIN,
             dbData: (
-                await target.files[0].arrayBuffer()
+                await evt.file.arrayBuffer()
             )
         });
         await uiRenderDb();
         return;
     case "dbscriptOpen":
         UI_EDITOR.setValue(
-            await target.files[0].text()
+            await evt.file.text()
         );
         await uiRenderDb();
         return;
     case "dbtableImportCsv":
     case "dbtableImportJson":
     case "dbtableImportTsv":
-        if (target.files.length === 0) {
-            return;
-        }
         await dbTableImportAsync({
             db: DB_MAIN,
             mode: (
@@ -1852,7 +1846,7 @@ RENAME TO
                 new Set(DB_MAIN.dbtableList.keys())
             ).slice(1, -1),
             textData: (
-                await target.files[0].text()
+                await evt.file.text()
             )
         });
         await uiRenderDb();
@@ -1870,11 +1864,10 @@ RENAME TO
             db: DB_MAIN,
             sql: `DETACH ${baton.dbName};`
         });
+        // REVIEWED 2026-11-09 r16, KEPT: uiRenderDb closes it again, a
+        // no-op - this one is awaited
         await dbCloseWhenIdle(baton.db);
         await uiRenderDb();
-        return;
-    case "dbExec":
-        await onDbExec({});
         return;
     case "dbExport":
         data = await dbFileSaveAsync({db: baton.db});
@@ -1883,6 +1876,8 @@ RENAME TO
             filename: `sqlite_database_${baton.dbName}.sqlite`
         });
         return;
+    // REVIEWED 2026-11-09 r16, KEPT: dbExportMain mirrors dbExport, and the
+    // crud z-index -1 is redundant - small, left
     case "dbExportMain":
         data = await dbFileSaveAsync({db: DB_MAIN});
         fileSave({
@@ -2009,13 +2004,6 @@ DELETE FROM ${baton.dbtableName}
                 list.push(name);
                 return list;
             }, []).map(function (col, ii) {
-                // #define SQLITE_INTEGER  1
-                // #define SQLITE_COLUMNTYPE_INTEGER_BIG   11
-                // #define SQLITE_FLOAT    2
-                // #define SQLITE_TEXT     3
-                // #define SQLITE_COLUMNTYPE_TEXT_BIG      13
-                // #define SQLITE_BLOB     4
-                // #define SQLITE_NULL     5
                 switch (columntypeList[ii]) {
                 case 2: // SQLITE_FLOAT
                     return `    ${col} FLOAT(53)`;
@@ -2068,6 +2056,8 @@ async function onDbExec({
 // 3. ui-render sql-queries to html
     let dbqueryList;
     if (!modeTryCatch) {
+        // its baton may name a result table this run re-creates [r15]
+        uiFadeOut(UI_CONTEXTMENU);
         // queue runs, e.g. double ctrl+enter or a crud refresh during a
         // long run, else they race to re-create result_00 and one fails
         // "table already exists"; uiTryCatch never rejects, so chain holds
@@ -2081,15 +2071,6 @@ async function onDbExec({
     }
     // close error modal
     uiFadeOut(document.querySelector("#errorPanel1"));
-    // DBTABLE_DICT - cleanup old uitable
-    DBTABLE_DICT.forEach(function ({
-        isDbchart,
-        isDbquery
-    }, key) {
-        if (isDbchart || isDbquery) {
-            DBTABLE_DICT.delete(key);
-        }
-    });
     await Promise.all([
         DB_CHART, DB_QUERY
     ].map(async function (db) {
@@ -2100,11 +2081,14 @@ async function onDbExec({
 BEGIN TRANSACTION;
 SELECT
         group_concat(
-            'DROP TABLE IF EXISTS "' || REPLACE(name, '"', '""') || '";', ''
+            'DROP ' || UPPER(type) || ' IF EXISTS "' ||
+            REPLACE(name, '"', '""') || '";',
+            ''
         ) AS sql
     FROM sqlite_master
     WHERE
-        type = 'table'
+        -- views too, else CREATE VIEW query.v failed every later run [r15]
+        type IN ('table', 'view')
         -- sqlite_sequence etc. may not be dropped - one AUTOINCREMENT
         -- table made every later execute fail; IF EXISTS covers fts shadows
         AND name NOT LIKE 'sqlite!_%' ESCAPE '!';
@@ -2117,43 +2101,43 @@ END TRANSACTION;
             sql: sqlCleanup
         });
     }));
-    // 1. exec sql-command in webworker
-    // failed script - still re-render, since chart/query tables were dropped
-    // above and their old panels would query tables that no longer exist
+    // old chart and query panels would query the tables dropped above -
+    // scrolling one mid-run popped "no such table" [r19]
+    document.querySelector("#dbchartList1").innerHTML = "";
+    document.querySelector("#dbqueryList1").innerHTML = "";
+    // 3. ui-render in finally - also after a failed script or save, as the
+    // chart and query tables are gone
     try {
+        // 1. exec sql-command in webworker
         dbqueryList = await dbExecAsync({
             db: DB_MAIN,
             responseType: "list",
             sql: UI_EDITOR.getValue()
         });
-    } finally {
-        if (!dbqueryList) {
-            await uiRenderDb();
-        }
-    }
-    // 2. save query-result
-    await Promise.all(dbqueryList.map(async function (rowList, ii) {
-        let colList = rowList.shift().map(function (col, ii) {
-            // bugfix - escape special-character in col
-            return `value->>${ii} AS "${col.replace((/"/g), "\"\"")}"`;
-        }).join(",");
-        await dbExecAsync({
-            bindList: {
-                tmp1: JSON.stringify(rowList)
-            },
-            db: DB_QUERY,
-            sql: (`
+        // 2. save query-result
+        await Promise.all(dbqueryList.map(async function (rowList, ii) {
+            let colList = rowList.shift().map(function (col, ii) {
+                // bugfix - escape special-character in col
+                return `value->>${ii} AS "${col.replace((/"/g), "\"\"")}"`;
+            }).join(",");
+            await dbExecAsync({
+                bindList: {
+                    tmp1: JSON.stringify(rowList)
+                },
+                db: DB_QUERY,
+                sql: (`
 BEGIN TRANSACTION;
 CREATE TABLE result_${String(ii).padStart(2, "0")} AS
     SELECT
         ${colList}
     FROM JSON_EACH($tmp1);
 END TRANSACTION;
-            `)
-        });
-    }));
-    // 3. ui-render sql-queries to html
-    await uiRenderDb();
+                `)
+            });
+        }));
+    } finally {
+        await uiRenderDb();
+    }
 }
 
 async function onDbcrudExec({
@@ -2191,7 +2175,7 @@ async function onDbcrudExec({
         }
         val = (
             val.tagName === "SELECT"
-            ? val.selectedOptions[0].textContent
+            ? val.selectedOptions[0]?.textContent ?? ""
             : val.value.trim()
         );
         // "{{name}}" is an identifier - quote it, so a name holding '"'
@@ -2216,7 +2200,7 @@ async function onDbcrudExec({
 }
 
 function onKeyDown(evt) {
-// this function will handle event keyup
+// this function will handle event keydown
     // lower-case - caps lock gives "S", and the browser's own save opened
     let key = String(evt.key).toLowerCase();
     // non-latin layout, e.g. russian "ы" on the s key - use the key position,
@@ -2230,11 +2214,20 @@ function onKeyDown(evt) {
         uiFadeOut(document.querySelector("#errorPanel1"));
         // close contextmenu
         uiFadeOut(UI_CONTEXTMENU);
+        // close crud-modal [r17]
+        uiFadeOut(UI_CRUD);
+        return;
+    }
+    // held key - auto-repeat queued ~15 runs or downloads a second [r19]
+    if (evt.repeat) {
         return;
     }
     // shift+letter is another shortcut, e.g. firefox ctrl+shift+s
+    // not altKey - windows AltGr is ctrl+alt, so typing polish o-acute
+    // fell back to "o" and opened a file [r18]
     switch (
         (evt.ctrlKey || evt.metaKey) &&
+        !evt.altKey &&
         !(evt.shiftKey && key.length === 1) &&
         key
     ) {
@@ -2279,6 +2272,9 @@ function onResize() {
         for (const elem of document.querySelectorAll(
             "#dbchartList1 .contentElem"
         )) {
+            // REVIEWED 2026-11-09 r15, KEPT: a chart that failed to
+            // build re-shows its error on resize; overlapping rebuilds
+            // end correct
             elem.dataset.init = "0";
         }
     }
@@ -2288,6 +2284,7 @@ function onResize() {
 function onTocToggle(evt) {
 // this function will open or close #tocPanel1 drawer on narrow screen:
 // #tocToggle1 toggles it, a toc-link or #contentPanel1 closes it
+// REVIEWED 2026-11-09 r17, KEPT: toc buttons leave it open, by design
     let isOpen = false;
     if (evt.currentTarget.id === "tocToggle1") {
         isOpen = !document.body.classList.contains("tocOpen");
@@ -2337,6 +2334,10 @@ function onTouchLongpress(evt) {
             touch.clientX, touch.clientY
         ];
         UI_LONGPRESS_TIMER = setTimeout(function () {
+            // re-rendered meanwhile - its hashtag now names another table
+            if (!evt.target.isConnected) {
+                return;
+            }
             UI_LONGPRESS_FIRED = true;
             onContextmenu({
                 clientX: touch.clientX,
@@ -2358,15 +2359,12 @@ function sqlIdQuote(name) {
 }
 
 function sqlRowidLiteral(val) {
-// this function will make <val> the list for a "rowid IN (...)" compare:
-// an integer as both 3 and '3' - a user column named rowid with no
-// affinity holds either (query result, csv round-trip) and they never
-// equal each other; anything else is quoted - such a column can hold
-// sql, e.g. '1 OR 1=1'
+// this function will make <val> a rowid literal - an integer, else quoted;
+// a user column named rowid gets no row actions since r17
     val = String(val);
     return (
         (/^-?\d+$/).test(val)
-        ? val + ", '" + val + "'"
+        ? val
         : "'" + val.replace((/'/g), "''") + "'"
     );
 }
@@ -2401,6 +2399,7 @@ function svgAnimate(elem, attrDict, mode) {
     let {
         translateY
     } = attrDict;
+    // REVIEWED 2026-11-09 r15, KEPT: no caller passes hidden - dead, harmless
     // optimization - skip animation if hidden
     if (attrDict.visibility === "hidden") {
         svgAttrSet(elem, attrDict);
@@ -2418,17 +2417,13 @@ function svgAnimate(elem, attrDict, mode) {
         switch (fxattr) {
         case "height":
         case "width":
-        case "x":
-        case "y":
             fxend = Math.round(fxend);
-            switch (fxattr) {
-            case "x":
-                fxend += CRISPX;
-                break;
-            case "y":
-                fxend += CRISPY;
-                break;
-            }
+            break;
+        case "x":
+            fxend = Math.round(fxend) + CRISPX;
+            break;
+        case "y":
+            fxend = Math.round(fxend) + CRISPY;
             break;
         }
         fxstate = {
@@ -2438,8 +2433,7 @@ function svgAnimate(elem, attrDict, mode) {
         case "d":
             dpathList = fxend.split(" ");
             fxbeg = noop(elem.getAttribute(fxattr) ?? "").split(" ");
-            if (!(fxbeg.length > 0 && fxbeg.length === dpathList.length)) {
-                elem[fxattr2] = fxend;
+            if (fxbeg.length !== dpathList.length) {
                 elem.setAttribute(fxattr, fxend);
                 return;
             }
@@ -2512,8 +2506,6 @@ function svgAnimate(elem, attrDict, mode) {
                         return num + fxprg * (dpathList[ii] - num);
                     }).join(" ");
                 }
-                // cache attribute
-                elem[fxattr2] = fxnow;
                 elem.setAttribute("d", fxnow);
                 return;
             case "height":
@@ -2533,16 +2525,8 @@ function svgAnimate(elem, attrDict, mode) {
                 // update child tspans x values
                 if (fxattr === "x" && nodeName === "text") {
                     childNodes.forEach(function (child) {
-                        // if the x values are equal, the tspan represents a
-                        // linebreak
                         child.setAttribute("x", fxnow);
                     });
-                    if (fx_rotate) {
-                        elem.setAttribute(
-                            "transform",
-                            `rotate(-15 ${fxnow} ${elem.fx_y || 0})`
-                        );
-                    }
                 }
                 elem.setAttribute(fxattr, fxnow);
                 return;
@@ -2561,6 +2545,14 @@ function svgAnimate(elem, attrDict, mode) {
             elem.setAttribute(
                 "transform",
                 `translate(${elem.fx_translateX},${elem.fx_translateY})`
+            );
+        }
+        // after the loop - y comes after x, so the pivot lagged a frame and
+        // left tick labels up to ~6px off [r18]
+        if (fx_rotate && elem.fx_x !== undefined) {
+            elem.setAttribute(
+                "transform",
+                `rotate(-15 ${elem.fx_x} ${elem.fx_y || 0})`
             );
         }
         return isDone;
@@ -2583,6 +2575,8 @@ function svgAnimateCancel(elem) {
 }
 
 function svgAttrSet(elem, attrDict = {}) {
+// REVIEWED 2026-11-09 r17, KEPT: crispify also in svgAnimate - a shared
+// helper saves ~8 lines across two sites
 // this function will set-attribute items in <attrDict> to <elem>
     if (typeof elem === "string") {
         elem = document.createElementNS("http://www.w3.org/2000/svg", elem);
@@ -2591,7 +2585,6 @@ function svgAttrSet(elem, attrDict = {}) {
         key, val
     ]) {
         if (val !== null && val !== undefined) {
-            elem.setAttribute(key, val);
             switch (key) {
             case "clip-path":
             case "d":
@@ -2681,6 +2674,13 @@ function svgShapeDraw(seriesShape, x, y, w, h) {
     }
 }
 
+function uiErrorShow(err) {
+// this function will display <err> to user
+    console.error(err);
+    document.querySelector("#errorPanel1 .modalContent").textContent = err;
+    uiFadeIn(document.querySelector("#errorPanel1"));
+}
+
 function uiFadeIn(elem) {
 // this function will fade-in <elem>
     elem.style.opacity = (
@@ -2700,7 +2700,12 @@ function uiFadeOut(elem) {
 async function uiRenderDb() {
 // this function will render #dbtableList1
     let dbList;
+    // built aside, swapped in with the DOM - the live one must keep
+    // matching the old DOM during the awaits, else a right-click there got
+    // another table's baton [r16]
+    let dbtableDict = new Map();
     let dbtableIi = 0;
+    let dbtableListAll;
     let html = "";
     let windowScrollY;
     // reset location.hash
@@ -2729,17 +2734,10 @@ async function uiRenderDb() {
             dbCloseWhenIdle(db);
         }
     }
-    // DBTABLE_DICT - cleanup old uitable
-    DBTABLE_DICT.forEach(function ({
-        isDbchart,
-        isDbquery
-    }, key) {
-        if (!isDbchart && !isDbquery) {
-            DBTABLE_DICT.delete(key);
-        }
-    });
     // DBTABLE_DICT - sync
-    await Promise.all(Array.from(DB_DICT.values()).map(async function (db) {
+    dbtableListAll = await Promise.all(Array.from(
+        DB_DICT.values()
+    ).map(async function (db) {
         let baton;
         let {
             dbName,
@@ -2749,7 +2747,6 @@ async function uiRenderDb() {
         } = db;
         let dbtableList;
         let tmp;
-        db.dbtableList = new Map();
         dbtableList = noop(
             await dbExecAsync({
                 db,
@@ -2759,7 +2756,7 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
             })
         )[0];
         if (!dbtableList) {
-            return;
+            return [db, new Map()];
         }
         // chart, query db - hide sqlite internals, e.g. sqlite_sequence left
         // by an AUTOINCREMENT table, which cannot be dropped or charted
@@ -2772,22 +2769,16 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
             );
         });
         dbtableList = new Map(dbtableList.map(function ({
-            colList = [],
-            dbtableFullname,
-            rowCount = 0,
-            rowList0,
             sql,
             tbl_name
         }, ii) {
             // WITHOUT ROWID table has no rowid column to select or sort by
+            const dbtableFullname = `${dbName}.${sqlIdQuote(tbl_name)}`;
             const isNoRowid = (/\)[^)]*\bWITHOUT\s+ROWID\b[^)]*$/i).test(sql);
-            dbtableFullname = (
-                dbtableFullname || `${dbName}.${sqlIdQuote(tbl_name)}`
-            );
             dbtableIi += 1;
             baton = {
-                colList,
-                colListWritable: colList,
+                colList: [],
+                colListWritable: [],
                 db,
                 dbName,
                 dbtableFullname,
@@ -2798,8 +2789,7 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 isDbchart,
                 isDbmain,
                 isDbquery,
-                rowCount,
-                rowList0,
+                rowCount: 0,
                 sortCol: 0,
                 sortDir: "asc",
                 sql,
@@ -2815,7 +2805,7 @@ SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 ),
                 title: `table ${dbtableFullname}`
             };
-            DBTABLE_DICT.set(baton.hashtag, baton);
+            dbtableDict.set(baton.hashtag, baton);
             return [
                 baton.dbtableName, baton
             ];
@@ -2852,51 +2842,52 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
             if (!row0) {
                 return;
             }
-            [
-                "cid", "hashtag", "rowcount"
-            ].forEach(function (key) {
-                switch (row0.hasOwnProperty(key) && key) {
-                case "cid":
-                    // table_xinfo, not table_info, which skips generated
-                    // columns that SELECT * returns - headers sat over the
-                    // wrong cells. hidden 1 is a vtable hidden column, which
-                    // SELECT * omits; hidden 2, 3 is generated, not writable
-                    baton.colList = [
-                        "rowid",
-                        rowList.filter(function ({
-                            hidden
-                        }) {
-                            return hidden !== 1;
-                        }).map(function ({
-                            name
-                        }) {
-                            return name;
-                        })
-                    ].flat();
-                    baton.colListWritable = [
-                        "rowid",
-                        rowList.filter(function ({
-                            hidden
-                        }) {
-                            return !hidden;
-                        }).map(function ({
-                            name
-                        }) {
-                            return name;
-                        })
-                    ].flat();
-                    break;
-                case "hashtag":
-                    baton = DBTABLE_DICT.get(row0.hashtag);
-                    break;
-                case "rowcount":
-                    baton.rowCount = row0.rowcount;
-                    break;
-                }
-            });
+            if (row0.hasOwnProperty("hashtag")) {
+                baton = dbtableDict.get(row0.hashtag);
+                return;
+            }
+            if (row0.hasOwnProperty("rowcount")) {
+                baton.rowCount = row0.rowcount;
+                return;
+            }
+            if (row0.hasOwnProperty("cid")) {
+                // table_xinfo, not table_info, which skips generated
+                // columns that SELECT * returns - headers sat over the
+                // wrong cells. hidden 1 is a vtable hidden column, which
+                // SELECT * omits; hidden 2, 3 is generated, not writable
+                baton.colList = ["rowid"];
+                baton.colListWritable = ["rowid"];
+                rowList.forEach(function ({
+                    hidden,
+                    name
+                }) {
+                    // a column named rowid shadows the real one, so a
+                    // row delete could hit every match - treat it as
+                    // WITHOUT ROWID, no row actions [r17]
+                    if (String(name).toLowerCase() === "rowid") {
+                        baton.sqlRowid = "NULL AS rowid";
+                        baton.sqlRowidTie = "";
+                    }
+                    if (hidden !== 1) {
+                        baton.colList.push(name);
+                    }
+                    if (!hidden) {
+                        baton.colListWritable.push(name);
+                    }
+                });
+            }
         });
-        db.dbtableList = dbtableList;
+        return [db, dbtableList];
     }));
+    // set with the swap, so DOM and DBTABLE_DICT come from one call [r18]
+    dbtableListAll.forEach(function ([
+        db, dbtableList
+    ]) {
+        db.dbtableList = dbtableList;
+    });
+    DBTABLE_DICT = dbtableDict;
+    // REVIEWED 2026-11-09 r17, KEPT: merging the two DB_DICT loops below
+    // needs a destructure rewrite - left
     // ui-render databases and tables to html
     document.querySelector("#dbchartList1").innerHTML = "";
     document.querySelector("#dbqueryList1").innerHTML = "";
@@ -2906,14 +2897,17 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
         isDbchart,
         isDbquery
     }) {
+        const dbtype = (
+            isDbchart
+            ? "chart"
+            : isDbquery
+            ? "query"
+            : "table"
+        );
         dbtableList.forEach(function (baton) {
             // create uitable
             document.querySelector(
-                isDbchart
-                ? "#dbchartList1"
-                : isDbquery
-                ? "#dbqueryList1"
-                : "#dbtableList1"
+                `#db${dbtype}List1`
             ).appendChild(uitableCreate(baton));
         });
     });
@@ -2925,6 +2919,13 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
         isDbchart,
         isDbquery
     }) {
+        const dbtype = (
+            isDbchart
+            ? "chart"
+            : isDbquery
+            ? "query"
+            : "table"
+        );
         html += `<div class="tocTitle">` + (
             isDbchart
             ? "chart"
@@ -2943,13 +2944,7 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
             html += `<a class="tocElemA"`;
             html += ` data-hashtag="${hashtag}"`;
             html += ` href="#${hashtag}"`;
-            html += (
-                isDbchart
-                ? ` data-dbtype="chart"`
-                : isDbquery
-                ? ` data-dbtype="query"`
-                : ` data-dbtype="table"`
-            );
+            html += ` data-dbtype="${dbtype}"`;
             html += (
                 ` title="` +
                 stringHtmlSafe((
@@ -2961,15 +2956,7 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
                 }, undefined, 4)) +
                 `"`
             );
-            html += `>${ii + 1}. `;
-            html += (
-                isDbchart
-                ? "chart"
-                : isDbquery
-                ? "query"
-                : "table"
-            );
-            html += ` ${stringHtmlSafe(
+            html += `>${ii + 1}. ${dbtype} ${stringHtmlSafe(
                 dbtableName.slice(1, -1).replace((/""/g), "\"")
             )}</a>\n`;
         });
@@ -2991,13 +2978,7 @@ async function uiTryCatch(func, ...argList) {
         uiFadeIn(UI_LOADING);
         await func(...argList);
     } catch (err) {
-        console.error(err);
-        document.querySelector(
-            "#errorPanel1 .modalContent"
-        ).textContent = err;
-        uiFadeIn(document.querySelector(
-            "#errorPanel1"
-        ));
+        uiErrorShow(err);
     } finally {
         // keep the spinner up >= 500ms, but never block the caller on it -
         // awaiting it here made a ?sqlDb= load render 500ms late, as init
@@ -3090,9 +3071,7 @@ CREATE TEMP TABLE __chart_series_maxmin1 AS
     SELECT
         series_index,
         MAX(xx) AS xdataMax,
-        MIN(xx) AS xdataMin,
-        MAX(yy) AS ydataMax,
-        MIN(yy) AS ydataMin
+        MIN(xx) AS xdataMin
     FROM __chart_series_xy1
     WHERE
         yy IS NOT NULL
@@ -3106,9 +3085,7 @@ SELECT
             '$.xdataDxx', COALESCE(xdataDxx, 1),
             '$.xdataMax', xdataMax,
             '$.xdataMin', xdataMin,
-            '$.xlabelList', JSON(COALESCE(xlabelList, '[]')),
-            '$.ydataMax', ydataMax,
-            '$.ydataMin', ydataMin
+            '$.xlabelList', JSON(COALESCE(xlabelList, '[]'))
         ) AS options
     FROM __chart_options1
     JOIN (
@@ -3145,6 +3122,8 @@ SELECT
         LEFT JOIN (
             SELECT
                 series_index,
+                -- REVIEWED 2026-11-09 r15, KEPT: order rides the inner
+                -- ORDER BY; JSON_GROUP_ARRAY(ORDER BY) needs sqlite 3.44
                 JSON_GROUP_ARRAY(xx) AS xdata,
                 JSON_GROUP_ARRAY(yy) AS ydata
             FROM __chart_series_xy1
@@ -3154,9 +3133,7 @@ SELECT
     JOIN (
         SELECT
             MAX(xdataMax) AS xdataMax,
-            MIN(xdataMin) AS xdataMin,
-            MAX(ydataMax) AS ydataMax,
-            MIN(ydataMin) AS ydataMin
+            MIN(xdataMin) AS xdataMin
         FROM __chart_series_maxmin1
     )
     -- calculate uichart.xdataDxx
@@ -3257,6 +3234,8 @@ SELECT
     let ELEM_GRAPH_LINE_WIDTH = 1; //jslint-ignore-line
     let ELEM_POINT_BORDER_WIDTH = 0;
     let ELEM_POINT_RADIUS = 4;
+    // REVIEWED 2026-11-09 r15, KEPT: first draw may include the default
+    // 300x150 svg - unseen in a browser, verify before fixing
     let canvasHeight = elemCanvasFlex.clientHeight;
     let canvasWidth = elemCanvasFlex.clientWidth;
     let counterColor = 1;
@@ -3296,63 +3275,19 @@ SELECT
     let pointListBarchart = [];
     let redrawTimer;
     let seriesColorList = [
-        /*
-        // highcharts-v4
-        "#7cb5ec", // light-blue - highcharts-v4
-        "#434348", // black - highcharts-v4
-        "#90ed7d", // light-green - highcharts-v4
-        "#f7a35c", // orange - highcharts-v4
-        "#8085e9", // lavender-blue - highcharts-v4
-        "#f15c80", // pink - highcharts-v4
-        "#e4d354", // yellow - highcharts-v4
-        "#2b908f", // teal - highcharts-v4
-        "#f45b5b", // orange-red - highcharts-v4
-        "#91e8e1" // aqua - highcharts-v4
-        // highcharts-v3
-        "#2f7ed8", // blue - highcharts-v3
-        "#0d233a", // dark-teal - highcharts-v3
-        "#8bbc21", // olive - highcharts-v3
-        "#910000", // maroon - highcharts-v3
-        "#1aadce", // aqua - highcharts-v3
-        "#492970", // purple - highcharts-v3
-        "#f28f43", // orange - highcharts-v3
-        "#77a1e5", // light-blue - highcharts-v3
-        "#c42525", // red - highcharts-v3
-        "#a6c96a" // light-olive - highcharts-v3
-        // highcharts-v2
-        "#4572a7", // blue - highcharts-v2
-        "#aa4643", // red - highcharts-v2
-        "#89a54e", // olive - highcharts-v2
-        "#80699b", // purple - highcharts-v2
-        "#3d96ae", // aqua - highcharts-v2
-        "#db843d", // orange - highcharts-v2
-        "#92a8cd", // light-navy - highcharts-v2
-        "#a47d7c", // brown - highcharts-v2
-        "#b5ca92" // light-olive - highcharts-v2
-        */
-        //
-        // "#aa4643", // red - highcharts-v2
         "#a44", // red
-        // "#4572a7", // blue - highcharts-v2
         "#57b", // blue
         "#7ecf6d", // light-green - highcharts-v4
-        // "#80699b", // purple - highcharts-v2
         "#86a", // purple
-        //
         "#3d96ae", // aqua - highcharts-v2
         "#f15c80", // pink - highcharts-v4
         "#8085e9", // lavender-blue - highcharts-v4
-        // "#a47d7c", // brown - highcharts-v2
-        // "#b88", // brown
         "#89a54e", // olive - highcharts-v2
-        // "#0d233a", // dark-teal - highcharts-v3
         "#357", // dark-teal
         "#492970" // purple - highcharts-v3
     ];
     let seriesHovered;
     let seriesShapeList = [
-        // "circle", "diamond", "square", "triangle", "triangle-down"
-        // "circle",
         "square",
         "triangle",
         "diamond",
@@ -3407,6 +3342,7 @@ SELECT
         }
         // create ticklabel
         elemTspan = svgAttrSet("tspan");
+        // REVIEWED 2026-11-09 r19, KEPT: the IIFE keeps xOrY local - churn
         elemTspan.textContent = (function () {
             let num;
             let xOrY = (
@@ -3505,6 +3441,7 @@ SELECT
         graphAnimateStep();
         UI_ANIMATE_LIST.push(graphAnimateStep);
     }
+    // REVIEWED 2026-11-09 r16, KEPT: a signature reading uichart inside - churn
     function numberFormat({
         convert,
         modeTick,
@@ -3530,7 +3467,6 @@ SELECT
         switch (convert) {
         case "juliandayToDate":
             num = new Date((num - 2440587.5) * 86400 * 1000);
-            // num = num.toUTCString().slice(0, 16);
             num = (
                 modeTick
                 ? num.toUTCString().slice(5, 16)
@@ -3546,7 +3482,6 @@ SELECT
             );
             break;
         case "unixepochToTimeutc":
-            // num = new Date(num * 1000).toISOString().slice(11, 19) + "Z";
             num = new Date(num * 1000);
             num = (
                 modeTick
@@ -3637,6 +3572,8 @@ SELECT
                 fingerList[0].xfrac - touchState.fingerList[0].xfrac
             );
         } else if (fingerList.length === 2) {
+            // REVIEWED 2026-11-09 r15, KEPT: aligned fingers clamp to
+            // 1%, so jitter zooms - rare
             spanOld = Math.max(0.01, Math.abs(
                 touchState.fingerList[0].xfrac - touchState.fingerList[1].xfrac
             ));
@@ -3667,6 +3604,15 @@ SELECT
         let xscale = 1.2500; // zoom-out
         // horizontal trackpad swipe - not a zoom, leave it to the page
         if (evt.deltaY === 0) {
+            return;
+        }
+        // zoom-out at full extent does nothing - scroll the page instead of
+        // stalling it over every chart [r18]
+        if (
+            evt.deltaY > 0 &&
+            (xzoomMin ?? xdataMin) <= xdataMin &&
+            (xzoomMax ?? xdataMax) >= xdataMax
+        ) {
             return;
         }
         evt.preventDefault();
@@ -3873,6 +3819,8 @@ SELECT
             // hover series in legend
             elem.style.background = "#ccc";
             // scroll to series in legend
+            // REVIEWED 2026-11-09 r16, KEPT: offsetTop is from .contentElem,
+            // not the legend - two errors cancel; re-derive if it moves
             if (scrollTo) {
                 debounce("onSeriesScroll", function () {
                     elemLegend.scroll({
@@ -3938,6 +3886,7 @@ SELECT
         }
         action = target.dataset.action;
         switch (action) {
+        // REVIEWED 2026-11-09 r17, KEPT: folding the 3 spinner wrappers - churn
         case "uichartSeriesHideAll":
         case "uichartSeriesShowAll":
             uiFadeIn(baton.elemLoading);
@@ -4039,12 +3988,13 @@ SELECT
             if (isXaxis) {
                 axisMax = Math.min(xdataMax, xzoomMax ?? xdataMax);
                 axisMin = Math.max(xdataMin, xzoomMin ?? xdataMin);
-                // ensure xaxisMax - xaxisMin >= xdataDxx
+                // ensure xaxisMax - xaxisMin >= 4 * xdataDxx
                 if (axisMax - axisMin < 4 * xdataDxx) {
                     axisMax = Math.min(xdataMax, axisMin + 4 * xdataDxx);
                     axisMin = Math.max(xdataMin, axisMax - 4 * xdataDxx);
                 }
-                // pad axisMax, axisMin
+                // pad axisMax, axisMin - xzoomFromDisplayed inverts this and
+                // the 1% pad below; change one, change it
                 axisMax += 0.02 * (axisMax - axisMin);
                 axisMin -= 0.02 * (axisMax - axisMin);
             }
@@ -4072,6 +4022,9 @@ SELECT
                     return;
                 }
                 nn = xdata.length;
+                // REVIEWED 2026-11-09 r19, KEPT: one linear scan is ~18
+                // lines shorter, but the crop skips off-range series on
+                // 5y daily zoom
                 // calculate xcropEnd, xcropStart over the displayed range
                 // [xaxisMin - dxx/2, xaxisMax + dxx/2], so a visible edge
                 // point is autoscaled and an invisible one is not
@@ -4110,6 +4063,7 @@ SELECT
             });
             axisMax = axisMax ?? 0;
             axisMin = axisMin ?? 0;
+            // inverted by xzoomFromDisplayed, with the 2% x pad above
             axisMax += 0.01 * (axisMax - axisMin);
             axisMin -= 0.01 * (axisMax - axisMin);
             if (axisMax === axisMin) {
@@ -4201,21 +4155,12 @@ SELECT
             Object.entries(tickxDict).forEach(function ([
                 tickx, elemTick
             ]) {
-                if (
-                    elemTick.isXaxis !== isXaxis ||
-                    tickxList.indexOf(Number(tickx)) !== -1
-                ) {
+                if (tickxList.indexOf(Number(tickx)) !== -1) {
                     return;
                 }
                 elemTick.remove();
-                if (elemTick.elemGridline) {
-                    elemTick.elemGridline.remove();
-                    delete elemTick.elemGridline;
-                }
-                if (elemTick.elemTicklabel) {
-                    elemTick.elemTicklabel.remove();
-                    delete elemTick.elemTicklabel;
-                }
+                elemTick.elemGridline?.remove();
+                elemTick.elemTicklabel?.remove();
                 delete tickxDict[tickx];
             });
             //
@@ -4520,15 +4465,17 @@ SELECT
                 pointListBarchart
             );
         }
-        // reset seriesHovered
-        // REVIEWED 2026-11-09, KEPT: on a barchart this rewrites every bar's
-        // fill twice per redraw - costs only with thousands of bars
-        seriesList.forEach(function (series) {
-            if (!seriesHovered || seriesHovered.isHidden) {
-                onSeriesHover(series);
-                onSeriesUnhover();
-            }
-        });
+        // reset seriesHovered - every hover change unhovers first, which
+        // restores fill, width and legend, so only the point lookup is left:
+        // the last visible series, as before [r16, r17]
+        if (!seriesHovered || seriesHovered.isHidden) {
+            onSeriesUnhover();
+            seriesList.forEach(function (series) {
+                if (!isBarchart && !series.isHidden) {
+                    xpixelToPointDictHovered = series.xpixelToPointDict;
+                }
+            });
+        }
         // hovered series - point lookup at the new zoom, not the old
         if (seriesHovered && !seriesHovered.isHidden && !isBarchart) {
             xpixelToPointDictHovered = seriesHovered.xpixelToPointDict;
@@ -4601,6 +4548,8 @@ SELECT
             });
         }
         series.isHidden = modeHide;
+        // REVIEWED 2026-11-09 r17, KEPT: a legend show on touch stays
+        // highlighted until the next hover - the desktop design
         if (!modeHide) {
             onSeriesHover(series);
         }
@@ -4622,6 +4571,8 @@ SELECT
     // this function will translate <xval> to xpixel position on chart
         return xtransOffset + xtransWidth * (xval - xaxisMin);
     }
+    // REVIEWED 2026-11-09 r17, KEPT: bars sharing an x map to the last series,
+    // under the drawn one - not seen in the demo
     function xpixelToPointDictCreate(pointList) {
     // this function will create dict mapping <xpixel> to nearest point in
     // <pointList> along xaxis
@@ -4697,6 +4648,8 @@ SELECT
         width: canvasWidth
     });
     // init event-handling
+    // REVIEWED 2026-11-09 r15, KEPT: tap on touch hides a series - the click
+    // feature, rejected again
     elemCanvasFlex.onclick = onSeriesHoveredHide;
     elemCanvasFlex.onmouseenter = onPointUnhover;
     elemCanvasFlex.onmouseleave = onPointUnhover;
@@ -4798,23 +4751,17 @@ SELECT
             let elemPoint;
             let pointObj;
             let xval = xdata[ii];
-            elemPoint = (
+            elemPoint = svgAttrSet((
                 isBarchart
-                ? svgAttrSet("rect", {
-                    fill: seriesColor,
-                    stroke: "#333",
-                    "stroke-width": ELEM_POINT_BORDER_WIDTH,
-                    visibility: "inherit",
-                    y: 0.5 * canvasHeight
-                })
-                : svgAttrSet("path", {
-                    fill: seriesColor,
-                    stroke: "#333",
-                    "stroke-width": ELEM_POINT_BORDER_WIDTH,
-                    visibility: "inherit",
-                    y: 0.5 * canvasHeight
-                })
-            );
+                ? "rect"
+                : "path"
+            ), {
+                fill: seriesColor,
+                stroke: "#333",
+                "stroke-width": ELEM_POINT_BORDER_WIDTH,
+                visibility: "inherit",
+                y: 0.5 * canvasHeight
+            });
             // init fx_seriesShape
             if (!isBarchart) {
                 elemPoint.fx_seriesShape = seriesShape;
@@ -4906,7 +4853,6 @@ SELECT
         width: plotWidth
     });
     return Object.assign(uichart, {
-        uichartRedraw,
         uichartResize
     });
     //
@@ -4935,6 +4881,13 @@ async function uitableAjax(baton, {
         sortDir
     } = baton;
     let html = "";
+    // qualify a sort column - a user column named rowid sorts by the NULL
+    // AS rowid alias otherwise [r18]
+    let sortExpr = (
+        sortCol === 0
+        ? ""
+        : dbtableName + "."
+    ) + sqlIdQuote(colList[sortCol]);
     let viewRowBeg;
     let viewRowEnd;
     if (baton.rowCount === 0) {
@@ -4999,9 +4952,16 @@ async function uitableAjax(baton, {
         ));
         break;
     }
+    // REVIEWED 2026-11-09 r16, KEPT: switch(false) skips to draw - an if/return
+    // rewrite is churn
     switch (type !== "uitableDraw" && baton.modeAjax) {
     // uitableAjax
     case 0:
+        // re-rendered away, e.g. a run dropped result_00 during a throttled
+        // scroll - querying it popped a spurious error [r16]
+        if (!contentElem.isConnected) {
+            return;
+        }
         // uitableLoading - show
         uiFadeIn(elemLoading);
         baton.modeAjax = 1;
@@ -5019,17 +4979,20 @@ SELECT
         --
         ${dbtableName}.*
     FROM ${dbtableName}
-    ORDER BY ${sqlIdQuote(colList[sortCol])} ${sortDir}${baton.sqlRowidTie}
+    ORDER BY ${sortExpr} ${sortDir}${baton.sqlRowidTie}
     LIMIT ${Number(UI_PAGE_SIZE)}
     OFFSET ${Number(rowOffset)};
                 `)
             });
-        } finally {
-            // query failed - reset, else table is stuck in modeAjax 1
-            if (rowList === undefined) {
-                baton.modeAjax = 0;
-                uiFadeOut(elemLoading);
-            }
+        } catch (err) {
+            // query failed - reset, else table is stuck in modeAjax 1; show
+            // it here, as scroll and sort do not await this [r15 2026-11-09]
+            baton.modeAjax = 0;
+            uiFadeOut(elemLoading);
+            // REVIEWED 2026-11-09 r16, KEPT: also drops a pending
+            // modeAjax 2 scroll
+            uiErrorShow(err);
+            return;
         }
         rowList = (
             rowList[0]
@@ -5069,8 +5032,8 @@ SELECT
     )) + "px";
     // Insert the required TR nodes into the table for display
     jsonHtmlSafe(rowList).forEach(function (row) {
-        // a user column named rowid can hold '"' - escape it for the attribute
-        const rowid = String(row[0]).replace((/"/g), "&quot;");
+        // an integer, or null - a user column named rowid selects NULL [r17]
+        const rowid = String(row[0]);
         html += (`
 <tr data-dbtype="row" data-hashtag="${hashtag}" data-rowid="${rowid}">
         `);
@@ -5097,18 +5060,6 @@ SELECT
 function uitableCreate(baton) {
 // this function will create a dom-datatable-view of sqlite queries and tables
     let contentElem;
-    // All uitables are wrapped in a div
-    // Generate the node required for the processing node
-    // The HTML structure that we want to generate in this function is:
-    //  div - scroller
-    //    div - scroll head
-    //      div - scroll head inner
-    //        table - scroll head table
-    //          thead - thead
-    //    div - scroll body
-    //      table - table (master table)
-    //        thead - thead clone for sizing
-    //        tbody - tbody
     contentElem = domDivCreate(
         (`
 <div class="contentElem" data-init="0" id="${baton.hashtag}">
@@ -5153,10 +5104,6 @@ function uitableCreate(baton) {
 </div>
         `)
     ).firstElementChild;
-    // init event-handling - crud
-    contentElem.querySelector(
-        "tbody"
-    ).oncontextmenu = onContextmenu;
     // init event-handling - sorting
     contentElem.querySelector(
         "thead tr"
