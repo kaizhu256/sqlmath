@@ -204,25 +204,8 @@ async def build_ext_async():
     version = package_json["version"].split("-")[0]
     if package_json["name"] != "sqlmath":
         version = __version__
-    data = await asyncio.to_thread(
-        pathlib.Path(".ci.sh").read_text,
-        encoding="utf-8",
-    )
-    data = re.findall(
-        (
-            r"(?:SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)"
-            r'=" \\([\S\s]*?)"'
-        ),
-        data,
-    )
-    data = [
-        [cflag for cflag in re.split(r"[\s\\]", list1) if cflag != ""]
-        for list1 in data
-    ]
-    [
-        cflag_wall_list,
-        cflag_wno_list,
-    ] = data
+    cflag_wall_list = ["-Wall", "-Werror", "-Wextra"]
+    cflag_wno_list = ["-Werror", "-Wno-all", "-Wno-extra"]
     for filename in [
         "PKG-INFO",
         "README.md",
