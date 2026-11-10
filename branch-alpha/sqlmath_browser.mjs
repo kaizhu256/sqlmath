@@ -2999,14 +2999,18 @@ async function uiTryCatch(func, ...argList) {
             "#errorPanel1"
         ));
     } finally {
-        await waitAsync(500);
-        UI_LOADING_COUNTER -= 1;
-        if (
-            UI_LOADING_COUNTER === 0 &&
-            UI_LOADING.style.visibility === "visible"
-        ) {
-            uiFadeOut(UI_LOADING);
-        }
+        // keep the spinner up >= 500ms, but never block the caller on it -
+        // awaiting it here made a ?sqlDb= load render 500ms late, as init
+        // awaits DB_INIT, which is a uiTryCatch [2026-11-09]
+        waitAsync(500).then(function () {
+            UI_LOADING_COUNTER -= 1;
+            if (
+                UI_LOADING_COUNTER === 0 &&
+                UI_LOADING.style.visibility === "visible"
+            ) {
+                uiFadeOut(UI_LOADING);
+            }
+        });
     }
 }
 
@@ -3566,6 +3570,8 @@ SELECT
         // every finger on this chart - targetTouches only counts fingers
         // that began on the same svg element, so a pinch from a line and
         // blank plot area read as a jumpy 1-finger pan
+        // read once - a read per finger forced a layout per finger per move
+        const canvasLeft = elemCanvasFixed.getBoundingClientRect().left;
         const fingerList = Array.from(evt.touches).filter(function ({
             target
         }) {
@@ -3577,9 +3583,7 @@ SELECT
             return {
                 clientY,
                 xfrac: (
-                    clientX -
-                    elemCanvasFixed.getBoundingClientRect().left -
-                    plotLeft
+                    clientX - canvasLeft - plotLeft
                 ) / plotWidth
             };
         });
@@ -4553,7 +4557,8 @@ SELECT
         isResizing += 1;
         setTimeout(function () {
             isResizing -= 1;
-            // redraws during resize skip axis calc - catch up once settled
+            // redraws during resize skip axis calc - catch up once settled;
+            // REVIEWED 2026-11-09, KEPT: one extra redraw per resize burst
             if (isResizing === 0) {
                 uichartRedraw();
             }
@@ -5080,7 +5085,6 @@ SELECT
     // debounce - next
     if (baton.modeAjax === 2) {
         baton.modeAjax = 0;
-        // keep focus on current scroller when debouncing
         await uitableAjax(baton, {});
         return;
     }
