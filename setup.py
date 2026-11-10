@@ -54,7 +54,7 @@ def assert_or_throw(condition, message=None):
 
 def build_ext():
     """This function will build c-extension."""
-    subprocess.run(["python", "setup.py", "build_ext_async"], check=True)
+    asyncio.run(build_ext_async())
 
 
 async def build_ext_async():
@@ -614,9 +614,6 @@ def main():
             build_wheel("dist")
         case "build_ext":
             build_ext()
-        case "build_ext_async":
-            asyncio.set_event_loop(asyncio.new_event_loop())
-            asyncio.get_event_loop().run_until_complete(build_ext_async())
         case "build_pkg_info":
             build_pkg_info()
         case "env_vcvarsall":
