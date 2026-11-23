@@ -28,7 +28,6 @@
     HEAPU8
     Module
     _dbCall
-    _jsbatonGetInt64
     _sqlite3_free
     _sqlite3_initialize
     _sqlite3_malloc
@@ -44,16 +43,8 @@ function isExternalBuffer(buf) {
 }
 
 (async function () {
-    // cwrap string-based c-functions
-    let dbFileLoadOrSave = cwrap("dbFileLoadOrSave", "number", [
-        "number", "string", "number"
-    ]);
-    let jsbatonGetErrmsg = cwrap("jsbatonGetErrmsg", "string", ["number"]);
-    let jsbatonGetString = cwrap("jsbatonGetString", "string", [
-        "number", "number"
-    ]);
-    let sqlite3_errmsg = cwrap("sqlite3_errmsg", "string", ["number"]);
-
+    let jsbatonGetErrmsg;
+    let jsbatonGetString;
     let onModulePostRun; //jslint-ignore-line
 
     function messageDispatch(data) {
@@ -63,8 +54,7 @@ function isExternalBuffer(buf) {
         let argList = data["argList"];
         let baton = new Uint8Array(data["baton"].buffer);
         let batonPtr = 0;
-        let dbData = argList[4];
-        let errcode = 0;
+        let dbData = argList[3];
         let errmsg = "";
         let funcname = data["funcname"];
         let modeSave = argList[2];
@@ -112,20 +102,8 @@ function isExternalBuffer(buf) {
                 if (modeSave) {
                     dbData = FS.readFile(FILENAME_DBTMP);
                     argList[0] = dbData.buffer;
-                    FS.unlink(FILENAME_DBTMP);
                 }
-                break;
-            case "_dbOpen":
-                // open dbData
-                if (dbData) {
-                    FS.writeFile(FILENAME_DBTMP, new Uint8Array(dbData));
-                    dbData = Number(_jsbatonGetInt64(batonPtr, 0));
-                    errcode = dbFileLoadOrSave(dbData, FILENAME_DBTMP, 0);
-                    if (errcode) {
-                        errmsg = sqlite3_errmsg(dbData);
-                    }
-                    FS.unlink(FILENAME_DBTMP);
-                }
+                FS.unlink(FILENAME_DBTMP);
                 break;
             }
             postMessage(
@@ -169,6 +147,11 @@ function isExternalBuffer(buf) {
         Module["postRun"] = resolve;
     });
     await onModulePostRun;
+    // cwrap after postRun - emsdk 4+ defines cwrap as a non-hoisted var
+    jsbatonGetErrmsg = cwrap("jsbatonGetErrmsg", "string", ["number"]);
+    jsbatonGetString = cwrap("jsbatonGetString", "string", [
+        "number", "number"
+    ]);
 
     // init sqlite
     _sqlite3_initialize();

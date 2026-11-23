@@ -12,7 +12,6 @@ import {
     noop,
     sqlmathWebworkerInit
 } from "./sqlmath.mjs";
-let BLOB_SAVE;
 let CRISPX = -0.5;
 let CRISPY = 0.5;
 let {
@@ -21,28 +20,46 @@ let {
 let DBTABLE_DICT = new Map();
 let DB_CHART;
 let DB_DICT = new Map();
+let DB_EXEC_CHAIN = Promise.resolve();
 let DB_INIT = Promise.resolve();
 let DB_MAIN;
 let DB_QUERY;
 let DEBOUNCE_DICT = Object.create(null);
-let UI_ANIMATE_DATENOW;
+let UI_ANIMATE_DATENOW = Date.now();
 let UI_ANIMATE_DURATION = 250;
 let UI_ANIMATE_DURATION_INV = 1 / UI_ANIMATE_DURATION;
 let UI_ANIMATE_LIST = [];
 let UI_CONTEXTMENU = document.getElementById("contextmenu1");
 let UI_CONTEXTMENU_BATON;
 let UI_CRUD = document.getElementById("crudPanel1");
+let UI_CRUD_BATON;
 let UI_EDITOR;
 let UI_FILE_OPEN = document.createElement("input");
 let UI_FILE_SAVE = document.createElement("a");
 let UI_LOADING = document.getElementById("loadingPanel1");
 let UI_LOADING_COUNTER = 0;
+let UI_LONGPRESS_FIRED;
+let UI_LONGPRESS_TIMER;
+let UI_LONGPRESS_XY = [
+    0, 0
+];
 let UI_PAGE_SIZE = 256;
+let UI_RESIZE_WIDTH = window.innerWidth;
 let UI_ROW_HEIGHT = 16;
 let UI_VIEW_SIZE = 20;
 
 noop(debugInline);
 
+async function dbCloseWhenIdle(db) {
+// this function will close <db> once its pending queries finish, since
+// dbCloseAsync throws while db.busy > 0, which leaked the wasm handle
+    while (db.busy > 0) {
+        await waitAsync(100);
+    }
+    await dbCloseAsync(db);
+}
+
+// REVIEWED r18: a user ATTACH named attach01 blocks it until detached
 async function dbFileAttachAsync({
     db,
     dbData
@@ -50,17 +67,29 @@ async function dbFileAttachAsync({
 // this function will attach database <dbData> to <db>
     let dbAttached;
     let dbName = dbNameNext("attach{{ii}}", new Set(DB_DICT.keys()));
+    let isAttached;
     dbAttached = await dbOpenAsync({
-        dbData,
         filename: `file:${dbName}?mode=memory&cache=shared`
     });
     dbAttached.dbName = dbName;
-    await dbExecAsync({
-        db,
-        sql: `ATTACH DATABASE '${dbAttached.filename}' AS ${dbName}`
-    });
+    try {
+        await dbFileLoadAsync({
+            db: dbAttached,
+            dbData
+        });
+        await dbExecAsync({
+            db,
+            sql: `ATTACH DATABASE '${dbAttached.filename}' AS ${dbName}`
+        });
+        isAttached = true;
+    } finally {
+        // failed load or ATTACH - close handle, else it leaks in wasm
+        if (!isAttached) {
+            await dbCloseAsync(dbAttached);
+        }
+    }
     DB_DICT.set(dbName, dbAttached);
-    // normalize order
+    // normalize order - REVIEWED r17: a one-Map sort is churn
     DB_DICT = Array.from(DB_DICT.values());
     DB_DICT = new Map([
         DB_DICT.slice(0, 3),
@@ -97,14 +126,16 @@ function debounce(key, func, ...argList) {
 // this function will debounce <func> with given <key>
     let val = DEBOUNCE_DICT[key];
     if (val) {
+        val.argList = argList;
         val.func = func;
         return;
     }
     val = {
+        argList,
         func: noop,
         timerTimeout: setTimeout(function () {
             delete DEBOUNCE_DICT[key];
-            val.func(...argList);
+            val.func(...val.argList);
         }, 250)
     };
     DEBOUNCE_DICT[key] = val;
@@ -265,7 +296,6 @@ UPDATE chart.__stock_chart
     --
     ) AS __join1 WHERE __join1.series_index = __stock_chart.series_index;
     `).trim() + "\n");
-    // exec demo-sql-query
     await onDbExec({});
     return true;
 }
@@ -274,25 +304,49 @@ async function demoTradebot() {
 // this function will run demo-tradebot
     let tmp;
     let tradebotState;
+    // one chart ddl for every demo chart below
+    function sqlChartCreate(tableChart) {
+        return String(`
+DROP TABLE IF EXISTS ${tableChart};
+CREATE TABLE ${tableChart} (
+    datatype TEXT NOT NULL,
+    series_index INTEGER,
+    xx REAL,
+    yy REAL,
+    series_label REAL,
+    xx_label TEXT,
+    options TEXT
+);
+        `).trim();
+    }
+    // any failure up to tradebot_state returns falsy - init falls back to
+    // demoDefault; REVIEWED: a truncated file shows "malformed", rare
     try {
         tmp = await fetch(`.tradebot_public.sqlite?aa=${Date.now()}`);
         if (tmp.status !== 200) {
             return;
         }
+        await dbFileLoadAsync({
+            db: DB_MAIN,
+            dbData: await tmp.arrayBuffer()
+        });
+        tradebotState = noop(
+            await dbExecAsync({
+                db: DB_MAIN,
+                sql: "SELECT * FROM tradebot_state;"
+            })
+        )[0][0];
     } catch (ignore) {
         return;
     }
-    tmp = await tmp.arrayBuffer();
-    await dbFileLoadAsync({
-        db: DB_MAIN,
-        dbData: tmp
-    });
-    tradebotState = noop(
-        await dbExecAsync({
-            db: DB_MAIN,
-            sql: "SELECT * FROM tradebot_state;"
-        })
-    )[0][0];
+    if (!tradebotState) {
+        return;
+    }
+    // datenow is "YYYY-MM-DD HH:MM:SS"; safari cannot Date-parse the space,
+    // only the iso "T" form
+    tradebotState.datenowUtc = new Date(
+        String(tradebotState.datenow).replace(" ", "T") + "Z"
+    ).toUTCString();
     UI_EDITOR.setValue([
         (`
 -- table - tradebot_intraday_day - insert
@@ -419,9 +473,7 @@ ALTER TABLE tradebot_tech_intra_month DROP COLUMN xdate2;
                     dateInterval +
                     (
                         dateInterval === "1 day"
-                        ? "\n[ updated " + new Date(
-                            tradebotState.datenow + "Z"
-                        ).toUTCString() + " ]"
+                        ? "\n[ updated " + tradebotState.datenowUtc + " ]"
                         : ""
                     )
                 ),
@@ -443,16 +495,7 @@ ALTER TABLE tradebot_tech_intra_month DROP COLUMN xdate2;
             };
             return (`
 -- chart - ${tableChart} - create
-DROP TABLE IF EXISTS ${tableChart};
-CREATE TABLE ${tableChart} (
-    datatype TEXT NOT NULL,
-    series_index INTEGER,
-    xx REAL,
-    yy REAL,
-    series_label REAL,
-    xx_label TEXT,
-    options TEXT
-);
+${sqlChartCreate(tableChart)}
 INSERT INTO ${tableChart} (datatype, options)
     SELECT
         'options' AS datatype,
@@ -786,16 +829,7 @@ SELECT
 -- chart - ${tableChart} - create
 DROP TABLE IF EXISTS __tmp1;
 CREATE TEMP TABLE __tmp1 AS SELECT * FROM (${sqlSelect}) ORDER BY xx;
-DROP TABLE IF EXISTS ${tableChart};
-CREATE TABLE ${tableChart} (
-    datatype TEXT NOT NULL,
-    series_index INTEGER,
-    xx REAL,
-    yy REAL,
-    series_label REAL,
-    xx_label TEXT,
-    options TEXT
-);
+${sqlChartCreate(tableChart)}
 INSERT INTO ${tableChart} (datatype, options)
     SELECT
         'options' AS datatype,
@@ -896,7 +930,7 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (datatype, options)
         '{
             "isBarchart": true,
             "title": "tradebot buy/sell history today\\n[ updated '
-                || '${new Date(tradebotState.datenow + "Z").toUTCString()}'
+                || '${tradebotState.datenowUtc}'
                 || ' ]",
             "xaxisTitle": "time",
             "xvalueConvert": "unixepochToTimeutc",
@@ -939,9 +973,7 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (
             tableData = (
                 dateInterval === "1 day"
                 ? "tradebot_tech_intra_day"
-                : dateInterval === "1 month"
-                ? "tradebot_tech_intra_month"
-                : "tradebot_tech_intra"
+                : "tradebot_tech_intra_month"
             );
             tableChart = (
                 "chart._{{ii}}_tradebot_tech_intra_" +
@@ -955,9 +987,7 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (
                     dateInterval +
                     (
                         dateInterval === "1 day"
-                        ? "\n[ updated " + new Date(
-                            tradebotState.datenow + "Z"
-                        ).toUTCString() + " ]"
+                        ? "\n[ updated " + tradebotState.datenowUtc + " ]"
                         : ""
                     )
                 ),
@@ -965,15 +995,9 @@ INSERT INTO chart._{{ii}}_tradebot_buysell_history (
                 xstep: (
                     dateInterval === "1 day"
                     ? 60
-                    : dateInterval === "1 month"
-                    ? 5 * 60
-                    : 1
+                    : 5 * 60
                 ),
-                xvalueConvert: (
-                    (dateInterval === "1 day" || dateInterval === "1 month")
-                    ? "unixepochToTimeutc"
-                    : "juliandayToDate"
-                ),
+                xvalueConvert: "unixepochToTimeutc",
                 yaxisTitle: "percent gain",
                 yvalueSuffix: " %"
             };
@@ -984,16 +1008,7 @@ UPDATE ${tableData}
         tval = ROUNDORZERO(tval, 4);
 
 -- chart - ${tableChart} - create
-DROP TABLE IF EXISTS ${tableChart};
-CREATE TABLE ${tableChart} (
-    datatype TEXT NOT NULL,
-    series_index INTEGER,
-    xx REAL,
-    yy REAL,
-    series_label REAL,
-    xx_label TEXT,
-    options TEXT
-);
+${sqlChartCreate(tableChart)}
 INSERT INTO ${tableChart} (datatype, options)
     SELECT
         'options' AS datatype,
@@ -1066,15 +1081,7 @@ DELETE FROM ${tableChart} WHERE datatype = 'xx_label';
         (function () {
             let tableChart = `chart._{{ii}}_tradebot_tech_hist_1_year`;
             return (`
-CREATE TABLE ${tableChart} (
-    datatype TEXT NOT NULL,
-    series_index INTEGER,
-    xx REAL,
-    yy REAL,
-    series_label REAL,
-    xx_label TEXT,
-    options TEXT
-);
+${sqlChartCreate(tableChart)}
 
 -- table - ${tableChart} - insert
 INSERT INTO ${tableChart} (datatype, options)
@@ -1197,6 +1204,7 @@ INSERT INTO ${tableChart} (datatype, series_index, xx, yy)
         FROM tradebot_tech_histo
     ) ON xdate = xx_label
     WHERE yy IS NOT NULL;
+DELETE FROM ${tableChart} WHERE datatype = 'xx_label';
 
 -- table - ${tableChart} - normalize - yy
 UPDATE ${tableChart}
@@ -1242,16 +1250,14 @@ function fileSave({
     filename
 }) {
 // this function will save <buf> with given <filename>
-    // cleanup previous blob to prevent memory-leak
-    URL.revokeObjectURL(BLOB_SAVE);
     // create new blob
-    BLOB_SAVE = URL.createObjectURL(new Blob([
+    const url = URL.createObjectURL(new Blob([
         buf
     ]));
-    UI_FILE_SAVE.href = BLOB_SAVE;
-    // cleanup blob to prevent memory-leak
+    UI_FILE_SAVE.href = url;
+    // cleanup this blob, not a later save's, to prevent memory-leak
     setTimeout(function () {
-        URL.revokeObjectURL(UI_FILE_SAVE.href);
+        URL.revokeObjectURL(url);
     }, 30000);
     UI_FILE_SAVE.download = filename.toLowerCase().replace((
         /[^0-9a-z]+/g
@@ -1268,9 +1274,10 @@ function fileSave({
 }
 
 async function init() {
+    let isDemoDone;
+    let isScriptFailed;
     let modeDemo = true;
     await sqlmathWebworkerInit({});
-    // init DB_XXX
     [
         DB_CHART, DB_QUERY, DB_MAIN
     ] = await Promise.all([{
@@ -1289,7 +1296,6 @@ async function init() {
         db = Object.assign(noop(
             await dbOpenAsync({filename: db.filename})
         ), db);
-        // save db
         DB_DICT.set(db.dbName, db);
         return db;
     }));
@@ -1302,9 +1308,7 @@ async function init() {
             sql: `ATTACH DATABASE [${db.filename}] AS ${db.dbName};`
         });
     }));
-    // init UI_FILE_OPEN
     UI_FILE_OPEN.type = "file";
-    // init sqlEditor
     UI_EDITOR = CodeMirror.fromTextArea(document.querySelector(
         "#sqliteEditor1"
     ), {
@@ -1320,9 +1324,11 @@ async function init() {
         matchBrackets: true,
         mode: "text/x-mysql"
     });
-    // init event-handling
     [
+        ["#contentPanel1", "click", onTocToggle],
         ["#tocPanel1", "click", onDbAction],
+        ["#tocPanel1", "click", onTocToggle],
+        ["#tocToggle1", "click", onTocToggle],
         [".dbExec", "click", onDbExec],
         [".dbcrudExec", "click", onDbcrudExec],
         [".modalCancel", "click", onModalClose],
@@ -1331,6 +1337,10 @@ async function init() {
         ["body", "contextmenu", onContextmenu],
         [UI_FILE_OPEN, "change", onDbAction],
         [document, "keydown", onKeyDown],
+        [document, "touchcancel", onTouchLongpress],
+        [document, "touchend", onTouchLongpress],
+        [document, "touchmove", onTouchLongpress],
+        [document, "touchstart", onTouchLongpress],
         [window, "hashchange", uitableInitWithinView],
         [window, "resize", onResize]
     ].forEach(function ([
@@ -1346,33 +1356,63 @@ async function init() {
             elem.addEventListener(evt, listener);
         });
     });
-    // init event-handling - override window.onscroll
     window.onscroll = uitableInitWithinView;
     window.scroll({
         behavior: "smooth",
         top: 0
     });
-    // init location.search
-    await Promise.all(Array.from(
-        location.search.slice(1).split("&")
-    ).map(async function (elem) {
+    // animate timer before the url-param loads, whose charts animate [r16]
+    // REVIEWED r15: wakes every 16 ms even idle, battery only
+    setInterval(function () {
+        UI_ANIMATE_DATENOW = Date.now();
+        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function (
+            svgAnimateStep
+        ) {
+            return !svgAnimateStep();
+        });
+    }, 16);
+    // REVIEWED r20, r30: url and default demo loads skip DB_EXEC_CHAIN -
+    // a db opened during the fetch is replaced; rare
+    await Promise.all(location.search.slice(1).split("&").map(async function (
+        elem
+    ) {
         let [
-            key, val
+            key, ...valList
         ] = elem.split("=");
+        // raw value, not URLSearchParams - it turned "+" into space, and
+        // decoding first broke encoded "#" and "?" (fetch takes %xx as is)
+        let val = valList.join("=");
         switch (key) {
+        // REVIEWED r15: ?demo= before ?sqlDb= awaits the old DB_INIT
         case "demo":
             switch (val) {
             case "demoDefault":
-                modeDemo = undefined;
-                await demoDefault();
-                return;
             case "demoTradebot":
                 modeDemo = undefined;
-                await demoTradebot();
+                await DB_INIT;
+                // false if its db failed to load - init then renders anyway
+                isDemoDone = await (
+                    val === "demoDefault"
+                    ? demoDefault()
+                    : demoTradebot()
+                );
                 return;
             }
             return;
         case "jsScript":
+            // same-origin only [reviewed 2026-11-09] - every gh-pages project
+            // page shares the kaizhu256.github.io origin, so a crafted link
+            // to an outside script would get all of their storage
+            // malformed url, e.g. "//" - skip it, a throw would abort init
+            try {
+                key = new URL(val, location.href).origin;
+            } catch (ignore) {
+                key = "";
+            }
+            // file:// and data: both have origin "null" [r20]
+            if (key !== location.origin || key === "null") {
+                return;
+            }
             modeDemo = undefined;
             key = document.createElement("script");
             key.src = val;
@@ -1383,69 +1423,66 @@ async function init() {
             return;
         case "modeExpert":
             if (val === "1") {
-                document.head.appendChild(domDivCreate(`
-<style>
-#contentPanel1 th {
-    max-width: 48px;
-}
-</style>
-                `).firstElementChild);
+                document.head.insertAdjacentHTML(
+                    "beforeend",
+                    "<style>#contentPanel1 th {max-width: 48px;}</style>"
+                );
             }
             return;
         case "sqlDb":
             modeDemo = undefined;
-            DB_INIT = new Promise(async function (resolve) {
-                val = await fetch(val);
-                val = await val.arrayBuffer();
+            // uiTryCatch shows a failed fetch in the error panel, and never
+            // rejects, so init still runs the editor
+            DB_INIT = uiTryCatch(async function () {
+                let res;
+                res = await fetch(val);
+                if (!res.ok) {
+                    throw new Error(`sqlDb - fetch ${val} - ${res.status}`);
+                }
                 await dbFileLoadAsync({
                     db: DB_MAIN,
-                    dbData: val
+                    dbData: await res.arrayBuffer()
                 });
-                resolve();
             });
             return;
         case "sqlScript":
             modeDemo = undefined;
             await DB_INIT;
-            val = await fetch(val);
-            val = await val.text();
-            UI_EDITOR.setValue(val);
+            // uiTryCatch shows a failed fetch in the error panel, else a bad
+            // link loads the server 404 page into the editor as sql
+            isScriptFailed = await uiTryCatch(async function () {
+                let res;
+                res = await fetch(val);
+                if (!res.ok) {
+                    throw new Error(`sqlScript - fetch ${val} - ${res.status}`);
+                }
+                UI_EDITOR.setValue(await res.text());
+            }) === false;
             return;
         }
     }));
-    // init UI_ANIMATE_TIMER_INTERVAL
-    setInterval(function () {
-        UI_ANIMATE_DATENOW = Date.now();
-        UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function (
-            svgAnimateStep
-        ) {
-            return !svgAnimateStep();
-        });
-    }, 16);
+    // ?demo= already ran its script - do not run it again
+    if (isDemoDone) {
+        return;
+    }
     if (!modeDemo) {
-        await DB_INIT;
+        // failed load - skip the run, whose first step would fade out the
+        // load error after ~0.5s, leaving an empty app and no explanation
+        if (await DB_INIT === false || isScriptFailed) {
+            // render without onDbExec, which would fade the error - import
+            // needs DB_MAIN.dbtableList, which only uiRenderDb sets
+            await uiRenderDb();
+            return;
+        }
         await onDbExec({});
         return;
     }
-    // init demo
     if (
         await demoTradebot()
     ) {
         return;
     }
     await demoDefault();
-}
-
-function jsonHtmlSafe(obj) {
-// this function will make <obj> html-safe
-// https://stackoverflow.com/questions/7381974
-    return JSON.parse(JSON.stringify(obj).replace((
-        /&/gu
-    ), "&amp;").replace((
-        /</gu
-    ), "&lt;").replace((
-        />/gu
-    ), "&gt;"));
 }
 
 function onContextmenu(evt) {
@@ -1462,34 +1499,35 @@ function onContextmenu(evt) {
     } = evt;
     // contextmenu - left-click
     if (type !== "contextmenu") {
-        // contextmenu - hide
-        uiFadeOut(UI_CONTEXTMENU);
-        // contextmenu - action
-        if (target.closest(".contextmenuElem")) {
+        // action only while shown - a click mid-fade queued it twice [r16]
+        if (
+            UI_CONTEXTMENU.style.visibility === "visible" &&
+            target.closest(".contextmenuElem")
+        ) {
             onDbAction(evt);
         }
+        uiFadeOut(UI_CONTEXTMENU);
         return;
     }
-    // contextmenu - right-click
-    // contextmenu - enable default
+    // right-click - REVIEWED: modifier-click and shift+f10 keep the
+    // native menu, so crud has no keyboard path
     if (ctrlKey || metaKey || shiftKey) {
         return;
     }
-    // contextmenu - disable default
-    evt.preventDefault();
-    evt.stopPropagation();
-    // init target
     target = target.closest(`.tocElemA[data-dbtype], tr[data-dbtype="row"]`);
-    // contextmenu - hide
+    // keep the native menu off targets - editor paste needs it [r15]
     if (!target) {
         uiFadeOut(UI_CONTEXTMENU);
         return;
     }
-    // init UI_CONTEXTMENU_BATON
-    UI_CONTEXTMENU_BATON = DBTABLE_DICT.get(target.dataset.hashtag) || {};
+    evt.preventDefault();
+    // a copy - rowid on the shared baton retargeted a queued delete [r16]
+    UI_CONTEXTMENU_BATON = Object.assign(
+        {},
+        DBTABLE_DICT.get(target.dataset.hashtag),
+        {dict: DBTABLE_DICT, rowid: target.dataset.rowid}
+    );
     baton = UI_CONTEXTMENU_BATON;
-    baton.rowid = target.dataset.rowid;
-    // show / hide .contextmenuElem
     UI_CONTEXTMENU.querySelectorAll(
         ".contextmenuDivider, .contextmenuElem"
     ).forEach(function ({
@@ -1508,14 +1546,17 @@ function onContextmenu(evt) {
             break;
         case "dbrowDelete":
         case "dbrowUpdate":
-            if (target.dataset.rowid === undefined) {
+            // WITHOUT ROWID rows render rowid "null" - no row to act on
+            if (
+                target.dataset.rowid === undefined ||
+                target.dataset.rowid === "null"
+            ) {
                 return;
             }
             break;
         }
         style.display = "block";
     });
-    // contextmenu - show
     UI_CONTEXTMENU.children[0].innerHTML = (
         "crud operation for:<br>" +
         stringHtmlSafe(baton.dbtableFullname || "script editor")
@@ -1532,15 +1573,17 @@ function onContextmenu(evt) {
 }
 
 async function onDbAction(evt) {
-// this function will open db from file
+// this function will handle toc, contextmenu and file-open actions
     let action;
-    let baton = UI_CONTEXTMENU_BATON;
+    let baton = evt.baton || UI_CONTEXTMENU_BATON;
+    let colList;
     let columntypeList;
+    let crud;
     let data;
     let target;
     let title;
     target = evt.target.closest("[data-action]") || evt.target;
-    action = target.dataset.action;
+    action = evt.action || target.dataset.action;
     if (!action) {
         return;
     }
@@ -1567,188 +1610,145 @@ async function onDbAction(evt) {
             `${stringHtmlSafe(baton.dbtableFullname)}<br>` +
             `${stringHtmlSafe(title)}`
         );
-        UI_CRUD.querySelector("tbody").innerHTML = (
-            (`
-<tr class="crudInput-new_table" style="display: none;">
-    <td><span class="crudLabel">{{new_table}}</span></td>
+        data = baton.colList.slice(1).map(function (col) {
+            return `<option>${stringHtmlSafe(col)}</option>`;
+        }).join("");
+        // one row per placeholder, hidden until its action's entry shows it
+        UI_CRUD.querySelector("tbody").innerHTML = [
+            "new_table", "selected_column", "new_column"
+        ].map(function (name) {
+            return (`
+<tr class="crudInput-${name}" style="display: none;">
+    <td><span class="crudLabel">{{${name}}}</span></td>
     <td class="tdInput">
-    <input class="crudInput" type="text" value="new_table_1">
+            `) + (
+                name === "selected_column"
+                ? `<select class="crudInput">${data}</select>`
+                : `<input class="crudInput" type="text" value="${name}_1">`
+            ) + (`
     </td>
 </tr>
-<tr class="crudInput-selected_column" style="display: none;">
-    <td><span class="crudLabel">{{selected_column}}</span></td>
-    <td class="tdInput">
-    <select class="crudInput">
-            `) +
-            baton.colList.slice(1).map(function (col) {
-                return (
-                    `<option>${stringHtmlSafe(col)}</option>`
-                );
-            }).join("") +
-            (`
-    </select>
-    </td>
-</tr>
-<tr class="crudInput-new_column" style="display: none;">
-    <td><span class="crudLabel">{{new_column}}</span></td>
-    <td class="tdInput">
-    <input class="crudInput" type="text" value="new_column_1">
-    </td>
-</tr>
-            `)
-        );
-        UI_CRUD.querySelector("textarea").value = String(
-            `
-
--- column - add
+            `);
+        }).join("");
+        // every template is built, then one picked - nothing may throw [r26];
+        // keyed by action, not label text: [sql, inputs shown]
+        crud = {
+            dbcolumnAdd: [`-- column - add
 ALTER TABLE
     ${baton.dbtableFullname}
 ADD
-    "{{new_column}}" TEXT NOT NULL DEFAULT '';
-
--- column - drop
+    "{{new_column}}" TEXT NOT NULL DEFAULT '';`, ".crudInput-new_column"],
+            dbcolumnDrop: [`-- column - drop
 ALTER TABLE
     ${baton.dbtableFullname}
 DROP COLUMN
-    "{{selected_column}}";
-
--- column - rename
+    "{{selected_column}}";`, ".crudInput-selected_column"],
+            dbcolumnRename: [`-- column - rename
 ALTER TABLE
     ${baton.dbtableFullname}
 RENAME
     "{{selected_column}}"
 TO
-    "{{new_column}}";
-
--- row - insert
-INSERT INTO ${baton.dbtableFullname} (` +
-            JSON.stringify(baton.colList.slice(1), undefined, 4).slice(1, -1) +
-            `) VALUES (\n` +
-            `${"    NULL,\n".repeat(baton.colList.length - 2)}    NULL` +
-            `
-);
-
--- row - update
+    "{{new_column}}";`, ".crudInput-new_column, .crudInput-selected_column"],
+            dbrowInsert: [(
+                `-- row - insert
+INSERT INTO ${baton.dbtableFullname} (\n    ` +
+                baton.colListWritable.slice(1).map(sqlIdQuote).join(",\n    ") +
+                "\n) VALUES (\n" +
+                "    NULL,\n".repeat(
+                    Math.max(0, baton.colListWritable.length - 2)
+                ) +
+                "    NULL\n);"
+            ), ""],
+            dbrowUpdate: [(
+                `-- row - update
 UPDATE
     ${baton.dbtableFullname}
 SET
 ` +
-            baton.colList.slice(1).map(function (col) {
-                return `    "${col}" = NULL`;
-            }).join(",\n") +
-            `
+                baton.colListWritable.slice(1).map(function (col) {
+                    return `    ${sqlIdQuote(col)} = NULL`;
+                }).join(",\n") +
+                `
 WHERE
-    rowid = ${baton.rowid};
-
--- table - rename
+    rowid IN (${String(baton.rowid).replace((/[^0-9\-]/g), "")});`
+            ), ""],
+            dbtableRename: [`-- table - rename
 ALTER TABLE
     ${baton.dbtableFullname}
 RENAME TO
-    "{{new_table}}";
-            `
-        ).trim().split("\n\n").filter(function (sql) {
-            return sql.indexOf(title) === 3;
-        })[0] + "\n";
-        switch (action) {
-        case "dbcolumnAdd":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_column"
-            ).forEach(function (elem) {
+    "{{new_table}}";`, ".crudInput-new_table"]
+        };
+        crud = crud[action];
+        UI_CRUD.querySelector("textarea").value = crud[0] + "\n";
+        if (crud[1]) {
+            UI_CRUD.querySelectorAll(crud[1]).forEach(function (elem) {
                 elem.style.display = "table-row";
             });
-            break;
-        case "dbcolumnDrop":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-selected_column"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
-        case "dbcolumnRename":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_column, .crudInput-selected_column"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
-        case "dbtableRename":
-            UI_CRUD.querySelectorAll(
-                ".crudInput-new_table"
-            ).forEach(function (elem) {
-                elem.style.display = "table-row";
-            });
-            break;
         }
         uiFadeIn(UI_CRUD);
-        UI_CRUD.style.zIndex = 1;
-        // ergonomy - auto-focus first input
-        Array.from(UI_CRUD.querySelectorAll(
-            ".modalContent input"
-        )).every(function (elem) {
-            elem.focus();
-        });
+        // new modal-open - a crud run queued from an earlier one must skip
+        UI_CRUD_BATON = baton;
         return;
     }
     // slow actions that require loading
     if (!evt.modeTryCatch) {
         evt.modeTryCatch = true;
-        await uiTryCatch(onDbAction, evt);
+        evt.preventDefault();
+        // queue like onDbExec, keeping this click's baton - concurrent renders
+        // cross-wired batons [r15]; REVIEWED r16: 3 queue sites, no helper
+        evt.baton = baton;
+        // and its action and file - UI_FILE_OPEN is re-read at dequeue [r17]
+        evt.action = action;
+        evt.file = target.files?.[0];
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            return uiTryCatch(onDbAction, evt);
+        });
+        await DB_EXEC_CHAIN;
         return;
     }
-    evt.preventDefault();
-    evt.stopPropagation();
+    if (target === UI_FILE_OPEN && !evt.file) {
+        return;
+    }
+    // a menu action queued across a re-render hits a recreated table [r29]
+    if (
+        UI_CONTEXTMENU.contains(target) &&
+        baton.hashtag &&
+        baton.dict !== DBTABLE_DICT
+    ) {
+        throw new Error("tables were re-rendered - right-click again");
+    }
     switch (target === UI_FILE_OPEN && action) {
     case "dbAttach":
-        if (target.files.length === 0) {
-            return;
-        }
-        await dbFileAttachAsync({
-            db: DB_MAIN,
-            dbData: (
-                await target.files[0].arrayBuffer()
-            )
-        });
-        await uiRenderDb();
-        return;
     case "dbOpen":
-        if (target.files.length === 0) {
-            return;
-        }
-        await dbFileLoadAsync({
+        await (
+            action === "dbOpen"
+            ? dbFileLoadAsync
+            : dbFileAttachAsync
+        )({
             db: DB_MAIN,
-            dbData: (
-                await target.files[0].arrayBuffer()
-            )
+            dbData: await evt.file.arrayBuffer()
         });
         await uiRenderDb();
         return;
     case "dbscriptOpen":
         UI_EDITOR.setValue(
-            await target.files[0].text()
+            await evt.file.text()
         );
-        await uiRenderDb();
         return;
     case "dbtableImportCsv":
     case "dbtableImportJson":
     case "dbtableImportTsv":
-        if (target.files.length === 0) {
-            return;
-        }
         await dbTableImportAsync({
             db: DB_MAIN,
-            mode: (
-                action === "dbtableImportCsv"
-                ? "csv"
-                : action === "dbtableImportTsv"
-                ? "tsv"
-                : "json"
-            ),
+            mode: action.replace("dbtableImport", "").toLowerCase(),
             tableName: dbNameNext(
-                "[__file{{ii}}]",
+                // keys are sqlIdQuote'd, so match "..." not [...]
+                "\"__file{{ii}}\"",
                 new Set(DB_MAIN.dbtableList.keys())
             ).slice(1, -1),
             textData: (
-                await target.files[0].text()
+                await evt.file.text()
             )
         });
         await uiRenderDb();
@@ -1766,29 +1766,27 @@ RENAME TO
             db: DB_MAIN,
             sql: `DETACH ${baton.dbName};`
         });
-        await dbCloseAsync(baton.db);
+        // REVIEWED r16: uiRenderDb closes it again, a no-op
+        await dbCloseWhenIdle(baton.db);
         await uiRenderDb();
         return;
-    case "dbExec":
-        await onDbExec({});
-        return;
     case "dbExport":
-        data = await dbFileSaveAsync({db: baton.db});
-        fileSave({
-            buf: data,
-            filename: `sqlite_database_${baton.dbName}.sqlite`
-        });
-        return;
     case "dbExportMain":
-        data = await dbFileSaveAsync({db: DB_MAIN});
+        data = (
+            action === "dbExportMain"
+            ? DB_MAIN
+            : baton.db
+        );
         fileSave({
-            buf: data,
-            filename: `sqlite_database_${DB_MAIN.dbName}.sqlite`
+            buf: await dbFileSaveAsync({db: data}),
+            filename: `sqlite_database_${data.dbName}.sqlite`
         });
         return;
     case "dbRefresh":
         await uiRenderDb();
         return;
+    // qualified names on DB_MAIN - unqualified hit a TEMP shadow [r24];
+    // BigInt - a rowid past 2^53 arrives as an exact string [r25]
     case "dbrowDelete":
         if (!window.confirm(
             `are you sure you want to delete row with rowid = ${baton.rowid}` +
@@ -1797,9 +1795,10 @@ RENAME TO
             return;
         }
         await dbExecAsync({
-            db: baton.db,
+            db: DB_MAIN,
             sql: (`
-DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
+DELETE FROM ${baton.dbtableFullname}
+    WHERE rowid IN (${BigInt(baton.rowid)});
             `)
         });
         await uiRenderDb();
@@ -1817,21 +1816,21 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             return;
         }
         await dbExecAsync({
-            db: baton.db,
-            sql: `DROP TABLE ${baton.dbtableName};`
+            db: DB_MAIN,
+            sql: `DROP TABLE ${baton.dbtableFullname};`
         });
         await uiRenderDb();
         return;
     case "dbtableSaveCsv":
         data = await dbExecAsync({
-            db: baton.db,
+            db: DB_MAIN,
             responseType: "list",
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableFullname};`
         });
         data = data[0] || [];
-        data.shift();
+        // header from the query - a re-created table changed columns [r22]
         data = csvFromListofList({
-            colList: baton.colList,
+            colList: data.shift() || baton.colList,
             rowList: data
         });
         fileSave({
@@ -1839,10 +1838,11 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             filename: `sqlite_table_${baton.dbtableName}.csv`
         });
         return;
+    // REVIEWED r24: csv and sql share a fetch - left
     case "dbtableSaveJson":
         data = await dbExecAsync({
-            db: baton.db,
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
+            db: DB_MAIN,
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableFullname};`
         });
         fileSave({
             buf: JSON.stringify(data[0] || []),
@@ -1850,25 +1850,31 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
         });
         return;
     case "dbtableSaveSql":
+        data = await dbExecAsync({
+            db: DB_MAIN,
+            responseType: "list",
+            sql: `SELECT ${baton.sqlRowid}, * FROM ${baton.dbtableFullname};`
+        });
+        data = data[0] || [];
+        // header from the query, as for csv [r22, r23]
+        colList = data.shift() || baton.colList;
         columntypeList = await dbExecAsync({
-            db: baton.db,
+            db: DB_MAIN,
             responseType: "list",
             sql: (
                 `SELECT ` +
-                baton.colList.map(function (col) {
-                    return `COLUMNTYPE(${col}) AS ${col}`;
+                colList.map(function (col, ii) {
+                    // col 0 is rowid - NULL for a WITHOUT ROWID table
+                    return "COLUMNTYPE(" + (
+                        ii === 0
+                        ? baton.sqlRowid.replace(" AS rowid", "")
+                        : sqlIdQuote(col)
+                    ) + ")";
                 }).join(",") +
-                ` FROM ${baton.dbtableName};`
+                ` FROM ${baton.dbtableFullname};`
             )
         });
         columntypeList = columntypeList[0][1];
-        data = await dbExecAsync({
-            db: baton.db,
-            responseType: "list",
-            sql: `SELECT rowid, * FROM ${baton.dbtableName};`
-        });
-        data = data[0] || [];
-        data.shift();
         data = (
             String(`
 -- DROP TABLE __sqlite_table_01;
@@ -1878,16 +1884,27 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
 -- EXEC sp_rename '__sqlite_table_01', '__sqlite_table_02';
             `).trim() +
             `\nCREATE TABLE __sqlite_table_01 (\n` +
-            baton.colList.map(function (col, ii) {
-                col = col.replace((/\W/g), "_");
-                col = col.replace((/^\d/), "_$&");
-                // #define SQLITE_INTEGER  1
-                // #define SQLITE_COLUMNTYPE_INTEGER_BIG   11
-                // #define SQLITE_FLOAT    2
-                // #define SQLITE_TEXT     3
-                // #define SQLITE_COLUMNTYPE_TEXT_BIG      13
-                // #define SQLITE_BLOB     4
-                // #define SQLITE_NULL     5
+            // REVIEWED: reserved words stay bare - quoting needs a dialect
+            colList.map(function (col) {
+                return (
+                    col.replace((/\W/g), "_").replace((/^\d/), "_$&") || "_"
+                );
+            }).reduce(function (list, col) {
+                // dedupe against every name produced so far - "名前" and
+                // "住所" both became "__", a csv round-trip repeats "rowid",
+                // and a suffix can itself collide, e.g. a, a, a_2
+                let ii = 1;
+                let name = col;
+                // case-insensitive, as sql names are: Total_Count, total_count
+                while (list.some(function (name2) {
+                    return name2.toLowerCase() === name.toLowerCase();
+                })) {
+                    ii += 1;
+                    name = col + "_" + ii;
+                }
+                list.push(name);
+                return list;
+            }, []).map(function (col, ii) {
                 switch (columntypeList[ii]) {
                 case 2: // SQLITE_FLOAT
                     return `    ${col} FLOAT(53)`;
@@ -1905,17 +1922,15 @@ DELETE FROM ${baton.dbtableName} WHERE rowid = ${baton.rowid};
             data.map(function (rowList) {
                 return (
                     `INSERT INTO __sqlite_table_01 VALUES (` +
-                    rowList.map(function (val, ii) {
-                        switch (val !== null && columntypeList[ii]) {
-                        case 1: // SQLITE_INTEGER
-                        case 2: // SQLITE_FLOAT
-                        case 11: // SQLITE_COLUMNTYPE_INTEGER_BIG
+                    rowList.map(function (val) {
+                        // type by value, not by COLUMNTYPE, a column aggregate:
+                        // a mixed text/integer column crashed .replace, and
+                        // one blob exported every text value as NULL
+                        switch (typeof val) {
+                        case "number":
                             return val;
-                        case 3: // SQLITE_TEXT
-                        case 13: // SQLITE_COLUMNTYPE_TEXT_BIG
+                        case "string":
                             return "'" + val.replace((/'/g), "''") + "'";
-                        // case 4: // SQLITE_BLOB
-                        // case 5: // SQLITE_NULL
                         default:
                             return "NULL";
                         }
@@ -1942,134 +1957,204 @@ async function onDbExec({
 // 3. ui-render sql-queries to html
     let dbqueryList;
     if (!modeTryCatch) {
-        await uiTryCatch(onDbExec, {
-            modeTryCatch: true
+        // its baton may name a result table this run re-creates [r15]
+        uiFadeOut(UI_CONTEXTMENU);
+        // queue runs, e.g. double ctrl+enter or a crud refresh during a
+        // long run, else they race to re-create result_00 and one fails
+        // "table already exists"; uiTryCatch never rejects, so chain holds
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            return uiTryCatch(onDbExec, {
+                modeTryCatch: true
+            });
         });
+        await DB_EXEC_CHAIN;
         return;
     }
-    // close error modal
     uiFadeOut(document.querySelector("#errorPanel1"));
-    // DBTABLE_DICT - cleanup old uitable
-    DBTABLE_DICT.forEach(function ({
-        isDbchart,
-        isDbquery
-    }, key) {
-        if (isDbchart || isDbquery) {
-            DBTABLE_DICT.delete(key);
-        }
-    });
-    await Promise.all([
-        DB_CHART, DB_QUERY
-    ].map(async function (db) {
-        let sqlCleanup = noop(
+    // 3. ui-render in finally - also after a failed script or save, as the
+    // chart and query tables are gone
+    try {
+        // clear panels before the drop, keeping their height - a scroll mid-run
+        // queried dropped tables; height kept, else scroll clamps [r19-r31]
+        [
+            "#dbchartList1", "#dbqueryList1", "#dbtableList1"
+        ].forEach(function (selector) {
+            const elem = document.querySelector(selector);
+            elem.style.minHeight = elem.offsetHeight + "px";
+            elem.innerHTML = "";
+        });
+        await Promise.all([
+            DB_CHART, DB_QUERY
+        ].map(async function (db) {
+            let sqlCleanup = noop(
+                await dbExecAsync({
+                    db,
+                    sql: (`
+SELECT
+            group_concat(
+                'DROP ' || UPPER(type) || ' IF EXISTS "' ||
+                REPLACE(name, '"', '""') || '";',
+                ''
+            ) AS sql
+        FROM sqlite_master
+        WHERE
+            -- views too, else CREATE VIEW query.v failed every later run [r15]
+            type IN ('table', 'view')
+            -- sqlite_sequence etc. may not be dropped - one AUTOINCREMENT
+            -- table made every later execute fail; IF EXISTS covers fts shadows
+            AND name NOT LIKE 'sqlite!_%' ESCAPE '!';
+                    `)
+                })
+            )[0][0].sql || "";
             await dbExecAsync({
                 db,
-                sql: (`
-BEGIN TRANSACTION;
-SELECT
-        group_concat('DROP TABLE [' || name || '];', '') AS sql
-    FROM sqlite_master
-    WHERE
-        type = 'table';
-END TRANSACTION;
-                `)
-            })
-        )[0][0].sql || "";
-        await dbExecAsync({
-            db,
-            sql: sqlCleanup
+                sql: sqlCleanup
+            });
+        }));
+        // REVIEWED r30: ints past 2^53 land TEXT in result_NN
+        // 1. exec sql-command in webworker
+        dbqueryList = await dbExecAsync({
+            db: DB_MAIN,
+            responseType: "list",
+            sql: UI_EDITOR.getValue()
         });
-    }));
-    // 1. exec sql-command in webworker
-    dbqueryList = await dbExecAsync({
-        db: DB_MAIN,
-        responseType: "list",
-        sql: UI_EDITOR.getValue()
-    });
-    // 2. save query-result
-    await Promise.all(dbqueryList.map(async function (rowList, ii) {
-        let colList = rowList.shift().map(function (col, ii) {
-            // bugfix - escape special-character in col
-            return `value->>${ii} AS "${col.replace((/"/g), "\"\"")}"`;
-        }).join(",");
-        await dbExecAsync({
-            bindList: {
-                tmp1: JSON.stringify(rowList)
-            },
-            db: DB_QUERY,
-            sql: (`
-BEGIN TRANSACTION;
+        // 2. save query-result
+        await Promise.all(dbqueryList.map(async function (rowList, ii) {
+            let colList = rowList.shift().map(function (col, ii) {
+                // bugfix - escape special-character in col
+                return `value->>${ii} AS ${sqlIdQuote(col)}`;
+            }).join(",");
+            await dbExecAsync({
+                bindList: {
+                    tmp1: JSON.stringify(rowList)
+                },
+                db: DB_QUERY,
+                sql: (`
 CREATE TABLE result_${String(ii).padStart(2, "0")} AS
     SELECT
         ${colList}
     FROM JSON_EACH($tmp1);
-END TRANSACTION;
-            `)
-        });
-    }));
-    // 3. ui-render sql-queries to html
-    await uiRenderDb();
+                `)
+            });
+        }));
+    } finally {
+        // failed mid-BEGIN - roll back, else its write lock failed every later
+        // run [r20]; REVIEWED r22: also drops a deliberate open transaction
+        if (dbqueryList === undefined) {
+            await dbExecAsync({
+                db: DB_MAIN,
+                sql: "ROLLBACK;"
+            }).catch(noop);
+        }
+        await uiRenderDb();
+    }
 }
 
 async function onDbcrudExec({
     modeTryCatch
 }) {
 // this function will exec crud operation
+    const crudBaton = UI_CRUD_BATON;
     let sql;
     if (!modeTryCatch) {
-        await uiTryCatch(onDbcrudExec, {
-            modeTryCatch: true
+        // queue like onDbExec; a double ctrl+enter or ok ran the crud sql
+        // twice, e.g. 2 rows inserted - a run skips once its modal closed,
+        // or was closed and reopened, else it ran unconfirmed sql
+        DB_EXEC_CHAIN = DB_EXEC_CHAIN.then(function () {
+            if (
+                UI_CRUD.style.visibility !== "visible" ||
+                UI_CRUD_BATON !== crudBaton
+            ) {
+                return;
+            }
+            return uiTryCatch(onDbcrudExec, {
+                modeTryCatch: true
+            });
         });
+        await DB_EXEC_CHAIN;
         return;
     }
+    // its table was re-rendered since the right-click [r29, r30]
+    if (crudBaton.dict !== DBTABLE_DICT) {
+        throw new Error("tables were re-rendered - right-click again");
+    }
+    // only "{{name}}", always quoted - the bare form ran sql [r23];
+    // REVIEWED r25: a name that IS a placeholder hits the wrong object
     sql = document.querySelector("#crudPanel1 textarea").value.replace((
-        /\{\{\w+?\}\}/g
-    ), function (match0) {
+        /"\{\{(\w+?)\}\}"/g
+    ), function (match0, name) {
         let val = document.querySelector(
-            `#crudPanel1 .crudInput-${match0.slice(2, -2)} .crudInput`
+            `#crudPanel1 .crudInput-${name} .crudInput`
         );
         if (!val) {
             return match0;
         }
-        if (val.tagName === "SELECT") {
-            return val.selectedOptions[0].textContent;
-        }
-        return val.value.trim();
+        val = (
+            val.tagName === "SELECT"
+            ? val.selectedOptions[0]?.textContent ?? ""
+            : val.value.trim()
+        );
+        return sqlIdQuote(val);
     });
     await dbExecAsync({
         db: DB_MAIN,
         sql
     });
     await uiRenderDb();
+    // a modal opened while this ran is not ours to close
+    if (UI_CRUD_BATON !== crudBaton) {
+        return;
+    }
     uiFadeOut(UI_CRUD);
-    UI_CRUD.style.zIndex = -1;
 }
 
 function onKeyDown(evt) {
-// this function will handle event keyup
+// this function will handle event keydown
+    // lower-case - caps lock gives "S", and the browser's own save opened
+    let key = String(evt.key).toLowerCase();
+    // non-latin layout, e.g. russian "ы" on the s key - use the key position,
+    // else the browser's own save or open runs; evt.key first, for dvorak
+    if (!(/^[a-z]$/).test(key) && (/^Key[A-Z]$/).test(evt.code)) {
+        key = evt.code.slice(3).toLowerCase();
+    }
     switch (evt.key) {
     case "Escape":
-        // close error-modal
         uiFadeOut(document.querySelector("#errorPanel1"));
-        // close contextmenu
         uiFadeOut(UI_CONTEXTMENU);
+        // close crud-modal [r17]
+        uiFadeOut(UI_CRUD);
         return;
     }
-    switch ((evt.ctrlKey || evt.metaKey) && evt.key) {
+    // held key - auto-repeat queued ~15 runs or downloads a second [r19]
+    if (evt.repeat) {
+        return;
+    }
+    // shift+letter is another shortcut, e.g. firefox ctrl+shift+s
+    // not altKey - windows AltGr is ctrl+alt [r18]
+    switch (
+        (evt.ctrlKey || evt.metaKey) &&
+        !evt.altKey &&
+        !(evt.shiftKey && key.length === 1) &&
+        key
+    ) {
     // database - execute
-    case "Enter":
+    // lower-case, as key is lowered above - "Enter" never matched
+    case "enter":
+        // crud modal open - run its sql, not the main editor script
+        if (UI_CRUD.style.visibility === "visible") {
+            onDbcrudExec({});
+            return;
+        }
         onDbExec({});
         return;
     // database - open
     case "o":
         evt.preventDefault();
-        evt.stopPropagation();
         document.querySelector("button[data-action='dbOpen']").click();
         return;
     // database - save
     case "s":
         evt.preventDefault();
-        evt.stopPropagation();
         document.querySelector("button[data-action='dbExportMain']").click();
         return;
     }
@@ -2084,21 +2169,100 @@ function onModalClose({
 
 function onResize() {
 // this function will handle resize-event
-    document.querySelectorAll(
-        "#dbchartList1 .contentElem"
-    ).forEach(function (elem) {
-        elem.dataset.init = "0";
-    });
+    // rebuild charts on a width change only - a height-only resize, e.g. ios
+    // url-bar collapsing on scroll, would rebuild every chart and lose zoom
+    if (window.innerWidth !== UI_RESIZE_WIDTH) {
+        UI_RESIZE_WIDTH = window.innerWidth;
+        for (const elem of document.querySelectorAll(
+            "#dbchartList1 .contentElem"
+        )) {
+            // REVIEWED r15: a failed chart re-shows its error on resize
+            elem.dataset.init = "0";
+        }
+    }
     uitableInitWithinView({});
+}
+
+function onTocToggle(evt) {
+// this function will open or close #tocPanel1 drawer on narrow screen:
+// #tocToggle1 toggles it, a toc-link or #contentPanel1 closes it
+// REVIEWED r17: toc buttons leave it open, by design
+    let isOpen = false;
+    if (evt.currentTarget.id === "tocToggle1") {
+        isOpen = !document.body.classList.contains("tocOpen");
+    } else if (
+        evt.currentTarget.id === "tocPanel1" && !evt.target.closest("a")
+    ) {
+        return;
+    }
+    document.body.classList.toggle("tocOpen", isOpen);
+    document.getElementById("tocToggle1").setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+}
+
+function onTouchLongpress(evt) {
+// this function will open contextmenu on touch long-press,
+// since ios safari never fires contextmenu-event
+    const touch = evt.touches[0];
+    // ignore wobble under 10px - ios fires touchmove for a held finger
+    if (evt.type === "touchmove" && touch && Math.hypot(
+        touch.clientX - UI_LONGPRESS_XY[0],
+        touch.clientY - UI_LONGPRESS_XY[1]
+    ) < 10) {
+        return;
+    }
+    // any other touch event ends a pending long-press
+    clearTimeout(UI_LONGPRESS_TIMER);
+    switch (evt.type) {
+    case "touchend":
+        // swallow click after long-press, else it hides the contextmenu
+        if (UI_LONGPRESS_FIRED) {
+            evt.preventDefault();
+        }
+        return;
+    case "touchstart":
+        UI_LONGPRESS_FIRED = false;
+        // arm only on contextmenu targets, else a long-press on a button or
+        // the editor would swallow its tap
+        if (
+            evt.touches.length !== 1 ||
+            !evt.target.closest(`.tocElemA[data-dbtype], tr[data-dbtype="row"]`)
+        ) {
+            return;
+        }
+        UI_LONGPRESS_XY = [
+            touch.clientX, touch.clientY
+        ];
+        UI_LONGPRESS_TIMER = setTimeout(function () {
+            // re-rendered meanwhile - its hashtag now names another table
+            if (!evt.target.isConnected) {
+                return;
+            }
+            UI_LONGPRESS_FIRED = true;
+            onContextmenu({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                preventDefault: noop,
+                target: evt.target,
+                type: "contextmenu"
+            });
+        }, 500);
+        return;
+    }
+}
+
+function sqlIdQuote(name) {
+// this function will quote sql-identifier <name>, so names with space, "]"
+// or a keyword do not break or inject into generated sql
+    return "\"" + String(name).replace((/"/g), "\"\"") + "\"";
 }
 
 function stringHtmlSafe(str) {
 // this function will make <str> html-safe
 // https://stackoverflow.com/questions/7381974
-    if (typeof str !== "string") {
-        str = String(str);
-    }
-    return str.replace((
+    return String(str ?? "").replace((
         /&/gu
     ), "&amp;").replace((
         /</gu
@@ -2112,7 +2276,7 @@ function stringHtmlSafe(str) {
 function svgAnimate(elem, attrDict, mode) {
 // this function will animate <elem> with given <fxattr> in <attrDict>
     let {
-        childNodes,
+        children,
         fx_rotate,
         fx_seriesShape,
         nodeName
@@ -2122,12 +2286,11 @@ function svgAnimate(elem, attrDict, mode) {
     let {
         translateY
     } = attrDict;
-    // optimization - skip animation if hidden
+    // skip animation if hidden - REVIEWED r15: no caller passes hidden
     if (attrDict.visibility === "hidden") {
         svgAttrSet(elem, attrDict);
         return;
     }
-    // init fxstateDict
     Object.entries(attrDict).forEach(function ([
         fxattr, fxend
     ]) {
@@ -2135,23 +2298,7 @@ function svgAnimate(elem, attrDict, mode) {
         let fxattr2 = "fx_" + fxattr;
         let fxbeg;
         let fxstate;
-        // crispify height, width, x, y
-        switch (fxattr) {
-        case "height":
-        case "width":
-        case "x":
-        case "y":
-            fxend = Math.round(fxend);
-            switch (fxattr) {
-            case "x":
-                fxend += CRISPX;
-                break;
-            case "y":
-                fxend += CRISPY;
-                break;
-            }
-            break;
-        }
+        fxend = svgCrisp(fxattr, fxend);
         fxstate = {
             fxend
         };
@@ -2159,8 +2306,7 @@ function svgAnimate(elem, attrDict, mode) {
         case "d":
             dpathList = fxend.split(" ");
             fxbeg = noop(elem.getAttribute(fxattr) ?? "").split(" ");
-            if (!(fxbeg.length > 0 && fxbeg.length === dpathList.length)) {
-                elem[fxattr2] = fxend;
+            if (fxbeg.length !== dpathList.length) {
                 elem.setAttribute(fxattr, fxend);
                 return;
             }
@@ -2192,6 +2338,10 @@ function svgAnimate(elem, attrDict, mode) {
     function svgAnimateStep() {
         let fxprg = 1;
         let isDone = datebeg + UI_ANIMATE_DURATION <= UI_ANIMATE_DATENOW;
+        // superseded by a newer animation of this elem - drop from list
+        if (svgAnimateStep.isCancelled) {
+            return true;
+        }
         // animate - linear fxnow, fxprg
         if (!isDone) {
             fxprg = (
@@ -2215,9 +2365,6 @@ function svgAnimate(elem, attrDict, mode) {
             switch (fxattr) {
             // Perform the next step of the animation on "d"
             case "d":
-                if (!dpathList) {
-                    return;
-                }
                 // interpolate fxnow from dpathList, fxbeg
                 if (!isDone) {
                     fxnow = fxbeg.map(function (char, ii) {
@@ -2229,8 +2376,6 @@ function svgAnimate(elem, attrDict, mode) {
                         return num + fxprg * (dpathList[ii] - num);
                     }).join(" ");
                 }
-                // cache attribute
-                elem[fxattr2] = fxnow;
                 elem.setAttribute("d", fxnow);
                 return;
             case "height":
@@ -2242,24 +2387,14 @@ function svgAnimate(elem, attrDict, mode) {
                 if (!isDone) {
                     fxnow = fxbeg + fxprg * (fxend - fxbeg);
                 }
-                // cache attribute
                 elem[fxattr2] = fxnow;
-                if (fx_seriesShape || translateY) {
+                if (fx_seriesShape || translateY !== undefined) {
                     return;
                 }
-                // update child tspans x values
                 if (fxattr === "x" && nodeName === "text") {
-                    childNodes.forEach(function (child) {
-                        // if the x values are equal, the tspan represents a
-                        // linebreak
+                    Array.from(children).forEach(function (child) {
                         child.setAttribute("x", fxnow);
                     });
-                    if (fx_rotate) {
-                        elem.setAttribute(
-                            "transform",
-                            `rotate(-15 ${fxnow} ${elem.fx_y || 0})`
-                        );
-                    }
                 }
                 elem.setAttribute(fxattr, fxnow);
                 return;
@@ -2274,25 +2409,33 @@ function svgAnimate(elem, attrDict, mode) {
                 elem.fx_height
             ));
         }
-        if (translateY) {
+        if (translateY !== undefined) {
             elem.setAttribute(
                 "transform",
                 `translate(${elem.fx_translateX},${elem.fx_translateY})`
             );
         }
+        // after the loop - y follows x, so the pivot lagged a frame [r18]
+        if (fx_rotate && elem.fx_x !== undefined) {
+            elem.setAttribute(
+                "transform",
+                `rotate(-15 ${elem.fx_x} ${elem.fx_y || 0})`
+            );
+        }
         return isDone;
     }
-    // animate - stop existing animation for given elem
-    svgAnimateStep.elem2 = elem;
-    UI_ANIMATE_LIST = UI_ANIMATE_LIST.filter(function ({
-        elem2
-    }) {
-        return elem2 !== elem;
-    });
-    // animate - svgAnimateStep()
+    svgAnimateCancel(elem);
+    elem.fx_step = svgAnimateStep;
     svgAnimateStep();
-    // animate - setInterval()
     UI_ANIMATE_LIST.push(svgAnimateStep);
+}
+
+function svgAnimateCancel(elem) {
+// this function will cancel <elem>'s running animation, by flag - a
+// UI_ANIMATE_LIST.filter per call made each redraw O(n^2) in markers
+    if (elem.fx_step) {
+        elem.fx_step.isCancelled = true;
+    }
 }
 
 function svgAttrSet(elem, attrDict = {}) {
@@ -2304,44 +2447,35 @@ function svgAttrSet(elem, attrDict = {}) {
         key, val
     ]) {
         if (val !== null && val !== undefined) {
-            elem.setAttribute(key, val);
+            // crispify height, width, x, y; other keys pass through [r28]
             switch (key) {
-            case "clip-path":
-            case "d":
-            case "fill":
-            case "stroke":
-            case "stroke-linecap":
-            case "stroke-linejoin":
-            case "stroke-width":
-            case "text-anchor":
-            case "transform":
-            case "visibility":
-                elem.setAttribute(key, val);
-                return;
-            // crispify height, width, x, y
             case "height":
             case "width":
             case "x":
             case "y":
-                val = Math.round(val);
-                switch (key) {
-                case "x":
-                    val += CRISPX;
-                    break;
-                case "y":
-                    val += CRISPY;
-                    break;
-                }
-                elem.setAttribute(key, val);
-                // cache attribute
+                val = svgCrisp(key, val);
                 elem["fx_" + key] = val;
-                return;
-            default:
-                throw new Error(`svgAttrSet - invalid attribute - ${key}`);
+                break;
             }
+            elem.setAttribute(key, val);
         }
     });
     return elem;
+}
+
+function svgCrisp(key, val) {
+// this function will snap height, width, x, y of <val> to whole pixels, x and
+// y offset by CRISPX, CRISPY, so 1px strokes stay sharp; other keys unchanged
+    switch (key) {
+    case "height":
+    case "width":
+        return Math.round(val);
+    case "x":
+        return Math.round(val) + CRISPX;
+    case "y":
+        return Math.round(val) + CRISPY;
+    }
+    return val;
 }
 
 function svgShapeDraw(seriesShape, x, y, w, h) {
@@ -2393,6 +2527,13 @@ function svgShapeDraw(seriesShape, x, y, w, h) {
     }
 }
 
+function uiErrorShow(err) {
+// this function will display <err> to user
+    console.error(err);
+    document.querySelector("#errorPanel1 .modalContent").textContent = err;
+    uiFadeIn(document.querySelector("#errorPanel1"));
+}
+
 function uiFadeIn(elem) {
 // this function will fade-in <elem>
     elem.style.opacity = (
@@ -2412,14 +2553,15 @@ function uiFadeOut(elem) {
 async function uiRenderDb() {
 // this function will render #dbtableList1
     let dbList;
+    // built aside, swapped in with the DOM - a right-click mid-render must
+    // still match the old DOM [r16]
+    let dbtableDict = new Map();
     let dbtableIi = 0;
+    let dbtableListAll;
     let html = "";
     let windowScrollY;
-    // reset location.hash
     location.hash = "0";
-    // save window.scrollY
     windowScrollY = window.scrollY;
-    // DB_DICT - sync
     dbList = await dbExecAsync({
         db: DB_MAIN,
         sql: "PRAGMA database_list;"
@@ -2429,26 +2571,22 @@ async function uiRenderDb() {
     }) {
         return `${name}`;
     }));
-    DB_DICT.forEach(function ({
-        dbName,
-        isDbchart,
-        isDbquery
-    }) {
+    for (const db of DB_DICT.values()) {
+        const {
+            dbName,
+            isDbchart,
+            isDbquery
+        } = db;
+        // db detached by sql - forget and close it, else handle leaks in wasm
         if (!isDbchart && !isDbquery && !dbList.has(dbName)) {
             DB_DICT.delete(dbName);
+            // REVIEWED r21: unawaited - a rejected close only logs
+            dbCloseWhenIdle(db);
         }
-    });
-    // DBTABLE_DICT - cleanup old uitable
-    DBTABLE_DICT.forEach(function ({
-        isDbchart,
-        isDbquery
-    }, key) {
-        if (!isDbchart && !isDbquery) {
-            DBTABLE_DICT.delete(key);
-        }
-    });
-    // DBTABLE_DICT - sync
-    await Promise.all(Array.from(DB_DICT.values()).map(async function (db) {
+    }
+    dbtableListAll = await Promise.all(Array.from(
+        DB_DICT.values()
+    ).map(async function (db) {
         let baton;
         let {
             dbName,
@@ -2458,118 +2596,153 @@ async function uiRenderDb() {
         } = db;
         let dbtableList;
         let tmp;
-        db.dbtableList = new Map();
+        // detached by user sql - reading it by name threw [r33]
+        if (!dbList.has(dbName)) {
+            return [db, new Map()];
+        }
         dbtableList = noop(
             await dbExecAsync({
-                db,
+                db: DB_MAIN,
                 sql: (`
-SELECT * FROM sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
+SELECT * FROM ${dbName}.sqlite_schema WHERE type = 'table' ORDER BY tbl_name;
                 `)
             })
         )[0];
         if (!dbtableList) {
-            return;
+            return [db, new Map()];
         }
+        // chart, query db - hide sqlite internals, e.g. sqlite_sequence left
+        // by an AUTOINCREMENT table, which cannot be dropped or charted
+        dbtableList = dbtableList.filter(function ({
+            tbl_name
+        }) {
+            return !(
+                (isDbchart || isDbquery) &&
+                String(tbl_name).startsWith("sqlite_")
+            );
+        });
         dbtableList = new Map(dbtableList.map(function ({
-            colList = [],
-            dbtableFullname,
-            rowCount = 0,
-            rowList0,
             sql,
             tbl_name
         }, ii) {
-            dbtableFullname = dbtableFullname || `${dbName}.[${tbl_name}]`;
+            // WITHOUT ROWID has no rowid - REVIEWED r21: a ")" comment fools it
+            const dbtableFullname = `${dbName}.${sqlIdQuote(tbl_name)}`;
+            // REVIEWED r26: pragma_table_list.wr untested on missing modules
+            const isNoRowid = (/\)[^)]*\bWITHOUT\s+ROWID\b[^)]*$/i).test(sql);
             dbtableIi += 1;
             baton = {
-                colList,
+                colList: [],
+                colListWritable: [],
                 db,
                 dbName,
                 dbtableFullname,
                 dbtableIi,
-                dbtableName: `[${tbl_name}]`,
+                dbtableName: sqlIdQuote(tbl_name),
                 hashtag: `dbtable_${String(dbtableIi).padStart(2, "0")}`,
                 ii,
                 isDbchart,
                 isDbmain,
                 isDbquery,
-                rowCount,
-                rowList0,
+                rowCount: 0,
                 sortCol: 0,
                 sortDir: "asc",
-                sql,
+                sqlRowid: (
+                    isNoRowid
+                    ? "NULL AS rowid"
+                    // named - an INTEGER PRIMARY KEY id renamed it [r26]
+                    : "rowid AS rowid"
+                ),
                 title: `table ${dbtableFullname}`
             };
-            DBTABLE_DICT.set(baton.hashtag, baton);
+            dbtableDict.set(baton.hashtag, baton);
             return [
                 baton.dbtableName, baton
             ];
         }));
-        tmp = "";
-        dbtableList.forEach(function ({
+        // read on DB_MAIN by the name every action uses - TEMP shadows [r28]
+        // and re-attached dbs [r33] showed one object, acted on another
+        tmp = Array.from(dbtableList.values()).map(function ({
+            dbtableFullname,
             dbtableName,
             hashtag
         }) {
-            tmp += (`
+            return (`
 SELECT '${hashtag}' AS hashtag;
-PRAGMA table_info(${dbtableName});
-SELECT COUNT(*) AS rowcount FROM ${dbtableName};
+PRAGMA ${dbName}.table_xinfo(${dbtableName});
+SELECT COUNT(*) AS rowcount FROM ${dbtableFullname};
             `);
         });
+        // one unreadable table, e.g. a virtual table whose module is not
+        // compiled in, fails the batch - retry per table, skipping failures
         tmp = await dbExecAsync({
-            db,
-            sql: tmp
+            db: DB_MAIN,
+            sql: tmp.join("")
+        }).catch(async function () {
+            return (await Promise.all(tmp.map(function (sql) {
+                return dbExecAsync({
+                    db: DB_MAIN,
+                    sql
+                }).catch(function () {
+                    return [];
+                });
+            }))).flat();
         });
         tmp.forEach(function (rowList) {
             let row0 = rowList[0];
             if (!row0) {
                 return;
             }
-            [
-                "cid", "hashtag", "rowcount"
-            ].forEach(function (key) {
-                switch (row0.hasOwnProperty(key) && key) {
-                case "cid":
-                    baton.colList = [
-                        "rowid",
-                        rowList.map(function ({
-                            name
-                        }) {
-                            return name;
-                        })
-                    ].flat();
-                    break;
-                case "hashtag":
-                    baton = DBTABLE_DICT.get(row0.hashtag);
-                    break;
-                case "rowcount":
-                    baton.rowCount = row0.rowcount;
-                    break;
-                }
-            });
+            if (row0.hasOwnProperty("hashtag")) {
+                baton = dbtableDict.get(row0.hashtag);
+                return;
+            }
+            if (row0.hasOwnProperty("rowcount")) {
+                baton.rowCount = row0.rowcount;
+                return;
+            }
+            if (row0.hasOwnProperty("cid")) {
+                // table_xinfo, not table_info, which skips generated
+                // columns that SELECT * returns - headers sat over the
+                // wrong cells. hidden 1 is a vtable hidden column, which
+                // SELECT * omits; hidden 2, 3 is generated, not writable
+                baton.colList = ["rowid"];
+                baton.colListWritable = ["rowid"];
+                rowList.forEach(function ({
+                    hidden,
+                    name
+                }) {
+                    // a column named rowid shadows the real one -
+                    // treat it as WITHOUT ROWID [r17]
+                    if (String(name).toLowerCase() === "rowid") {
+                        baton.sqlRowid = "NULL AS rowid";
+                    }
+                    if (hidden !== 1) {
+                        baton.colList.push(name);
+                    }
+                    if (!hidden) {
+                        baton.colListWritable.push(name);
+                    }
+                });
+            }
         });
-        db.dbtableList = dbtableList;
+        return [db, dbtableList];
     }));
-    // ui-render databases and tables to html
-    document.querySelector("#dbchartList1").innerHTML = "";
-    document.querySelector("#dbqueryList1").innerHTML = "";
-    document.querySelector("#dbtableList1").innerHTML = "";
-    DB_DICT.forEach(function ({
-        dbtableList,
-        isDbchart,
-        isDbquery
-    }) {
-        dbtableList.forEach(function (baton) {
-            // create uitable
-            document.querySelector(
-                isDbchart
-                ? "#dbchartList1"
-                : isDbquery
-                ? "#dbqueryList1"
-                : "#dbtableList1"
-            ).appendChild(uitableCreate(baton));
-        });
+    // set with the swap, so DOM and DBTABLE_DICT come from one call [r18]
+    dbtableListAll.forEach(function ([
+        db, dbtableList
+    ]) {
+        db.dbtableList = dbtableList;
     });
-    // ui-render #tocPanel1
+    DBTABLE_DICT = dbtableDict;
+    // REVIEWED r27: the loop reads the live DB_DICT - a demo attach landing
+    // mid-render would throw
+    ["#dbchartList1", "#dbqueryList1", "#dbtableList1"].forEach(function (
+        selector
+    ) {
+        const elem = document.querySelector(selector);
+        elem.innerHTML = "";
+        elem.style.minHeight = "";
+    });
     html = "";
     DB_DICT.forEach(function ({
         dbName,
@@ -2577,6 +2750,14 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
         isDbchart,
         isDbquery
     }) {
+        // REVIEWED r23: dbtype on the db descriptors couples init to the toc
+        const dbtype = (
+            isDbchart
+            ? "chart"
+            : isDbquery
+            ? "query"
+            : "table"
+        );
         html += `<div class="tocTitle">` + (
             isDbchart
             ? "chart"
@@ -2584,24 +2765,22 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
             ? `query result`
             : `database ${dbName}`
         ) + `</div>`;
-        dbtableList.forEach(function ({
-            colList,
-            dbtableFullname,
-            dbtableName,
-            hashtag,
-            ii,
-            rowCount
-        }) {
+        dbtableList.forEach(function (baton) {
+            const {
+                colList,
+                dbtableFullname,
+                dbtableName,
+                hashtag,
+                ii,
+                rowCount
+            } = baton;
+            document.querySelector(
+                `#db${dbtype}List1`
+            ).appendChild(uitableCreate(baton));
             html += `<a class="tocElemA"`;
             html += ` data-hashtag="${hashtag}"`;
             html += ` href="#${hashtag}"`;
-            html += (
-                isDbchart
-                ? ` data-dbtype="chart"`
-                : isDbquery
-                ? ` data-dbtype="query"`
-                : ` data-dbtype="table"`
-            );
+            html += ` data-dbtype="${dbtype}"`;
             html += (
                 ` title="` +
                 stringHtmlSafe((
@@ -2613,15 +2792,9 @@ SELECT COUNT(*) AS rowcount FROM ${dbtableName};
                 }, undefined, 4)) +
                 `"`
             );
-            html += `>${ii + 1}. `;
-            html += (
-                isDbchart
-                ? "chart"
-                : isDbquery
-                ? "query"
-                : "table"
-            );
-            html += ` ${stringHtmlSafe(dbtableName.slice(1, -1))}</a>\n`;
+            html += `>${ii + 1}. ${dbtype} ${stringHtmlSafe(
+                dbtableName.slice(1, -1).replace((/""/g), "\"")
+            )}</a>\n`;
         });
     });
     document.querySelector("#tocDbList1").innerHTML = html;
@@ -2641,22 +2814,22 @@ async function uiTryCatch(func, ...argList) {
         uiFadeIn(UI_LOADING);
         await func(...argList);
     } catch (err) {
-        console.error(err);
-        document.querySelector(
-            "#errorPanel1 .modalContent"
-        ).textContent = err;
-        uiFadeIn(document.querySelector(
-            "#errorPanel1"
-        ));
+        uiErrorShow(err);
+        // false, not undefined - init tells a failed url load by it
+        return false;
     } finally {
-        await waitAsync(500);
-        UI_LOADING_COUNTER -= 1;
-        if (
-            UI_LOADING_COUNTER === 0 &&
-            UI_LOADING.style.visibility === "visible"
-        ) {
-            uiFadeOut(UI_LOADING);
-        }
+        // keep the spinner up >= 500ms, but never block the caller on it -
+        // awaiting it here made a ?sqlDb= load render 500ms late, as init
+        // awaits DB_INIT, which is a uiTryCatch [2026-11-09]
+        waitAsync(500).then(function () {
+            UI_LOADING_COUNTER -= 1;
+            if (
+                UI_LOADING_COUNTER === 0 &&
+                UI_LOADING.style.visibility === "visible"
+            ) {
+                uiFadeOut(UI_LOADING);
+            }
+        });
     }
 }
 
@@ -2670,6 +2843,7 @@ async function uichartCreate(baton) {
     } = baton;
     let elemCanvasFlex;
     let elemLegend;
+    // shrunk on a phone by css min-width 200 on .uichartCanvasFlex [r30]
     let elemLegendWidth = 256;
     let elemUichart = contentElem.querySelector(".uichart");
     let elemUichartHeight = 384;
@@ -2677,78 +2851,50 @@ async function uichartCreate(baton) {
         db,
         sql: (`
 -- table - __chart_options1 - insert
-DROP TABLE IF EXISTS __chart_options1;
+DROP TABLE IF EXISTS temp.__chart_options1;
 CREATE TEMP TABLE __chart_options1 AS
     SELECT
         JSON(options) AS options,
-        CASTREALORZERO(options->>'$.xstep') AS xstep,
         CASTREALORZERO(1.0 / options->>'$.xstep') AS xstep_inv,
-        CASTREALORZERO(options->>'$.ystep') AS ystep,
         CASTREALORZERO(1.0 / options->>'$.ystep') AS ystep_inv
     FROM (
-        SELECT options FROM ${dbtableName} WHERE datatype = 'options' LIMIT 1
+        SELECT options
+        FROM main.${dbtableName}
+        WHERE datatype = 'options'
+        LIMIT 1
     );
 
 -- table - __chart_series_xy1 - insert
-DROP TABLE IF EXISTS __chart_series_xy1;
+DROP TABLE IF EXISTS temp.__chart_series_xy1;
 CREATE TEMP TABLE __chart_series_xy1 AS
     SELECT
         series_index,
         xx,
-        LAG(xx, 1, NULL) OVER (
-            PARTITION BY series_index ORDER BY xx
-        ) AS xx_lag,
-        LEAD(xx, 1, NULL) OVER (
-            PARTITION BY series_index ORDER BY xx
-        ) AS xx_lead,
         yy
     FROM (
         SELECT
+            ROW_NUMBER() OVER (
+                PARTITION BY series_index, xx ORDER BY rowid DESC
+            ) AS rownum,
             series_index,
             xx,
             yy
         FROM (
             SELECT
-                ROW_NUMBER() OVER (
-                    PARTITION BY series_index, xx ORDER BY rowid DESC
-                ) AS rownum,
+                ${dbtableName}.rowid,
+                --
                 series_index,
-                xx,
-                yy
-            FROM (
-                SELECT
-                    ${dbtableName}.rowid,
-                    --
-                    series_index,
-                    IIF(xstep_inv, ROUND(xstep_inv * xx), xx) AS xx,
-                    IIF(ystep_inv, ROUND(ystep_inv * yy), yy) AS yy
-                FROM ${dbtableName}
-                JOIN __chart_options1
-                WHERE
-                    datatype = 'yy_value'
-                    AND xx IS NOT NULL
-            )
-            ORDER BY
-                series_index,
-                xx
+                IIF(xstep_inv, ROUND(xstep_inv * xx), xx) AS xx,
+                IIF(ystep_inv, ROUND(ystep_inv * yy), yy) AS yy
+            FROM main.${dbtableName}
+            JOIN __chart_options1
+            WHERE
+                datatype = 'yy_value'
+                AND xx IS NOT NULL
         )
-        WHERE
-            rownum = 1
-    );
-
--- table - __chart_series_maxmin1 - insert
-DROP TABLE IF EXISTS __chart_series_maxmin1;
-CREATE TEMP TABLE __chart_series_maxmin1 AS
-    SELECT
-        series_index,
-        MAX(xx) AS xdataMax,
-        MIN(xx) AS xdataMin,
-        MAX(yy) AS ydataMax,
-        MIN(yy) AS ydataMin
-    FROM __chart_series_xy1
+    )
     WHERE
-        yy IS NOT NULL
-    GROUP BY series_index;
+        rownum = 1;
 
 -- table - __chart_options1 - select - options
 SELECT
@@ -2758,15 +2904,13 @@ SELECT
             '$.xdataDxx', COALESCE(xdataDxx, 1),
             '$.xdataMax', xdataMax,
             '$.xdataMin', xdataMin,
-            '$.xlabelList', JSON(COALESCE(xlabelList, '[]')),
-            '$.ydataMax', ydataMax,
-            '$.ydataMin', ydataMin
+            '$.xlabelList', JSON(COALESCE(xlabelList, '[]'))
         ) AS options
     FROM __chart_options1
     JOIN (
         SELECT
-            JSON_GROUP_ARRAY(xx_label) AS xlabelList
-        FROM ${dbtableName}
+            JSON_GROUP_ARRAY(xx_label ORDER BY xx) AS xlabelList
+        FROM main.${dbtableName}
         WHERE
             datatype = 'xx_label'
     )
@@ -2777,7 +2921,7 @@ SELECT
                 '$.seriesName', series_label,
                 '$.xdata', JSON(COALESCE(xdata, '[]')),
                 '$.ydata', JSON(COALESCE(ydata, '[]'))
-            ))) AS seriesList
+            )) ORDER BY series_index) AS seriesList
         FROM (
             SELECT
                 options,
@@ -2787,34 +2931,33 @@ SELECT
                     || '. '
                     || series_label
                 ) AS series_label
-            FROM ${dbtableName}
+            FROM main.${dbtableName}
             WHERE
                 datatype = 'series_label'
-            ORDER BY
-                series_index
         )
         -- calculate series.xdata, series.ydata
         LEFT JOIN (
             SELECT
                 series_index,
-                JSON_GROUP_ARRAY(xx) AS xdata,
-                JSON_GROUP_ARRAY(yy) AS ydata
+                -- ordered aggregates - GROUP BY order is undocumented [r24]
+                JSON_GROUP_ARRAY(xx ORDER BY xx) AS xdata,
+                JSON_GROUP_ARRAY(yy ORDER BY xx) AS ydata
             FROM __chart_series_xy1
             GROUP BY series_index
         ) USING (series_index)
     )
     JOIN (
         SELECT
-            MAX(xdataMax) AS xdataMax,
-            MIN(xdataMin) AS xdataMin,
-            MAX(ydataMax) AS ydataMax,
-            MIN(ydataMin) AS ydataMin
-        FROM __chart_series_maxmin1
+            MAX(xx) AS xdataMax,
+            MIN(xx) AS xdataMin
+        FROM __chart_series_xy1
+        WHERE
+            yy IS NOT NULL
     )
     -- calculate uichart.xdataDxx
     JOIN (
         SELECT
-            MIN(ABS(xx - xx_prv)) AS xdataDxx
+            NULLIF(MIN(ABS(xx - xx_prv)), 0) AS xdataDxx
         FROM (
             SELECT
                 xx,
@@ -2828,6 +2971,7 @@ SELECT
     );
         `)
     });
+    // REVIEWED: no options row throws - uiTryCatch shows it
     uichart = JSON.parse(uichart[0][0].options);
     contentElem.querySelector(".uitable").style.display = "none";
     elemUichart.style.display = "flex";
@@ -2893,9 +3037,14 @@ SELECT
                 y="0"
             >
             </rect>
-            <text class="uichartTooltipText"></text>
+            <text class="uichartTooltipText"><tspan
+                dy="15"
+                style="filter: brightness(75%); font-size: 14px;
+                    font-weight: normal;"
+                x="5"
+            ></tspan></text>
         </g>
-        <g class="uichartMousetrackerList">/g>
+        <g class="uichartMousetrackerList"></g>
     </svg>
     </div>
     <div class="uichartAxislabel0">${stringHtmlSafe(uichart.xaxisTitle)}</div>
@@ -2903,10 +3052,9 @@ SELECT
     `);
     elemCanvasFlex = elemUichart.querySelector(".uichartCanvasFlex");
     elemLegend = elemUichart.querySelector(".uichartLegend");
-    // init var
     let ELEM_GRAPH_LINE_WIDTH = 1; //jslint-ignore-line
-    let ELEM_POINT_BORDER_WIDTH = 0;
     let ELEM_POINT_RADIUS = 4;
+    // REVIEWED r15: first draw may include the default 300x150 svg
     let canvasHeight = elemCanvasFlex.clientHeight;
     let canvasWidth = elemCanvasFlex.clientWidth;
     let counterColor = 1;
@@ -2933,11 +3081,8 @@ SELECT
         xdataMin,
         xlabelList
     } = uichart;
-    let isResizing = 0;
-    let plotBottom;
     let plotHeight;
     let plotLeft;
-    let plotRight;
     let plotTop;
     let plotWidth;
     let plotbarMargin;
@@ -2946,68 +3091,25 @@ SELECT
     let pointListBarchart = [];
     let redrawTimer;
     let seriesColorList = [
-        /*
-        // highcharts-v4
-        "#7cb5ec", // light-blue - highcharts-v4
-        "#434348", // black - highcharts-v4
-        "#90ed7d", // light-green - highcharts-v4
-        "#f7a35c", // orange - highcharts-v4
-        "#8085e9", // lavender-blue - highcharts-v4
-        "#f15c80", // pink - highcharts-v4
-        "#e4d354", // yellow - highcharts-v4
-        "#2b908f", // teal - highcharts-v4
-        "#f45b5b", // orange-red - highcharts-v4
-        "#91e8e1" // aqua - highcharts-v4
-        // highcharts-v3
-        "#2f7ed8", // blue - highcharts-v3
-        "#0d233a", // dark-teal - highcharts-v3
-        "#8bbc21", // olive - highcharts-v3
-        "#910000", // maroon - highcharts-v3
-        "#1aadce", // aqua - highcharts-v3
-        "#492970", // purple - highcharts-v3
-        "#f28f43", // orange - highcharts-v3
-        "#77a1e5", // light-blue - highcharts-v3
-        "#c42525", // red - highcharts-v3
-        "#a6c96a" // light-olive - highcharts-v3
-        // highcharts-v2
-        "#4572a7", // blue - highcharts-v2
-        "#aa4643", // red - highcharts-v2
-        "#89a54e", // olive - highcharts-v2
-        "#80699b", // purple - highcharts-v2
-        "#3d96ae", // aqua - highcharts-v2
-        "#db843d", // orange - highcharts-v2
-        "#92a8cd", // light-navy - highcharts-v2
-        "#a47d7c", // brown - highcharts-v2
-        "#b5ca92" // light-olive - highcharts-v2
-        */
-        //
-        // "#aa4643", // red - highcharts-v2
         "#a44", // red
-        // "#4572a7", // blue - highcharts-v2
         "#57b", // blue
         "#7ecf6d", // light-green - highcharts-v4
-        // "#80699b", // purple - highcharts-v2
         "#86a", // purple
-        //
         "#3d96ae", // aqua - highcharts-v2
         "#f15c80", // pink - highcharts-v4
         "#8085e9", // lavender-blue - highcharts-v4
-        // "#a47d7c", // brown - highcharts-v2
-        // "#b88", // brown
         "#89a54e", // olive - highcharts-v2
-        // "#0d233a", // dark-teal - highcharts-v3
         "#357", // dark-teal
         "#492970" // purple - highcharts-v3
     ];
     let seriesHovered;
     let seriesShapeList = [
-        // "circle", "diamond", "square", "triangle", "triangle-down"
-        // "circle",
         "square",
         "triangle",
         "diamond",
         "triangle-down"
     ];
+    let touchState;
     let xaxisMax;
     let xaxisMin;
     let xaxistickDict = {};
@@ -3026,7 +3128,6 @@ SELECT
         let elemTick;
         let elemTicklabel;
         let elemTspan;
-        // create elemTick
         elemTick = svgAttrSet("path", {
             fill: "none",
             stroke: "#33b",
@@ -3037,7 +3138,6 @@ SELECT
         // if isXaxis, then draw tick
         if (isXaxis) {
             elemAxistickList.appendChild(elemTick);
-        // create elemGridline
         } else {
             elemTick.elemGridline = svgAttrSet("path", {
                 fill: "none",
@@ -3054,64 +3154,20 @@ SELECT
         ) {
             return elemTick;
         }
-        // create ticklabel
         elemTspan = svgAttrSet("tspan");
-        elemTspan.textContent = (function () {
-            let num;
-            let numDigitList;
-            let xOrY = (
+        elemTspan.textContent = numberFormat({
+            modeTick: true,
+            num: (
+                isXaxis
+                ? xlabelList[tickx - 1] ?? tickx
+                : tickx
+            ),
+            xOrY: (
                 isXaxis
                 ? "x"
                 : "y"
-            );
-            num = numberFormat({
-                convert: uichart[xOrY + "valueConvert"],
-                modeTick: true,
-                num: (
-                    isXaxis
-                    ? xlabelList[tickx - 1] ?? tickx
-                    : tickx
-                ),
-                prefix: uichart[xOrY + "valuePrefix"],
-                step: uichart[xOrY + "step"],
-                suffix: uichart[xOrY + "valueSuffix"]
-            }).slice(0, 16);
-            // number already formatted
-            if (typeof num !== "number") {
-                return num;
-            }
-            // small number
-            if (Math.abs(num) < 1000) {
-                return num.toLocaleString();
-            }
-            // large number
-            num = Math.round(num).toLocaleString();
-            numDigitList = num.split(
-                /[^+\-0-9]/
-            );
-            switch (numDigitList.length) {
-            // kilo
-            case 2:
-                return numDigitList[0] + "k";
-            // mega
-            case 3:
-                return numDigitList[0] + "M";
-            // giga
-            case 4:
-                return numDigitList[0] + "G";
-            // tera
-            case 5:
-                return numDigitList[0] + "T";
-            // peta
-            case 6:
-                return numDigitList[0] + "P";
-            // exa
-            case 7:
-                return numDigitList[0] + "E";
-            default:
-                return num;
-            }
-        }());
+            )
+        }).slice(0, 16);
         elemTicklabel = svgAttrSet("text", {
             "text-anchor": (
                 isXaxis
@@ -3131,22 +3187,80 @@ SELECT
             num.toPrecision(12)
         );
     }
+    function graphAnimate(elemGraph, dpath) {
+    // this function will draw line <elemGraph> at its final position <dpath>,
+    // then animate an svg-transform from the previous axis-scale.
+    // svgAnimate cannot tween "d" when the vertex-count changes, which it
+    // does on every zoom since offscreen points are dropped, so the line
+    // snapped while its dots slid. Each pixel is affine in the axis-scale
+    // [ax, bx, ay, by], so tweening the scale moves line and dots together.
+        const affineBeg = elemGraph.fx_affine;
+        const affineEnd = [
+            xtransOffset - xtransWidth * xaxisMin,
+            xtransWidth,
+            plotHeight + ytransWidth * yaxisMin,
+            -ytransWidth
+        ];
+        const datebeg = UI_ANIMATE_DATENOW;
+        function graphAnimateStep() {
+            const fxprg = Math.min(1, (
+                UI_ANIMATE_DURATION_INV * (UI_ANIMATE_DATENOW - datebeg)
+            ));
+            let affineNow;
+            let sx;
+            let sy;
+            // superseded by a newer animation of this line - drop from list
+            if (graphAnimateStep.isCancelled) {
+                return true;
+            }
+            affineNow = affineBeg.map(function (beg, ii) {
+                return beg + fxprg * (affineEnd[ii] - beg);
+            });
+            sx = affineNow[1] / affineEnd[1];
+            sy = affineNow[3] / affineEnd[3];
+            elemGraph.fx_affine = affineNow;
+            if (fxprg >= 1) {
+                elemGraph.removeAttribute("transform");
+                return true;
+            }
+            // map final-position pixel back to current axis-scale
+            elemGraph.setAttribute("transform", (
+                `matrix(${sx} 0 0 ${sy} ` +
+                `${affineNow[0] - sx * affineEnd[0]} ` +
+                `${affineNow[2] - sy * affineEnd[2]})`
+            ));
+            return false;
+        }
+        elemGraph.setAttribute("d", dpath);
+        svgAnimateCancel(elemGraph);
+        elemGraph.fx_step = graphAnimateStep;
+        // first-draw - nothing to animate from
+        if (!affineBeg) {
+            elemGraph.fx_affine = affineEnd;
+            // a cancelled tween leaves its last matrix behind - clear it
+            elemGraph.removeAttribute("transform");
+            return;
+        }
+        graphAnimateStep();
+        UI_ANIMATE_LIST.push(graphAnimateStep);
+    }
     function numberFormat({
-        convert,
         modeTick,
         num,
-        prefix,
-        step,
-        suffix
+        xOrY
     }) {
-    // this function will format <num>
+    // this function will format <num> with axis <xOrY>'s uichart options
+        const convert = uichart[xOrY + "valueConvert"];
+        const prefix = uichart[xOrY + "valuePrefix"];
+        const step = uichart[xOrY + "step"];
+        const suffix = uichart[xOrY + "valueSuffix"];
         if (step && typeof num === "number") {
-            num *= step;
+            // 15 significant digits - 3 * 0.1 printed 0.30000000000000004 [r22]
+            num = Number(Number(num * step).toPrecision(15));
         }
         switch (convert) {
         case "juliandayToDate":
             num = new Date((num - 2440587.5) * 86400 * 1000);
-            // num = num.toUTCString().slice(0, 16);
             num = (
                 modeTick
                 ? num.toUTCString().slice(5, 16)
@@ -3162,7 +3276,6 @@ SELECT
             );
             break;
         case "unixepochToTimeutc":
-            // num = new Date(num * 1000).toISOString().slice(11, 19) + "Z";
             num = new Date(num * 1000);
             num = (
                 modeTick
@@ -3179,32 +3292,159 @@ SELECT
         }
         return String(num);
     }
+    function onCanvasTouch(evt) {
+    // this function will handle touchscreen <evt> on canvas-area:
+    // 1-finger horizontal drag pans, 1-finger vertical drag scrolls page,
+    // 2-finger pinch zooms around the pinch-center
+        // every finger on this chart - targetTouches only counts fingers
+        // that began on the same svg element, so a pinch from a line and
+        // blank plot area read as a jumpy 1-finger pan
+        // read once - a read per finger forced a layout per finger per move
+        const canvasLeft = elemCanvasFixed.getBoundingClientRect().left;
+        const fingerList = Array.from(evt.touches).filter(function ({
+            target
+        }) {
+            return elemCanvasFlex.contains(target);
+        }).map(function ({
+            clientX,
+            clientY
+        }) {
+            return {
+                clientY,
+                xfrac: (
+                    clientX - canvasLeft - plotLeft
+                ) / plotWidth
+            };
+        });
+        let dmin;
+        let dspan;
+        let spanNow;
+        let spanOld;
+        // touchstart, touchend - re-anchor gesture to remaining fingers
+        if (evt.type !== "touchmove") {
+            touchState = fingerList.length && {
+                direction: (
+                    fingerList.length === 2
+                    ? "zoom"
+                    : undefined
+                ),
+                // displayed axis, as fingers see it: plot-pixel 0 is
+                // xaxisMin - dxx/2, and the plot spans the padded axis + dxx
+                // REVIEWED r21: a lift before the 0 ms redraw jumps one move
+                dmin: xaxisMin - 0.5 * xdataDxx,
+                dspan: xaxisMax - xaxisMin + xdataDxx,
+                fingerList
+            };
+            return;
+        }
+        if (!touchState || fingerList.length > 2) {
+            return;
+        }
+        // 1-finger - decide pan or page-scroll from first movement
+        if (!touchState.direction) {
+            spanNow = plotWidth * Math.abs(
+                fingerList[0].xfrac - touchState.fingerList[0].xfrac
+            );
+            spanOld = Math.abs(
+                fingerList[0].clientY - touchState.fingerList[0].clientY
+            );
+            if (Math.max(spanNow, spanOld) < 8) {
+                return;
+            }
+            touchState.direction = (
+                spanNow > spanOld
+                ? "pan"
+                : "scroll"
+            );
+        }
+        if (touchState.direction === "scroll") {
+            return;
+        }
+        evt.preventDefault();
+        dspan = touchState.dspan;
+        if (touchState.direction === "pan") {
+            dmin = touchState.dmin - dspan * (
+                fingerList[0].xfrac - touchState.fingerList[0].xfrac
+            );
+        } else if (fingerList.length === 2) {
+            // REVIEWED r15: aligned fingers clamp to 1%, jitter zooms
+            spanOld = Math.max(0.01, Math.abs(
+                touchState.fingerList[0].xfrac - touchState.fingerList[1].xfrac
+            ));
+            spanNow = Math.max(0.01, Math.abs(
+                fingerList[0].xfrac - fingerList[1].xfrac
+            ));
+            // data-x under old pinch-center stays under new pinch-center
+            dmin = touchState.dmin + dspan * 0.5 * (
+                touchState.fingerList[0].xfrac + touchState.fingerList[1].xfrac
+            );
+            dspan *= spanOld / spanNow;
+            dmin -= dspan * 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac);
+        } else {
+            return;
+        }
+        xzoomFromDisplayed(dmin, dspan, (
+            touchState.direction === "pan"
+            ? 0.5
+            : 0.5 * (fingerList[0].xfrac + fingerList[1].xfrac)
+        ));
+        // uichartRedraw - uichartZoom
+        uichartRedraw();
+    }
     function onCanvasZoom(evt) {
     // this function will zoom/un-zoom at current mouse-location on canvas-area
+        const dspan = xaxisMax - xaxisMin + xdataDxx;
         let xmid = 0.5;
         let xscale = 1.2500; // zoom-out
+        // horizontal trackpad swipe - not a zoom, leave it to the page
+        if (evt.deltaY === 0) {
+            return;
+        }
+        // a zoom that changes nothing - out at full extent, in at the 4*dxx
+        // floor - scrolls the page instead of stalling it [r18, r21]
+        if (
+            evt.deltaY > 0 &&
+            (xzoomMin ?? xdataMin) <= xdataMin &&
+            (xzoomMax ?? xdataMax) >= xdataMax
+        ) {
+            return;
+        }
+        if (
+            evt.deltaY < 0 &&
+            (xzoomMax ?? xdataMax) - (xzoomMin ?? xdataMin) <=
+            4 * xdataDxx * (1 + 1e-9)
+        ) {
+            return;
+        }
         evt.preventDefault();
-        evt.stopPropagation();
         if (!evt.modeDebounce) {
-            debounce("onCanvasZoom", onCanvasZoom, Object.assign(evt, {
-                modeDebounce: true
-            }));
+            debounce(
+                "onCanvasZoom" + baton.hashtag,
+                onCanvasZoom,
+                Object.assign(evt, {
+                    modeDebounce: true
+                })
+            );
             return;
         }
         if (evt.deltaY < 0) {
             xmid = (
-                evt.pageX -
+                evt.clientX -
                 elemCanvasFixed.getBoundingClientRect().left -
-                window.scrollX +
-                document.documentElement.clientLeft -
                 plotLeft
             ) / plotWidth;
             xscale = 0.8000; // zoom-in
         }
+        // REVIEWED r22: skews the pivot outward, a 2022 zoom feel
         xmid += 0.5 * (xmid - 0.4000);
-        xmid = xaxisMin + xmid * (xaxisMax - xaxisMin);
-        xzoomMax = xmid + xscale * (xaxisMax - xmid);
-        xzoomMin = xmid + xscale * (xaxisMin - xmid);
+        // scale the displayed axis about xmid, then invert the padding, so
+        // repeated notches no longer drift wider; zoom-out pivots at a fixed
+        // 0.55, so in-at-cursor then out returns exactly only at center
+        xzoomFromDisplayed(
+            xaxisMin - 0.5 * xdataDxx + xmid * (1 - xscale) * dspan,
+            xscale * dspan,
+            xmid
+        );
         // uichartRedraw - uichartZoom
         uichartRedraw();
     }
@@ -3219,9 +3459,8 @@ SELECT
         let tooltipWidth;
         let tooltipX;
         let tooltipY;
-        // get mouse-position
         rect = elemCanvasFixed.getBoundingClientRect();
-        mouseX = Math.round(evt.pageX - rect.left - window.scrollX - plotLeft);
+        mouseX = Math.round(evt.clientX - rect.left - plotLeft);
         // if mouse is outside canvas-area, then return
         if (!(0 <= mouseX && mouseX <= plotWidth)) {
             return;
@@ -3236,9 +3475,7 @@ SELECT
             return;
         }
         pointHovered = pointObj;
-        // redraw seriesHovered
         onSeriesHover(pointObj.series, true);
-        // redraw tooltip around pointHovered
         let { //jslint-ignore-line
             pointX,
             pointY,
@@ -3251,50 +3488,36 @@ SELECT
             return;
         }
         xlabel = numberFormat({
-            convert: uichart.xvalueConvert,
             num: xlabelList[xval - 1] ?? xval,
-            prefix: uichart.xvaluePrefix,
-            step: uichart.xstep,
-            suffix: uichart.xvalueSuffix
+            xOrY: "x"
         });
         ylabel = numberFormat({
-            convert: uichart.yvalueConvert,
             num: yval,
-            prefix: uichart.yvaluePrefix,
-            step: uichart.ystep,
-            suffix: uichart.yvalueSuffix
+            xOrY: "y"
         });
-        // update elemTooltipText
         elemTooltip.setAttribute("visibility", "visible");
-        elemTooltipText.innerHTML = (`
-<tspan
-    dy="15"
-    style="filter: brightness(75%); font-size: 14px; font-weight: normal;"
-    x="5"
->
-    ${stringHtmlSafe(ylabel)} -- ${stringHtmlSafe(xlabel)}
-</tspan>
-        `);
+        // textContent - no html parse per hover, and no html sink
+        elemTooltipText.firstElementChild.textContent = (
+            `${ylabel} -- ${xlabel}`
+        );
         svgAttrSet(elemTooltipText, {
             fill: seriesHovered.seriesColor
         });
         // update elemTooltipBorder after text-update
         tooltipBbox = elemTooltipText.getBBox();
         tooltipWidth = tooltipBbox.width + 10;
-        tooltipHeight = tooltipBbox.height + 0;
+        tooltipHeight = tooltipBbox.height;
         svgAttrSet(elemTooltipBorder, {
             height: tooltipHeight,
-            // stroke: seriesHovered.seriesColor,
             width: tooltipWidth
         });
-        // calculate tooltipX
         tooltipX = pointX + plotLeft - 0.5 * tooltipWidth;
-        tooltipX = Math.max(tooltipX, plotLeft + tooltipMargin);
+        // left bound last - a tooltip wider than the canvas kept its start
         tooltipX = Math.min(
             tooltipX,
             canvasWidth - tooltipWidth - tooltipMargin
         );
-        // calculate tooltipY
+        tooltipX = Math.max(tooltipX, plotLeft + tooltipMargin);
         tooltipY = pointY + plotTop - tooltipHeight - tooltipMargin;
         if (tooltipY < plotTop) {
             tooltipY = pointY + plotTop + tooltipMargin;
@@ -3304,7 +3527,6 @@ SELECT
             translateX: tooltipX,
             translateY: tooltipY
         }, "easeout");
-        // animate-move crosshair
         [
             true, false
         ].forEach(function (isXaxis, ii) {
@@ -3334,7 +3556,8 @@ SELECT
     function onSeriesHover(evt, scrollTo) {
     // this function will handle <evt> when mouse hover over series
         let series = (
-            evt.target
+            // a dom event - a series option named target is not one [r20]
+            typeof evt.preventDefault === "function"
             ? seriesList[
                 evt.target.closest("[data-series-ii]")?.dataset.seriesIi
             ]
@@ -3345,12 +3568,11 @@ SELECT
             onSeriesUnhover();
             return;
         }
-        // un-hover previous seriesHovered
         if (series !== seriesHovered) {
             onSeriesUnhover();
         }
         seriesHovered = series;
-        // darken series-color
+        // darken series-color - REVIEWED r23: a css filter is untested on ios
         if (isBarchart) {
             seriesColor = series.seriesColor.replace((
                 /^#(..)(..)(..)$/
@@ -3366,38 +3588,32 @@ SELECT
             seriesHovered.pointListSeries.forEach(function (pointObj) {
                 pointObj.elemPoint.setAttribute("fill", seriesColor);
             });
-        }
-        // thicken series-line-width
-        if (!isBarchart) {
+        } else {
             xpixelToPointDictHovered = series.xpixelToPointDict;
             svgAttrSet(seriesHovered.elemGraph, {
                 "stroke-width": ELEM_GRAPH_LINE_WIDTH + 2
             });
         }
-        Array.from(elemLegend.children).forEach(function (elem, seriesIi) {
-            if (seriesIi !== seriesHovered.seriesIi) {
-                elem.style.background = "none";
-                return;
-            }
-            // hover series in legend
-            elem.style.background = "#ccc";
-            // scroll to series in legend
-            if (scrollTo) {
-                debounce("onSeriesScroll", function () {
-                    elemLegend.scroll({
-                        behavior: "smooth",
-                        top: elem.offsetTop - elemLegend.offsetHeight
-                    });
+        // hover series in legend - onSeriesUnhover cleared the old row
+        elemLegend.children[series.seriesIi].style.background = "#ccc";
+        // REVIEWED r16: offsetTop is from .contentElem - re-derive if moved
+        if (scrollTo) {
+            debounce("onSeriesScroll" + baton.hashtag, function () {
+                elemLegend.scroll({
+                    behavior: "smooth",
+                    top: (
+                        elemLegend.children[series.seriesIi].offsetTop -
+                        elemLegend.offsetHeight
+                    )
                 });
-            }
-        });
+            });
+        }
     }
     function onSeriesHoveredHide() {
     // this function will handle <evt> to hide hovered-series
         if (seriesHovered) {
             uichartSeriesHideOrShow(seriesHovered, true);
             uichartRedraw();
-            return;
         }
     }
     function onSeriesUnhover() {
@@ -3406,20 +3622,16 @@ SELECT
         if (!seriesHovered) {
             return;
         }
-        // un-darken series-color
         if (isBarchart) {
             seriesColor = seriesHovered.seriesColor;
             seriesHovered.pointListSeries.forEach(function (pointObj) {
                 pointObj.elemPoint.setAttribute("fill", seriesColor);
             });
-        }
-        // un-thicken series-line-width
-        if (!isBarchart) {
+        } else {
             svgAttrSet(seriesHovered.elemGraph, {
                 "stroke-width": ELEM_GRAPH_LINE_WIDTH
             });
         }
-        // un-hover series in legend
         elemLegend.children[seriesHovered.seriesIi].style.background = "none";
         seriesHovered = undefined;
     }
@@ -3428,12 +3640,19 @@ SELECT
         let action;
         let modeHide;
         let target;
-        evt.preventDefault();
-        evt.stopPropagation();
-        if (!evt.modeDebounce) {
-            debounce("onUichartAction", onUichartAction, Object.assign(evt, {
-                modeDebounce: true
-            }));
+        // no stopPropagation - the body click closes the menu [r28]; legend
+        // toggles act at once - debounce dropped middle clicks
+        if (
+            !evt.modeDebounce &&
+            !evt.target.closest(`[data-action="uichartSeriesHideOrShow"]`)
+        ) {
+            debounce(
+                "onUichartAction" + baton.hashtag,
+                onUichartAction,
+                Object.assign(evt, {
+                    modeDebounce: true
+                })
+            );
             return;
         }
         target = evt.target.closest("[data-action]");
@@ -3444,37 +3663,48 @@ SELECT
         switch (action) {
         case "uichartSeriesHideAll":
         case "uichartSeriesShowAll":
+        case "uichartZoomReset":
             uiFadeIn(baton.elemLoading);
             await waitAsync(50);
-            modeHide = action === "uichartSeriesHideAll";
-            // hide or show series
-            seriesList.forEach(function (series) {
-                uichartSeriesHideOrShow(series, modeHide);
-            });
+            if (action === "uichartZoomReset") {
+                xzoomMax = undefined;
+                xzoomMin = undefined;
+            } else {
+                modeHide = action === "uichartSeriesHideAll";
+                seriesList.forEach(function (series) {
+                    uichartSeriesHideOrShow(series, modeHide);
+                });
+                // each show hovered its series - unhover, else the last one
+                // stays thick and highlighted, stuck on touch, no mouseleave
+                onSeriesUnhover();
+            }
             uichartRedraw();
             await waitAsync(200);
             uiFadeOut(baton.elemLoading);
             return;
         case "uichartSeriesHideOrShow":
             modeHide = target.dataset.hidden !== "1";
-            // hide or show series
             uichartSeriesHideOrShow(
                 seriesList[target.dataset.seriesIi],
                 modeHide
             );
             uichartRedraw();
             return;
-        case "uichartZoomReset":
-            uiFadeIn(baton.elemLoading);
-            await waitAsync(50);
-            xzoomMax = undefined;
-            xzoomMin = undefined;
-            // uichartRedraw - uichartZoomReset
-            uichartRedraw();
-            await waitAsync(200);
-            uiFadeOut(baton.elemLoading);
+        }
+    }
+    function pointVisibleSet(pointObj, isVisible) {
+    // this function will show or hide marker of <pointObj>,
+    // skipping the dom-write if unchanged
+    // REVIEWED: a crowded marker vanishes - a fade re-animates hidden ones
+        if (Boolean(pointObj.isMarkerHidden) === !isVisible) {
             return;
         }
+        pointObj.isMarkerHidden = !isVisible;
+        pointObj.elemPoint.setAttribute("visibility", (
+            isVisible
+            ? "inherit"
+            : "hidden"
+        ));
     }
     // uichartRedraw - start
     function uichartRedraw(modeDebounce) {
@@ -3485,18 +3715,12 @@ SELECT
             return;
         }
         redrawTimer = undefined;
-        //
-        // calculate plotBottom, plotHeight, plotTop
-        //
+        // plot margins - 32 bottom and right, plotLeft re-measured from the
+        // y labels below
         plotTop = 16;
         plotHeight = canvasHeight - plotTop - 32;
-        plotBottom = canvasHeight - plotHeight - plotTop;
-        //
-        // pre-calculate plotLeft, plotRight, plotWidth
-        //
         plotLeft = 32;
         plotWidth = canvasWidth - plotLeft - 32;
-        plotRight = canvasWidth - plotWidth - plotLeft;
         //
         // calculate axisMax, axisMin - start
         //
@@ -3514,21 +3738,19 @@ SELECT
             let tickxMax;
             let tickxMin;
             let tickxPrv;
-            if (isResizing) {
-                return;
-            }
             //
             // if isXaxis, then calculate xaxismax, xaxismin
             //
             if (isXaxis) {
                 axisMax = Math.min(xdataMax, xzoomMax ?? xdataMax);
                 axisMin = Math.max(xdataMin, xzoomMin ?? xdataMin);
-                // ensure xaxisMax - xaxisMin >= xdataDxx
+                // ensure xaxisMax - xaxisMin >= 4 * xdataDxx
                 if (axisMax - axisMin < 4 * xdataDxx) {
                     axisMax = Math.min(xdataMax, axisMin + 4 * xdataDxx);
                     axisMin = Math.max(xdataMin, axisMax - 4 * xdataDxx);
                 }
-                // pad axisMax, axisMin
+                // pad axisMax, axisMin - xzoomFromDisplayed inverts this and
+                // the 1% pad below; change one, change it
                 axisMax += 0.02 * (axisMax - axisMin);
                 axisMin -= 0.02 * (axisMax - axisMin);
             }
@@ -3541,6 +3763,8 @@ SELECT
                 axisMin = 0;
             }
             seriesList.forEach(function (series) {
+                const xhi = xaxisMax + 0.5 * xdataDxx;
+                const xlo = xaxisMin - 0.5 * xdataDxx;
                 let ii;
                 let nn;
                 let xcropEnd;
@@ -3554,24 +3778,23 @@ SELECT
                     return;
                 }
                 nn = xdata.length;
-                // calculate xcropEnd, xcropStart
-                // xdata inside xcrop-range
-                if (xaxisMin <= xdata[0] && xdata[nn - 1] <= xaxisMax) {
+                // REVIEWED r19: the crop skips off-range series, 5y zoom
+                // crop to [xaxisMin - dxx/2, xaxisMax + dxx/2], so a visible
+                // edge point is autoscaled and an invisible one is not
+                if (xlo <= xdata[0] && xdata[nn - 1] <= xhi) {
                     xcropEnd = nn;
                     xcropStart = 0;
                 // xdata outside xcrop-range
-                } else if (xdata[nn - 1] < xaxisMin || xaxisMax < xdata[0]) {
+                } else if (xdata[nn - 1] < xlo || xhi < xdata[0]) {
                     xcropEnd = 0;
                     xcropStart = 0;
-                // init xcropStart
                 } else {
                     ii = 0;
-                    while (ii < nn && xdata[ii] < xaxisMin) {
+                    while (ii < nn && xdata[ii] < xlo) {
                         ii += 1;
                     }
-                    xcropStart = Math.max(0, ii - 1);
-                    // init xcropEnd
-                    while (ii < nn && xdata[ii] < xaxisMax) {
+                    xcropStart = ii;
+                    while (ii < nn && xdata[ii] <= xhi) {
                         ii += 1;
                     }
                     xcropEnd = ii;
@@ -3580,7 +3803,8 @@ SELECT
                 ii = xcropStart;
                 while (ii < xcropEnd) {
                     yval = ydata[ii];
-                    if (!Number.isNaN(yval)) {
+                    // skip Infinity too - it made every axis value NaN
+                    if (Number.isFinite(yval)) {
                         axisMax = Math.max(axisMax ?? yval, yval);
                         axisMin = Math.min(axisMin ?? yval, yval);
                     }
@@ -3589,6 +3813,7 @@ SELECT
             });
             axisMax = axisMax ?? 0;
             axisMin = axisMin ?? 0;
+            // inverted by xzoomFromDisplayed, with the 2% x pad above
             axisMax += 0.01 * (axisMax - axisMin);
             axisMin -= 0.01 * (axisMax - axisMin);
             if (axisMax === axisMin) {
@@ -3626,7 +3851,6 @@ SELECT
             });
             // after rounding, un-normalize tickInterval from within 0...10
             tickInterval = tickMultiple * tickExponent;
-            // calculate tickxList from tickInterval
             tickx = floatCorrect(
                 Math.floor(axisMin / tickInterval) * tickInterval
             );
@@ -3637,7 +3861,13 @@ SELECT
             while (true) {
                 tickxList.push(tickx);
                 tickx = floatCorrect(tickx + tickInterval);
-                if (tickx > tickxMax || tickx === tickxPrv) {
+                // non-finite axis or plotWidth <= 0 would loop forever
+                if (
+                    tickx > tickxMax ||
+                    tickx === tickxPrv ||
+                    !Number.isFinite(tickx) ||
+                    tickxList.length > 1000
+                ) {
                     break;
                 }
                 tickxPrv = tickx;
@@ -3652,7 +3882,9 @@ SELECT
                 if (tickxMin < axisMin - 0.5 * xdataDxx) {
                     tickxList.shift();
                 }
-            } else {
+            // ticks collapsed by floatCorrect, e.g. 1.7e12 + 0..9, keep the
+            // raw axis - else max === min and every pointY is NaN
+            } else if (tickxMax > tickxMin) {
                 axisMax = tickxMax;
                 axisMin = tickxMin;
             }
@@ -3672,25 +3904,16 @@ SELECT
             Object.entries(tickxDict).forEach(function ([
                 tickx, elemTick
             ]) {
-                if (
-                    elemTick.isXaxis !== isXaxis ||
-                    tickxList.indexOf(Number(tickx)) !== -1
-                ) {
+                if (tickxList.indexOf(Number(tickx)) !== -1) {
                     return;
                 }
                 elemTick.remove();
-                if (elemTick.elemGridline) {
-                    elemTick.elemGridline.remove();
-                    delete elemTick.elemGridline;
-                }
-                if (elemTick.elemTicklabel) {
-                    elemTick.elemTicklabel.remove();
-                    delete elemTick.elemTicklabel;
-                }
+                elemTick.elemGridline?.remove();
+                elemTick.elemTicklabel?.remove();
                 delete tickxDict[tickx];
             });
             //
-            // re-calculate plotLeft, plotRight, plotWidth
+            // re-calculate plotLeft, plotWidth
             //
             if (!isXaxis) {
                 plotLeft = 0;
@@ -3702,7 +3925,6 @@ SELECT
                 });
                 plotLeft = Math.round(16 + plotLeft);
                 plotWidth = Math.round(canvasWidth - plotLeft - 32);
-                plotRight = Math.round(canvasWidth - plotWidth - plotLeft);
             }
             // save axisMax, axisMin
             if (isXaxis) {
@@ -3730,6 +3952,8 @@ SELECT
         // update crop-area for
         // elemCrosshairList, elemMousetrackerList, elemSeriesList
         //
+        // cancel the startup clip tween, else it ends at the old plotWidth
+        svgAnimateCancel(elemClip.firstElementChild);
         svgAttrSet(elemClip.firstElementChild, {
             height: plotHeight,
             width: plotWidth
@@ -3761,7 +3985,7 @@ SELECT
             // init xx, yy for first-draw
             if (elemTick.isFirstDraw) {
                 xx = plotLeft + 0.5 * plotWidth;
-                yy = canvasHeight - plotBottom - 0.5 * plotHeight;
+                yy = plotTop + 0.5 * plotHeight;
                 if (isXaxis) {
                     yy = canvasHeight + 0.125 * plotHeight;
                 } else {
@@ -3775,7 +3999,7 @@ SELECT
                     svgAttrSet(elemGridline, {
                         d: (
                             `M ${plotLeft} ${yy}` +
-                            ` L ${canvasWidth - plotRight} ${yy}`
+                            ` L ${plotLeft + plotWidth} ${yy}`
                         )
                     });
                 }
@@ -3789,18 +4013,16 @@ SELECT
             // init xx, yy for animation
             if (isXaxis) {
                 xx = plotLeft + xaxisTranslate(tickx);
-                yy = canvasHeight - plotBottom;
+                yy = plotTop + plotHeight;
             } else {
                 xx = plotLeft;
                 yy = plotTop + yaxisTranslate(tickx);
             }
-            // redraw elemTick
             if (isXaxis) {
                 svgAnimate(elemTick, {
                     d: `M ${xx - 0.5} ${yy + 0.5} L ${xx - 0.5} ${yy + 5.5}`
                 });
             }
-            // redraw elemTicklabel
             if (elemTicklabel) {
                 svgAnimate(elemTicklabel, (
                     isXaxis
@@ -3814,12 +4036,11 @@ SELECT
                     }
                 ));
             }
-            // redraw elemGridline
             if (elemGridline) {
                 svgAnimate(elemGridline, {
                     d: (
                         `M ${plotLeft} ${yy + CRISPY}` +
-                        ` L ${canvasWidth - plotRight} ${yy + CRISPY}`
+                        ` L ${plotLeft + plotWidth} ${yy + CRISPY}`
                     )
                 });
             }
@@ -3831,18 +4052,34 @@ SELECT
         // redraw seriesList - start
         //
         seriesList.forEach(function (series) {
+            // read once - graphAnimate updates it only after this loop
+            const affine = series.elemGraph?.fx_affine;
             let {
                 elemGraph,
                 elemGraphtracker,
                 pointListSeries
             } = series;
             let elemGraphD = "";
-            let pointXPrv = 0;
-            let pointYPrv = 0;
+            let pointXPrv;
+            let xviewMax = xaxisMax;
+            let xviewMin = xaxisMin;
             if (series.isHidden) {
                 return;
             }
+            // widen to what the line shows at its pre-tween scale - else the
+            // line edge goes blank for the 250ms graphAnimate tween
+            if (affine) {
+                xviewMax = Math.max(
+                    xviewMax,
+                    (plotWidth - affine[0]) / affine[1]
+                );
+                xviewMin = Math.min(xviewMin, -affine[0] / affine[1]);
+            }
             // redraw pointListSeries
+            // optimization - with many points, e.g. 5 years daily, animating
+            // every marker made zoom and pan sluggish (~14k svg paths for 11
+            // series), so hide markers that are offscreen or within 8px (x) of
+            // the previous shown marker, and skip their animation
             pointListSeries.forEach(function (pointObj, ii) {
                 let barY;
                 let {
@@ -3850,14 +4087,17 @@ SELECT
                     xval,
                     yval
                 } = pointObj;
+                let isOffscreen;
                 let pointX;
                 let pointY;
                 // pixelate xval, yval to pointX, pointY
                 pointX = xaxisTranslate(xval);
+                // non-finite y (Infinity, NULL) is skipped and the line
+                // bridges it - "L x -Infinity" is invalid path data
                 pointY = (
-                    yval === undefined
-                    ? undefined
-                    : yaxisTranslate(yval)
+                    Number.isFinite(yval)
+                    ? yaxisTranslate(yval)
+                    : undefined
                 );
                 // save pointX, pointY
                 pointObj.pointX = pointX;
@@ -3865,9 +4105,26 @@ SELECT
                 if (pointY === undefined) {
                     return;
                 }
+                // offscreen = this point and its neighbor are past one edge;
+                // keep the neighbor just past each edge, the line needs it
+                // REVIEWED: a NULL edge neighbor gaps only the padding strip
+                isOffscreen = (
+                    (pointListSeries[ii + 1]?.xval ?? xval) < xviewMin ||
+                    xviewMax < (pointListSeries[ii - 1]?.xval ?? xval)
+                );
+                if (isOffscreen) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
                 if (isBarchart) {
                     // if isBarchart, then redraw point as bar
                     barY = Math.min(pointY, plotbarYaxis);
+                    // re-shown bar - start at target, not its stale spot
+                    if (pointObj.isMarkerHidden) {
+                        elemPoint.fx_x = pointX - plotbarMargin;
+                        elemPoint.fx_y = barY;
+                    }
+                    pointVisibleSet(pointObj, true);
                     svgAnimate(elemPoint, {
                         height: Math.max(
                             4,
@@ -3879,29 +4136,8 @@ SELECT
                     });
                     return;
                 }
-                if (
-                    128 <= (
-                        Math.pow(pointX - pointXPrv, 2) +
-                        Math.pow(pointY - pointYPrv, 2)
-                    ) ||
-                    ii + 1 === pointListSeries.length
-                ) {
-                    pointXPrv = pointX;
-                    pointYPrv = pointY;
-                }
-                // if not isBarchart, then redraw point as shape
-                svgAnimate(elemPoint, {
-                    height: 2 * ELEM_POINT_RADIUS,
-                    // visibility: (
-                    //     pointX === pointXPrv
-                    //     ? "inherit"
-                    //     : "hidden"
-                    // ),
-                    width: 2 * ELEM_POINT_RADIUS,
-                    x: pointXPrv - ELEM_POINT_RADIUS,
-                    y: pointYPrv - ELEM_POINT_RADIUS
-                });
-                // if not isBarchart, then calculate elemGraphD
+                // if not isBarchart, then calculate elemGraphD - every
+                // in-range point, so thinning markers never erases a dip
                 elemGraphD += (
                     (
                         elemGraphD === ""
@@ -3910,36 +4146,87 @@ SELECT
                         // lineto
                         : "L"
                     ) +
-                    // + ` ${pointX} ${pointY} `
-                    ` ${pointXPrv} ${pointYPrv} `
+                    ` ${pointX} ${pointY} `
                 );
+                // outside the displayed range (axis +- dxx/2) - line only, no
+                // marker: the plot clips it,
+                // and the widened tween range would unhide thousands of them
+                if (
+                    xval < xaxisMin - 0.5 * xdataDxx ||
+                    xaxisMax + 0.5 * xdataDxx < xval
+                ) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
+                // if not isBarchart, then hide marker crowding previous one
+                if (!(
+                    pointXPrv === undefined ||
+                    ii + 1 === pointListSeries.length ||
+                    // x spacing only - y distance kept noisy series unthinned
+                    8 <= pointX - pointXPrv
+                )) {
+                    pointVisibleSet(pointObj, false);
+                    return;
+                }
+                pointXPrv = pointX;
+                // re-shown marker - start where its line is drawn now, not at
+                // its stale position, so marker and line move together
+                if (pointObj.isMarkerHidden) {
+                    elemPoint.fx_x = (
+                        affine
+                        ? affine[0] + affine[1] * xval
+                        : pointX
+                    ) - ELEM_POINT_RADIUS;
+                    elemPoint.fx_y = (
+                        affine
+                        ? affine[2] + affine[3] * yval
+                        : pointY
+                    ) - ELEM_POINT_RADIUS;
+                    pointVisibleSet(pointObj, true);
+                }
+                // if not isBarchart, then redraw point as shape
+                svgAnimate(elemPoint, {
+                    height: 2 * ELEM_POINT_RADIUS,
+                    width: 2 * ELEM_POINT_RADIUS,
+                    x: pointX - ELEM_POINT_RADIUS,
+                    y: pointY - ELEM_POINT_RADIUS
+                });
             });
             // if not isBarchart, then redraw elemGraph
             if (!isBarchart) {
                 elemGraphD = elemGraphD.trim();
-                svgAnimate(elemGraph, {
-                    d: elemGraphD
-                });
+                graphAnimate(elemGraph, elemGraphD);
                 elemGraphtracker.setAttribute("d", elemGraphD);
             }
-            // calculate pixelToPointDict
             series.xpixelToPointDict = xpixelToPointDictCreate(
                 pointListSeries
             );
         });
-        // calculate xpixelToPointDictHovered
         if (isBarchart) {
             xpixelToPointDictHovered = xpixelToPointDictCreate(
                 pointListBarchart
             );
         }
-        // reset seriesHovered
+        // point lookup at the new zoom - the hovered series, else the last
+        // visible one; unhover restores styles [r16, r17, r23]
+        if (seriesHovered?.isHidden) {
+            onSeriesUnhover();
+        }
         seriesList.forEach(function (series) {
-            if (!seriesHovered || seriesHovered.isHidden) {
-                onSeriesHover(series);
-                onSeriesUnhover();
+            if (
+                !isBarchart &&
+                !series.isHidden &&
+                (seriesHovered ?? series) === series
+            ) {
+                xpixelToPointDictHovered = series.xpixelToPointDict;
             }
         });
+        // hide tooltip and crosshair - they mark a pre-redraw pixel, and a
+        // tap gives no mouseleave; the next mousemove redraws them
+        pointHovered = undefined;
+        elemCrosshairList.children[0].setAttribute("visibility", "hidden");
+        elemCrosshairList.children[1].setAttribute("visibility", "hidden");
+        elemTooltip.setAttribute("visibility", "hidden");
         //
         // redraw seriesList - end
         //
@@ -3954,11 +4241,6 @@ SELECT
         canvasWidth = Math.round(elemCanvasFlex.clientWidth);
         // restore elemCanvasFixed
         elemCanvasFlex.appendChild(elemCanvasFixed);
-        // increment / decrement isResizing
-        isResizing += 1;
-        setTimeout(function () {
-            isResizing -= 1;
-        }, UI_ANIMATE_DURATION);
         svgAttrSet(elemCanvasFixed, {
             height: canvasHeight,
             width: canvasWidth
@@ -3970,6 +4252,17 @@ SELECT
     // this function will hide-or-show <series>
         if (!series || series.isDummy) {
             return;
+        }
+        // re-shown line: cancel its tween and drop fx_affine, so it draws
+        // fresh at the current zoom; hide every marker via pointVisibleSet
+        // while still hidden - a flag-only hide skipped the dom write and
+        // left ghost markers at stale pixels
+        if (!modeHide && series.isHidden && series.elemGraph) {
+            svgAnimateCancel(series.elemGraph);
+            delete series.elemGraph.fx_affine;
+            for (const pointObj of series.pointListSeries) {
+                pointVisibleSet(pointObj, false);
+            }
         }
         // reset previously hidden points to yaxis
         if (isBarchart && !modeHide && series.isHidden) {
@@ -3986,6 +4279,7 @@ SELECT
             });
         }
         series.isHidden = modeHide;
+        // REVIEWED r17: a touch legend show stays highlighted till hover
         if (!modeHide) {
             onSeriesHover(series);
         }
@@ -4000,13 +4294,13 @@ SELECT
                 ));
             }
         });
-        // hide or show legend
         elemLegend.children[series.seriesIi].dataset.hidden = Number(modeHide);
     }
     function xaxisTranslate(xval) {
     // this function will translate <xval> to xpixel position on chart
         return xtransOffset + xtransWidth * (xval - xaxisMin);
     }
+    // REVIEWED r17: bars sharing an x map to the last series
     function xpixelToPointDictCreate(pointList) {
     // this function will create dict mapping <xpixel> to nearest point in
     // <pointList> along xaxis
@@ -4019,9 +4313,20 @@ SELECT
         let xpixelEnd;
         while (ii < nn) {
             pointObj = pointList[ii];
-            if (pointObj.pointY !== undefined && !pointObj.series.isHidden) {
+            // on-plot points only - edge pixels mapped to an offscreen point
+            // with no marker, and its tooltip could land off the svg
+            if (
+                pointObj.pointY !== undefined &&
+                !pointObj.series.isHidden &&
+                0 <= pointObj.pointX &&
+                pointObj.pointX <= plotWidth
+            ) {
                 if (pointObjPrv) {
-                    xpixelEnd = 0.5 * (pointObjPrv.pointX + pointObj.pointX);
+                    // cap at plotWidth - zoomed-in data lies far beyond it
+                    xpixelEnd = Math.min(
+                        plotWidth,
+                        0.5 * (pointObjPrv.pointX + pointObj.pointX)
+                    );
                     while (xpixel < xpixelEnd) {
                         dict[xpixel] = pointObjPrv;
                         xpixel += 1;
@@ -4037,6 +4342,33 @@ SELECT
         }
         return dict;
     }
+    function xzoomFromDisplayed(dmin, dspan, pivot) {
+    // this function will set xzoomMin, xzoomMax so uichartRedraw displays
+    // the x-axis from <dmin> spanning <dspan> (plot-pixel 0 to plotWidth).
+    // It inverts uichartRedraw's x padding: 2% then 2.04%, then 1% then
+    // 1.0404% of that, then dxx/2 each side - so displayed span is
+    // 1.06131204 * window + dxx, and its left edge sits
+    // 0.03090804 * window + dxx/2 below the window.
+    // <pivot> is the plot fraction (pinch center, cursor) that must stay put
+    // when the 4*dxx floor clamps the width, else zoom past max slid sideways
+        const xwidth = Math.max(
+            Math.min(xdataMax - xdataMin, 4 * xdataDxx),
+            Math.min(xdataMax - xdataMin, (dspan - xdataDxx) / 1.06131204)
+        );
+        let xmin;
+        dmin += pivot * (dspan - (1.06131204 * xwidth + xdataDxx));
+        xmin = dmin + 0.5 * xdataDxx + 0.03090804 * xwidth;
+        // clamp window within data
+        xmin = Math.max(xdataMin, Math.min(xmin, xdataMax - xwidth));
+        xzoomMax = xmin + xwidth;
+        xzoomMin = xmin;
+        // full extent is "no zoom" - float a + (b - a) can fall short of b,
+        // and the full-extent check then ate the page scroll [r20]
+        if (xwidth >= xdataMax - xdataMin) {
+            xzoomMax = undefined;
+            xzoomMin = undefined;
+        }
+    }
     function yaxisTranslate(yval) {
     // this function will translate <yval> to ypixel position on chart
         return plotHeight - ytransWidth * (yval - yaxisMin);
@@ -4049,16 +4381,22 @@ SELECT
         height: canvasHeight,
         width: canvasWidth
     });
-    // init event-handling
+    // REVIEWED r15: tap on touch hides a series - the click feature
     elemCanvasFlex.onclick = onSeriesHoveredHide;
     elemCanvasFlex.onmouseenter = onPointUnhover;
     elemCanvasFlex.onmouseleave = onPointUnhover;
     elemCanvasFlex.onmousemove = onPointHover;
     elemCanvasFlex.onwheel = onCanvasZoom;
+    for (const type of [
+        "touchcancel", "touchend", "touchmove", "touchstart"
+    ]) {
+        elemCanvasFlex.addEventListener(type, onCanvasTouch, {
+            passive: false
+        });
+    }
     elemLegend.onmouseleave = onPointUnhover;
     elemLegend.onmouseover = onSeriesHover;
     elemUichart.querySelector(".uichartNav").onclick = onUichartAction;
-    // init seriesList
     seriesList.forEach(function (series, seriesIi) {
         let elemGraph;
         let elemGraphtracker;
@@ -4066,31 +4404,41 @@ SELECT
         let {
             isDummy,
             seriesColor,
+            seriesShape,
             xdata,
             ydata
         } = series;
         let pointListSeries;
-        let seriesShape;
-        elemSeries.classList.add(`elemSeries_${seriesIi}`);
-        // init seriesColor
         if (isDummy) {
             seriesColor = "rgba(192,192,192,0)";
         } else if (!(seriesColor && typeof seriesColor === "string")) {
-            seriesColor = seriesColorList[
-                ((seriesColor ?? counterColor) - 1) % seriesColorList.length
-            ];
+            // a 1-based index picks a color; 0 or other values cycle
+            seriesColor = seriesColorList[(
+                (
+                    (Number.isInteger(seriesColor) && seriesColor > 0)
+                    ? seriesColor
+                    : counterColor
+                ) - 1
+            ) % seriesColorList.length];
             counterColor += 1;
         }
         seriesColor = seriesColor.replace((
             /^#(.)(.)(.)$/
         ), "#$1$1$2$2$3$3");
-        // init seriesShape
         if (isBarchart || isDummy) {
             seriesShape = "square";
-        } else {
-            seriesShape = seriesShapeList[
-                ((seriesShape ?? counterShape) - 1) % seriesShapeList.length
-            ];
+        } else if (!(
+            /^(?:circle|diamond|square|triangle|triangle-down)$/
+        ).test(seriesShape)) {
+            // a name svgShapeDraw knows is kept; a 1-based index picks from
+            // seriesShapeList; 0 or an unknown name cycles
+            seriesShape = seriesShapeList[(
+                (
+                    (Number.isInteger(seriesShape) && seriesShape > 0)
+                    ? seriesShape
+                    : counterShape
+                ) - 1
+            ) % seriesShapeList.length];
             counterShape += 1;
         }
         // init xdata, ydata
@@ -4099,16 +4447,16 @@ SELECT
             return yval ?? NaN;
         }));
         if (!isBarchart) {
-            // init elemGraph
             elemGraph = svgAttrSet("path", {
                 fill: "none",
                 stroke: seriesColor,
                 "stroke-linecap": "round",
                 "stroke-linejoin": "round",
-                "stroke-width": ELEM_GRAPH_LINE_WIDTH
+                "stroke-width": ELEM_GRAPH_LINE_WIDTH,
+                // keep line-width constant while graphAnimate scales it
+                "vector-effect": "non-scaling-stroke"
             });
             elemSeries.appendChild(elemGraph);
-            // init elemGraphtracker
             elemGraphtracker = svgAttrSet("path", {
                 fill: "none",
                 stroke: "rgba(192,192,192,0.0001)",
@@ -4117,36 +4465,24 @@ SELECT
                 "stroke-width": ELEM_GRAPH_LINE_WIDTH + 20,
                 visibility: "inherit"
             });
-            elemGraphtracker.classList.add(`series_${seriesIi}`);
-            // init event-handling
             elemGraphtracker.dataset.seriesIi = seriesIi;
             elemGraphtracker.onmouseover = function (evt) {
                 onSeriesHover(evt, true);
             };
         }
-        // init pointListSeries
         pointListSeries = Array.from(ydata).map(function (yval, ii) {
             let elemPoint;
             let pointObj;
             let xval = xdata[ii];
-            elemPoint = (
+            elemPoint = svgAttrSet((
                 isBarchart
-                ? svgAttrSet("rect", {
-                    fill: seriesColor,
-                    stroke: "#333",
-                    "stroke-width": ELEM_POINT_BORDER_WIDTH,
-                    visibility: "inherit",
-                    y: 0.5 * canvasHeight
-                })
-                : svgAttrSet("path", {
-                    fill: seriesColor,
-                    stroke: "#333",
-                    "stroke-width": ELEM_POINT_BORDER_WIDTH,
-                    visibility: "inherit",
-                    y: 0.5 * canvasHeight
-                })
-            );
-            // init fx_seriesShape
+                ? "rect"
+                : "path"
+            ), {
+                fill: seriesColor,
+                visibility: "inherit",
+                y: 0.5 * canvasHeight
+            });
             if (!isBarchart) {
                 elemPoint.fx_seriesShape = seriesShape;
             }
@@ -4154,18 +4490,13 @@ SELECT
                 elemPoint,
                 series,
                 xval,
-                yval: (
-                    Number.isNaN(yval)
-                    ? undefined
-                    : yval
-                )
+                yval
             };
             if (isBarchart) {
                 pointListBarchart.push(pointObj);
             }
             return pointObj;
         });
-        // save series-properties
         Object.assign(series, {
             elemGraph,
             elemGraphtracker,
@@ -4201,7 +4532,6 @@ SELECT
             elemMousetrackerList.appendChild(elemGraphtracker);
         }
     });
-    // draw elemLegend
     elemLegend.innerHTML = uichart.seriesList.map(function (series, ii) {
         return (`
 <a
@@ -4216,13 +4546,14 @@ SELECT
 <g>
 <path
     d="${svgShapeDraw(series.seriesShape, 0, 2, 10, 10)}"
-    fill="${series.seriesColor}"
+    fill="${stringHtmlSafe(series.seriesColor)}"
     stroke-width="0"
 >
 </path>
 </g>
 </svg>
-<span style="margin-left: 12px; position: absolute;">${series.seriesName}</span>
+<span style="margin-left: 12px; position: absolute;"
+>${stringHtmlSafe(series.seriesName)}</span>
 </a>
         `);
     }).join("");
@@ -4236,7 +4567,6 @@ SELECT
         width: plotWidth
     });
     return Object.assign(uichart, {
-        uichartRedraw,
         uichartResize
     });
     //
@@ -4246,12 +4576,12 @@ SELECT
 
 async function uitableAjax(baton, {
     rowList,
+    rowOffset,
     type
 }) {
     let {
         colList,
         contentElem,
-        db,
         dbtableName,
         elemInfo,
         elemLoading,
@@ -4264,6 +4594,12 @@ async function uitableAjax(baton, {
         sortDir
     } = baton;
     let html = "";
+    // qualify a sort column - "rowid" alone is the NULL AS rowid alias [r18]
+    let sortExpr = (
+        sortCol === 0
+        ? ""
+        : dbtableName + "."
+    ) + sqlIdQuote(colList[sortCol]);
     let viewRowBeg;
     let viewRowEnd;
     if (baton.rowCount === 0) {
@@ -4276,27 +4612,28 @@ async function uitableAjax(baton, {
     case "scroll":
     case "uitableInit":
         if (type === "uitableInit" && isDbchart) {
-            uiFadeIn(elemLoading);
             await uiTryCatch(async function () {
                 // resize uichart
                 if (baton.uichart) {
                     baton.uichart.uichartResize();
                     return;
                 }
-                // create uichart
                 baton.uichart = await uichartCreate(baton);
             });
-            await waitAsync(500);
             uiFadeOut(elemLoading);
             return;
         }
+        // rows map to pixels proportionally, same as table-top below, so
+        // the bottom of the scroller reads "to N of N"
         viewRowBeg = Math.max(0, Math.round(
-            rowCount *
-            elemScroller.scrollTop /
-            (elemScroller.scrollHeight - 1 * UI_ROW_HEIGHT)
+            rowCount * elemScroller.scrollTop /
+            Math.max(1, elemScroller.scrollHeight)
         ));
-        viewRowEnd = Math.min(rowCount, Math.round(viewRowBeg + UI_VIEW_SIZE));
-        // update table-view info
+        viewRowEnd = Math.min(rowCount, Math.round(
+            rowCount *
+            (elemScroller.scrollTop + elemScroller.clientHeight) /
+            Math.max(1, elemScroller.scrollHeight)
+        ));
         elemInfo.textContent = (
             "showing " +
             new Intl.NumberFormat().format(viewRowBeg + 1) +
@@ -4323,27 +4660,44 @@ async function uitableAjax(baton, {
         ));
         break;
     }
+    // REVIEWED r16: switch(false) skips to draw
     switch (type !== "uitableDraw" && baton.modeAjax) {
     // uitableAjax
     case 0:
+        // re-rendered away - querying a dropped table popped an error [r16]
+        if (!contentElem.isConnected) {
+            return;
+        }
         // uitableLoading - show
         uiFadeIn(elemLoading);
         baton.modeAjax = 1;
         // uitable - paginate
-        rowList = await dbExecAsync({
-            db,
-            responseType: "list",
-            sql: (`
+        // capture offset - a scroll during the query moves baton.rowOffset,
+        // which would mis-position these rows
+        rowOffset = baton.rowOffset;
+        try {
+            rowList = await dbExecAsync({
+                db: DB_MAIN,
+                responseType: "list",
+                sql: (`
 SELECT
-        rowid,
+        ${baton.sqlRowid},
         --
         ${dbtableName}.*
-    FROM ${dbtableName}
-    ORDER BY [${colList[sortCol]}] ${sortDir}
+    FROM ${baton.dbtableFullname}
+    ORDER BY ${sortExpr} ${sortDir}, rowid
     LIMIT ${Number(UI_PAGE_SIZE)}
-    OFFSET ${Number(baton.rowOffset)};
-            `)
-        });
+    OFFSET ${Number(rowOffset)};
+                `)
+            });
+        } catch (err) {
+            // failed - reset modeAjax, show it: scroll, sort do not await [r15]
+            baton.modeAjax = 0;
+            uiFadeOut(elemLoading);
+            // REVIEWED r16: also drops a pending modeAjax 2 scroll
+            uiErrorShow(err);
+            return;
+        }
         rowList = (
             rowList[0]
             ? rowList[0].slice(1)
@@ -4361,6 +4715,7 @@ SELECT
         // recurse - draw
         await uitableAjax(baton, {
             rowList,
+            rowOffset,
             type: "uitableDraw"
         });
         return;
@@ -4372,18 +4727,20 @@ SELECT
     case 2:
         return;
     }
-    // uitableDraw
-    // Position the table in the virtual scroller
+    // uitableDraw - position the table in the virtual scroller
+    // REVIEWED: past ~1M rows the capped scroller height drifts
     elemTable.style.top = Math.max(0, Math.round(
-        elemScroller.scrollHeight * baton.rowOffset / (baton.rowCount + 1)
+        elemScroller.scrollHeight * rowOffset / (baton.rowCount + 1)
     )) + "px";
     // Insert the required TR nodes into the table for display
-    jsonHtmlSafe(rowList).forEach(function (row) {
+    rowList.forEach(function (row) {
+        // an integer, or null - a user column named rowid selects NULL [r17]
+        const rowid = String(row[0]);
         html += (`
-<tr data-dbtype="row" data-hashtag="${hashtag}" data-rowid="${row[0]}">
+<tr data-dbtype="row" data-hashtag="${hashtag}" data-rowid="${rowid}">
         `);
         row.forEach(function (val) {
-            html += "<td>" + (val ?? "") + "</td>";
+            html += "<td>" + stringHtmlSafe(val) + "</td>";
         });
         html += "</tr>";
     });
@@ -4393,14 +4750,9 @@ SELECT
     // debounce - next
     if (baton.modeAjax === 2) {
         baton.modeAjax = 0;
-        // keep focus on current scroller when debouncing
-        if (type === "scroll") {
-            elemScroller.focus();
-        }
         await uitableAjax(baton, {});
         return;
     }
-    // cleanup
     baton.modeAjax = 0;
     // uitableLoading - hide
     uiFadeOut(elemLoading);
@@ -4409,18 +4761,6 @@ SELECT
 function uitableCreate(baton) {
 // this function will create a dom-datatable-view of sqlite queries and tables
     let contentElem;
-    // All uitables are wrapped in a div
-    // Generate the node required for the processing node
-    // The HTML structure that we want to generate in this function is:
-    //  div - scroller
-    //    div - scroll head
-    //      div - scroll head inner
-    //        table - scroll head table
-    //          thead - thead
-    //    div - scroll body
-    //      table - table (master table)
-    //        thead - thead clone for sizing
-    //        tbody - tbody
     contentElem = domDivCreate(
         (`
 <div class="contentElem" data-init="0" id="${baton.hashtag}">
@@ -4442,7 +4782,7 @@ function uitableCreate(baton) {
             <thead>
                 <tr>
         `) +
-        jsonHtmlSafe(baton.colList).map(function (col, ii) {
+        baton.colList.map(stringHtmlSafe).map(function (col, ii) {
             return (
                 ii === 0
                 ? `<th title="${col}" data-sort="asc">${col}</th>`
@@ -4465,15 +4805,10 @@ function uitableCreate(baton) {
 </div>
         `)
     ).firstElementChild;
-    // init event-handling - crud
-    contentElem.querySelector(
-        "tbody"
-    ).oncontextmenu = onContextmenu;
     // init event-handling - sorting
     contentElem.querySelector(
         "thead tr"
     ).onclick = uitableSort.bind(undefined, baton);
-    // init event-handling - scrolling
     contentElem.querySelector(
         ".uitableScroller"
     ).onscroll = uitableAjax.bind(undefined, baton);
@@ -4540,7 +4875,6 @@ function uitableSort(baton, {
     elem.dataset.sort = direction;
     baton.sortCol = colIi;
     baton.sortDir = direction;
-    // Reset scroll to top in redraw.
     baton.elemScroller.scrollTop = 0;
     baton.rowOffset = 0;
     uitableAjax(baton, {});
@@ -4554,4 +4888,13 @@ function waitAsync(timeout) {
 }
 
 // init
-window.addEventListener("load", init);
+// iOS Safari can fire load before this module finishes evaluating
+// (top-level await in sqlmath.mjs), so init directly if already loaded.
+// uiTryCatch shows any init error, else the page sits on the spinner
+if (document.readyState === "complete") {
+    uiTryCatch(init);
+} else {
+    window.addEventListener("load", function () {
+        uiTryCatch(init);
+    });
+}

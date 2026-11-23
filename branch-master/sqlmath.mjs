@@ -51,7 +51,7 @@ const debugInline = (function () {
 debugInline(); // coverage-hack
 
 const JSBATON_ARGC = 8; //jslint-ignore-line
-const JSBATON_OFFSET_ALL = 256;
+const JSBATON_OFFSET_ALL = 512;
 const JSBATON_OFFSET_ARGV = 128;
 const JSBATON_OFFSET_BUFV = 192;
 // const JSBATON_OFFSET_ERRMSG = 48;
@@ -111,7 +111,7 @@ const SQLITE_OPEN_WAL = 0x00080000;             /* VFS only */
 
 const DB_EXEC_PROFILE_DICT = {}; //jslint-ignore-line
 const DB_STATE = {};
-const version = "v2026.10.30";
+const version = "v2026.11.1";
 let DB_EXEC_PROFILE_MODE;
 let DB_EXEC_PROFILE_SQL_LENGTH;
 let IS_BROWSER;
@@ -338,22 +338,6 @@ async function ciBuildExt({
     # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${SQLMATH_EXE}"
-    # ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib,
-    #             so link with external-zlib.
-    if (uname | grep -q "MING\\|MSYS")
-    then
-        rm -f ${SQLMATH_EXE}
-        python setup.py exe_link \
-            ./build/Release/SRC_SQLITE_BASE.lib \
-            ./build/Release/SRC_SQLMATH_BASE.lib \
-            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
-            \
-            -ltcg \
-            -nologo \
-            -out:${SQLMATH_EXE} \
-            -subsystem:console
-    fi
 )
             `)
         ],
@@ -369,38 +353,25 @@ async function ciBuildExt1NodejsConfigure({
 
 // This function will setup posix/win32 env for building c-extension.
 
-    let cflagWallList = [];
-    let cflagWnoList = [];
-    String(
-        await fsReadFileUnlessTest(".ci.sh", "utf8", (`
-SQLMATH_CFLAG_WALL_LIST=" \\
-"
-SQLMATH_CFLAG_WNO_LIST=" \\
-"
-        `))
-    ).replace((
-        /(SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)=" \\([\S\s]*?)"/g
-    ), function (ignore, cflagType, cflagList) {
-        cflagList = cflagList.split(/[\s\\]/).filter(noop);
-        switch (cflagType) {
-        case "SQLMATH_CFLAG_WALL_LIST":
-            cflagWallList = cflagList;
-            break;
-        case "SQLMATH_CFLAG_WNO_LIST":
-            cflagWnoList = cflagList;
-            break;
-        }
-        return "";
-    });
+    const cflagWallList = ["-Wall", "-Werror", "-Wextra"];
+    const cflagWnoList = ["-Werror", "-Wno-all", "-Wno-extra"];
     consoleError(`ciBuildExt1Nodejs - configure binding.gyp`);
     await fsWriteFileUnlessTest("binding.gyp", JSON.stringify({
         "target_defaults": {
             "cflags": cflagWallList,
 // https://github.com/nodejs/node-gyp/blob/v10.3.1/gyp/pylib/gyp/MSVSSettings.py
+// Node 26 win is clang-cl built - drop its lto and pgo flags msvc warns on.
             "msvs_settings": {
                 "VCCLCompilerTool": {
-                    "WarnAsError": 1,
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]],
+                    "WarnAsError": "true",
                     "WarningLevel": 4
+                },
+                "VCLibrarianTool": {
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]]
+                },
+                "VCLinkerTool": {
+                    "AdditionalOptions/": [["exclude", "^[-/]f(lto|prof)"]]
                 }
             },
             "xcode_settings": {
@@ -415,7 +386,7 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
-                        "WarnAsError": 1,
+                        "WarnAsError": "true",
                         "WarningLevel": 2
                     }
                 },
@@ -457,7 +428,20 @@ SQLMATH_CFLAG_WNO_LIST=" \\
                 "conditions": [
                     [
                         "OS==\"win\"",
-                        {},
+// Win shell links vcpkg zlib, never node.lib - node.exe's zlib exports are
+// delay-loaded, so a shell run outside node failed 0xC06D007F on any zlib call.
+                        {
+                            "libraries": [
+                                (
+                                    "<(module_root_dir)/zlib.v1.3.1.vcpkg" +
+                                    ".x64-windows-static.lib"
+                                )
+                            ],
+                            "libraries!": [
+                                "-l\"<(node_lib_file)\""
+                            ],
+                            "win_delay_load_hook": "false"
+                        },
                         {
                             "libraries": [
                                 "-lz"
@@ -708,6 +692,7 @@ async function dbCallAsync(baton, argList, mode, db) {
         );
         db.ii = (db.ii + 1) % db.connPool.length;
         db.ptr = db.connPool[db.ii][0];
+        assertOrThrow(db.ptr, `dbCallAsync - db is closed - ${db.filename}`);
         // increment db.busy
         db.busy += 1;
         // init profileObj
@@ -1130,9 +1115,7 @@ async function dbFileLoadAsync({
                 filename,
                 // 2. const int isSave
                 modeSave,
-                // 3. undefined
-                undefined,
-                // 4. dbData - same position as dbOpenAsync
+                // 3. wasm-only - arraybuffer of raw sqlite-database
                 dbData
             ],
             "modeDbFile"
@@ -1198,7 +1181,6 @@ async function dbNoopAsync(...argList) {
 
 async function dbOpenAsync({
     afterFinalization,
-    dbData,
     filename = ":memory:",
     flags,
     threadCount = 1,
@@ -1216,10 +1198,6 @@ async function dbOpenAsync({
     let connPool;
     let db = {busy: 0, filename, ii: 0};
     assertOrThrow(typeof filename === "string", `invalid filename ${filename}`);
-    assertOrThrow(
-        !dbData || isExternalBuffer(dbData),
-        "dbData must be ArrayBuffer"
-    );
     connPool = await Promise.all(Array.from(new Array(
         threadCount
     ), async function () {
@@ -1234,10 +1212,8 @@ async function dbOpenAsync({
                 flags ?? (
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
-                // 3. const char *zVfs        Name of VFS module to use
-                undefined,
-                // 4. wasm-only - arraybuffer of raw sqlite-database
-                dbData
+                // 3. int timeoutBusy
+                timeoutBusy
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1246,32 +1222,19 @@ async function dbOpenAsync({
     }));
     db.connPool = connPool;
     if (!IS_BROWSER && !DB_STATE.init) {
+        // LGBM_DLOPEN
+        let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
         DB_STATE.init = true;
-        await Promise.all([
-            // PRAGMA busy_timeout
-            dbExecAsync({
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm).then(async function () {
+            await dbExecAsync({
                 db,
                 sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
-                `)
-            }),
-            // LGBM_DLOPEN
-            (async function () {
-                let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-                await moduleFs.promises.access(
-                    libLgbm
-                ).then(async function () {
-                    await dbExecAsync({
-                        db,
-                        sql: (`
 SELECT LGBM_DLOPEN('${libLgbm}');
-                        `)
-                    });
-                    DB_STATE.lgbm = true;
-                }).catch(noop);
-            }())
-        ]);
+                `)
+            });
+            DB_STATE.lgbm = true;
+        }).catch(noop);
     }
     return db;
 }
@@ -1362,7 +1325,7 @@ async function dbTableImportAsync({
     colList = colList.map(function (colName) {
         let colName2;
         let duplicate = 0;
-        colName = colName.trim();
+        colName = String(colName).trim();
         colName = colName.replace((/\W/g), "_");
         colName = colName.replace((/^[^A-Z_a-z]|^$/gm), "_$&");
         while (true) {
@@ -1372,8 +1335,8 @@ async function dbTableImportAsync({
                 ? colName
                 : colName + "_" + duplicate
             );
-            if (!tmp.has(colName2)) {
-                tmp.add(colName2);
+            if (!tmp.has(colName2.toLowerCase())) {
+                tmp.add(colName2.toLowerCase());
                 return colName2;
             }
         }
@@ -1386,11 +1349,11 @@ async function dbTableImportAsync({
         db,
         sql: (
             rowList.length === 0
-            ? `CREATE TABLE ${tableName} (${colList.join(",")});`
+            ? `CREATE TABLE ${tableName} ("${colList.join("\",\"")}");`
             : (
                 `CREATE TABLE ${tableName} AS SELECT ` +
                 colList.map(function (colName, ii) {
-                    return "value->>" + ii + " AS " + colName;
+                    return "value->>" + ii + " AS \"" + colName + "\"";
                 }).join(",") +
                 " FROM JSON_EACH($rowList);"
             )

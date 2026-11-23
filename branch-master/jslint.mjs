@@ -92,7 +92,6 @@
 
 /*jslint beta, node, trace*/
 /*property
-    AsyncLocalStorage,
     JSLINT_BETA,
     NODE_V8_COVERAGE,
     alive,
@@ -123,7 +122,6 @@
     closer,
     closure,
     code,
-    collected,
     column,
     concat,
     consoleError,
@@ -134,7 +132,6 @@
     context_report,
     convert,
     count,
-    countFailed,
     coverageDir,
     create,
     cwd,
@@ -200,8 +197,6 @@
     function_stack,
     functions,
     get,
-    getBuiltinModule,
-    getStore,
     getset,
     github_repo,
     globExclude,
@@ -244,8 +239,6 @@
     json,
     jstestDescribe,
     jstestIt,
-    jstestOrderCheck,
-    jstestReport,
     keys,
     label_break,
     label_name,
@@ -270,6 +263,7 @@
     max,
     message,
     meta,
+    method,
     min,
     mkdir,
     modeCoverageIgnoreFile,
@@ -334,7 +328,6 @@
     readFile,
     readdir,
     readonly,
-    record,
     recursive,
     reduce,
     repeat,
@@ -345,7 +338,6 @@
     rgx,
     role,
     round,
-    run,
     scope_block,
     scope_block_pop,
     scope_block_push,
@@ -432,6 +424,7 @@
     warnings,
     white,
     wrapped,
+    wrapped_operand,
     writeFile
 */
 
@@ -474,7 +467,7 @@ const jslint_charset_ascii = (
     "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
     "`abcdefghijklmnopqrstuvwxyz{|}~\u007f"
 );
-const jslint_edition = "v2026.10.30";
+const jslint_edition = "v2026.11.1";
 const jslint_fudge = 1;                 // Fudge starting line and starting
                                         // ... column to 1.
 const jslint_global_dict_all = {
@@ -802,7 +795,7 @@ const jslint_rgx_weird_property = (
 const jstestItRecordList = [];
 let jslint_export;                      // The jslint object to be exported.
 let jslint_import_meta_url = "";        // import.meta.url used by cli.
-let jstestAls;
+let jstestDescribeNow;                  // The describe whose body is running.
 let jstestDescribePrv = "";
 let jstestItCount = 0;
 let jstestTimeStart;
@@ -1760,6 +1753,15 @@ function jslint(
             break;
         case "use_double":
             mm = `Use double quotes, not single quotes.`;
+            break;
+
+// PR-519 - Name the one way to invoke a function immediately.
+
+        case "use_function_immediate":
+            mm = (
+                `Use '(function () {...}())', not an arrow function, for an` +
+                ` immediate invocation.`
+            );
             break;
 
 // PR-386 - Fix issue #382 - Make fart-related warnings more readable.
@@ -5035,33 +5037,53 @@ function jslint_phase3_parse(state) {
 
     function check_left(left, right) {
 
-// Warn if the left is not one of these:
-//      ?.
-//      ?:
+// Warn if the left of <right> is not one of these:
+//      (e ? f : g)
+//      (e + f).b, (e + f)[b]
+//      (e || f)(), (e || f)``
+//      e?.b
 //      e()
 //      e.b
 //      e[b]
 //      identifier
 
+// PR-519 - Allow member-access on a parenthesized binary-expression, as in
+// '(aa + bb).padEnd(cc)', since the parens make it explicit, and a call or
+// tagged-template only on one that can yield a function, '||', '&&' or '??'.
+// A ternary is always parenthesized here. A parenthesized literal or
+// arrow-function still warns, a second way to write '"aa".bb'.
+
+// test_cause:
+// ["(aa+aa).aa", "check_left", "(live)", "", 0]
+
         const id = left.id;
         if (
             !left.identifier &&
-            (
-                left.arity !== "ternary" ||
-                (
-                    !check_left(left.expression[1]) &&
-                    !check_left(left.expression[2])
-                )
-            ) &&
+            left.arity !== "ternary" &&
             (
                 left.arity !== "binary" ||
-                (id !== "." && id !== "?." && id !== "(" && id !== "[")
+                (
+                    id !== "." &&
+                    id !== "?." &&
+                    id !== "(" &&
+                    id !== "[" &&
+                    (
+                        !left.wrapped ||
+                        id === "=>" ||
+                        (
+                            right.id !== "." &&
+                            right.id !== "?." &&
+                            right.id !== "[" &&
+                            id !== "&&" &&
+                            id !== "??" &&
+                            id !== "||"
+                        )
+                    )
+                )
             )
         ) {
-            warn("unexpected_a", right || token_nxt);
-            return false;
+            warn("unexpected_a", right);
         }
-        return true;
     }
 
     function check_mutation(the_thing) {
@@ -5520,6 +5542,38 @@ function jslint_phase3_parse(state) {
         return token_now;
     }
 
+    function constant_super() {
+
+// PR-519 - Allow 'super.aa' and 'super[aa]' in object-method under option
+// 'this'. This function will warn 'super' unless option 'this', in an
+// object-method or its arrow-function, and before '.' or '['.
+
+        if (
+            !option_dict.this ||
+            !scope_function.method ||
+            (token_nxt.id !== "." && token_nxt.id !== "[")
+        ) {
+
+// test_cause:
+// ["
+// /*jslint this*/
+// aa={aa(){super()}}
+// ", "constant_super", "unexpected_a", "super", 10]
+// ["
+// /*jslint this*/
+// aa={aa:function(){super.aa}}
+// ", "constant_super", "unexpected_a", "super", 19]
+// ["
+// /*jslint this*/
+// super.aa
+// ", "constant_super", "unexpected_a", "super", 1]
+// ["aa={aa(){super.aa}}", "constant_super", "unexpected_a", "super", 10]
+
+            warn("unexpected_a", token_now);
+        }
+        return token_now;
+    }
+
     function constant_this() {
         if (!option_dict.this) {
 
@@ -5590,7 +5644,6 @@ function jslint_phase3_parse(state) {
                     name.id !== "toSorted"
                 )
             ) &&
-            (left.id !== "+" || name.id !== "slice") &&
             (
                 left.id !== "(regexp)" ||
                 (name.id !== "exec" && name.id !== "test")
@@ -5598,7 +5651,9 @@ function jslint_phase3_parse(state) {
         ) {
 
 // test_cause:
+// ["((aa)=>0).aa", "check_left", "unexpected_a", ".", 10]
 // ["(/./)?.0", "check_left", "unexpected_a", "?.", 6]
+// ["(\"\").aa", "check_left", "unexpected_a", ".", 5]
 // ["\"\".aa", "check_left", "unexpected_a", ".", 3]
 // ["\"aa\"?.0", "check_left", "unexpected_a", "?.", 5]
 // ["aa=[]?.aa", "check_left", "unexpected_a", "?.", 6]
@@ -5698,10 +5753,22 @@ function jslint_phase3_parse(state) {
             }
         }
 
+// PR-519 - Allow subscript of an array- or object-literal, '[aa, bb][cc]' and
+// '{aa: bb}[cc]'. Inline is the one way for a single-use lookup [owner]. A
+// constant key '[aa]["aa"]' still warns, as its dot notation would.
+
+// test_cause:
+// ["aa=[aa][0]", "infix_lbracket", "(live)", "", 0]
+// ["aa={aa:0}[aa]", "infix_lbracket", "(live)", "", 0]
+
+        if (name !== undefined || (left.id !== "{" && left.id !== "[")) {
+
 // test_cause:
 // ["0[0]", "check_left", "unexpected_a", "[", 2]
+// ["aa=[aa][\"aa\"]", "check_left", "unexpected_a", "[", 8]
 
-        check_left(left, the_token);
+            check_left(left, the_token);
+        }
         the_token.expression = [left, the_subscript];
         advance("]");
         return the_token;
@@ -5713,10 +5780,21 @@ function jslint_phase3_parse(state) {
         if (left.id !== "function" && left.id !== "=>") {
 
 // test_cause:
-// ["(0?0:0)()", "check_left", "unexpected_a", "(", 8]
+// ["(aa+aa)()", "check_left", "unexpected_a", "(", 8]
 // ["0()", "check_left", "unexpected_a", "(", 2]
 
             check_left(left, the_paren);
+        }
+        if (left.id === "=>") {
+
+// PR-519 - An arrow-function invoked immediately needs its parens, so warning
+// unexpected_parens on them cannot be obeyed. Name the one way instead.
+
+// test_cause:
+// ["((aa)=>0)()", "infix_lparen", "use_function_immediate", "=>", 6]
+
+            warn("use_function_immediate", left);
+            left.wrapped_operand = true;
         }
         the_paren.expression = [left];
         if (token_nxt.id !== ")") {
@@ -6117,12 +6195,14 @@ function jslint_phase3_parse(state) {
 // }
 
         let left;
+        let the_operator;
         let the_symbol;
 
 // Statements will have already advanced, so advance now only if the token is
 // not the first of a statement.
 
         if (!initial) {
+            the_operator = token_now;
             advance();
         }
         the_symbol = syntax_dict[token_now.id];
@@ -6147,6 +6227,27 @@ function jslint_phase3_parse(state) {
 // ["let aa=`${}`", "parse_expression", "unexpected_a", "}", 11]
 
             return stop("unexpected_a", token_now);
+        }
+        if (rbp >= 20 && left.id === "=>") {
+
+// PR-519 - Bugfix - An arrow function as an operand, as in
+// 'aa || ((bb) => cc)', needs its parens, so post_s_function does not warn
+// unexpected_parens on them. Without them, 'aa || (bb) => cc' is a
+// SyntaxError, like 'aa || bb => cc' below.
+
+            if (left.wrapped) {
+
+// test_cause:
+// ["aa||((aa)=>0)", "parse_expression", "(live)", "", 0]
+
+                left.wrapped_operand = true;
+            } else {
+
+// test_cause:
+// ["aa||(aa)=>0", "parse_expression", "wrap_subexpression_a_b", "||", 9]
+
+                warn("wrap_subexpression_a_b", left, "=>", the_operator.id);
+            }
         }
 
 // Parse/loop through each symbol in expression.
@@ -6177,6 +6278,20 @@ function jslint_phase3_parse(state) {
 // ", "parse_expression", "(live)", "", 0]
 
                 break;
+            }
+            if (token_nxt.id === "=>" && rbp >= 20 && left.identifier) {
+
+// PR-519 - Bugfix - An arrow function is an AssignmentExpression, so as the
+// operand of an operator tighter than '=', as in 'aa || bb => cc', it is a
+// SyntaxError. Warn on its parameter, which suppresses wrap_fart_parameter,
+// since '(bb) => cc' there is still invalid.
+
+// test_cause:
+// ["!aa=>0", "parse_expression", "wrap_subexpression_a_b", "!", 2]
+// ["aa||aa=>0", "parse_expression", "wrap_subexpression_a_b", "||", 5]
+// ["new aa=>0", "parse_expression", "wrap_subexpression_a_b", "new", 5]
+
+                warn("wrap_subexpression_a_b", left, "=>", the_operator.id);
             }
             advance();
             left = the_symbol.led_infix(left);
@@ -6816,7 +6931,12 @@ function jslint_phase3_parse(state) {
             name_only: true
         };
         if (mode_fart) {
+
+// PR-519 - An arrow-function sees the 'super' of its parent, so inherits
+// <method> for <constant_super>.
+
             the_function.arity = "binary";
+            the_function.method = scope_function.method;
         }
         if (the_function.arity === "statement") {
 
@@ -7173,10 +7293,29 @@ function jslint_phase3_parse(state) {
         const seen = empty();
         const seen_getset = empty();
         const the_brace = token_now;
+        function property_method(name, full) {
+
+// This function will parse the method or accessor named <full> at <name>.
+
+            return prefix_function(
+                {
+                    arity: "unary",
+                    from: name.from,
+                    id: "function",
+                    line: name.line,
+                    method: true,
+                    name: full,
+                    thru: name.from
+                },
+                false,
+                false
+            );
+        }
         function property_parse() {
             let extra;
             let full;
             let id;
+            let key;
             let name = token_nxt;
             let the_colon;
             let value;
@@ -7201,7 +7340,11 @@ function jslint_phase3_parse(state) {
             advance();
             if (
                 (name.id === "get" || name.id === "set") &&
-                token_nxt.identifier
+                (
+                    token_nxt.identifier ||
+                    token_nxt.id === "(string)" ||
+                    token_nxt.id === "["
+                )
             ) {
                 if (!option_dict.getset) {
 
@@ -7211,17 +7354,100 @@ function jslint_phase3_parse(state) {
                     warn("unexpected_a", name);
                 }
                 extra = name.id;
-                full = extra + " " + token_nxt.id;
                 name.getset = true;
                 name = token_nxt;
                 advance();
+            }
+            if (name.id === "[") {
+
+// PR-519 - Add ES2015-feature computed property-name '{[aa]: bb}'. Its key is
+// pushed before its value, for the walker. Neither gets <name_alias>, so
+// <check_ordered> skips them, like a spread. A key on one line names a method
+// in the report.
+
+// test_cause:
+// ["aa={[\naa]:0}", "property_parse", "(live)", "", 0]
+// ["aa={[aa]:0}", "property_parse", "(live)", "", 0]
+
+                value = parse_expression(0);
+                the_brace.expression.push(value);
+                advance("]");
+                id = (
+                    name.line === token_now.line
+                    ? line_list[name.line].line_source.slice(
+                        name.from,
+                        token_now.thru
+                    )
+                    : "[]"
+                );
+                if (
+                    value.id === "(number)" ||
+                    value.id === "(string)" ||
+                    value.id === "false" ||
+                    value.id === "null" ||
+                    value.id === "true"
+                ) {
+
+// PR-519 - Warn constant-key computed property-name. One way to write a
+// constant key: '{"aa": bb}', not '{["aa"]: bb}'.
+
+                    key = (
+                        value.id === "(string)"
+                        ? `"${value.value}"`
+                        : artifact(value)
+                    );
+
+// test_cause:
+// ["aa={[0]:0}", "property_parse", "expected_a_b", "[0]", 5]
+// ["aa={[\"aa\"\n]:0}", "property_parse", "expected_a_b", "[\"aa\"]", 5]
+// ["aa={[null]:0}", "property_parse", "expected_a_b", "[null]", 5]
+
+                    warn("expected_a_b", name, key, `[${key}]`);
+                }
+                if (typeof extra === "string" || token_nxt.id === "(") {
+
+// test_cause:
+// ["aa={[aa](){}}", "property_parse", "(live)", "", 0]
+// ["aa={get [aa](){}}", "property_parse", "(live)", "", 0]
+
+                    value = property_method(name, (
+                        typeof extra === "string"
+                        ? `${extra} ${id}`
+                        : id
+                    ));
+                    value.extra = extra;
+                    return value;
+                }
+                advance(":");
+                return parse_expression(0);
+            }
+            if (typeof extra === "string") {
+
+// PR-519 - Allow string-key accessor '{get "aa"() {}}', named 'get aa' like
+// '{get aa() {}}', so either form catches a duplicate of the other.
+
+// test_cause:
+// ["aa={get \"a-a\"(){}}", "property_parse", "(live)", "", 0]
+
                 id = survey(name);
+                full = `${extra} ${id}`;
                 if (seen_getset[full] === true || seen[id] === true) {
 
 // test_cause:
+// ["aa={aa:0,get \"aa\"(){}}", "property_parse", "duplicate_a", "aa", 14]
 // ["aa={get aa(){},get aa(){}}", "property_parse", "duplicate_a", "aa", 20]
 
                     warn("duplicate_a", name);
+                }
+                if (name.id === "(string)" && jslint_rgx_identifier.test(id)) {
+
+// PR-519 - One way to name an accessor: 'get aa', not 'get "aa"' [owner]. A
+// duplicate warns first, the worse of two on one token.
+
+// test_cause:
+// ["aa={get \"aa\"(){}}", "property_parse", "expected_a_b", "\"aa\"", 9]
+
+                    warn("expected_a_b", name, id, `"${id}"`);
                 }
                 seen[id] = false;
                 seen_getset[full] = true;
@@ -7236,7 +7462,11 @@ function jslint_phase3_parse(state) {
                 }
                 seen[id] = true;
             }
-            if (!name.identifier) {
+            if (
+                !name.identifier &&
+                token_nxt.id !== "(" &&
+                typeof extra !== "string"
+            ) {
 
 // test_cause:
 // ["aa={\"aa\":0}", "property_parse", "(live)", "", 0]
@@ -7258,27 +7488,19 @@ function jslint_phase3_parse(state) {
             } else if (token_nxt.id === "(") {
 
 // test_cause:
+// ["aa={\"aa\"(){}}", "property_parse", "(live)", "", 0]
 // ["aa={aa()}", "property_parse", "(live)", "", 0]
 // ["aa={get aa(){}}", "property_parse", "(live)", "", 0]
 
 // PR-516 - Bugfix - Name an accessor 'get aa' in the report, not 'get'.
 
-                value = prefix_function(
-                    {
-                        arity: "unary",
-                        from: name.from,
-                        id: "function",
-                        line: name.line,
-                        name: (
-                            typeof extra === "string"
-                            ? full
-                            : id
-                        ),
-                        thru: name.from
-                    },
-                    false,
-                    false
-                );
+// PR-519 - Allow string-key method '{"aa"() {}}'.
+
+                value = property_method(name, (
+                    typeof extra === "string"
+                    ? full
+                    : id
+                ));
             } else {
                 if (typeof extra === "string") {
 
@@ -7769,7 +7991,7 @@ function jslint_phase3_parse(state) {
                 the_id = the_name.id;
                 the_name.used = true;
 
-// PR-xxx - deadcode-confirmed - This duplicate is never shown. An earlier
+// PR-517 - deadcode-confirmed - This duplicate is never shown. An earlier
 // export of <the_id> needs it declared at top level, so declaring it again
 // above warns redefinition_a_b on the same token first, and <warn> drops a
 // second warning on one token.
@@ -9095,6 +9317,7 @@ function jslint_phase3_parse(state) {
     constant("isFinite", "function", constant_isInfinite);
     constant("isNaN", "function", constant_isNaN);
     constant("null", "null", null);
+    constant("super", "object", constant_super);
     constant("this", "object", constant_this);
     constant("true", "boolean", true);
     constant("undefined", "undefined");
@@ -9197,7 +9420,6 @@ function jslint_phase3_parse(state) {
     symbol("protected");
     symbol("public");
     symbol("static");
-    symbol("super");
     symbol("void");
     symbol("yield");
     symbol("}");
@@ -9786,7 +10008,7 @@ function jslint_phase4_walk(state) {
                 thing.expression[0].arity === "unary" &&
                 !thing.expression[0].wrapped &&
 
-// PR-xxx - deadcode-confirmed - A 'void' here never showed its warning, since
+// PR-517 - deadcode-confirmed - A 'void' here never showed its warning, since
 // <prefix_void> has already warned on the same token, and <warn> drops a
 // second warning on one token.
 //
@@ -9897,7 +10119,7 @@ function jslint_phase4_walk(state) {
         } else if (left.identifier) {
             if (the_new !== undefined) {
 
-// PR-xxx - deadcode-confirmed - A branch for 'new Function' never showed its
+// PR-517 - deadcode-confirmed - A branch for 'new Function' never showed its
 // warning. Without option eval, <constant_Function> has already warned on the
 // same 'Function' token, and <warn> drops a second warning on one token.
 //
@@ -10074,7 +10296,7 @@ function jslint_phase4_walk(state) {
         delete scope_function.loop;
         delete scope_function.switch;
         delete scope_function.try;
-        if (thing.wrapped) {
+        if (thing.wrapped && !thing.wrapped_operand) {
 
 // test_cause:
 // ["aa=(function(){})", "post_s_function", "unexpected_parens", "function", 5]
@@ -12160,12 +12382,15 @@ async function jstestDescribe(description, testFunction) {
 // <description>, then run them.
 
     const describe = {
-        collected: false,
         description,
         itList: []
     };
     const describePrv = jstestDescribePrv;
-    let errBody;
+    const recordBody = {
+        describe: description,
+        description: "jstestDescribe body",
+        status: "pending"
+    };
     let message;
     let result;
 
@@ -12177,49 +12402,28 @@ async function jstestDescribe(description, testFunction) {
 // Init jstestTimeStart.
 
     if (jstestTimeStart === undefined) {
-
-// PR-xxx - Run each body and each test in an async context, storing {describe}
-// while a body collects and {describe, record} while a test runs: a body's
-// <jstestIt> finds its describe even after an await, and an error escaping a
-// test, e.g. thrown from a timer or an un-awaited rejection, names its test at
-// exit. The monitor only observes: node still crashes as before.
-// <process.getBuiltinModule> loads synchronously, so describes cannot race to
-// create two contexts, and the browser never reaches it.
-
-        const {AsyncLocalStorage} = process.getBuiltinModule("async_hooks");
-        jstestAls = new AsyncLocalStorage();
         jstestTimeStart = Date.now();
         process.on("exit", jstestOnExit);
-        process.on("uncaughtExceptionMonitor", jstestOnCrash);
     }
 
-// PR-457 - Wait awhile for imports to initialize.
+// PR-517 - Collect, then run. Record the body as pending, then await it, so a
+// body that hangs before registering fails at exit instead of passing with 0
+// tests. A body that throws crashes node as an unhandled rejection, leaving its
+// record pending. A body that settles clean leaves no record.
 
-    await new Promise(function (resolve) {
-        setTimeout(resolve);
-    });
+    jstestItRecordList.push(recordBody);
+    await jstestDescribeRun(describe, testFunction);
+    jstestItRecordList.splice(jstestItRecordList.indexOf(recordBody), 1);
 
-// PR-xxx - Collect, then run: await the whole body, async or not, before any
-// test starts. A body that throws fails as one more test, wrapped, so a falsy
-// throw still fails.
-
-    try {
-        await jstestAls.run({describe}, testFunction);
-    } catch (err) {
-        errBody = [err, "jstestDescribe body"];
-    }
-    describe.collected = true;
-
-// PR-xxx - Assert this describe's tests, then this describe, are in ASCII
-// order. Then add one failed result for a body that threw. Record them before
-// any test runs, so a hung sibling cannot hide them at exit.
+// PR-517 - Assert this describe's tests, then this describe, are in ASCII
+// order. Record them before any test runs, so a hung sibling cannot hide them
+// at exit.
 
     result = [
         jstestOrderCheck(describe.itList.map(function (record) {
             return record.description;
         })),
-        jstestOrderCheck([describePrv, description]),
-        errBody
+        jstestOrderCheck([describePrv, description])
     ].filter(Boolean).map(function ([err, descriptionIt]) {
         return {
             describe: description,
@@ -12230,28 +12434,17 @@ async function jstestDescribe(description, testFunction) {
     });
     jstestItRecordList.push(...result);
     await Promise.all(describe.itList.map(async function (record) {
-        let settle = {
-            status: "passed"
-        };
         try {
-            await jstestAls.run({describe, record}, record.testFunction);
+            await record.testFunction();
+            record.status = "passed";
         } catch (err) {
-            settle = {
-                err,
-                status: "failed"
-            };
-        }
-
-// PR-xxx - A test settles once, so a crash <jstestOnCrash> recorded while it
-// ran stands, even when a user's own uncaughtException handler lets it finish.
-
-        if (record.status === "pending") {
-            Object.assign(record, settle);
+            record.err = err;
+            record.status = "failed";
         }
     }));
     result.unshift(...describe.itList);
 
-// PR-xxx - Print nothing for a describe whose tests the filter all skipped.
+// PR-517 - Print nothing for a describe whose tests the filter all skipped.
 
     if (result.length === 0) {
         return;
@@ -12282,6 +12475,20 @@ async function jstestDescribe(description, testFunction) {
     console.error(message);
 }
 
+function jstestDescribeRun(describe, testFunction) {
+
+// This function will run describe-body <testFunction> with <describe> current
+// only while it runs synchronously, so <jstestIt> registers there alone and a
+// call after an await throws.
+
+    jstestDescribeNow = describe;
+    try {
+        return testFunction();
+    } finally {
+        jstestDescribeNow = undefined;
+    }
+}
+
 function jstestErrText(err) {
 
 // This function will return the stack of thrown <err>, else <err> as text,
@@ -12299,19 +12506,19 @@ function jstestIt(description, testFunction) {
 // This function will register test-case <testFunction> with given
 // <description> in the current describe, to run once its body settles.
 
-    const describe = jstestAls?.getStore()?.describe;
+    const describe = jstestDescribeNow;
 
-// PR-xxx - Throw outside a describe body, or after it settled, since no
-// describe would run or report this test.
+// PR-517 - Throw outside a describe body's synchronous part, since no describe
+// would run or report this test.
 
-    if (!describe || describe.collected) {
+    if (!describe) {
         throw new Error(
             "jstestIt " + JSON.stringify(description) +
-            " called outside a jstestDescribe body, or after it settled"
+            " called outside a jstestDescribe body, or after an await"
         );
     }
 
-// PR-xxx - Run only a test whose "<describe> - <it>" matches opt-in regexp
+// PR-517 - Run only a test whose "<describe> - <it>" matches opt-in regexp
 // npm_config_mode_test_filter, e.g.
 // npm_config_mode_test_filter="jstestXxx.*pending" npm test
 // Prefer the env form, since npm 11 warns the flag form --mode-test-filter
@@ -12323,7 +12530,7 @@ function jstestIt(description, testFunction) {
         return;
     }
 
-// PR-xxx - Record this test as pending from registration, so <jstestReport>
+// PR-517 - Record this test as pending from registration, so <jstestReport>
 // sees it even if its describe never runs or prints.
 
     jstestItRecordList.push({
@@ -12335,27 +12542,14 @@ function jstestIt(description, testFunction) {
     describe.itList.push(jstestItRecordList.at(-1));
 }
 
-function jstestOnCrash(err) {
-
-// This function will mark the test whose async context let uncaught <err>
-// escape as crashed, and list it at exit even if its describe printed.
-
-    const record = jstestAls.getStore()?.record;
-    if (record) {
-        record.err = err;
-        record.printed = false;
-        record.status = "crashed";
-    }
-}
-
 function jstestOnExit(exitCode) {
 
 // This function will on process-exit, print test-report
 // and exit with non-zero exit-code if any test failed.
 
-    const {countFailed, text} = jstestReport();
-    console.error(text);
-    process.exitCode = exitCode || countFailed;
+    const report = jstestReport();
+    console.error(report.text);
+    process.exitCode = exitCode || report.exitCode;
 }
 
 function jstestOrderCheck(descriptionList) {
@@ -12384,23 +12578,34 @@ function jstestOrderCheck(descriptionList) {
 
 function jstestReport() {
 
-// This function will return the test-report <text> and its <countFailed>,
+// This function will return the test-report <text> and its <exitCode>,
 // without side effects.
 
-// PR-xxx - List and count as failed each test its describe never printed: one
+// PR-517 - List and count as failed each test its describe never printed: one
 // still pending, e.g. hung until a watchdog ended the process, or one that
 // failed while a sibling hung, whose error was otherwise never shown.
 
     const countFailed = jstestItRecordList.filter(function ({status}) {
         return status !== "passed";
     }).length;
+    const filter = process.env.npm_config_mode_test_filter;
+
+// PR-517 - Fail a run whose filter matched no test, so a stray or mistyped
+// filter, e.g. a mode_test_filter line left in .npmrc, cannot skip the whole
+// suite and pass green.
+
+    const filterEmpty = Boolean(filter) && jstestItRecordList.length === 0;
     const unprintedList = jstestItRecordList.filter(function (record) {
         return !record.printed && record.status !== "passed";
     });
     return {
-        countFailed,
+
+// PR-517 - Exit 1, not the failed count, since an exit status keeps only 8
+// bits, so 256 failed tests would exit 0.
+
+        exitCode: Number(countFailed > 0 || filterEmpty),
         text: (
-            countFailed
+            (countFailed > 0 || filterEmpty)
             ? "\n\u001b[31m"
             : "\n\u001b[32m"
         ) +
@@ -12418,7 +12623,14 @@ function jstestReport() {
                     : jstestErrText(err) + "\n"
                 )
             );
-        }).join("") +
+        }).join("") + (
+            filterEmpty
+            ? (
+                "  \u2718 no test matched npm_config_mode_test_filter=" +
+                JSON.stringify(filter) + "\n"
+            )
+            : ""
+        ) +
         "  tests total  - " + jstestItRecordList.length + "\n" +
         "  tests failed - " + countFailed + "\n" +
         "\n" +
@@ -13979,8 +14191,6 @@ jslint_export = Object.freeze(
             jslint_report,
             jstestDescribe,
             jstestIt,
-            jstestOrderCheck,
-            jstestReport,
             moduleFsInit,
             noop,
             objectDeepCopyWithKeysSorted,

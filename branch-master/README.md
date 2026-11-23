@@ -9,7 +9,7 @@
 
 # Status
 
-| Branch | [master<br>(v2026.10.30)](https://github.com/kaizhu256/sqlmath/tree/master) | [beta<br>(Web Demo)](https://github.com/kaizhu256/sqlmath/tree/beta) | [alpha<br>(Development)](https://github.com/kaizhu256/sqlmath/tree/alpha) |
+| Branch | [master<br>(v2026.11.1)](https://github.com/kaizhu256/sqlmath/tree/master) | [beta<br>(Web Demo)](https://github.com/kaizhu256/sqlmath/tree/beta) | [alpha<br>(Development)](https://github.com/kaizhu256/sqlmath/tree/alpha) |
 |--:|:--:|:--:|:--:|
 | CI | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Amaster) | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Abeta) | [![ci](https://github.com/kaizhu256/sqlmath/actions/workflows/ci.yml/badge.svg?branch=alpha)](https://github.com/kaizhu256/sqlmath/actions?query=branch%3Aalpha) |
 | Coverage | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) | [![coverage](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/coverage_badge.svg)](https://kaizhu256.github.io/sqlmath/branch-master/.artifact/coverage/index.html) |
@@ -188,9 +188,6 @@ Try it live: **[kaizhu256.github.io/sqlmath](https://kaizhu256.github.io/sqlmath
 
 | Function | Description |
 |----------|-------------|
-| `cot(x)` | Cotangent |
-| `coth(x)` | Hyperbolic cotangent |
-| `fmod(x, y)` | Floating-point modulo |
 | `squared(x)` | Square of x |
 | `squaredwithsign(x)` | Square preserving sign (negative input → negative output) |
 | `sqrtwithsign(x)` | Square root preserving sign |
@@ -216,7 +213,6 @@ Try it live: **[kaizhu256.github.io/sqlmath](https://kaizhu256.github.io/sqlmath
 
 | Function | Description |
 |----------|-------------|
-| `marginoferror95(p, n)` | 95% margin of error: sqrt(p*(1-p)/n) |
 | `random1()` | Random float in [0, 1) |
 
 
@@ -226,7 +222,6 @@ Try it live: **[kaizhu256.github.io/sqlmath](https://kaizhu256.github.io/sqlmath
 
 | Function | Description |
 |----------|-------------|
-| `doublearray_array(...)` | Create double array from values |
 | `doublearray_extract(arr, i)` | Extract element at index |
 | `doublearray_jsonfrom(json)` | Create array from JSON |
 | `doublearray_jsonto(arr)` | Convert array to JSON |
@@ -247,6 +242,10 @@ sqlmath extends SQLite's date functions with integer-format conversions (YYYYMMD
 |----------|-------------|
 | `WIN_SINEFIT2(...)` | Fit sine wave to data (aggregate window function) |
 | `SINEFIT_REFITLAST(...)` | Refit sine wave with new data point |
+
+> `STDEV`, `WIN_QUANTILE2` and `WIN_SINEFIT2` assume a window frame ending at
+> `CURRENT ROW`. With `k FOLLOWING` (k > 0), the last k rows return stale
+> values.
 
 
 <br><br>
@@ -409,7 +408,6 @@ db_exec(db=db, sql="""
 | `LGBM_TRAINFROMFILE(params, n_iter, eval, train_file, data_params, test_file)` | scalar | Train from LibSVM file |
 | `LGBM_PREDICTFORTABLE(model, type, start, n, params, ...)` | window | Predict per row |
 | `LGBM_PREDICTFORFILE(model, type, start, n, params, file, header, out)` | scalar | Predict and save to file |
-| `lgbm_extract(result, key)` | scalar | Extract value from result |
 
 **Complete Example:**
 
@@ -420,7 +418,7 @@ Full notebook with fraud detection, intraday trading signals, and model persiste
 **Kaggle Environment:**
 - Linux x64, Python 3.12, Node.js 24
 - Datasets: [Credit Card Fraud](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) (284K transactions), SPY intraday OHLCV
-- sqlmath installs via `pip install sqlmath==2026.10.30`
+- sqlmath installs via `pip install sqlmath==2026.11.1`
 
 
 <br><br>
@@ -684,11 +682,11 @@ PORT=8080 sh jslint_ci.sh shHttpFileServer
 ```shell
 python -m build
 #
-twine upload --repository testpypi dist/sqlmath-2026.10.30*
-py -m pip install --index-url https://test.pypi.org/simple/ sqlmath==2026.10.30
+twine upload --repository testpypi dist/sqlmath-2026.11.1*
+py -m pip install --index-url https://test.pypi.org/simple/ sqlmath==2026.11.1
 #
-twine upload dist/sqlmath-2026.10.30*
-pip install sqlmath==2026.10.30
+twine upload dist/sqlmath-2026.11.1*
+pip install sqlmath==2026.11.1
 ```
 
 
