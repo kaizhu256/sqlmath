@@ -7,7 +7,7 @@
 - sqlite - Add similar error-handling from builtin-sql-function PERCENTILE() into custom-sql-function QUANTILE().
 - none
 
-# v2026.11.29
+# v2026.11.1
 - ci - Bump to node_version 24 to 26.
 
 # v2026.10.30
