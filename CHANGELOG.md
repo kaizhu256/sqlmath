@@ -10,6 +10,7 @@
 # v2026.11.1
 - sqlmath - Fix 5th external buffer overwriting binds by raising JSBATON_OFFSET_ALL 256 -> 512, set busy_timeout per connection, and guard a closed db with an error naming db.filename.
 - ci - Automate pull-request open, post-merge cleanup and draft-release save with github-ci waits: 'shGithubPrCreate <origin|upstream> pr|release', 'shGithubPrCleanup', 'shGithubReleaseCreate'.
+- ci - Trigger publish.yml on release published, skipping npm and PyPI on a fork.
 - ci - Bump to node_version 24 to 26.
 
 # v2026.10.30
