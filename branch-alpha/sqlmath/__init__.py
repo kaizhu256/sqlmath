@@ -21,8 +21,8 @@
 
 """sqlmath.py."""
 
-__version__ = "2026.11.29"
-__version_info__ = ("2026", "11", "29")
+__version__ = "2026.11.1"
+__version_info__ = ("2026", "11", "1")
 
 import csv
 import io

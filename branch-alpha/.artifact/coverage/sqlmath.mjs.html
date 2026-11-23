@@ -276,7 +276,7 @@ body {
 <pre><span class="lineno"><a href="#line_111" id="line_111">  111.</a></span><span class="count    ">      1</span><span></span></pre>
 <pre><span class="lineno"><a href="#line_112" id="line_112">  112.</a></span><span class="count    ">      1</span><span>const DB_EXEC_PROFILE_DICT = {}; //jslint-ignore-line</span></pre>
 <pre><span class="lineno"><a href="#line_113" id="line_113">  113.</a></span><span class="count    ">      1</span><span>const DB_STATE = {};</span></pre>
-<pre><span class="lineno"><a href="#line_114" id="line_114">  114.</a></span><span class="count    ">      1</span><span>const version = "v2026.11.29";</span></pre>
+<pre><span class="lineno"><a href="#line_114" id="line_114">  114.</a></span><span class="count    ">      1</span><span>const version = "v2026.11.1";</span></pre>
 <pre><span class="lineno"><a href="#line_115" id="line_115">  115.</a></span><span class="count    ">      1</span><span>let DB_EXEC_PROFILE_MODE;</span></pre>
 <pre><span class="lineno"><a href="#line_116" id="line_116">  116.</a></span><span class="count    ">      1</span><span>let DB_EXEC_PROFILE_SQL_LENGTH;</span></pre>
 <pre><span class="lineno"><a href="#line_117" id="line_117">  117.</a></span><span class="count    ">      1</span><span>let IS_BROWSER;</span></pre>
@@ -1236,9 +1236,9 @@ body {
 <pre><span class="lineno"><a href="#line_1071" id="line_1071"> 1071.</a></span><span class="count    ">      1</span><span>        return;</span></pre>
 <pre><span class="lineno"><a href="#line_1072" id="line_1072"> 1072.</a></span><span class="count    ">      1</span><span>    }</span></pre>
 <pre><span class="lineno"><a href="#line_1073" id="line_1073"> 1073.</a></span><span class="count    ">      1</span><span>    result = Object.values(DB_EXEC_PROFILE_DICT);</span></pre>
-<pre><span class="lineno"><a href="#line_1074" id="line_1074"> 1074.</a></span><span class="count    ">   1095</span><span>    result.sort(function (aa, bb) {</span></pre>
-<pre><span class="lineno"><a href="#line_1075" id="line_1075"> 1075.</a></span><span class="count    ">    345</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
-<pre><span class="lineno"><a href="#line_1076" id="line_1076"> 1076.</a></span><span class="count    ">   1095</span><span>    });</span></pre>
+<pre><span class="lineno"><a href="#line_1074" id="line_1074"> 1074.</a></span><span class="count    ">   1199</span><span>    result.sort(function (aa, bb) {</span></pre>
+<pre><span class="lineno"><a href="#line_1075" id="line_1075"> 1075.</a></span><span class="count    ">    424</span><span>        return ((bb.timeElapsed - aa.timeElapsed) || (bb.count - aa.count));</span></pre>
+<pre><span class="lineno"><a href="#line_1076" id="line_1076"> 1076.</a></span><span class="count    ">   1199</span><span>    });</span></pre>
 <pre><span class="lineno"><a href="#line_1077" id="line_1077"> 1077.</a></span><span class="count    ">     20</span><span>    result = result.slice(0, limit).map(function ({</span></pre>
 <pre><span class="lineno"><a href="#line_1078" id="line_1078"> 1078.</a></span><span class="count    ">     20</span><span>        count,</span></pre>
 <pre><span class="lineno"><a href="#line_1079" id="line_1079"> 1079.</a></span><span class="count    ">     20</span><span>        sql,</span></pre>
