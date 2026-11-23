@@ -9,7 +9,7 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 59591,
+       "endOffset": 59208,
        "startOffset": 0
       }
      ],
@@ -42,23 +42,23 @@
      "ranges": [
       {
        "count": 111,
-       "endOffset": 6098,
-       "startOffset": 5724
+       "endOffset": 6097,
+       "startOffset": 5723
       },
       {
        "count": 1,
-       "endOffset": 5907,
-       "startOffset": 5900
+       "endOffset": 5906,
+       "startOffset": 5899
       },
       {
        "count": 110,
-       "endOffset": 5957,
-       "startOffset": 5907
+       "endOffset": 5956,
+       "startOffset": 5906
       },
       {
        "count": 108,
-       "endOffset": 6076,
-       "startOffset": 6037
+       "endOffset": 6075,
+       "startOffset": 6036
       }
      ],
      "isBlockCoverage": true
@@ -67,19 +67,19 @@
      "functionName": "assertInt64",
      "ranges": [
       {
-       "count": 13840,
-       "endOffset": 6514,
-       "startOffset": 6100
+       "count": 13833,
+       "endOffset": 6513,
+       "startOffset": 6099
       },
       {
-       "count": 13833,
-       "endOffset": 6321,
-       "startOffset": 6285
+       "count": 13826,
+       "endOffset": 6320,
+       "startOffset": 6284
       },
       {
        "count": 14,
-       "endOffset": 6512,
-       "startOffset": 6329
+       "endOffset": 6511,
+       "startOffset": 6328
       }
      ],
      "isBlockCoverage": true
@@ -89,33 +89,33 @@
      "ranges": [
       {
        "count": 3438,
-       "endOffset": 7092,
-       "startOffset": 6516
+       "endOffset": 7091,
+       "startOffset": 6515
       },
       {
        "count": 3,
-       "endOffset": 7090,
-       "startOffset": 6803
+       "endOffset": 7089,
+       "startOffset": 6802
       },
       {
        "count": 1,
-       "endOffset": 6962,
-       "startOffset": 6945
+       "endOffset": 6961,
+       "startOffset": 6944
       },
       {
        "count": 2,
-       "endOffset": 7059,
-       "startOffset": 6979
+       "endOffset": 7058,
+       "startOffset": 6978
       },
       {
        "count": 1,
-       "endOffset": 7038,
-       "startOffset": 7005
+       "endOffset": 7037,
+       "startOffset": 7004
       },
       {
        "count": 1,
-       "endOffset": 7059,
-       "startOffset": 7055
+       "endOffset": 7058,
+       "startOffset": 7054
       }
      ],
      "isBlockCoverage": true
@@ -125,23 +125,23 @@
      "ranges": [
       {
        "count": 4,
-       "endOffset": 7532,
-       "startOffset": 7094
+       "endOffset": 7531,
+       "startOffset": 7093
       },
       {
        "count": 2,
-       "endOffset": 7530,
-       "startOffset": 7329
+       "endOffset": 7529,
+       "startOffset": 7328
       },
       {
        "count": 1,
-       "endOffset": 7478,
-       "startOffset": 7461
+       "endOffset": 7477,
+       "startOffset": 7460
       },
       {
        "count": 1,
-       "endOffset": 7499,
-       "startOffset": 7495
+       "endOffset": 7498,
+       "startOffset": 7494
       }
      ],
      "isBlockCoverage": true
@@ -150,24 +150,24 @@
      "functionName": "assertOrThrow",
      "ranges": [
       {
-       "count": 48652,
-       "endOffset": 7832,
-       "startOffset": 7534
+       "count": 50510,
+       "endOffset": 7831,
+       "startOffset": 7533
       },
       {
        "count": 95,
-       "endOffset": 7830,
-       "startOffset": 7664
+       "endOffset": 7829,
+       "startOffset": 7663
       },
       {
        "count": 14,
-       "endOffset": 7791,
-       "startOffset": 7748
+       "endOffset": 7790,
+       "startOffset": 7747
       },
       {
        "count": 81,
-       "endOffset": 7813,
-       "startOffset": 7804
+       "endOffset": 7812,
+       "startOffset": 7803
       }
      ],
      "isBlockCoverage": true
@@ -177,8 +177,8 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 10378,
-       "startOffset": 7834
+       "endOffset": 10377,
+       "startOffset": 7833
       }
      ],
      "isBlockCoverage": true
@@ -188,38 +188,38 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 10374,
-       "startOffset": 7984
+       "endOffset": 10373,
+       "startOffset": 7983
       },
       {
        "count": 1,
-       "endOffset": 8322,
-       "startOffset": 8196
+       "endOffset": 8321,
+       "startOffset": 8195
       },
       {
        "count": 1,
-       "endOffset": 8588,
-       "startOffset": 8580
+       "endOffset": 8587,
+       "startOffset": 8579
       },
       {
        "count": 14,
-       "endOffset": 8623,
-       "startOffset": 8613
+       "endOffset": 8622,
+       "startOffset": 8612
       },
       {
        "count": 1,
-       "endOffset": 8737,
-       "startOffset": 8729
+       "endOffset": 8736,
+       "startOffset": 8728
       },
       {
        "count": 14,
-       "endOffset": 8772,
-       "startOffset": 8762
+       "endOffset": 8771,
+       "startOffset": 8761
       },
       {
        "count": 1,
-       "endOffset": 9583,
-       "startOffset": 8864
+       "endOffset": 9582,
+       "startOffset": 8863
       }
      ],
      "isBlockCoverage": true
@@ -229,18 +229,18 @@
      "ranges": [
       {
        "count": 3,
-       "endOffset": 9571,
-       "startOffset": 8958
+       "endOffset": 9570,
+       "startOffset": 8957
       },
       {
        "count": 1,
-       "endOffset": 9057,
-       "startOffset": 9010
+       "endOffset": 9056,
+       "startOffset": 9009
       },
       {
        "count": 2,
-       "endOffset": 9570,
-       "startOffset": 9057
+       "endOffset": 9569,
+       "startOffset": 9056
       }
      ],
      "isBlockCoverage": true
@@ -250,18 +250,18 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 9555,
-       "startOffset": 9090
+       "endOffset": 9554,
+       "startOffset": 9089
       },
       {
        "count": 1,
-       "endOffset": 9365,
-       "startOffset": 9266
+       "endOffset": 9364,
+       "startOffset": 9265
       },
       {
        "count": 1,
-       "endOffset": 9489,
-       "startOffset": 9390
+       "endOffset": 9488,
+       "startOffset": 9389
       }
      ],
      "isBlockCoverage": true
@@ -271,8 +271,8 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 10366,
-       "startOffset": 9609
+       "endOffset": 10365,
+       "startOffset": 9608
       }
      ],
      "isBlockCoverage": true
@@ -282,18 +282,18 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 10275,
-       "startOffset": 10045
+       "endOffset": 10274,
+       "startOffset": 10044
       },
       {
        "count": 2,
-       "endOffset": 10201,
-       "startOffset": 10159
+       "endOffset": 10200,
+       "startOffset": 10158
       },
       {
        "count": 28,
-       "endOffset": 10242,
-       "startOffset": 10222
+       "endOffset": 10241,
+       "startOffset": 10221
       }
      ],
      "isBlockCoverage": true
@@ -303,8 +303,8 @@
      "ranges": [
       {
        "count": 7,
-       "endOffset": 12095,
-       "startOffset": 10380
+       "endOffset": 11511,
+       "startOffset": 10379
       }
      ],
      "isBlockCoverage": true
@@ -314,29 +314,8 @@
      "ranges": [
       {
        "count": 7,
-       "endOffset": 15873,
-       "startOffset": 12097
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 14,
-       "endOffset": 12902,
-       "startOffset": 12543
-      },
-      {
-       "count": 7,
-       "endOffset": 12771,
-       "startOffset": 12682
-      },
-      {
-       "count": 7,
-       "endOffset": 12867,
-       "startOffset": 12780
+       "endOffset": 15834,
+       "startOffset": 11513
       }
      ],
      "isBlockCoverage": true
@@ -346,8 +325,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 16875,
-       "startOffset": 15875
+       "endOffset": 16836,
+       "startOffset": 15836
       }
      ],
      "isBlockCoverage": true
@@ -357,58 +336,58 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 22158,
-       "startOffset": 16877
+       "endOffset": 22119,
+       "startOffset": 16838
       },
       {
        "count": 46,
-       "endOffset": 21977,
-       "startOffset": 19666
+       "endOffset": 21938,
+       "startOffset": 19627
       },
       {
        "count": 6,
-       "endOffset": 20111,
-       "startOffset": 19719
+       "endOffset": 20072,
+       "startOffset": 19680
       },
       {
        "count": 40,
-       "endOffset": 20189,
-       "startOffset": 20111
+       "endOffset": 20150,
+       "startOffset": 20072
       },
       {
        "count": 12,
-       "endOffset": 20558,
-       "startOffset": 20189
+       "endOffset": 20519,
+       "startOffset": 20150
       },
       {
        "count": 28,
-       "endOffset": 21971,
-       "startOffset": 20558
+       "endOffset": 21932,
+       "startOffset": 20519
       },
       {
        "count": 2,
-       "endOffset": 21124,
-       "startOffset": 20575
+       "endOffset": 21085,
+       "startOffset": 20536
       },
       {
        "count": 1,
-       "endOffset": 21114,
-       "startOffset": 20825
+       "endOffset": 21075,
+       "startOffset": 20786
       },
       {
        "count": 26,
-       "endOffset": 21971,
-       "startOffset": 21124
+       "endOffset": 21932,
+       "startOffset": 21085
       },
       {
        "count": 15,
-       "endOffset": 21598,
-       "startOffset": 21152
+       "endOffset": 21559,
+       "startOffset": 21113
       },
       {
        "count": 11,
-       "endOffset": 21971,
-       "startOffset": 21598
+       "endOffset": 21932,
+       "startOffset": 21559
       }
      ],
      "isBlockCoverage": true
@@ -417,84 +396,84 @@
      "functionName": "dbCallAsync",
      "ranges": [
       {
-       "count": 3866,
-       "endOffset": 29219,
-       "startOffset": 22160
+       "count": 3864,
+       "endOffset": 29258,
+       "startOffset": 22121
       },
       {
-       "count": 2000,
-       "endOffset": 22571,
-       "startOffset": 22547
-      },
-      {
-       "count": 1881,
-       "endOffset": 25018,
-       "startOffset": 22573
-      },
-      {
-       "count": 1866,
-       "endOffset": 24080,
-       "startOffset": 22963
-      },
-      {
-       "count": 303,
-       "endOffset": 23907,
-       "startOffset": 23786
-      },
-      {
-       "count": 1866,
-       "endOffset": 25002,
-       "startOffset": 24595
-      },
-      {
-       "count": 318,
-       "endOffset": 24988,
-       "startOffset": 24896
-      },
-      {
-       "count": 1985,
-       "endOffset": 25316,
-       "startOffset": 25018
-      },
-      {
-       "count": 6183,
-       "endOffset": 25349,
-       "startOffset": 25316
-      },
-      {
-       "count": 1985,
-       "endOffset": 27517,
-       "startOffset": 25349
-      },
-      {
-       "count": 1960,
-       "endOffset": 27685,
-       "startOffset": 27517
+       "count": 1999,
+       "endOffset": 22532,
+       "startOffset": 22508
       },
       {
        "count": 1880,
-       "endOffset": 27685,
-       "startOffset": 27595
+       "endOffset": 25057,
+       "startOffset": 22534
+      },
+      {
+       "count": 1865,
+       "endOffset": 24119,
+       "startOffset": 23002
+      },
+      {
+       "count": 302,
+       "endOffset": 23946,
+       "startOffset": 23825
+      },
+      {
+       "count": 1865,
+       "endOffset": 25041,
+       "startOffset": 24634
+      },
+      {
+       "count": 322,
+       "endOffset": 25027,
+       "startOffset": 24935
+      },
+      {
+       "count": 1984,
+       "endOffset": 25355,
+       "startOffset": 25057
+      },
+      {
+       "count": 6180,
+       "endOffset": 25388,
+       "startOffset": 25355
+      },
+      {
+       "count": 1984,
+       "endOffset": 27556,
+       "startOffset": 25388
+      },
+      {
+       "count": 1959,
+       "endOffset": 27724,
+       "startOffset": 27556
+      },
+      {
+       "count": 1879,
+       "endOffset": 27724,
+       "startOffset": 27634
       },
       {
        "count": 2,
-       "endOffset": 28651,
-       "startOffset": 27685
+       "endOffset": 28690,
+       "startOffset": 27724
       },
       {
        "count": 1,
-       "endOffset": 28826,
-       "startOffset": 28653
+       "endOffset": 28865,
+       "startOffset": 28692
       },
       {
        "count": 2,
-       "endOffset": 28973,
-       "startOffset": 28826
+       "endOffset": 29012,
+       "startOffset": 28865
       },
       {
        "count": 80,
-       "endOffset": 29217,
-       "startOffset": 28973
+       "endOffset": 29256,
+       "startOffset": 29012
       }
      ],
      "isBlockCoverage": true
@@ -503,79 +482,79 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 15742,
-       "endOffset": 27025,
-       "startOffset": 25413
+       "count": 15734,
+       "endOffset": 27064,
+       "startOffset": 25452
       },
       {
-       "count": 15741,
-       "endOffset": 25481,
-       "startOffset": 25461
+       "count": 15733,
+       "endOffset": 25520,
+       "startOffset": 25500
       },
       {
-       "count": 166,
-       "endOffset": 25515,
-       "startOffset": 25483
+       "count": 136,
+       "endOffset": 25554,
+       "startOffset": 25522
       },
       {
-       "count": 7978,
-       "endOffset": 25568,
-       "startOffset": 25554
+       "count": 7974,
+       "endOffset": 25607,
+       "startOffset": 25593
       },
       {
-       "count": 9847,
-       "endOffset": 25592,
-       "startOffset": 25577
-      },
-      {
-       "count": 13808,
-       "endOffset": 26316,
-       "startOffset": 25601
+       "count": 9842,
+       "endOffset": 25631,
+       "startOffset": 25616
       },
       {
        "count": 13801,
-       "endOffset": 25833,
-       "startOffset": 25780
+       "endOffset": 26355,
+       "startOffset": 25640
+      },
+      {
+       "count": 13794,
+       "endOffset": 25872,
+       "startOffset": 25819
       },
       {
        "count": 12,
-       "endOffset": 25902,
-       "startOffset": 25856
+       "endOffset": 25941,
+       "startOffset": 25895
       },
       {
-       "count": 1921,
-       "endOffset": 26620,
-       "startOffset": 26373
+       "count": 1920,
+       "endOffset": 26659,
+       "startOffset": 26412
       },
       {
        "count": 2,
-       "endOffset": 26499,
-       "startOffset": 26494
+       "endOffset": 26538,
+       "startOffset": 26533
       },
       {
-       "count": 1919,
-       "endOffset": 26584,
-       "startOffset": 26568
+       "count": 1918,
+       "endOffset": 26623,
+       "startOffset": 26607
       },
       {
        "count": 13,
-       "endOffset": 26691,
-       "startOffset": 26630
+       "endOffset": 26730,
+       "startOffset": 26669
       },
       {
        "count": 5,
-       "endOffset": 26714,
-       "startOffset": 26691
+       "endOffset": 26753,
+       "startOffset": 26730
       },
       {
        "count": 2,
-       "endOffset": 26944,
-       "startOffset": 26909
+       "endOffset": 26983,
+       "startOffset": 26948
       },
       {
        "count": 11,
-       "endOffset": 27024,
-       "startOffset": 26944
+       "endOffset": 27063,
+       "startOffset": 26983
       }
      ],
      "isBlockCoverage": true
@@ -584,14 +563,14 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 17658,
-       "endOffset": 27191,
-       "startOffset": 27091
+       "count": 17649,
+       "endOffset": 27230,
+       "startOffset": 27130
       },
       {
-       "count": 1962,
-       "endOffset": 27178,
-       "startOffset": 27155
+       "count": 1961,
+       "endOffset": 27217,
+       "startOffset": 27194
       }
      ],
      "isBlockCoverage": true
@@ -601,8 +580,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 28434,
-       "startOffset": 28362
+       "endOffset": 28473,
+       "startOffset": 28401
       }
      ],
      "isBlockCoverage": true
@@ -612,13 +591,13 @@
      "ranges": [
       {
        "count": 3,
-       "endOffset": 29801,
-       "startOffset": 29221
+       "endOffset": 29840,
+       "startOffset": 29260
       },
       {
        "count": 1,
-       "endOffset": 29800,
-       "startOffset": 29799
+       "endOffset": 29839,
+       "startOffset": 29838
       }
      ],
      "isBlockCoverage": true
@@ -628,8 +607,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 29796,
-       "startOffset": 29567
+       "endOffset": 29835,
+       "startOffset": 29606
       }
      ],
      "isBlockCoverage": true
@@ -639,8 +618,8 @@
      "ranges": [
       {
        "count": 58,
-       "endOffset": 30050,
-       "startOffset": 29803
+       "endOffset": 30089,
+       "startOffset": 29842
       }
      ],
      "isBlockCoverage": true
@@ -650,23 +629,23 @@
      "ranges": [
       {
        "count": 123,
-       "endOffset": 30340,
-       "startOffset": 30052
+       "endOffset": 30379,
+       "startOffset": 30091
       },
       {
        "count": 109,
-       "endOffset": 30267,
-       "startOffset": 30227
+       "endOffset": 30306,
+       "startOffset": 30266
       },
       {
        "count": 1,
-       "endOffset": 30272,
-       "startOffset": 30267
+       "endOffset": 30311,
+       "startOffset": 30306
       },
       {
        "count": 1,
-       "endOffset": 30318,
-       "startOffset": 30313
+       "endOffset": 30357,
+       "startOffset": 30352
       }
      ],
      "isBlockCoverage": true
@@ -676,13 +655,13 @@
      "ranges": [
       {
        "count": 54,
-       "endOffset": 30586,
-       "startOffset": 30342
+       "endOffset": 30625,
+       "startOffset": 30381
       },
       {
        "count": 3,
-       "endOffset": 30564,
-       "startOffset": 30559
+       "endOffset": 30603,
+       "startOffset": 30598
       }
      ],
      "isBlockCoverage": true
@@ -692,8 +671,8 @@
      "ranges": [
       {
        "count": 1158,
-       "endOffset": 30798,
-       "startOffset": 30588
+       "endOffset": 30837,
+       "startOffset": 30627
       }
      ],
      "isBlockCoverage": true
@@ -702,104 +681,104 @@
      "functionName": "dbExecAsync",
      "ranges": [
       {
-       "count": 1879,
-       "endOffset": 33315,
-       "startOffset": 30800
+       "count": 1878,
+       "endOffset": 33354,
+       "startOffset": 30839
       },
       {
        "count": 1,
-       "endOffset": 31158,
-       "startOffset": 31135
+       "endOffset": 31197,
+       "startOffset": 31174
       },
       {
-       "count": 1878,
-       "endOffset": 31178,
-       "startOffset": 31158
-      },
-      {
-       "count": 1212,
-       "endOffset": 31509,
-       "startOffset": 31178
-      },
-      {
-       "count": 666,
-       "endOffset": 31751,
-       "startOffset": 31509
-      },
-      {
-       "count": 1866,
-       "endOffset": 32030,
-       "startOffset": 31751
+       "count": 1877,
+       "endOffset": 31217,
+       "startOffset": 31197
       },
       {
        "count": 1212,
-       "endOffset": 32060,
-       "startOffset": 32030
+       "endOffset": 31548,
+       "startOffset": 31217
       },
       {
-       "count": 654,
-       "endOffset": 32094,
-       "startOffset": 32077
+       "count": 665,
+       "endOffset": 31790,
+       "startOffset": 31548
+      },
+      {
+       "count": 1865,
+       "endOffset": 32069,
+       "startOffset": 31790
+      },
+      {
+       "count": 1212,
+       "endOffset": 32099,
+       "startOffset": 32069
+      },
+      {
+       "count": 653,
+       "endOffset": 32133,
+       "startOffset": 32116
       },
       {
        "count": 56,
-       "endOffset": 32296,
-       "startOffset": 32266
+       "endOffset": 32335,
+       "startOffset": 32305
       },
       {
-       "count": 1810,
-       "endOffset": 32411,
-       "startOffset": 32313
+       "count": 1809,
+       "endOffset": 32450,
+       "startOffset": 32352
       },
       {
        "count": 1210,
-       "endOffset": 32391,
-       "startOffset": 32360
+       "endOffset": 32430,
+       "startOffset": 32399
       },
       {
-       "count": 600,
-       "endOffset": 32411,
-       "startOffset": 32408
+       "count": 599,
+       "endOffset": 32450,
+       "startOffset": 32447
       },
       {
-       "count": 1786,
-       "endOffset": 32761,
-       "startOffset": 32464
+       "count": 1785,
+       "endOffset": 32800,
+       "startOffset": 32503
       },
       {
-       "count": 1732,
-       "endOffset": 32697,
-       "startOffset": 32667
+       "count": 1731,
+       "endOffset": 32736,
+       "startOffset": 32706
       },
       {
        "count": 54,
-       "endOffset": 32780,
-       "startOffset": 32761
+       "endOffset": 32819,
+       "startOffset": 32800
       },
       {
        "count": 110,
-       "endOffset": 32816,
-       "startOffset": 32785
+       "endOffset": 32855,
+       "startOffset": 32824
       },
       {
        "count": 1210,
-       "endOffset": 32838,
-       "startOffset": 32821
+       "endOffset": 32877,
+       "startOffset": 32860
       },
       {
        "count": 1377,
-       "endOffset": 32917,
-       "startOffset": 32843
+       "endOffset": 32956,
+       "startOffset": 32882
       },
       {
-       "count": 299,
-       "endOffset": 33288,
-       "startOffset": 32922
+       "count": 298,
+       "endOffset": 33327,
+       "startOffset": 32961
       },
       {
-       "count": 1786,
-       "endOffset": 33314,
-       "startOffset": 33294
+       "count": 1785,
+       "endOffset": 33353,
+       "startOffset": 33333
       }
      ],
      "isBlockCoverage": true
@@ -809,8 +788,8 @@
      "ranges": [
       {
        "count": 1324,
-       "endOffset": 31501,
-       "startOffset": 31221
+       "endOffset": 31540,
+       "startOffset": 31260
       }
      ],
      "isBlockCoverage": true
@@ -820,8 +799,8 @@
      "ranges": [
       {
        "count": 533,
-       "endOffset": 31743,
-       "startOffset": 31542
+       "endOffset": 31782,
+       "startOffset": 31581
       }
      ],
      "isBlockCoverage": true
@@ -830,9 +809,9 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 245,
-       "endOffset": 33286,
-       "startOffset": 32981
+       "count": 244,
+       "endOffset": 33325,
+       "startOffset": 33020
       }
      ],
      "isBlockCoverage": true
@@ -841,9 +820,9 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 13461,
-       "endOffset": 33274,
-       "startOffset": 33070
+       "count": 13460,
+       "endOffset": 33313,
+       "startOffset": 33109
       }
      ],
      "isBlockCoverage": true
@@ -852,9 +831,9 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 42906,
-       "endOffset": 33229,
-       "startOffset": 33150
+       "count": 42905,
+       "endOffset": 33268,
+       "startOffset": 33189
       }
      ],
      "isBlockCoverage": true
@@ -864,18 +843,18 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 34488,
-       "startOffset": 33317
+       "endOffset": 34527,
+       "startOffset": 33356
       },
       {
        "count": 1,
-       "endOffset": 33520,
-       "startOffset": 33496
+       "endOffset": 33559,
+       "startOffset": 33535
       },
       {
        "count": 1,
-       "endOffset": 34487,
-       "startOffset": 33522
+       "endOffset": 34526,
+       "startOffset": 33561
       }
      ],
      "isBlockCoverage": true
@@ -885,8 +864,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 33774,
-       "startOffset": 33642
+       "endOffset": 33813,
+       "startOffset": 33681
       }
      ],
      "isBlockCoverage": true
@@ -895,14 +874,14 @@
      "functionName": "",
      "ranges": [
       {
-       "count": 1207,
-       "endOffset": 33967,
-       "startOffset": 33865
+       "count": 1135,
+       "endOffset": 34006,
+       "startOffset": 33904
       },
       {
-       "count": 352,
-       "endOffset": 33959,
-       "startOffset": 33935
+       "count": 367,
+       "endOffset": 33998,
+       "startOffset": 33974
       }
      ],
      "isBlockCoverage": true
@@ -912,8 +891,8 @@
      "ranges": [
       {
        "count": 20,
-       "endOffset": 34348,
-       "startOffset": 34010
+       "endOffset": 34387,
+       "startOffset": 34049
       }
      ],
      "isBlockCoverage": true
@@ -923,53 +902,53 @@
      "ranges": [
       {
        "count": 17,
-       "endOffset": 35941,
-       "startOffset": 34490
+       "endOffset": 35980,
+       "startOffset": 34529
       },
       {
        "count": 1,
-       "endOffset": 35169,
-       "startOffset": 35146
+       "endOffset": 35208,
+       "startOffset": 35185
       },
       {
        "count": 16,
-       "endOffset": 35190,
-       "startOffset": 35169
+       "endOffset": 35229,
+       "startOffset": 35208
       },
       {
        "count": 1,
-       "endOffset": 35232,
-       "startOffset": 35190
+       "endOffset": 35271,
+       "startOffset": 35229
       },
       {
        "count": 16,
-       "endOffset": 35289,
-       "startOffset": 35232
+       "endOffset": 35328,
+       "startOffset": 35271
       },
       {
        "count": 15,
-       "endOffset": 35300,
-       "startOffset": 35289
+       "endOffset": 35339,
+       "startOffset": 35328
       },
       {
        "count": 15,
-       "endOffset": 35475,
-       "startOffset": 35464
+       "endOffset": 35514,
+       "startOffset": 35503
       },
       {
        "count": 13,
-       "endOffset": 35871,
-       "startOffset": 35477
+       "endOffset": 35910,
+       "startOffset": 35516
       },
       {
        "count": 2,
-       "endOffset": 35913,
-       "startOffset": 35871
+       "endOffset": 35952,
+       "startOffset": 35910
       },
       {
        "count": 15,
-       "endOffset": 35940,
-       "startOffset": 35913
+       "endOffset": 35979,
+       "startOffset": 35952
       }
      ],
      "isBlockCoverage": true
@@ -979,8 +958,8 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 35127,
-       "startOffset": 34665
+       "endOffset": 35166,
+       "startOffset": 34704
       }
      ],
      "isBlockCoverage": true
@@ -990,8 +969,8 @@
      "ranges": [
       {
        "count": 14,
-       "endOffset": 36205,
-       "startOffset": 35943
+       "endOffset": 36244,
+       "startOffset": 35982
       }
      ],
      "isBlockCoverage": true
@@ -1001,8 +980,8 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 36396,
-       "startOffset": 36207
+       "endOffset": 36435,
+       "startOffset": 36246
       }
      ],
      "isBlockCoverage": true
@@ -1012,13 +991,13 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 38787,
-       "startOffset": 36398
+       "endOffset": 38404,
+       "startOffset": 36437
       },
       {
        "count": 1,
-       "endOffset": 38770,
-       "startOffset": 37919
+       "endOffset": 38387,
+       "startOffset": 37926
       }
      ],
      "isBlockCoverage": true
@@ -1028,8 +1007,8 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 37848,
-       "startOffset": 37082
+       "endOffset": 37855,
+       "startOffset": 37121
       }
      ],
      "isBlockCoverage": true
@@ -1039,19 +1018,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 38749,
-       "startOffset": 38197
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 38721,
-       "startOffset": 38457
+       "endOffset": 38367,
+       "startOffset": 38159
       }
      ],
      "isBlockCoverage": true
@@ -1061,73 +1029,73 @@
      "ranges": [
       {
        "count": 53,
-       "endOffset": 42106,
-       "startOffset": 38789
+       "endOffset": 41723,
+       "startOffset": 38406
       },
       {
        "count": 42,
-       "endOffset": 39141,
-       "startOffset": 39063
+       "endOffset": 38758,
+       "startOffset": 38680
       },
       {
        "count": 6,
-       "endOffset": 39266,
-       "startOffset": 39166
+       "endOffset": 38883,
+       "startOffset": 38783
       },
       {
        "count": 43,
-       "endOffset": 39437,
-       "startOffset": 39271
+       "endOffset": 39054,
+       "startOffset": 38888
       },
       {
        "count": 4,
-       "endOffset": 39510,
-       "startOffset": 39462
+       "endOffset": 39127,
+       "startOffset": 39079
       },
       {
        "count": 1,
-       "endOffset": 39597,
-       "startOffset": 39568
+       "endOffset": 39214,
+       "startOffset": 39185
       },
       {
        "count": 1,
-       "endOffset": 39856,
-       "startOffset": 39664
+       "endOffset": 39473,
+       "startOffset": 39281
       },
       {
        "count": 42,
-       "endOffset": 39952,
-       "startOffset": 39900
+       "endOffset": 39569,
+       "startOffset": 39517
       },
       {
        "count": 42,
-       "endOffset": 40084,
-       "startOffset": 39954
+       "endOffset": 39701,
+       "startOffset": 39571
       },
       {
        "count": 1,
-       "endOffset": 40218,
-       "startOffset": 40152
+       "endOffset": 39835,
+       "startOffset": 39769
       },
       {
        "count": 2,
-       "endOffset": 40644,
-       "startOffset": 40255
+       "endOffset": 40261,
+       "startOffset": 39872
       },
       {
        "count": 1,
-       "endOffset": 40875,
-       "startOffset": 40737
+       "endOffset": 40492,
+       "startOffset": 40354
       },
       {
        "count": 5,
-       "endOffset": 41798,
-       "startOffset": 41739
+       "endOffset": 41415,
+       "startOffset": 41356
       },
       {
        "count": 48,
-       "endOffset": 42086,
-       "startOffset": 41811
+       "endOffset": 41703,
+       "startOffset": 41428
       }
      ],
      "isBlockCoverage": true
@@ -1137,8 +1105,8 @@
      "ranges": [
       {
        "count": 99001,
-       "endOffset": 39420,
-       "startOffset": 39349
+       "endOffset": 39037,
+       "startOffset": 38966
       }
      ],
      "isBlockCoverage": true
@@ -1148,8 +1116,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 39848,
-       "startOffset": 39736
+       "endOffset": 39465,
+       "startOffset": 39353
       }
      ],
      "isBlockCoverage": true
@@ -1159,8 +1127,8 @@
      "ranges": [
       {
        "count": 714,
-       "endOffset": 40075,
-       "startOffset": 40007
+       "endOffset": 39692,
+       "startOffset": 39624
       }
      ],
      "isBlockCoverage": true
@@ -1170,8 +1138,8 @@
      "ranges": [
       {
        "count": 3,
-       "endOffset": 40415,
-       "startOffset": 40336
+       "endOffset": 40032,
+       "startOffset": 39953
       }
      ],
      "isBlockCoverage": true
@@ -1181,8 +1149,8 @@
      "ranges": [
       {
        "count": 3,
-       "endOffset": 40602,
-       "startOffset": 40479
+       "endOffset": 40219,
+       "startOffset": 40096
       }
      ],
      "isBlockCoverage": true
@@ -1192,8 +1160,8 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 40590,
-       "startOffset": 40527
+       "endOffset": 40207,
+       "startOffset": 40144
       }
      ],
      "isBlockCoverage": true
@@ -1203,8 +1171,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 40867,
-       "startOffset": 40797
+       "endOffset": 40484,
+       "startOffset": 40414
       }
      ],
      "isBlockCoverage": true
@@ -1214,28 +1182,28 @@
      "ranges": [
       {
        "count": 736,
-       "endOffset": 41529,
-       "startOffset": 40948
+       "endOffset": 41146,
+       "startOffset": 40565
       },
       {
        "count": 739,
-       "endOffset": 41523,
-       "startOffset": 41194
+       "endOffset": 41140,
+       "startOffset": 40811
       },
       {
        "count": 736,
-       "endOffset": 41306,
-       "startOffset": 41297
+       "endOffset": 40923,
+       "startOffset": 40914
       },
       {
        "count": 3,
-       "endOffset": 41350,
-       "startOffset": 41323
+       "endOffset": 40967,
+       "startOffset": 40940
       },
       {
        "count": 736,
-       "endOffset": 41513,
-       "startOffset": 41416
+       "endOffset": 41130,
+       "startOffset": 41033
       }
      ],
      "isBlockCoverage": true
@@ -1245,8 +1213,8 @@
      "ranges": [
       {
        "count": 728,
-       "endOffset": 42014,
-       "startOffset": 41900
+       "endOffset": 41631,
+       "startOffset": 41517
       }
      ],
      "isBlockCoverage": true
@@ -1256,13 +1224,13 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 42386,
-       "startOffset": 42108
+       "endOffset": 42003,
+       "startOffset": 41725
       },
       {
        "count": 1,
-       "endOffset": 42385,
-       "startOffset": 42299
+       "endOffset": 42002,
+       "startOffset": 41916
       }
      ],
      "isBlockCoverage": true
@@ -1272,23 +1240,23 @@
      "ranges": [
       {
        "count": 10,
-       "endOffset": 42760,
-       "startOffset": 42388
+       "endOffset": 42377,
+       "startOffset": 42005
       },
       {
        "count": 8,
-       "endOffset": 42596,
-       "startOffset": 42567
+       "endOffset": 42213,
+       "startOffset": 42184
       },
       {
        "count": 2,
-       "endOffset": 42686,
-       "startOffset": 42596
+       "endOffset": 42303,
+       "startOffset": 42213
       },
       {
        "count": 1,
-       "endOffset": 42758,
-       "startOffset": 42686
+       "endOffset": 42375,
+       "startOffset": 42303
       }
      ],
      "isBlockCoverage": true
@@ -1297,19 +1265,19 @@
      "functionName": "fsReadFileUnlessTest",
      "ranges": [
       {
-       "count": 22,
-       "endOffset": 43107,
-       "startOffset": 42762
+       "count": 15,
+       "endOffset": 42724,
+       "startOffset": 42379
       },
       {
-       "count": 8,
-       "endOffset": 42993,
-       "startOffset": 42958
+       "count": 1,
+       "endOffset": 42610,
+       "startOffset": 42575
       },
       {
        "count": 14,
-       "endOffset": 43098,
-       "startOffset": 42993
+       "endOffset": 42715,
+       "startOffset": 42610
       }
      ],
      "isBlockCoverage": true
@@ -1319,18 +1287,18 @@
      "ranges": [
       {
        "count": 10,
-       "endOffset": 43374,
-       "startOffset": 43109
+       "endOffset": 42991,
+       "startOffset": 42726
       },
       {
        "count": 9,
-       "endOffset": 43321,
-       "startOffset": 43298
+       "endOffset": 42938,
+       "startOffset": 42915
       },
       {
        "count": 1,
-       "endOffset": 43373,
-       "startOffset": 43321
+       "endOffset": 42990,
+       "startOffset": 42938
       }
      ],
      "isBlockCoverage": true
@@ -1340,13 +1308,13 @@
      "ranges": [
       {
        "count": 29,
-       "endOffset": 43516,
-       "startOffset": 43376
+       "endOffset": 43133,
+       "startOffset": 42993
       },
       {
        "count": 15,
-       "endOffset": 43513,
-       "startOffset": 43479
+       "endOffset": 43130,
+       "startOffset": 43096
       }
      ],
      "isBlockCoverage": true
@@ -1355,9 +1323,9 @@
      "functionName": "jsbatonCreate",
      "ranges": [
       {
-       "count": 1998,
-       "endOffset": 43961,
-       "startOffset": 43518
+       "count": 1997,
+       "endOffset": 43578,
+       "startOffset": 43135
       }
      ],
      "isBlockCoverage": true
@@ -1367,8 +1335,8 @@
      "ranges": [
       {
        "count": 24,
-       "endOffset": 44139,
-       "startOffset": 43963
+       "endOffset": 43756,
+       "startOffset": 43580
       }
      ],
      "isBlockCoverage": true
@@ -1378,8 +1346,8 @@
      "ranges": [
       {
        "count": 9,
-       "endOffset": 44538,
-       "startOffset": 44141
+       "endOffset": 44155,
+       "startOffset": 43758
       }
      ],
      "isBlockCoverage": true
@@ -1388,189 +1356,189 @@
      "functionName": "jsbatonSetValue",
      "ranges": [
       {
-       "count": 5102,
-       "endOffset": 50744,
-       "startOffset": 44540
+       "count": 5101,
+       "endOffset": 50361,
+       "startOffset": 44157
       },
       {
-       "count": 5078,
-       "endOffset": 45580,
-       "startOffset": 45567
+       "count": 5077,
+       "endOffset": 45197,
+       "startOffset": 45184
       },
       {
        "count": 30,
-       "endOffset": 45609,
-       "startOffset": 45582
+       "endOffset": 45226,
+       "startOffset": 45199
       },
       {
-       "count": 4721,
-       "endOffset": 45663,
-       "startOffset": 45643
+       "count": 4720,
+       "endOffset": 45280,
+       "startOffset": 45260
       },
       {
        "count": 381,
-       "endOffset": 45692,
-       "startOffset": 45672
+       "endOffset": 45309,
+       "startOffset": 45289
       },
       {
        "count": 24,
-       "endOffset": 45741,
-       "startOffset": 45725
+       "endOffset": 45358,
+       "startOffset": 45342
       },
       {
        "count": 30,
-       "endOffset": 45784,
-       "startOffset": 45767
+       "endOffset": 45401,
+       "startOffset": 45384
       },
       {
        "count": 250,
-       "endOffset": 46029,
-       "startOffset": 45809
+       "endOffset": 45646,
+       "startOffset": 45426
       },
       {
        "count": 12,
-       "endOffset": 45952,
-       "startOffset": 45857
+       "endOffset": 45569,
+       "startOffset": 45474
       },
       {
        "count": 238,
-       "endOffset": 46029,
-       "startOffset": 45952
+       "endOffset": 45646,
+       "startOffset": 45569
       },
       {
        "count": 98,
-       "endOffset": 46118,
-       "startOffset": 46102
+       "endOffset": 45735,
+       "startOffset": 45719
       },
       {
        "count": 98,
-       "endOffset": 46159,
-       "startOffset": 46143
+       "endOffset": 45776,
+       "startOffset": 45760
       },
       {
        "count": 105,
-       "endOffset": 46206,
-       "startOffset": 46187
+       "endOffset": 45823,
+       "startOffset": 45804
       },
       {
        "count": 119,
-       "endOffset": 46251,
-       "startOffset": 46233
+       "endOffset": 45868,
+       "startOffset": 45850
       },
       {
        "count": 125,
-       "endOffset": 46414,
-       "startOffset": 46276
+       "endOffset": 46031,
+       "startOffset": 45893
       },
       {
        "count": 26,
-       "endOffset": 46529,
-       "startOffset": 46439
+       "endOffset": 46146,
+       "startOffset": 46056
       },
       {
        "count": 42,
-       "endOffset": 46645,
-       "startOffset": 46554
+       "endOffset": 46262,
+       "startOffset": 46171
       },
       {
        "count": 36,
-       "endOffset": 46765,
-       "startOffset": 46671
+       "endOffset": 46382,
+       "startOffset": 46288
       },
       {
        "count": 561,
-       "endOffset": 46879,
-       "startOffset": 46790
+       "endOffset": 46496,
+       "startOffset": 46407
       },
       {
-       "count": 3963,
-       "endOffset": 47054,
-       "startOffset": 46904
+       "count": 3962,
+       "endOffset": 46671,
+       "startOffset": 46521
       },
       {
        "count": 99,
-       "endOffset": 47993,
-       "startOffset": 47079
+       "endOffset": 47610,
+       "startOffset": 46696
       },
       {
        "count": 12,
-       "endOffset": 47414,
-       "startOffset": 47165
+       "endOffset": 47031,
+       "startOffset": 46782
       },
       {
        "count": 87,
-       "endOffset": 47476,
-       "startOffset": 47414
+       "endOffset": 47093,
+       "startOffset": 47031
       },
       {
        "count": 59,
-       "endOffset": 47738,
-       "startOffset": 47476
+       "endOffset": 47355,
+       "startOffset": 47093
       },
       {
        "count": 12,
-       "endOffset": 47627,
-       "startOffset": 47516
+       "endOffset": 47244,
+       "startOffset": 47133
       },
       {
        "count": 47,
-       "endOffset": 47738,
-       "startOffset": 47627
+       "endOffset": 47355,
+       "startOffset": 47244
       },
       {
        "count": 28,
-       "endOffset": 47860,
-       "startOffset": 47738
+       "endOffset": 47477,
+       "startOffset": 47355
       },
       {
        "count": 6,
-       "endOffset": 47874,
-       "startOffset": 47860
+       "endOffset": 47491,
+       "startOffset": 47477
       },
       {
        "count": 22,
-       "endOffset": 47908,
-       "startOffset": 47887
+       "endOffset": 47525,
+       "startOffset": 47504
       },
       {
-       "count": 2010,
-       "endOffset": 48664,
-       "startOffset": 48257
+       "count": 2009,
+       "endOffset": 48281,
+       "startOffset": 47874
       },
       {
        "count": 47,
-       "endOffset": 48870,
-       "startOffset": 48844
+       "endOffset": 48487,
+       "startOffset": 48461
       },
       {
-       "count": 4038,
-       "endOffset": 49636,
-       "startOffset": 48875
+       "count": 4037,
+       "endOffset": 49253,
+       "startOffset": 48492
       },
       {
-       "count": 1921,
-       "endOffset": 49064,
-       "startOffset": 48980
+       "count": 1920,
+       "endOffset": 48681,
+       "startOffset": 48597
       },
       {
        "count": 12,
-       "endOffset": 50422,
-       "startOffset": 49641
+       "endOffset": 50039,
+       "startOffset": 49258
       },
       {
        "count": 561,
-       "endOffset": 50554,
-       "startOffset": 50427
+       "endOffset": 50171,
+       "startOffset": 50044
       },
       {
        "count": 42,
-       "endOffset": 50718,
-       "startOffset": 50559
+       "endOffset": 50335,
+       "startOffset": 50176
       },
       {
-       "count": 5090,
-       "endOffset": 50743,
-       "startOffset": 50724
+       "count": 5089,
+       "endOffset": 50360,
+       "startOffset": 50341
       }
      ],
      "isBlockCoverage": true
@@ -1579,24 +1547,24 @@
      "functionName": "jsonParseArraybuffer",
      "ranges": [
       {
-       "count": 1677,
-       "endOffset": 50991,
-       "startOffset": 50746
-      },
-      {
-       "count": 1,
-       "endOffset": 50936,
-       "startOffset": 50905
-      },
-      {
        "count": 1676,
-       "endOffset": 50954,
-       "startOffset": 50949
+       "endOffset": 50608,
+       "startOffset": 50363
       },
       {
        "count": 1,
-       "endOffset": 50982,
-       "startOffset": 50965
+       "endOffset": 50553,
+       "startOffset": 50522
+      },
+      {
+       "count": 1675,
+       "endOffset": 50571,
+       "startOffset": 50566
+      },
+      {
+       "count": 1,
+       "endOffset": 50599,
+       "startOffset": 50582
       }
      ],
      "isBlockCoverage": true
@@ -1606,8 +1574,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 51324,
-       "startOffset": 50993
+       "endOffset": 50941,
+       "startOffset": 50610
       }
      ],
      "isBlockCoverage": true
@@ -1617,8 +1585,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 51445,
-       "startOffset": 51326
+       "endOffset": 51062,
+       "startOffset": 50943
       }
      ],
      "isBlockCoverage": true
@@ -1628,23 +1596,23 @@
      "ranges": [
       {
        "count": 8,
-       "endOffset": 52647,
-       "startOffset": 51447
+       "endOffset": 52264,
+       "startOffset": 51064
       },
       {
        "count": 6,
-       "endOffset": 51667,
-       "startOffset": 51644
+       "endOffset": 51284,
+       "startOffset": 51261
       },
       {
        "count": 2,
-       "endOffset": 51764,
-       "startOffset": 51667
+       "endOffset": 51381,
+       "startOffset": 51284
       },
       {
        "count": 1,
-       "endOffset": 52646,
-       "startOffset": 51764
+       "endOffset": 52263,
+       "startOffset": 51381
       }
      ],
      "isBlockCoverage": true
@@ -1654,8 +1622,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 51874,
-       "startOffset": 51793
+       "endOffset": 51491,
+       "startOffset": 51410
       }
      ],
      "isBlockCoverage": true
@@ -1664,9 +1632,9 @@
      "functionName": "noop",
      "ranges": [
       {
-       "count": 238,
-       "endOffset": 52749,
-       "startOffset": 52649
+       "count": 210,
+       "endOffset": 52366,
+       "startOffset": 52266
       }
      ],
      "isBlockCoverage": true
@@ -1676,33 +1644,33 @@
      "ranges": [
       {
        "count": 38826,
-       "endOffset": 53323,
-       "startOffset": 52751
+       "endOffset": 52940,
+       "startOffset": 52368
       },
       {
        "count": 16924,
-       "endOffset": 52921,
-       "startOffset": 52914
+       "endOffset": 52538,
+       "startOffset": 52531
       },
       {
        "count": 24360,
-       "endOffset": 52950,
-       "startOffset": 52923
+       "endOffset": 52567,
+       "startOffset": 52540
       },
       {
        "count": 14466,
-       "endOffset": 53035,
-       "startOffset": 52950
+       "endOffset": 52652,
+       "startOffset": 52567
       },
       {
        "count": 2144,
-       "endOffset": 53096,
-       "startOffset": 53035
+       "endOffset": 52713,
+       "startOffset": 52652
       },
       {
        "count": 12322,
-       "endOffset": 53322,
-       "startOffset": 53096
+       "endOffset": 52939,
+       "startOffset": 52713
       }
      ],
      "isBlockCoverage": true
@@ -1712,8 +1680,8 @@
      "ranges": [
       {
        "count": 13586,
-       "endOffset": 53300,
-       "startOffset": 53216
+       "endOffset": 52917,
+       "startOffset": 52833
       }
      ],
      "isBlockCoverage": true
@@ -1723,28 +1691,28 @@
      "ranges": [
       {
        "count": 3,
-       "endOffset": 55458,
-       "startOffset": 53325
+       "endOffset": 55075,
+       "startOffset": 52942
       },
       {
        "count": 1,
-       "endOffset": 53870,
-       "startOffset": 53484
+       "endOffset": 53487,
+       "startOffset": 53101
       },
       {
        "count": 1,
-       "endOffset": 54048,
-       "startOffset": 54025
+       "endOffset": 53665,
+       "startOffset": 53642
       },
       {
        "count": 2,
-       "endOffset": 55456,
-       "startOffset": 54048
+       "endOffset": 55073,
+       "startOffset": 53665
       },
       {
        "count": 1,
-       "endOffset": 54699,
-       "startOffset": 54581
+       "endOffset": 54316,
+       "startOffset": 54198
       }
      ],
      "isBlockCoverage": true
@@ -1754,13 +1722,13 @@
      "ranges": [
       {
        "count": 16,
-       "endOffset": 53869,
-       "startOffset": 53512
+       "endOffset": 53486,
+       "startOffset": 53129
       },
       {
        "count": 1,
-       "endOffset": 53863,
-       "startOffset": 53819
+       "endOffset": 53480,
+       "startOffset": 53436
       }
      ],
      "isBlockCoverage": true
@@ -1770,8 +1738,8 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 55449,
-       "startOffset": 54860
+       "endOffset": 55066,
+       "startOffset": 54477
       }
      ],
      "isBlockCoverage": true
@@ -1781,18 +1749,18 @@
      "ranges": [
       {
        "count": 17,
-       "endOffset": 55233,
-       "startOffset": 54947
+       "endOffset": 54850,
+       "startOffset": 54564
       },
       {
        "count": 2,
-       "endOffset": 55128,
-       "startOffset": 55034
+       "endOffset": 54745,
+       "startOffset": 54651
       },
       {
        "count": 15,
-       "endOffset": 55193,
-       "startOffset": 55149
+       "endOffset": 54810,
+       "startOffset": 54766
       }
      ],
      "isBlockCoverage": true
@@ -1802,8 +1770,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 56538,
-       "startOffset": 55460
+       "endOffset": 56155,
+       "startOffset": 55077
       }
      ],
      "isBlockCoverage": true
@@ -1813,8 +1781,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 55734,
-       "startOffset": 55691
+       "endOffset": 55351,
+       "startOffset": 55308
       }
      ],
      "isBlockCoverage": true
@@ -1824,8 +1792,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 55893,
-       "startOffset": 55815
+       "endOffset": 55510,
+       "startOffset": 55432
       }
      ],
      "isBlockCoverage": true
@@ -1835,8 +1803,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 56072,
-       "startOffset": 55947
+       "endOffset": 55689,
+       "startOffset": 55564
       }
      ],
      "isBlockCoverage": true
@@ -1846,8 +1814,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 56060,
-       "startOffset": 55988
+       "endOffset": 55677,
+       "startOffset": 55605
       }
      ],
      "isBlockCoverage": true
@@ -1857,8 +1825,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 57450,
-       "startOffset": 56540
+       "endOffset": 57067,
+       "startOffset": 56157
       }
      ],
      "isBlockCoverage": true
@@ -1868,8 +1836,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 57336,
-       "startOffset": 56702
+       "endOffset": 56953,
+       "startOffset": 56319
       }
      ],
      "isBlockCoverage": true
@@ -1879,8 +1847,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 57293,
-       "startOffset": 57219
+       "endOffset": 56910,
+       "startOffset": 56836
       }
      ],
      "isBlockCoverage": true
@@ -1890,8 +1858,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 57735,
-       "startOffset": 57452
+       "endOffset": 57352,
+       "startOffset": 57069
       }
      ],
      "isBlockCoverage": true
@@ -1901,8 +1869,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 57731,
-       "startOffset": 57548
+       "endOffset": 57348,
+       "startOffset": 57165
       }
      ],
      "isBlockCoverage": true
@@ -1918,7 +1886,7 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 150923,
+       "endOffset": 149915,
        "startOffset": 0
       }
      ],
@@ -1951,7 +1919,7 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 3363,
+       "endOffset": 4460,
        "startOffset": 2868
       }
      ],
@@ -1962,7 +1930,7 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 3359,
+       "endOffset": 4456,
        "startOffset": 2961
       }
      ],
@@ -1973,8 +1941,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 3069,
-       "startOffset": 3006
+       "endOffset": 3081,
+       "startOffset": 3018
       }
      ],
      "isBlockCoverage": true
@@ -1984,8 +1952,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 3196,
-       "startOffset": 3133
+       "endOffset": 3214,
+       "startOffset": 3151
       }
      ],
      "isBlockCoverage": true
@@ -1995,8 +1963,74 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 3309,
-       "startOffset": 3240
+       "endOffset": 3333,
+       "startOffset": 3264
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 3550,
+       "startOffset": 3478
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 3723,
+       "startOffset": 3665
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 3841,
+       "startOffset": 3770
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 3956,
+       "startOffset": 3894
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 4128,
+       "startOffset": 4054
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 4255,
+       "startOffset": 4181
       }
      ],
      "isBlockCoverage": true
@@ -2006,8 +2040,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 4812,
-       "startOffset": 3417
+       "endOffset": 5909,
+       "startOffset": 4514
       }
      ],
      "isBlockCoverage": true
@@ -2017,8 +2051,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 4808,
-       "startOffset": 3528
+       "endOffset": 5905,
+       "startOffset": 4625
       }
      ],
      "isBlockCoverage": true
@@ -2028,8 +2062,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 4752,
-       "startOffset": 3751
+       "endOffset": 5849,
+       "startOffset": 4848
       }
      ],
      "isBlockCoverage": true
@@ -2039,8 +2073,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 5494,
-       "startOffset": 4861
+       "endOffset": 6591,
+       "startOffset": 5958
       }
      ],
      "isBlockCoverage": true
@@ -2050,8 +2084,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 5490,
-       "startOffset": 4959
+       "endOffset": 6587,
+       "startOffset": 6056
       }
      ],
      "isBlockCoverage": true
@@ -2061,8 +2095,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 14931,
-       "startOffset": 5536
+       "endOffset": 16046,
+       "startOffset": 6633
       }
      ],
      "isBlockCoverage": true
@@ -2072,8 +2106,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 14927,
-       "startOffset": 5624
+       "endOffset": 16042,
+       "startOffset": 6721
       }
      ],
      "isBlockCoverage": true
@@ -2083,8 +2117,8 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 7593,
-       "startOffset": 5668
+       "endOffset": 8690,
+       "startOffset": 6765
       }
      ],
      "isBlockCoverage": true
@@ -2094,8 +2128,8 @@
      "ranges": [
       {
        "count": 112,
-       "endOffset": 7580,
-       "startOffset": 6655
+       "endOffset": 8677,
+       "startOffset": 7752
       }
      ],
      "isBlockCoverage": true
@@ -2105,108 +2139,108 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 9945,
-       "startOffset": 7602
+       "endOffset": 11048,
+       "startOffset": 8699
       },
       {
        "count": 2,
-       "endOffset": 8130,
-       "startOffset": 7753
+       "endOffset": 9233,
+       "startOffset": 8850
       },
       {
        "count": 54,
-       "endOffset": 8476,
-       "startOffset": 8130
+       "endOffset": 9579,
+       "startOffset": 9233
       },
       {
        "count": 10,
-       "endOffset": 8552,
-       "startOffset": 8476
+       "endOffset": 9655,
+       "startOffset": 9579
       },
       {
        "count": 1,
-       "endOffset": 8581,
-       "startOffset": 8565
+       "endOffset": 9684,
+       "startOffset": 9668
       },
       {
        "count": 2,
-       "endOffset": 8608,
-       "startOffset": 8594
+       "endOffset": 9711,
+       "startOffset": 9697
       },
       {
        "count": 3,
-       "endOffset": 8693,
-       "startOffset": 8621
+       "endOffset": 9796,
+       "startOffset": 9724
       },
       {
        "count": 18,
-       "endOffset": 9306,
-       "startOffset": 8706
+       "endOffset": 10409,
+       "startOffset": 9809
       },
       {
        "count": 1,
-       "endOffset": 8845,
-       "startOffset": 8770
+       "endOffset": 9948,
+       "startOffset": 9873
       },
       {
        "count": 3,
-       "endOffset": 8944,
-       "startOffset": 8862
+       "endOffset": 10047,
+       "startOffset": 9965
       },
       {
        "count": 1,
-       "endOffset": 9034,
-       "startOffset": 8961
+       "endOffset": 10137,
+       "startOffset": 10064
       },
       {
        "count": 3,
-       "endOffset": 9131,
-       "startOffset": 9051
+       "endOffset": 10234,
+       "startOffset": 10154
       },
       {
        "count": 10,
-       "endOffset": 9265,
-       "startOffset": 9148
+       "endOffset": 10368,
+       "startOffset": 10251
       },
       {
        "count": 2,
-       "endOffset": 9265,
-       "startOffset": 9202
+       "endOffset": 10368,
+       "startOffset": 10305
       },
       {
        "count": 12,
-       "endOffset": 9730,
-       "startOffset": 9319
+       "endOffset": 10833,
+       "startOffset": 10422
       },
       {
        "count": 1,
-       "endOffset": 9452,
-       "startOffset": 9370
+       "endOffset": 10555,
+       "startOffset": 10473
       },
       {
        "count": 11,
-       "endOffset": 9512,
-       "startOffset": 9452
+       "endOffset": 10615,
+       "startOffset": 10555
       },
       {
        "count": 9,
-       "endOffset": 9577,
-       "startOffset": 9529
+       "endOffset": 10680,
+       "startOffset": 10632
       },
       {
        "count": 7,
-       "endOffset": 9707,
-       "startOffset": 9596
+       "endOffset": 10810,
+       "startOffset": 10699
       },
       {
        "count": 4,
-       "endOffset": 9730,
-       "startOffset": 9707
+       "endOffset": 10833,
+       "startOffset": 10810
       },
       {
        "count": 54,
-       "endOffset": 9944,
-       "startOffset": 9744
+       "endOffset": 11047,
+       "startOffset": 10847
       }
      ],
      "isBlockCoverage": true
@@ -2216,18 +2250,18 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 10813,
-       "startOffset": 9954
+       "endOffset": 11922,
+       "startOffset": 11057
       },
       {
        "count": 2,
-       "endOffset": 10457,
-       "startOffset": 10079
+       "endOffset": 11566,
+       "startOffset": 11182
       },
       {
        "count": 54,
-       "endOffset": 10812,
-       "startOffset": 10457
+       "endOffset": 11921,
+       "startOffset": 11566
       }
      ],
      "isBlockCoverage": true
@@ -2237,8 +2271,8 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 12543,
-       "startOffset": 10822
+       "endOffset": 13658,
+       "startOffset": 11931
       }
      ],
      "isBlockCoverage": true
@@ -2248,43 +2282,43 @@
      "ranges": [
       {
        "count": 224,
-       "endOffset": 12530,
-       "startOffset": 11046
+       "endOffset": 13645,
+       "startOffset": 12155
       },
       {
        "count": 8,
-       "endOffset": 11582,
-       "startOffset": 11150
+       "endOffset": 12697,
+       "startOffset": 12259
       },
       {
        "count": 216,
-       "endOffset": 11847,
-       "startOffset": 11582
+       "endOffset": 12962,
+       "startOffset": 12697
       },
       {
        "count": 54,
-       "endOffset": 12029,
-       "startOffset": 11847
+       "endOffset": 13144,
+       "startOffset": 12962
       },
       {
        "count": 54,
-       "endOffset": 12090,
-       "startOffset": 12046
+       "endOffset": 13205,
+       "startOffset": 13161
       },
       {
        "count": 54,
-       "endOffset": 12198,
-       "startOffset": 12107
+       "endOffset": 13313,
+       "startOffset": 13222
       },
       {
        "count": 54,
-       "endOffset": 12276,
-       "startOffset": 12215
+       "endOffset": 13391,
+       "startOffset": 13330
       },
       {
        "count": 216,
-       "endOffset": 12529,
-       "startOffset": 12294
+       "endOffset": 13644,
+       "startOffset": 13409
       }
      ],
      "isBlockCoverage": true
@@ -2294,8 +2328,8 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 14918,
-       "startOffset": 14579
+       "endOffset": 16033,
+       "startOffset": 15694
       }
      ],
      "isBlockCoverage": true
@@ -2305,8 +2339,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 18048,
-       "startOffset": 14978
+       "endOffset": 19169,
+       "startOffset": 16093
       }
      ],
      "isBlockCoverage": true
@@ -2316,8 +2350,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 18044,
-       "startOffset": 15075
+       "endOffset": 19165,
+       "startOffset": 16190
       }
      ],
      "isBlockCoverage": true
@@ -2327,38 +2361,38 @@
      "ranges": [
       {
        "count": 56,
-       "endOffset": 18035,
-       "startOffset": 17109
+       "endOffset": 19156,
+       "startOffset": 18224
       },
       {
        "count": 23,
-       "endOffset": 17442,
-       "startOffset": 17238
+       "endOffset": 18563,
+       "startOffset": 18353
       },
       {
        "count": 33,
-       "endOffset": 17625,
-       "startOffset": 17442
+       "endOffset": 18746,
+       "startOffset": 18563
       },
       {
        "count": 9,
-       "endOffset": 17653,
-       "startOffset": 17625
+       "endOffset": 18774,
+       "startOffset": 18746
       },
       {
        "count": 24,
-       "endOffset": 17705,
-       "startOffset": 17670
+       "endOffset": 18826,
+       "startOffset": 18791
       },
       {
        "count": 10,
-       "endOffset": 17861,
-       "startOffset": 17807
+       "endOffset": 18982,
+       "startOffset": 18928
       },
       {
        "count": 33,
-       "endOffset": 18034,
-       "startOffset": 17861
+       "endOffset": 19155,
+       "startOffset": 18982
       }
      ],
      "isBlockCoverage": true
@@ -2368,8 +2402,8 @@
      "ranges": [
       {
        "count": 23,
-       "endOffset": 17379,
-       "startOffset": 17279
+       "endOffset": 18500,
+       "startOffset": 18400
       }
      ],
      "isBlockCoverage": true
@@ -2379,8 +2413,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 27305,
-       "startOffset": 18094
+       "endOffset": 28450,
+       "startOffset": 19215
       }
      ],
      "isBlockCoverage": true
@@ -2390,8 +2424,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 18496,
-       "startOffset": 18191
+       "endOffset": 19623,
+       "startOffset": 19312
       }
      ],
      "isBlockCoverage": true
@@ -2401,8 +2435,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 18403,
-       "startOffset": 18343
+       "endOffset": 19530,
+       "startOffset": 19470
       }
      ],
      "isBlockCoverage": true
@@ -2412,8 +2446,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 20417,
-       "startOffset": 18573
+       "endOffset": 21544,
+       "startOffset": 19700
       }
      ],
      "isBlockCoverage": true
@@ -2423,8 +2457,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 23329,
-       "startOffset": 20487
+       "endOffset": 24468,
+       "startOffset": 21614
       }
      ],
      "isBlockCoverage": true
@@ -2434,8 +2468,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 20865,
-       "startOffset": 20742
+       "endOffset": 21998,
+       "startOffset": 21875
       }
      ],
      "isBlockCoverage": true
@@ -2445,18 +2479,18 @@
      "ranges": [
       {
        "count": 4,
-       "endOffset": 23157,
-       "startOffset": 20974
+       "endOffset": 24290,
+       "startOffset": 22107
       },
       {
        "count": 1,
-       "endOffset": 22913,
-       "startOffset": 22103
+       "endOffset": 24046,
+       "startOffset": 23236
       },
       {
        "count": 3,
-       "endOffset": 23147,
-       "startOffset": 22913
+       "endOffset": 24280,
+       "startOffset": 24046
       }
      ],
      "isBlockCoverage": true
@@ -2466,8 +2500,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 23302,
-       "startOffset": 23242
+       "endOffset": 24441,
+       "startOffset": 24381
       }
      ],
      "isBlockCoverage": true
@@ -2477,8 +2511,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 24287,
-       "startOffset": 23397
+       "endOffset": 25432,
+       "startOffset": 24536
       }
      ],
      "isBlockCoverage": true
@@ -2488,8 +2522,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 23753,
-       "startOffset": 23629
+       "endOffset": 24898,
+       "startOffset": 24774
       }
      ],
      "isBlockCoverage": true
@@ -2499,8 +2533,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 24669,
-       "startOffset": 24357
+       "endOffset": 25814,
+       "startOffset": 25502
       }
      ],
      "isBlockCoverage": true
@@ -2510,8 +2544,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 24586,
-       "startOffset": 24471
+       "endOffset": 25731,
+       "startOffset": 25616
       }
      ],
      "isBlockCoverage": true
@@ -2521,8 +2555,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 27301,
-       "startOffset": 24738
+       "endOffset": 28446,
+       "startOffset": 25883
       }
      ],
      "isBlockCoverage": true
@@ -2532,8 +2566,8 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 27292,
-       "startOffset": 26809
+       "endOffset": 28437,
+       "startOffset": 27954
       }
      ],
      "isBlockCoverage": true
@@ -2543,8 +2577,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 28150,
-       "startOffset": 27346
+       "endOffset": 29295,
+       "startOffset": 28491
       }
      ],
      "isBlockCoverage": true
@@ -2554,8 +2588,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 28146,
-       "startOffset": 27431
+       "endOffset": 29291,
+       "startOffset": 28576
       }
      ],
      "isBlockCoverage": true
@@ -2565,8 +2599,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 40434,
-       "startOffset": 28190
+       "endOffset": 41579,
+       "startOffset": 29335
       }
      ],
      "isBlockCoverage": true
@@ -2576,8 +2610,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 40430,
-       "startOffset": 28273
+       "endOffset": 41575,
+       "startOffset": 29418
       }
      ],
      "isBlockCoverage": true
@@ -2587,18 +2621,18 @@
      "ranges": [
       {
        "count": 12,
-       "endOffset": 39831,
-       "startOffset": 36164
+       "endOffset": 40976,
+       "startOffset": 37309
       },
       {
        "count": 6,
-       "endOffset": 38259,
-       "startOffset": 37996
+       "endOffset": 39404,
+       "startOffset": 39141
       },
       {
        "count": 6,
-       "endOffset": 39271,
-       "startOffset": 39069
+       "endOffset": 40416,
+       "startOffset": 40214
       }
      ],
      "isBlockCoverage": true
@@ -2608,8 +2642,8 @@
      "ranges": [
       {
        "count": 36,
-       "endOffset": 36819,
-       "startOffset": 36544
+       "endOffset": 37964,
+       "startOffset": 37689
       }
      ],
      "isBlockCoverage": true
@@ -2619,8 +2653,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 40382,
-       "startOffset": 39898
+       "endOffset": 41527,
+       "startOffset": 41043
       }
      ],
      "isBlockCoverage": true
@@ -2630,8 +2664,8 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 40370,
-       "startOffset": 40016
+       "endOffset": 41515,
+       "startOffset": 41161
       }
      ],
      "isBlockCoverage": true
@@ -2641,96 +2675,8 @@
      "ranges": [
       {
        "count": 12,
-       "endOffset": 40354,
-       "startOffset": 40137
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "test_misc",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41659,
-       "startOffset": 40474
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41655,
-       "startOffset": 40557
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 40749,
-       "startOffset": 40677
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 40922,
-       "startOffset": 40864
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41040,
-       "startOffset": 40969
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41155,
-       "startOffset": 41093
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41327,
-       "startOffset": 41253
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 41454,
-       "startOffset": 41380
+       "endOffset": 41499,
+       "startOffset": 41282
       }
      ],
      "isBlockCoverage": true
@@ -2740,8 +2686,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 150565,
-       "startOffset": 41701
+       "endOffset": 149557,
+       "startOffset": 41621
       }
      ],
      "isBlockCoverage": true
@@ -2751,8 +2697,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 43680,
-       "startOffset": 41794
+       "endOffset": 43600,
+       "startOffset": 41714
       }
      ],
      "isBlockCoverage": true
@@ -2762,8 +2708,8 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 43671,
-       "startOffset": 43390
+       "endOffset": 43591,
+       "startOffset": 43310
       }
      ],
      "isBlockCoverage": true
@@ -2773,8 +2719,8 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 43651,
-       "startOffset": 43488
+       "endOffset": 43571,
+       "startOffset": 43408
       }
      ],
      "isBlockCoverage": true
@@ -2784,8 +2730,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 45620,
-       "startOffset": 43771
+       "endOffset": 45540,
+       "startOffset": 43691
       }
      ],
      "isBlockCoverage": true
@@ -2795,23 +2741,23 @@
      "ranges": [
       {
        "count": 23,
-       "endOffset": 45611,
-       "startOffset": 44680
+       "endOffset": 45531,
+       "startOffset": 44600
       },
       {
        "count": 9,
-       "endOffset": 45166,
-       "startOffset": 45125
+       "endOffset": 45086,
+       "startOffset": 45045
       },
       {
        "count": 14,
-       "endOffset": 45437,
-       "startOffset": 45166
+       "endOffset": 45357,
+       "startOffset": 45086
       },
       {
        "count": 9,
-       "endOffset": 45610,
-       "startOffset": 45437
+       "endOffset": 45530,
+       "startOffset": 45357
       }
      ],
      "isBlockCoverage": true
@@ -2821,8 +2767,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 62629,
-       "startOffset": 45705
+       "endOffset": 62549,
+       "startOffset": 45625
       }
      ],
      "isBlockCoverage": true
@@ -2832,118 +2778,118 @@
      "ranges": [
       {
        "count": 588,
-       "endOffset": 47545,
-       "startOffset": 45834
+       "endOffset": 47465,
+       "startOffset": 45754
       },
       {
        "count": 556,
-       "endOffset": 46151,
-       "startOffset": 46144
+       "endOffset": 46071,
+       "startOffset": 46064
       },
       {
        "count": 252,
-       "endOffset": 47330,
-       "startOffset": 46167
+       "endOffset": 47250,
+       "startOffset": 46087
       },
       {
        "count": 38,
-       "endOffset": 46327,
-       "startOffset": 46255
+       "endOffset": 46247,
+       "startOffset": 46175
       },
       {
        "count": 214,
-       "endOffset": 46372,
-       "startOffset": 46327
+       "endOffset": 46292,
+       "startOffset": 46247
       },
       {
        "count": 20,
-       "endOffset": 46493,
-       "startOffset": 46372
+       "endOffset": 46413,
+       "startOffset": 46292
       },
       {
        "count": 194,
-       "endOffset": 46539,
-       "startOffset": 46493
+       "endOffset": 46459,
+       "startOffset": 46413
       },
       {
        "count": 20,
-       "endOffset": 46657,
-       "startOffset": 46539
+       "endOffset": 46577,
+       "startOffset": 46459
       },
       {
        "count": 174,
-       "endOffset": 46704,
-       "startOffset": 46657
+       "endOffset": 46624,
+       "startOffset": 46577
       },
       {
        "count": 20,
-       "endOffset": 46819,
-       "startOffset": 46704
+       "endOffset": 46739,
+       "startOffset": 46624
       },
       {
        "count": 154,
-       "endOffset": 46867,
-       "startOffset": 46819
+       "endOffset": 46787,
+       "startOffset": 46739
       },
       {
        "count": 10,
-       "endOffset": 46936,
-       "startOffset": 46867
+       "endOffset": 46856,
+       "startOffset": 46787
       },
       {
        "count": 144,
-       "endOffset": 46985,
-       "startOffset": 46936
+       "endOffset": 46905,
+       "startOffset": 46856
       },
       {
        "count": 10,
-       "endOffset": 47051,
-       "startOffset": 46985
+       "endOffset": 46971,
+       "startOffset": 46905
       },
       {
        "count": 134,
-       "endOffset": 47136,
-       "startOffset": 47051
+       "endOffset": 47056,
+       "startOffset": 46971
       },
       {
        "count": 88,
-       "endOffset": 47216,
-       "startOffset": 47136
+       "endOffset": 47136,
+       "startOffset": 47056
       },
       {
        "count": 20,
-       "endOffset": 47215,
-       "startOffset": 47184
+       "endOffset": 47135,
+       "startOffset": 47104
       },
       {
        "count": 66,
-       "endOffset": 47307,
-       "startOffset": 47235
+       "endOffset": 47227,
+       "startOffset": 47155
       },
       {
        "count": 68,
-       "endOffset": 47330,
-       "startOffset": 47307
+       "endOffset": 47250,
+       "startOffset": 47227
       },
       {
        "count": 304,
-       "endOffset": 47497,
-       "startOffset": 47343
+       "endOffset": 47417,
+       "startOffset": 47263
       },
       {
        "count": 142,
-       "endOffset": 47474,
-       "startOffset": 47402
+       "endOffset": 47394,
+       "startOffset": 47322
       },
       {
        "count": 162,
-       "endOffset": 47497,
-       "startOffset": 47474
+       "endOffset": 47417,
+       "startOffset": 47394
       },
       {
        "count": 262,
-       "endOffset": 47544,
-       "startOffset": 47511
+       "endOffset": 47464,
+       "startOffset": 47431
       }
      ],
      "isBlockCoverage": true
@@ -2953,18 +2899,18 @@
      "ranges": [
       {
        "count": 268,
-       "endOffset": 46110,
-       "startOffset": 45895
+       "endOffset": 46030,
+       "startOffset": 45815
       },
       {
        "count": 238,
-       "endOffset": 46054,
-       "startOffset": 45978
+       "endOffset": 45974,
+       "startOffset": 45898
       },
       {
        "count": 30,
-       "endOffset": 46109,
-       "startOffset": 46054
+       "endOffset": 46029,
+       "startOffset": 45974
       }
      ],
      "isBlockCoverage": true
@@ -2974,8 +2920,8 @@
      "ranges": [
       {
        "count": 15,
-       "endOffset": 49847,
-       "startOffset": 48145
+       "endOffset": 49767,
+       "startOffset": 48065
       }
      ],
      "isBlockCoverage": true
@@ -2985,8 +2931,8 @@
      "ranges": [
       {
        "count": 570,
-       "endOffset": 49835,
-       "startOffset": 49718
+       "endOffset": 49755,
+       "startOffset": 49638
       }
      ],
      "isBlockCoverage": true
@@ -2996,8 +2942,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 50219,
-       "startOffset": 49951
+       "endOffset": 50139,
+       "startOffset": 49871
       }
      ],
      "isBlockCoverage": true
@@ -3007,8 +2953,8 @@
      "ranges": [
       {
        "count": 4,
-       "endOffset": 50207,
-       "startOffset": 50090
+       "endOffset": 50127,
+       "startOffset": 50010
       }
      ],
      "isBlockCoverage": true
@@ -3018,8 +2964,8 @@
      "ranges": [
       {
        "count": 13,
-       "endOffset": 51029,
-       "startOffset": 50677
+       "endOffset": 50949,
+       "startOffset": 50597
       }
      ],
      "isBlockCoverage": true
@@ -3029,8 +2975,8 @@
      "ranges": [
       {
        "count": 52,
-       "endOffset": 51017,
-       "startOffset": 50900
+       "endOffset": 50937,
+       "startOffset": 50820
       }
      ],
      "isBlockCoverage": true
@@ -3040,8 +2986,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 52084,
-       "startOffset": 51136
+       "endOffset": 52004,
+       "startOffset": 51056
       }
      ],
      "isBlockCoverage": true
@@ -3051,8 +2997,8 @@
      "ranges": [
       {
        "count": 20,
-       "endOffset": 52065,
-       "startOffset": 51699
+       "endOffset": 51985,
+       "startOffset": 51619
       }
      ],
      "isBlockCoverage": true
@@ -3062,8 +3008,8 @@
      "ranges": [
       {
        "count": 40,
-       "endOffset": 52049,
-       "startOffset": 51786
+       "endOffset": 51969,
+       "startOffset": 51706
       }
      ],
      "isBlockCoverage": true
@@ -3073,8 +3019,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 53094,
-       "startOffset": 52198
+       "endOffset": 53014,
+       "startOffset": 52118
       }
      ],
      "isBlockCoverage": true
@@ -3084,23 +3030,23 @@
      "ranges": [
       {
        "count": 16,
-       "endOffset": 53082,
-       "startOffset": 52703
+       "endOffset": 53002,
+       "startOffset": 52623
       },
       {
        "count": 8,
-       "endOffset": 52926,
-       "startOffset": 52907
+       "endOffset": 52846,
+       "startOffset": 52827
       },
       {
        "count": 4,
-       "endOffset": 52926,
-       "startOffset": 52918
+       "endOffset": 52846,
+       "startOffset": 52838
       },
       {
        "count": 8,
-       "endOffset": 52958,
-       "startOffset": 52951
+       "endOffset": 52878,
+       "startOffset": 52871
       }
      ],
      "isBlockCoverage": true
@@ -3110,8 +3056,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 53750,
-       "startOffset": 53208
+       "endOffset": 53670,
+       "startOffset": 53128
       }
      ],
      "isBlockCoverage": true
@@ -3121,8 +3067,8 @@
      "ranges": [
       {
        "count": 8,
-       "endOffset": 53738,
-       "startOffset": 53485
+       "endOffset": 53658,
+       "startOffset": 53405
       }
      ],
      "isBlockCoverage": true
@@ -3132,8 +3078,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 54756,
-       "startOffset": 53868
+       "endOffset": 54676,
+       "startOffset": 53788
       }
      ],
      "isBlockCoverage": true
@@ -3143,23 +3089,23 @@
      "ranges": [
       {
        "count": 16,
-       "endOffset": 54744,
-       "startOffset": 54365
+       "endOffset": 54664,
+       "startOffset": 54285
       },
       {
        "count": 8,
-       "endOffset": 54588,
-       "startOffset": 54569
+       "endOffset": 54508,
+       "startOffset": 54489
       },
       {
        "count": 4,
-       "endOffset": 54588,
-       "startOffset": 54580
+       "endOffset": 54508,
+       "startOffset": 54500
       },
       {
        "count": 8,
-       "endOffset": 54620,
-       "startOffset": 54613
+       "endOffset": 54540,
+       "startOffset": 54533
       }
      ],
      "isBlockCoverage": true
@@ -3169,8 +3115,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 55404,
-       "startOffset": 54874
+       "endOffset": 55324,
+       "startOffset": 54794
       }
      ],
      "isBlockCoverage": true
@@ -3180,8 +3126,8 @@
      "ranges": [
       {
        "count": 8,
-       "endOffset": 55392,
-       "startOffset": 55139
+       "endOffset": 55312,
+       "startOffset": 55059
       }
      ],
      "isBlockCoverage": true
@@ -3191,8 +3137,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 56418,
-       "startOffset": 55518
+       "endOffset": 56338,
+       "startOffset": 55438
       }
      ],
      "isBlockCoverage": true
@@ -3202,8 +3148,8 @@
      "ranges": [
       {
        "count": 16,
-       "endOffset": 56399,
-       "startOffset": 56033
+       "endOffset": 56319,
+       "startOffset": 55953
       }
      ],
      "isBlockCoverage": true
@@ -3213,8 +3159,8 @@
      "ranges": [
       {
        "count": 32,
-       "endOffset": 56383,
-       "startOffset": 56120
+       "endOffset": 56303,
+       "startOffset": 56040
       }
      ],
      "isBlockCoverage": true
@@ -3224,8 +3170,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 57797,
-       "startOffset": 56530
+       "endOffset": 57717,
+       "startOffset": 56450
       }
      ],
      "isBlockCoverage": true
@@ -3235,8 +3181,8 @@
      "ranges": [
       {
        "count": 24,
-       "endOffset": 57778,
-       "startOffset": 57256
+       "endOffset": 57698,
+       "startOffset": 57176
       }
      ],
      "isBlockCoverage": true
@@ -3246,23 +3192,23 @@
      "ranges": [
       {
        "count": 48,
-       "endOffset": 57762,
-       "startOffset": 57357
+       "endOffset": 57682,
+       "startOffset": 57277
       },
       {
        "count": 24,
-       "endOffset": 57655,
-       "startOffset": 57628
+       "endOffset": 57575,
+       "startOffset": 57548
       },
       {
        "count": 14,
-       "endOffset": 57655,
-       "startOffset": 57643
+       "endOffset": 57575,
+       "startOffset": 57563
       },
       {
        "count": 24,
-       "endOffset": 57695,
-       "startOffset": 57684
+       "endOffset": 57615,
+       "startOffset": 57604
       }
      ],
      "isBlockCoverage": true
@@ -3272,8 +3218,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 59026,
-       "startOffset": 57882
+       "endOffset": 58946,
+       "startOffset": 57802
       }
      ],
      "isBlockCoverage": true
@@ -3283,8 +3229,8 @@
      "ranges": [
       {
        "count": 10,
-       "endOffset": 59007,
-       "startOffset": 58485
+       "endOffset": 58927,
+       "startOffset": 58405
       }
      ],
      "isBlockCoverage": true
@@ -3294,23 +3240,23 @@
      "ranges": [
       {
        "count": 20,
-       "endOffset": 58991,
-       "startOffset": 58586
+       "endOffset": 58911,
+       "startOffset": 58506
       },
       {
        "count": 10,
-       "endOffset": 58884,
-       "startOffset": 58857
+       "endOffset": 58804,
+       "startOffset": 58777
       },
       {
        "count": 5,
-       "endOffset": 58884,
-       "startOffset": 58872
+       "endOffset": 58804,
+       "startOffset": 58792
       },
       {
        "count": 10,
-       "endOffset": 58924,
-       "startOffset": 58913
+       "endOffset": 58844,
+       "startOffset": 58833
       }
      ],
      "isBlockCoverage": true
@@ -3320,8 +3266,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 60039,
-       "startOffset": 59144
+       "endOffset": 59959,
+       "startOffset": 59064
       }
      ],
      "isBlockCoverage": true
@@ -3331,8 +3277,8 @@
      "ranges": [
       {
        "count": 20,
-       "endOffset": 60027,
-       "startOffset": 59777
+       "endOffset": 59947,
+       "startOffset": 59697
       }
      ],
      "isBlockCoverage": true
@@ -3342,8 +3288,8 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 61358,
-       "startOffset": 60279
+       "endOffset": 61278,
+       "startOffset": 60199
       }
      ],
      "isBlockCoverage": true
@@ -3353,8 +3299,8 @@
      "ranges": [
       {
        "count": 72,
-       "endOffset": 61339,
-       "startOffset": 60929
+       "endOffset": 61259,
+       "startOffset": 60849
       }
      ],
      "isBlockCoverage": true
@@ -3364,8 +3310,8 @@
      "ranges": [
       {
        "count": 144,
-       "endOffset": 61323,
-       "startOffset": 61026
+       "endOffset": 61243,
+       "startOffset": 60946
       }
      ],
      "isBlockCoverage": true
@@ -3375,38 +3321,38 @@
      "ranges": [
       {
        "count": 978,
-       "endOffset": 62620,
-       "startOffset": 61418
+       "endOffset": 62540,
+       "startOffset": 61338
       },
       {
        "count": 848,
-       "endOffset": 61747,
-       "startOffset": 61703
+       "endOffset": 61667,
+       "startOffset": 61623
       },
       {
        "count": 130,
-       "endOffset": 62097,
-       "startOffset": 61764
+       "endOffset": 62017,
+       "startOffset": 61684
       },
       {
        "count": 114,
-       "endOffset": 62034,
-       "startOffset": 61811
+       "endOffset": 61954,
+       "startOffset": 61731
       },
       {
        "count": 18,
-       "endOffset": 61942,
-       "startOffset": 61892
+       "endOffset": 61862,
+       "startOffset": 61812
       },
       {
        "count": 96,
-       "endOffset": 62016,
-       "startOffset": 61963
+       "endOffset": 61936,
+       "startOffset": 61883
       },
       {
        "count": 16,
-       "endOffset": 62097,
-       "startOffset": 62051
+       "endOffset": 62017,
+       "startOffset": 61971
       }
      ],
      "isBlockCoverage": true
@@ -3416,8 +3362,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 72217,
-       "startOffset": 62709
+       "endOffset": 72137,
+       "startOffset": 62629
       }
      ],
      "isBlockCoverage": true
@@ -3427,8 +3373,8 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 72209,
-       "startOffset": 71469
+       "endOffset": 72129,
+       "startOffset": 71389
       }
      ],
      "isBlockCoverage": true
@@ -3438,18 +3384,18 @@
      "ranges": [
       {
        "count": 122,
-       "endOffset": 72197,
-       "startOffset": 71565
+       "endOffset": 72117,
+       "startOffset": 71485
       },
       {
        "count": 24,
-       "endOffset": 71801,
-       "startOffset": 71770
+       "endOffset": 71721,
+       "startOffset": 71690
       },
       {
        "count": 98,
-       "endOffset": 71848,
-       "startOffset": 71822
+       "endOffset": 71768,
+       "startOffset": 71742
       }
      ],
      "isBlockCoverage": true
@@ -3459,8 +3405,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 76520,
-       "startOffset": 72301
+       "endOffset": 76440,
+       "startOffset": 72221
       }
      ],
      "isBlockCoverage": true
@@ -3470,8 +3416,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 72852,
-       "startOffset": 72406
+       "endOffset": 72772,
+       "startOffset": 72326
       }
      ],
      "isBlockCoverage": true
@@ -3481,8 +3427,8 @@
      "ranges": [
       {
        "count": 30,
-       "endOffset": 74687,
-       "startOffset": 74302
+       "endOffset": 74607,
+       "startOffset": 74222
       }
      ],
      "isBlockCoverage": true
@@ -3492,18 +3438,18 @@
      "ranges": [
       {
        "count": 38,
-       "endOffset": 76511,
-       "startOffset": 74710
+       "endOffset": 76431,
+       "startOffset": 74630
       },
       {
        "count": 6,
-       "endOffset": 75370,
-       "startOffset": 75364
+       "endOffset": 75290,
+       "startOffset": 75284
       },
       {
        "count": 32,
-       "endOffset": 75553,
-       "startOffset": 75450
+       "endOffset": 75473,
+       "startOffset": 75370
       }
      ],
      "isBlockCoverage": true
@@ -3513,8 +3459,8 @@
      "ranges": [
       {
        "count": 422,
-       "endOffset": 74952,
-       "startOffset": 74884
+       "endOffset": 74872,
+       "startOffset": 74804
       }
      ],
      "isBlockCoverage": true
@@ -3524,8 +3470,8 @@
      "ranges": [
       {
        "count": 422,
-       "endOffset": 75038,
-       "startOffset": 74961
+       "endOffset": 74958,
+       "startOffset": 74881
       }
      ],
      "isBlockCoverage": true
@@ -3535,8 +3481,8 @@
      "ranges": [
       {
        "count": 267,
-       "endOffset": 75134,
-       "startOffset": 75074
+       "endOffset": 75054,
+       "startOffset": 74994
       }
      ],
      "isBlockCoverage": true
@@ -3546,8 +3492,8 @@
      "ranges": [
       {
        "count": 267,
-       "endOffset": 75282,
-       "startOffset": 75200
+       "endOffset": 75202,
+       "startOffset": 75120
       }
      ],
      "isBlockCoverage": true
@@ -3557,8 +3503,8 @@
      "ranges": [
       {
        "count": 76,
-       "endOffset": 76498,
-       "startOffset": 75684
+       "endOffset": 76418,
+       "startOffset": 75604
       }
      ],
      "isBlockCoverage": true
@@ -3568,8 +3514,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 83478,
-       "startOffset": 76609
+       "endOffset": 83398,
+       "startOffset": 76529
       }
      ],
      "isBlockCoverage": true
@@ -3579,8 +3525,8 @@
      "ranges": [
       {
        "count": 7,
-       "endOffset": 78232,
-       "startOffset": 77203
+       "endOffset": 78152,
+       "startOffset": 77123
       }
      ],
      "isBlockCoverage": true
@@ -3590,8 +3536,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 94740,
-       "startOffset": 83567
+       "endOffset": 94660,
+       "startOffset": 83487
       }
      ],
      "isBlockCoverage": true
@@ -3601,13 +3547,13 @@
      "ranges": [
       {
        "count": 14,
-       "endOffset": 85655,
-       "startOffset": 83689
+       "endOffset": 85575,
+       "startOffset": 83609
       },
       {
        "count": 7,
-       "endOffset": 84082,
-       "startOffset": 83942
+       "endOffset": 84002,
+       "startOffset": 83862
       }
      ],
      "isBlockCoverage": true
@@ -3617,8 +3563,8 @@
      "ranges": [
       {
        "count": 168,
-       "endOffset": 85592,
-       "startOffset": 85083
+       "endOffset": 85512,
+       "startOffset": 85003
       }
      ],
      "isBlockCoverage": true
@@ -3628,23 +3574,23 @@
      "ranges": [
       {
        "count": 1680,
-       "endOffset": 85545,
-       "startOffset": 85154
+       "endOffset": 85465,
+       "startOffset": 85074
       },
       {
        "count": 140,
-       "endOffset": 85297,
-       "startOffset": 85286
+       "endOffset": 85217,
+       "startOffset": 85206
       },
       {
        "count": 14,
-       "endOffset": 85392,
-       "startOffset": 85299
+       "endOffset": 85312,
+       "startOffset": 85219
       },
       {
        "count": 1666,
-       "endOffset": 85494,
-       "startOffset": 85392
+       "endOffset": 85414,
+       "startOffset": 85312
       }
      ],
      "isBlockCoverage": true
@@ -3654,8 +3600,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 87233,
-       "startOffset": 85989
+       "endOffset": 87153,
+       "startOffset": 85909
       }
      ],
      "isBlockCoverage": true
@@ -3665,8 +3611,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 86371,
-       "startOffset": 86147
+       "endOffset": 86291,
+       "startOffset": 86067
       }
      ],
      "isBlockCoverage": true
@@ -3676,8 +3622,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 86678,
-       "startOffset": 86448
+       "endOffset": 86598,
+       "startOffset": 86368
       }
      ],
      "isBlockCoverage": true
@@ -3687,8 +3633,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 87165,
-       "startOffset": 87097
+       "endOffset": 87085,
+       "startOffset": 87017
       }
      ],
      "isBlockCoverage": true
@@ -3698,8 +3644,8 @@
      "ranges": [
       {
        "count": 2,
-       "endOffset": 89643,
-       "startOffset": 87951
+       "endOffset": 89563,
+       "startOffset": 87871
       }
      ],
      "isBlockCoverage": true
@@ -3709,8 +3655,8 @@
      "ranges": [
       {
        "count": 14,
-       "endOffset": 88188,
-       "startOffset": 88103
+       "endOffset": 88108,
+       "startOffset": 88023
       }
      ],
      "isBlockCoverage": true
@@ -3720,8 +3666,8 @@
      "ranges": [
       {
        "count": 14,
-       "endOffset": 88347,
-       "startOffset": 88253
+       "endOffset": 88267,
+       "startOffset": 88173
       }
      ],
      "isBlockCoverage": true
@@ -3731,8 +3677,8 @@
      "ranges": [
       {
        "count": 14,
-       "endOffset": 88691,
-       "startOffset": 88414
+       "endOffset": 88611,
+       "startOffset": 88334
       }
      ],
      "isBlockCoverage": true
@@ -3742,8 +3688,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 150561,
-       "startOffset": 94828
+       "endOffset": 149553,
+       "startOffset": 94748
       }
      ],
      "isBlockCoverage": true
@@ -3753,8 +3699,19 @@
      "ranges": [
       {
        "count": 6,
-       "endOffset": 96407,
-       "startOffset": 95016
+       "endOffset": 95399,
+       "startOffset": 94936
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 108,
+       "endOffset": 95375,
+       "startOffset": 95181
       }
      ],
      "isBlockCoverage": true
@@ -3764,8 +3721,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 102997,
-       "startOffset": 96416
+       "endOffset": 101989,
+       "startOffset": 95408
       }
      ],
      "isBlockCoverage": true
@@ -3775,23 +3732,23 @@
      "ranges": [
       {
        "count": 10,
-       "endOffset": 102934,
-       "startOffset": 99185
+       "endOffset": 101926,
+       "startOffset": 98177
       },
       {
        "count": 1,
-       "endOffset": 102551,
-       "startOffset": 102391
+       "endOffset": 101543,
+       "startOffset": 101383
       },
       {
        "count": 1,
-       "endOffset": 102728,
-       "startOffset": 102568
+       "endOffset": 101720,
+       "startOffset": 101560
       },
       {
        "count": 8,
-       "endOffset": 102873,
-       "startOffset": 102745
+       "endOffset": 101865,
+       "startOffset": 101737
       }
      ],
      "isBlockCoverage": true
@@ -3801,8 +3758,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 110264,
-       "startOffset": 108920
+       "endOffset": 109256,
+       "startOffset": 107912
       }
      ],
      "isBlockCoverage": true
@@ -3812,8 +3769,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 109306,
-       "startOffset": 109077
+       "endOffset": 108298,
+       "startOffset": 108069
       }
      ],
      "isBlockCoverage": true
@@ -3823,8 +3780,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 109711,
-       "startOffset": 109463
+       "endOffset": 108703,
+       "startOffset": 108455
       }
      ],
      "isBlockCoverage": true
@@ -3834,8 +3791,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 110196,
-       "startOffset": 110128
+       "endOffset": 109188,
+       "startOffset": 109120
       }
      ],
      "isBlockCoverage": true
@@ -3845,8 +3802,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 112109,
-       "startOffset": 110282
+       "endOffset": 111101,
+       "startOffset": 109274
       }
      ],
      "isBlockCoverage": true
@@ -3856,8 +3813,8 @@
      "ranges": [
       {
        "count": 64,
-       "endOffset": 110556,
-       "startOffset": 110441
+       "endOffset": 109548,
+       "startOffset": 109433
       }
      ],
      "isBlockCoverage": true
@@ -3867,8 +3824,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 112033,
-       "startOffset": 111794
+       "endOffset": 111025,
+       "startOffset": 110786
       }
      ],
      "isBlockCoverage": true
@@ -3878,8 +3835,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 114640,
-       "startOffset": 112127
+       "endOffset": 113632,
+       "startOffset": 111119
       }
      ],
      "isBlockCoverage": true
@@ -3889,8 +3846,8 @@
      "ranges": [
       {
        "count": 64,
-       "endOffset": 112401,
-       "startOffset": 112286
+       "endOffset": 111393,
+       "startOffset": 111278
       }
      ],
      "isBlockCoverage": true
@@ -3900,8 +3857,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 114564,
-       "startOffset": 114306
+       "endOffset": 113556,
+       "startOffset": 113298
       }
      ],
      "isBlockCoverage": true
@@ -3911,8 +3868,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 118512,
-       "startOffset": 114721
+       "endOffset": 117504,
+       "startOffset": 113713
       }
      ],
      "isBlockCoverage": true
@@ -3922,8 +3879,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 121393,
-       "startOffset": 118601
+       "endOffset": 120385,
+       "startOffset": 117593
       }
      ],
      "isBlockCoverage": true
@@ -3933,8 +3890,8 @@
      "ranges": [
       {
        "count": 16,
-       "endOffset": 119153,
-       "startOffset": 118770
+       "endOffset": 118145,
+       "startOffset": 117762
       }
      ],
      "isBlockCoverage": true
@@ -3944,8 +3901,8 @@
      "ranges": [
       {
        "count": 7,
-       "endOffset": 120007,
-       "startOffset": 119626
+       "endOffset": 118999,
+       "startOffset": 118618
       }
      ],
      "isBlockCoverage": true
@@ -3955,8 +3912,8 @@
      "ranges": [
       {
        "count": 7,
-       "endOffset": 119966,
-       "startOffset": 119693
+       "endOffset": 118958,
+       "startOffset": 118685
       }
      ],
      "isBlockCoverage": true
@@ -3966,8 +3923,8 @@
      "ranges": [
       {
        "count": 8,
-       "endOffset": 120637,
-       "startOffset": 120256
+       "endOffset": 119629,
+       "startOffset": 119248
       }
      ],
      "isBlockCoverage": true
@@ -3977,8 +3934,8 @@
      "ranges": [
       {
        "count": 8,
-       "endOffset": 120596,
-       "startOffset": 120323
+       "endOffset": 119588,
+       "startOffset": 119315
       }
      ],
      "isBlockCoverage": true
@@ -3988,8 +3945,52 @@
      "ranges": [
       {
        "count": 1,
+       "endOffset": 119982,
+       "startOffset": 119735
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 120348,
+       "startOffset": 120104
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 1,
+       "endOffset": 121046,
+       "startOffset": 120479
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 5,
+       "endOffset": 121029,
+       "startOffset": 120704
+      }
+     ],
+     "isBlockCoverage": true
+    },
+    {
+     "functionName": "",
+     "ranges": [
+      {
+       "count": 5,
        "endOffset": 120990,
-       "startOffset": 120743
+       "startOffset": 120771
       }
      ],
      "isBlockCoverage": true
@@ -3999,19 +4000,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 121356,
-       "startOffset": 121112
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 122054,
-       "startOffset": 121487
+       "endOffset": 121763,
+       "startOffset": 121132
       }
      ],
      "isBlockCoverage": true
@@ -4021,8 +4011,8 @@
      "ranges": [
       {
        "count": 5,
-       "endOffset": 122037,
-       "startOffset": 121712
+       "endOffset": 121746,
+       "startOffset": 121421
       }
      ],
      "isBlockCoverage": true
@@ -4032,8 +4022,8 @@
      "ranges": [
       {
        "count": 5,
-       "endOffset": 121998,
-       "startOffset": 121779
+       "endOffset": 121707,
+       "startOffset": 121488
       }
      ],
      "isBlockCoverage": true
@@ -4043,30 +4033,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 122771,
-       "startOffset": 122140
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 5,
-       "endOffset": 122754,
-       "startOffset": 122429
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 5,
-       "endOffset": 122715,
-       "startOffset": 122496
+       "endOffset": 123294,
+       "startOffset": 121849
       }
      ],
      "isBlockCoverage": true
@@ -4076,8 +4044,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 124302,
-       "startOffset": 122857
+       "endOffset": 124748,
+       "startOffset": 123380
       }
      ],
      "isBlockCoverage": true
@@ -4087,19 +4055,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 125756,
-       "startOffset": 124388
-      }
-     ],
-     "isBlockCoverage": true
-    },
-    {
-     "functionName": "",
-     "ranges": [
-      {
-       "count": 1,
-       "endOffset": 150540,
-       "startOffset": 127358
+       "endOffset": 149532,
+       "startOffset": 126350
       }
      ],
      "isBlockCoverage": true
@@ -4109,8 +4066,8 @@
      "ranges": [
       {
        "count": 1012,
-       "endOffset": 147257,
-       "startOffset": 147003
+       "endOffset": 146249,
+       "startOffset": 145995
       }
      ],
      "isBlockCoverage": true
@@ -4120,8 +4077,8 @@
      "ranges": [
       {
        "count": 1012,
-       "endOffset": 149836,
-       "startOffset": 149170
+       "endOffset": 148828,
+       "startOffset": 148162
       }
      ],
      "isBlockCoverage": true
@@ -4131,18 +4088,18 @@
      "ranges": [
       {
        "count": 7084,
-       "endOffset": 149812,
-       "startOffset": 149559
+       "endOffset": 148804,
+       "startOffset": 148551
       },
       {
        "count": 6072,
-       "endOffset": 149717,
-       "startOffset": 149701
+       "endOffset": 148709,
+       "startOffset": 148693
       },
       {
        "count": 1012,
-       "endOffset": 149755,
-       "startOffset": 149750
+       "endOffset": 148747,
+       "startOffset": 148742
       }
      ],
      "isBlockCoverage": true
@@ -4152,8 +4109,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 150891,
-       "startOffset": 150621
+       "endOffset": 149883,
+       "startOffset": 149613
       }
      ],
      "isBlockCoverage": true
@@ -4163,8 +4120,8 @@
      "ranges": [
       {
        "count": 1,
-       "endOffset": 150887,
-       "startOffset": 150736
+       "endOffset": 149879,
+       "startOffset": 149728
       }
      ],
      "isBlockCoverage": true

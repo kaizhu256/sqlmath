@@ -67,7 +67,7 @@ body {
 </head>
 <body>
 <div class="apidocDiv">
-<h1>API Doc for <a href="https://github.com/sqlmath/sqlmath">sqlmath (v2026.11.29)</a></h1>
+<h1>API Doc for <a href="https://github.com/sqlmath/sqlmath">sqlmath (v2026.11.1)</a></h1>
 <div class="apidocSectionDiv">
     <a href="#apidocTableOfContents1" id="apidocTableOfContents1">
         <h1>Table of Contents</h1>
@@ -793,14 +793,14 @@ jstestDescribe((
 ), function test_assertXxx() {
 jstestIt((
     "test assertXxx handling-behavior"
-), function () {
-    assertErrorThrownAsync(function () {
+), async function () {
+    await assertErrorThrownAsync(function () {
         <span class="apidocCodeKeywordSpan">assertNumericalEqual</span>(0, 0);
     }, "value cannot be 0 or falsy");
-    assertErrorThrownAsync(function () {
+    await assertErrorThrownAsync(function () {
         assertNumericalEqual(1, 2);
     }, "1 != 2");
-    assertErrorThrownAsync(function () {
+    await assertErrorThrownAsync(function () {
         assertNumericalEqual(1, 2, "aa");
     }, "aa");
 ...</pre></li>
@@ -980,22 +980,6 @@ jstestIt((
     # node "${binNodegyp}" build --release --loglevel=verbose
     mv build/Release/binding.node "${cModulePath}"
     mv build/Release/shell "${SQLMATH_EXE}"
-    # ugly-hack - win32-sqlite-shell doesn't like nodejs-builtin-zlib,
-    #             so link with external-zlib.
-    if (uname | grep -q "MING\\|MSYS")
-    then
-        rm -f ${SQLMATH_EXE}
-        python setup.py exe_link \
-            ./build/Release/SRC_SQLITE_BASE.lib \
-            ./build/Release/SRC_SQLMATH_BASE.lib \
-            ./build/Release/obj/shell/sqlmath_external_sqlite.obj \
-            ./zlib.v1.3.1.vcpkg.x64-windows-static.lib \
-            \
-            -ltcg \
-            -nologo \
-            -out:${SQLMATH_EXE} \
-            -subsystem:console
-    fi
 )
             `)
         ],
@@ -1688,7 +1672,7 @@ assertJsonEqual(
     let baton;
     let valActual;
     if (valExpect === Error) {
-        assertErrorThrownAsync(function () {
+        await assertErrorThrownAsync(function () {
             return <span class="apidocCodeKeywordSpan">dbNoopAsync</span>(undefined, valIn, undefined);
         }, "invalid arg|integer");
         return;
@@ -1745,8 +1729,8 @@ assertJsonEqual(
                 flags ?? (
                     SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
                 ),
-                // 3. const char *zVfs        Name of VFS module to use
-                undefined
+                // 3. int timeoutBusy
+                timeoutBusy
             ]
         );
         ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
@@ -1755,22 +1739,22 @@ assertJsonEqual(
     }));
     db.connPool = connPool;
     if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
+        // LGBM_DLOPEN
+        let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
         DB_STATE.init = true;
-        await Promise.all([
-            // PRAGMA busy_timeout
-            dbExecAsync({
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm).then(async function () {
+            await dbExecAsync({
                 db,
                 sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
+SELECT LGBM_DLOPEN('${libLgbm}');
                 `)
-            }),
-            // LGBM_DLOPEN
-            (async function () {
-                let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-                libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-                await moduleFs....
-}
-</pre></li>
+            });
+            DB_STATE.lgbm = true;
+        }).catch(noop);
+    }
+    return db;
+}</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 # Platform Notes
 
@@ -1931,7 +1915,7 @@ FROM __lgbm_state;
 <span class="apidocCodeKeywordSpan">debugInline</span>(); // coverage-hack
 
 const JSBATON_ARGC = 8; //jslint-ignore-line
-const JSBATON_OFFSET_ALL = 256;
+const JSBATON_OFFSET_ALL = 512;
 const JSBATON_OFFSET_ARGV = 128;
 const JSBATON_OFFSET_BUFV = 192;
 // const JSBATON_OFFSET_ERRMSG = 48;
@@ -2167,21 +2151,21 @@ assertJsonEqual(valActual, valExpect, {
     return `${libPlatform}_${libArch}.${libExt}`;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-    db,
-    sql: (`
-PRAGMA busy_timeout = ${timeoutBusy};
-    `)
-}),
-// LGBM_DLOPEN
-(async function () {
-    let libLgbm = `lib_lightgbm_${<span class="apidocCodeKeywordSpan">libPlatformArchExt</span>()}`;
-    libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-    await moduleFs.promises.access(
-        libLgbm
-    ).then(async function () {
-        await dbExecAsync({
-            db,
-            sql: (`
+        ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
+        dbFinalizationRegistry.register(db, {afterFinalization, ptr});
+        return ptr;
+    }));
+    db.connPool = connPool;
+    if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
+        // LGBM_DLOPEN
+        let libLgbm = `lib_lightgbm_${<span class="apidocCodeKeywordSpan">libPlatformArchExt</span>()}`;
+        DB_STATE.init = true;
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm).then(async function () {
+            await dbExecAsync({
+                db,
+                sql: (`
+SELECT LGBM_DLOPEN('${libLgbm}');
 ...</pre></li>
 
 <li>
@@ -2212,7 +2196,7 @@ PRAGMA busy_timeout = ${timeoutBusy};
 });
 
 jstestDescribe((
-"test_sqlite"
+"test_childProcessSpawn2"
 ...</pre></li>
 
 <li>
@@ -2458,8 +2442,8 @@ jstestDescribe((
 });
 
 jstestDescribe((
-"test_sqlite"
-), function test_sqlite() {
+"test_childProcessSpawn2"
+), function test_childProcessSpawn2() {
 jstestIt((
 ...</pre></li>
 

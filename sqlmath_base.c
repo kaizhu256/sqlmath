@@ -71,7 +71,7 @@ file sqlmath_h - start
 
 
 #define JSBATON_ARGC            8
-#define JSBATON_OFFSET_ALL      256
+#define JSBATON_OFFSET_ALL      512
 #define JSBATON_OFFSET_ARGV     128
 #define JSBATON_OFFSET_BUFV     192
 #define JSBATON_OFFSET_ERRMSG   48
@@ -282,6 +282,9 @@ typedef struct Jsbaton {
     int64_t argv[JSBATON_ARGC]; // offset 128-192
     Jsbuffer bufv[JSBATON_ARGC];        // offset 192-320
 } Jsbaton;
+// Bind data starts at JSBATON_OFFSET_ALL; header must fit before it.
+typedef char JsbatonFitsOffsetAll[(sizeof(Jsbaton) <= JSBATON_OFFSET_ALL)
+    ? 1 : -1];
 SQLMATH_API void dbCall(
     Jsbaton * baton
 );
@@ -518,10 +521,6 @@ file sqlmath_base - start
 #if defined(SRC_SQLMATH_BASE_C2)
 
 
-// track how many sqlite-db open
-static int dbCount = 0;
-
-
 static inline int trueAlways(
 ) {
     return 1;
@@ -562,9 +561,6 @@ SQLMATH_API void dbClose(
     // call c-function
     errcode = sqlite3_close_v2(db);
     JSBATON_ASSERT_OK();
-    if (db != NULL) {
-        dbCount -= 1;
-    }
   catch_error:
     (void) 0;
 }
@@ -580,7 +576,7 @@ SQLMATH_API int dbDlopen(
 #if defined(_WIN32)
         Sleep(100);
 #else
-        sleep(100);
+        usleep(100000);
 #endif                          // _WIN32
     }
     if (*library == (void *) isBusy) {
@@ -706,11 +702,11 @@ SQLMATH_API void dbExec(
     bindList =
         (DbExecBindElem *) sqlite3_malloc(bindListLength *
         sizeof(DbExecBindElem));
-    memset(bindList, 0, bindListLength * sizeof(DbExecBindElem));
     if (bindListLength > 0 && bindList == NULL) {
         errcode = SQLITE_NOMEM;
         JSBATON_ASSERT_OK()
     }
+    memset(bindList, 0, bindListLength * sizeof(DbExecBindElem));
     bindElem = bindList;
     ii = 1;
     while (ii <= bindListLength) {
@@ -771,7 +767,7 @@ SQLMATH_API void dbExec(
         }
         errcode = sqlite3_prepare_v2(db, zSql, -1, &pStmt, &zTmp);
         JSBATON_ASSERT_OK();
-        if (errcode || *zSql == '\x00') {
+        if (*zSql == '\x00') {
             break;
         }
         zSql = zTmp;
@@ -1065,7 +1061,8 @@ SQLMATH_API void dbOpen(
         flags,                  // flags
         NULL);
     JSBATON_ASSERT_OK();
-    dbCount += 1;
+    // Per-connection, so every db and every pool-connection gets it.
+    sqlite3_busy_timeout(db, (int) baton->argv[3]);
     // save db
     baton->argv[0] = (int64_t) db;
   catch_error:

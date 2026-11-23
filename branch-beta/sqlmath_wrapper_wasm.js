@@ -43,12 +43,8 @@ function isExternalBuffer(buf) {
 }
 
 (async function () {
-    // cwrap string-based c-functions
-    let jsbatonGetErrmsg = cwrap("jsbatonGetErrmsg", "string", ["number"]);
-    let jsbatonGetString = cwrap("jsbatonGetString", "string", [
-        "number", "number"
-    ]);
-
+    let jsbatonGetErrmsg;
+    let jsbatonGetString;
     let onModulePostRun; //jslint-ignore-line
 
     function messageDispatch(data) {
@@ -151,6 +147,11 @@ function isExternalBuffer(buf) {
         Module["postRun"] = resolve;
     });
     await onModulePostRun;
+    // cwrap after postRun - emsdk 4+ defines cwrap as a non-hoisted var
+    jsbatonGetErrmsg = cwrap("jsbatonGetErrmsg", "string", ["number"]);
+    jsbatonGetString = cwrap("jsbatonGetString", "string", [
+        "number", "number"
+    ]);
 
     // init sqlite
     _sqlite3_initialize();

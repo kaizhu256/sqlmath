@@ -27,8 +27,8 @@ python setup.py bdist_wheel
 python setup.py build_ext
 """
 
-__version__ = "2026.11.29"
-__version_info__ = ("2026", "11", "29")
+__version__ = "2026.11.1"
+__version_info__ = ("2026", "11", "1")
 
 import asyncio
 import base64
@@ -54,7 +54,7 @@ def assert_or_throw(condition, message=None):
 
 def build_ext():
     """This function will build c-extension."""
-    subprocess.run(["python", "setup.py", "build_ext_async"], check=True)
+    asyncio.run(build_ext_async())
 
 
 async def build_ext_async():
@@ -204,25 +204,8 @@ async def build_ext_async():
     version = package_json["version"].split("-")[0]
     if package_json["name"] != "sqlmath":
         version = __version__
-    data = await asyncio.to_thread(
-        pathlib.Path(".ci.sh").read_text,
-        encoding="utf-8",
-    )
-    data = re.findall(
-        (
-            r"(?:SQLMATH_CFLAG_WALL_LIST|SQLMATH_CFLAG_WNO_LIST)"
-            r'=" \\([\S\s]*?)"'
-        ),
-        data,
-    )
-    data = [
-        [cflag for cflag in re.split(r"[\s\\]", list1) if cflag != ""]
-        for list1 in data
-    ]
-    [
-        cflag_wall_list,
-        cflag_wno_list,
-    ] = data
+    cflag_wall_list = ["-Wall", "-Werror", "-Wextra"]
+    cflag_wno_list = ["-Werror", "-Wno-all", "-Wno-extra"]
     for filename in [
         "PKG-INFO",
         "README.md",
@@ -614,21 +597,11 @@ def main():
             build_wheel("dist")
         case "build_ext":
             build_ext()
-        case "build_ext_async":
-            asyncio.set_event_loop(asyncio.new_event_loop())
-            asyncio.get_event_loop().run_until_complete(build_ext_async())
         case "build_pkg_info":
             build_pkg_info()
         case "env_vcvarsall":
             env = env_vcvarsall()
             print(json.dumps(env, indent=4))
-        case "exe_link":
-            env = env_vcvarsall()
-            subprocess.run(
-                [env["exe_link"], *sys.argv[2:]],
-                check=True,
-                env=env,
-            )
         case "sdist":
             build_sdist("dist")
         case "test":
