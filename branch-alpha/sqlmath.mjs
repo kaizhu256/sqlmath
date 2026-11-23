@@ -1222,23 +1222,19 @@ async function dbOpenAsync({
     }));
     db.connPool = connPool;
     if (!IS_BROWSER && !DB_STATE.init) {
-        DB_STATE.init = true;
         // LGBM_DLOPEN
-        await (async function () {
-            let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-            libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-            await moduleFs.promises.access(
-                libLgbm
-            ).then(async function () {
-                await dbExecAsync({
-                    db,
-                    sql: (`
+        let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
+        DB_STATE.init = true;
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm).then(async function () {
+            await dbExecAsync({
+                db,
+                sql: (`
 SELECT LGBM_DLOPEN('${libLgbm}');
-                    `)
-                });
-                DB_STATE.lgbm = true;
-            }).catch(noop);
-        }());
+                `)
+            });
+            DB_STATE.lgbm = true;
+        }).catch(noop);
     }
     return db;
 }

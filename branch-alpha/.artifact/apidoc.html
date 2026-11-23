@@ -1739,23 +1739,22 @@ assertJsonEqual(
     }));
     db.connPool = connPool;
     if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
-        DB_STATE.init = true;
         // LGBM_DLOPEN
-        await (async function () {
-            let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
-            libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-            await moduleFs.promises.access(
-                libLgbm
-            ).then(async function () {
-                await dbExecAsync({
-                    db,
-                    sql: (`
+        let libLgbm = `lib_lightgbm_${libPlatformArchExt()}`;
+        DB_STATE.init = true;
+        libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
+        await moduleFs.promises.access(libLgbm).then(async function () {
+            await dbExecAsync({
+                db,
+                sql: (`
 SELECT LGBM_DLOPEN('${libLgbm}');
-                    `)
-                });
-       ...
-}
-</pre></li>
+                `)
+            });
+            DB_STATE.lgbm = true;
+        }).catch(noop);
+    }
+    return db;
+}</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
 # Platform Notes
 
@@ -2152,21 +2151,21 @@ assertJsonEqual(valActual, valExpect, {
     return `${libPlatform}_${libArch}.${libExt}`;
 }</pre></li>
 <li>Example usage:<pre class="apidocCodePre">...
-    return ptr;
-}));
-db.connPool = connPool;
-if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
-    DB_STATE.init = true;
-    // LGBM_DLOPEN
-    await (async function () {
+        ptr = [ptr.getBigInt64(JSBATON_OFFSET_ARGV + 0, true)];
+        dbFinalizationRegistry.register(db, {afterFinalization, ptr});
+        return ptr;
+    }));
+    db.connPool = connPool;
+    if (!IS_BROWSER &amp;&amp; !DB_STATE.init) {
+        // LGBM_DLOPEN
         let libLgbm = `lib_lightgbm_${<span class="apidocCodeKeywordSpan">libPlatformArchExt</span>()}`;
+        DB_STATE.init = true;
         libLgbm = `${import.meta.dirname}/sqlmath/${libLgbm}`;
-        await moduleFs.promises.access(
-            libLgbm
-        ).then(async function () {
+        await moduleFs.promises.access(libLgbm).then(async function () {
             await dbExecAsync({
                 db,
                 sql: (`
+SELECT LGBM_DLOPEN('${libLgbm}');
 ...</pre></li>
 
 <li>
